@@ -4,13 +4,10 @@ require "nvchad.mappings"
 
 local map = vim.keymap.set
 
-map({ "n", "t" }, "<leader>t", function()
-  require("nvchad.term").toggle { pos = "vsp", id = "vtoggleTerm" }
-end, { desc = "terminal toggleable vertical term" })
-
 -- tabs navigation
 map("n", "<leader><Left>", ":bprev<cr>")
 map("n", "<leader><Right>", ":bnext<cr>")
+
 
 -- navigate in code
 map("n", "<A-Left>", "b")
@@ -20,23 +17,29 @@ map("n", "<A-Right>", "w")
 map("n", "<leader>s", ":w<cr>")
 
 -- toggle terminal
-map({ "n", "t" }, "<leader>t", function()
+map({ "n", "t" }, "<A-t>", function()
   require("nvchad.term").toggle { pos = "sp", id = "htoggleTerm" }
 end, { desc = "terminal toggleable horizontal term" })
+
+-- toggle nvimtree 
+map({"n", "t"}, "<A-e>", "<cmd>NvimTreeFocus<CR>", { desc = "nvimtree focus window" })
 
 -- close current tab
 map("n", "<leader>w", function()
   require("nvchad.tabufline").close_buffer()
 end, { desc = "buffer close" })
+
 -- close others
-map("n", "<leader>ww", ":%bd|e#<cr>")
+map("n", "<leader>ww", function()
+  require("nvchad.tabufline").closeAllBufs(false)
+end, { desc = "buffer close" })
 
 -- show git history
-map("n", "<leader>g", "<cmd>Telescope git_commits<CR>", { desc = "telescope git commits" })
+map("n", "<leader>gg", "<cmd>Telescope git_commits<CR>", { desc = "telescope git commits" })
 map("n", "<leader>k", "<cmd>Telescope git_status<CR>", { desc = "telescope git status" })
 
 -- search and replace
-map("n", "<leader><S-f>", "<cmd>Telescope live_grep<CR>", { desc = "telescope live grep" })
+map("n", "<leader>F", "<cmd>Telescope live_grep<CR>", { desc = "telescope live grep" })
 
 -- format file, linter etc
 map("n", "<leader>l", function()

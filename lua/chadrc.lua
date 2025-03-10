@@ -4,19 +4,19 @@
 
 ---@type ChadrcConfig
 local M = {}
-require("debuggers")
+require "debuggers"
 M.base46 = {
-  theme = "aquarium",
+  theme = "chadracula",
 
-  -- hl_override = {
-  -- 	Comment = { italic = true },
-  -- 	["@comment"] = { italic = true },
-  -- },
+  hl_override = {
+    Comment = { italic = true },
+    ["@comment"] = { italic = true },
+  },
 }
--- M.nvdash = { load_on_startup = true }
--- M.ui = {
---       tabufline = {
---          lazyload = false
---      }
---}
+M.nvdash = { load_on_startup = true }
+M.ui = {
+  tabufline = {
+    lazyload = false,
+  },
+}
 return M
