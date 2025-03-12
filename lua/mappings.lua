@@ -3,7 +3,8 @@ require "nvchad.mappings"
 -- add yours here
 
 local map = vim.keymap.set
-
+local dap, dapui = require "dap", require "dapui"
+local term = require "nvchad.term"
 -- tabs navigation
 map("n", "<leader><Left>", ":bprev<cr>", { desc = "previous buffer" })
 map("n", "<leader><Right>", ":bnext<cr>", { desc = "next buffer" })
@@ -19,11 +20,14 @@ map("n", "<leader>s", ":w<cr>", { desc = "save file" })
 
 -- toggle terminal
 map({ "n", "t" }, "<A-t>", function()
-  require("nvchad.term").toggle { pos = "sp", id = "htoggleTerm" }
+  term.toggle { pos = "sp", id = "htoggleTerm" }
 end, { desc = "toggle terminal" })
 
 -- toggle nvimtree
-map({ "n", "t" }, "<A-e>", "<cmd>NvimTreeFocus<CR>", { desc = "nvimtree focus window" })
+map({ "n", "t" }, "<A-e>", function()
+  dapui.close()
+  vim.cmd "NvimTreeFocus"
+end, { desc = "nvimtree focus window" })
 
 -- close current tab
 map("n", "<leader>w", function()
@@ -107,27 +111,115 @@ vim.keymap.set("n", "<leader>b", function()
   require("dap").toggle_breakpoint()
 end, { desc = "debug toggle breakpoint" })
 
-local dap, dapui = require "dap", require "dapui"
-dapui.setup()
+dapui.setup {
+  controls = {
+    element = "console",
+    enabled = true,
+    icons = {
+      disconnect = "",
+      pause = "",
+      play = "",
+      run_last = "",
+      step_back = "",
+      step_into = "",
+      step_out = "",
+      step_over = "",
+      terminate = "",
+    },
+  },
+  element_mappings = {},
+  expand_lines = true,
+  floating = {
+    border = "single",
+    mappings = {
+      close = { "q", "<Esc>" },
+    },
+  },
+  force_buffers = true,
+  icons = {
+    collapsed = "",
+    current_frame = "",
+    expanded = "",
+  },
+  layouts = {
+    {
+      elements = {
+        {
+          id = "scopes",
+          size = 0.40,
+        },
+        {
+          id = "stacks",
+          size = 0.35,
+        },
+        {
+          id = "breakpoints",
+          size = 0.25,
+        },
+        -- {
+        --   id = "watches",
+        --   size = 0.25,
+        --   enabled = false
+        -- },
+      },
+      position = "left",
+      size = 40,
+    },
+    {
+      elements = {
+        -- {
+        --   id = "repl",
+        --   size = 0.5,
+        -- },
+        {
+          id = "console",
+          size = 1,
+        },
+      },
+      position = "bottom",
+      size = 15,
+    },
+  },
+  mappings = {
+    edit = "e",
+    expand = { "<CR>", "<2-LeftMouse>" },
+    open = "o",
+    remove = "d",
+    repl = "r",
+    toggle = "t",
+  },
+  render = {
+    indent = 1,
+    max_value_lines = 100,
+  },
+}
 
 -- open Dap UI automatically when debug starts
 dap.listeners.before.attach.dapui_config = function()
+  vim.cmd "NvimTreeClose"
   dapui.open()
 end
 dap.listeners.before.launch.dapui_config = function()
+  vim.cmd "NvimTreeClose"
   dapui.open()
 end
 
 -- close Dap UI with :DapCloseUI
 vim.keymap.set("n", "<leader>dw", function()
-  require("dapui").toggle()
-end, { desc = "debug toggle view" })
+  dapui.close()
+  vim.cmd "NvimTreeOpen"
+end, { desc = "debug close view" })
+
+vim.keymap.set("n", "<leader>dd", function()
+  dapui.open()
+  vim.cmd "NvimTreeClose"
+end, { desc = "debug close view" })
 
 -- debug evaluation
 vim.keymap.set({ "n", "v" }, "<leader>de", function()
-  require("dapui").eval()
+  dapui.eval()
 end, { desc = "debug evaluate on caret" })
 
 vim.keymap.set("n", "<leader>dee", function()
-  require("dapui").eval(vim.fn.input "Expression to evaluate: ")
+  dapui.eval(vim.fn.input "Expression to evaluate: ")
 end, { desc = "debug evaluate input" })
