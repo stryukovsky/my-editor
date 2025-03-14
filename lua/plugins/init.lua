@@ -49,7 +49,7 @@ return {
       {
         "j-hui/fidget.nvim",
         opts = {},
-      }
+      },
     },
     ft = { "scala", "sbt", "java" },
     opts = function()
@@ -92,13 +92,21 @@ return {
       })
     end,
   },
-  -- {
-  -- 	"nvim-treesitter/nvim-treesitter",
-  -- 	opts = {
-  -- 		ensure_installed = {
-  -- 			"vim", "lua", "vimdoc",
-  --      "html", "css"
-  -- 		},
-  -- 	},
-  -- },
+  {
+    "nvim-treesitter/nvim-treesitter",
+    opts = {
+      ensure_installed = {
+        "vim",
+        "lua",
+        "vimdoc",
+        "html",
+        "css",
+        "javascript",
+        "typescript",
+        "go",
+        "scala",
+        "java",
+      },
+    },
+  },
 }

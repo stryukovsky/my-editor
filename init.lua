@@ -37,3 +37,4 @@ vim.schedule(function()
 end)
 
 require('dap-go').setup()
+
