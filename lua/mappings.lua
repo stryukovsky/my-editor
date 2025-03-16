@@ -7,7 +7,7 @@ local unset = vim.keymap.del
 local dap, dapui = require "dap", require "dapui"
 local term = require "nvchad.term"
 local telescope_builtin = require "telescope.builtin"
-
+local neoscroll = require "neoscroll"
 -- unset nvchad shortcuts
 unset({ "n"}, "<leader>h")
 unset({ "n"}, "<leader>v")
@@ -32,8 +32,8 @@ end, { desc = "buffer goto prev" })
 -- navigate in code
 map({ "n", "v" }, "<A-Left>", "b")
 map({ "n", "v" }, "<A-Right>", "w")
-map({ "n", "v" }, "<A-Up>", "5k")
-map({ "n", "v" }, "<A-Down>", "5j")
+map({ "n", "v" }, "<A-Up>", function() neoscroll.scroll(-0.1, { move_cursor=true; duration = 70 }) end)
+map({ "n", "v" }, "<A-Down>", function() neoscroll.scroll(0.1, { move_cursor=true; duration = 70 }) end)
 
 -- save
 map("n", "<leader>s", ":w<cr>", { desc = "save file" })

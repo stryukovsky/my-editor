@@ -108,5 +108,8 @@ return {
         "java",
       },
     },
-  },
+  },{
+  "karb94/neoscroll.nvim",
+  opts = {},
+}
 }
