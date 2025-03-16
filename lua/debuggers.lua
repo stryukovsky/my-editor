@@ -12,7 +12,7 @@ dap.adapters["pwa-node"] = {
   command = "",
 }
 
--- javascript
+-- javascript 
 dap.configurations.javascript = {
   {
     type = "pwa-node",
