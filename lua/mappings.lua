@@ -239,7 +239,7 @@ map("n", "<leader>u", function()
   telescope.extensions.undo.undo()
 end)
 
-require("telescope").setup({
+require("telescope").setup {
   extensions = {
     undo = {
       mappings = {
@@ -256,4 +256,14 @@ require("telescope").setup({
       },
     },
   },
-})
+}
+
+-- gitsigns
+map("n", "<leader>ghr", "<cmd>Gitsigns reset_hunk<cr>", { desc = "git hunk reset" })
+map("n", "<leader>ghs", "<cmd>Gitsigns select_hunk<cr>", { desc = "git hunk select" })
+map("n", "<leader>ghp", "<cmd>Gitsigns preview_hunk_inline<cr>", { desc = "git hunk preview" })
+
+map("n", "<leader>gs", "<cmd>Gitsigns stage_buffer<cr>", { desc = "git stage buffer" })
+map("n", "<leader>gR", "<cmd>Gitsigns reset_buffer<cr>", { desc = "git reset buffer" })
+map("n", "<leader>gB", "<cmd>Gitsigns blame<cr>", {desc = "git blame buffer"})
+map("n", "<leader>gb", "<cmd>Gitsigns blame_line<cr>", {desc = "git blame line"})
