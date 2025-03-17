@@ -23,6 +23,42 @@ return {
   },
 
   {
+    "nvim-telescope/telescope.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "debugloop/telescope-undo.nvim",
+    },
+    config = function()
+      require("telescope").setup {
+        -- the rest of your telescope config goes here
+        defaults = {
+          prompt_prefix = "   ",
+          selection_caret = " ",
+          entry_prefix = " ",
+          sorting_strategy = "ascending",
+          layout_config = {
+            horizontal = {
+              prompt_position = "top",
+              preview_width = 0.55,
+            },
+            width = 0.87,
+            height = 0.80,
+          },
+          mappings = {
+            n = { ["q"] = require("telescope.actions").close },
+          },
+        },
+        extensions_list = { "themes", "terms", "undo" },
+        extensions = {
+          undo = {
+            -- telescope-undo.nvim config, see below
+          },
+        },
+      }
+    end,
+  },
+
+  {
     "folke/lazydev.nvim",
     ft = "lua", -- only load on lua files
     opts = {
@@ -114,9 +150,6 @@ return {
     opts = {},
   },
   {
-    'booperlv/nvim-gomove'
+    "booperlv/nvim-gomove",
   },
-  {
-  "debugloop/telescope-undo.nvim",
-  }
 }

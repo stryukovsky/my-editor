@@ -48,8 +48,6 @@ require("gomove").setup {
   move_past_end_col = false,
 }
 
-require("telescope").load_extension("undo")
-
 require("dapui").setup {
   controls = {
     element = "repl",
@@ -132,4 +130,3 @@ require("dapui").setup {
     max_value_lines = 100,
   },
 }
-

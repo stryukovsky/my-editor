@@ -5,10 +5,10 @@ require "nvchad.mappings"
 local map = vim.keymap.set
 local unset = vim.keymap.del
 local dap, dapui = require "dap", require "dapui"
-local term = require "nvchad.term"
 local telescope_builtin = require "telescope.builtin"
 local neoscroll = require "neoscroll"
 local telescope = require "telescope"
+
 -- unset nvchad shortcuts
 unset({ "n" }, "<leader>h")
 unset({ "n" }, "<leader>v")
@@ -232,23 +232,21 @@ map({ "n", "v", "t" }, "<A-w>", "<C-W>k", { desc = "switch window up" })
 
 map({ "n", "v", "t" }, "+", "<C-W>3>", { desc = "increase window width" })
 map({ "n", "v", "t" }, "_", "<C-W>3<", { desc = "decrease window width" })
+
 -- telescope extensions
 -- undo
 map("n", "<leader>u", function()
   telescope.extensions.undo.undo()
 end)
 
-telescope.setup {
+require("telescope").setup({
   extensions = {
     undo = {
       mappings = {
         i = {
-          ["<C-cr>"] = require("telescope-undo.actions").yank_additions,
-          ["<S-cr>"] = require("telescope-undo.actions").yank_deletions,
-          ["<cr>"] = require("telescope-undo.actions").restore,
-          -- alternative defaults, for users whose terminals do questionable things with modified <cr>
-          ["<C-y>"] = require("telescope-undo.actions").yank_deletions,
-          ["<C-r>"] = require("telescope-undo.actions").restore,
+          ["<A-y>"] = require("telescope-undo.actions").yank_additions,
+          ["<A-Y>"] = require("telescope-undo.actions").yank_deletions,
+          ["<A-r>"] = require("telescope-undo.actions").restore,
         },
         n = {
           ["y"] = require("telescope-undo.actions").yank_additions,
@@ -258,4 +256,4 @@ telescope.setup {
       },
     },
   },
-}
+})
