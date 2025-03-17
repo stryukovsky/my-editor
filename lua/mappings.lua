@@ -8,9 +8,12 @@ local dap, dapui = require "dap", require "dapui"
 local term = require "nvchad.term"
 local telescope_builtin = require "telescope.builtin"
 local neoscroll = require "neoscroll"
+local telescope = require "telescope"
 -- unset nvchad shortcuts
-unset({ "n"}, "<leader>h")
-unset({ "n"}, "<leader>v")
+unset({ "n" }, "<leader>h")
+unset({ "n" }, "<leader>v")
+unset({ "n" }, "<C-s>")
+unset({ "n" }, "<C-w>")
 
 -- tabs navigation
 map("n", "<leader><Right>", function()
@@ -32,8 +35,12 @@ end, { desc = "buffer goto prev" })
 -- navigate in code
 map({ "n", "v" }, "<A-Left>", "b")
 map({ "n", "v" }, "<A-Right>", "w")
-map({ "n", "v" }, "<A-Up>", function() neoscroll.scroll(-0.1, { move_cursor=true; duration = 70 }) end)
-map({ "n", "v" }, "<A-Down>", function() neoscroll.scroll(0.1, { move_cursor=true; duration = 70 }) end)
+map({ "n", "v" }, "<A-Up>", function()
+  neoscroll.scroll(-0.1, { move_cursor = true, duration = 70 })
+end)
+map({ "n", "v" }, "<A-Down>", function()
+  neoscroll.scroll(0.1, { move_cursor = true, duration = 70 })
+end)
 
 -- save
 map("n", "<leader>s", ":w<cr>", { desc = "save file" })
@@ -142,89 +149,6 @@ map("n", "<leader>b", function()
   require("dap").toggle_breakpoint()
 end, { desc = "debug toggle breakpoint" })
 
-dapui.setup {
-  controls = {
-    element = "repl",
-    enabled = true,
-    icons = {
-      disconnect = "",
-      pause = "",
-      play = "",
-      run_last = "",
-      step_back = "",
-      step_into = "",
-      step_out = "",
-      step_over = "",
-      terminate = "",
-    },
-  },
-  element_mappings = {},
-  expand_lines = true,
-  floating = {
-    border = "single",
-    mappings = {
-      close = { "q", "<Esc>" },
-    },
-  },
-  force_buffers = true,
-  icons = {
-    collapsed = "",
-    current_frame = "",
-    expanded = "",
-  },
-  layouts = {
-    {
-      elements = {
-        {
-          id = "scopes",
-          size = 0.40,
-        },
-        {
-          id = "stacks",
-          size = 0.35,
-        },
-        {
-          id = "breakpoints",
-          size = 0.25,
-        },
-        -- {
-        --   id = "watches",
-        --   size = 0.25,
-        --   enabled = false
-        -- },
-      },
-      position = "left",
-      size = 40,
-    },
-    {
-      elements = {
-        -- {
-        --   id = "repl",
-        --   size = 0.5,
-        -- },
-        {
-          id = "repl",
-          size = 1,
-        },
-      },
-      position = "bottom",
-      size = 15,
-    },
-  },
-  mappings = {
-    edit = "e",
-    expand = { "<CR>", "<2-LeftMouse>" },
-    open = "o",
-    remove = "d",
-    repl = "r",
-    toggle = "t",
-  },
-  render = {
-    indent = 1,
-    max_value_lines = 100,
-  },
-}
-
 -- open Dap UI automatically when debug starts
 dap.listeners.before.attach.dapui_config = function()
   vim.cmd "NvimTreeClose"
@@ -288,3 +212,50 @@ end, { desc = "lsp inspections on current buffer" })
 map("n", "<leader>lP", function()
   telescope_builtin.diagnostics {}
 end, { desc = "lsp inspections on all" })
+
+-- block of code moving
+map("n", "<S-Left>", "<Plug>GoNSMLeft", {})
+map("n", "<S-Down>", "<Plug>GoNSMDown", {})
+map("n", "<S-Up>", "<Plug>GoNSMUp", {})
+map("n", "<S-Right>", "<Plug>GoNSMRight", {})
+
+map("x", "<S-Left>", "<Plug>GoVSMLeft", {})
+map("x", "<S-Down>", "<Plug>GoVSMDown", {})
+map("x", "<S-Up>", "<Plug>GoVSMUp", {})
+map("x", "<S-Right>", "<Plug>GoVSMRight", {})
+
+-- windows focus move
+map({ "n", "v", "t" }, "<A-a>", "<C-W>h", { desc = "switch window left" })
+map({ "n", "v", "t" }, "<A-d>", "<C-W>l", { desc = "switch window right" })
+map({ "n", "v", "t" }, "<A-s>", "<C-W>j", { desc = "switch window down" })
+map({ "n", "v", "t" }, "<A-w>", "<C-W>k", { desc = "switch window up" })
+
+map({ "n", "v", "t" }, "+", "<C-W>3>", { desc = "increase window width" })
+map({ "n", "v", "t" }, "_", "<C-W>3<", { desc = "decrease window width" })
+-- telescope extensions
+-- undo
+map("n", "<leader>u", function()
+  telescope.extensions.undo.undo()
+end)
+
+telescope.setup {
+  extensions = {
+    undo = {
+      mappings = {
+        i = {
+          ["<C-cr>"] = require("telescope-undo.actions").yank_additions,
+          ["<S-cr>"] = require("telescope-undo.actions").yank_deletions,
+          ["<cr>"] = require("telescope-undo.actions").restore,
+          -- alternative defaults, for users whose terminals do questionable things with modified <cr>
+          ["<C-y>"] = require("telescope-undo.actions").yank_deletions,
+          ["<C-r>"] = require("telescope-undo.actions").restore,
+        },
+        n = {
+          ["y"] = require("telescope-undo.actions").yank_additions,
+          ["Y"] = require("telescope-undo.actions").yank_deletions,
+          ["u"] = require("telescope-undo.actions").restore,
+        },
+      },
+    },
+  },
+}

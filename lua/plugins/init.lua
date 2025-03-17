@@ -108,8 +108,15 @@ return {
         "java",
       },
     },
-  },{
-  "karb94/neoscroll.nvim",
-  opts = {},
-}
+  },
+  {
+    "karb94/neoscroll.nvim",
+    opts = {},
+  },
+  {
+    'booperlv/nvim-gomove'
+  },
+  {
+  "debugloop/telescope-undo.nvim",
+  }
 }
