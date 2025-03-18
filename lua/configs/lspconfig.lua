@@ -51,3 +51,4 @@ lspconfig.golangci_lint_ls.setup {
 
 }
 
+lspconfig.rust_analyzer.setup{}

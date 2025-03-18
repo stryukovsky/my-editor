@@ -36,7 +36,8 @@ vim.schedule(function()
   require "mappings"
 end)
 
-require('dap-go').setup()
+require("dap-go").setup()
+
 require("gomove").setup {
   -- whether or not to map default key bindings, (true/false)
   map_defaults = false,
