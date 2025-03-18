@@ -275,6 +275,6 @@ map("n", "<leader>gC", function()
     print ""
     return
   end
-  os.execute("git commit -m \"" .. message .. "\"")
+  vim.fn.system("git commit -m \"" .. message .. "\"")
 end, { desc = "git commit staged" })
 
