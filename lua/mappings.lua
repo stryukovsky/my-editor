@@ -282,6 +282,11 @@ map("n", "<leader>gP", function()
   vim.fn.system('git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD) ')
 end, { desc = "git push" })
 
+
+map("n", "<leader>gS", function()
+  vim.fn.system('git add .')
+end, { desc = "git stage all changes" })
+
 -- nvimtree
 map("n", "<leader>a", "<cmd>NvimTreeFindFile<cr>", { desc = "nvimtree find current file" })
 
