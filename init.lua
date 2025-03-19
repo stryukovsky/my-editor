@@ -131,3 +131,8 @@ require("dapui").setup {
     max_value_lines = 100,
   },
 }
+
+require("render-markdown").setup {
+  file_types = { "markdown", "quarto" },
+}
+

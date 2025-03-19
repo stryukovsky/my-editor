@@ -48,7 +48,9 @@ lspconfig.golangci_lint_ls.setup {
       completeUnimported = true,
     },
   },
-
 }
 
-lspconfig.rust_analyzer.setup{}
+lspconfig.rust_analyzer.setup {}
+
+require("java").setup()
+require("lspconfig").jdtls.setup {}

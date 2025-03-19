@@ -87,7 +87,7 @@ return {
         opts = {},
       },
     },
-    ft = { "scala", "sbt", "java" },
+    ft = { "scala", "sbt" },
     opts = function()
       local metals_config = require("metals").bare_config()
 
@@ -151,5 +151,59 @@ return {
   },
   {
     "booperlv/nvim-gomove",
+  },
+  {
+    "MeanderingProgrammer/render-markdown.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter" }, -- if you use the mini.nvim suite
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+    ---@module 'render-markdown'
+    ---@type render.md.UserConfig
+    opts = {},
+  },
+  {
+    "nvim-java/nvim-java",
+    config = false,
+    dependencies = {
+      {
+        "neovim/nvim-lspconfig",
+        opts = {
+          servers = {
+            -- Your JDTLS configuration goes here
+            jdtls = {
+              -- settings = {
+              --   java = {
+              --     configuration = {
+              --       runtimes = {
+              --         {
+              --           name = "JavaSE-23",
+              --           path = "/usr/local/sdkman/candidates/java/23-tem",
+              --         },
+              --       },
+              --     },
+              --   },
+              -- },
+            },
+          },
+          setup = {
+            jdtls = function()
+              -- Your nvim-java configuration goes here
+              require("java").setup {
+                -- root_markers = {
+                --   "settings.gradle",
+                --   "settings.gradle.kts",
+                --   "pom.xml",
+                --   "build.gradle",
+                --   "mvnw",
+                --   "gradlew",
+                --   "build.gradle",
+                --   "build.gradle.kts",
+                -- },
+              }
+            end,
+          },
+        },
+      },
+    },
   },
 }

@@ -62,3 +62,8 @@ colorscheme
 
 
 reindent
+url
+sha512
+npmjs
+utf
+bufferutil
