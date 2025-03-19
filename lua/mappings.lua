@@ -280,7 +280,7 @@ end, { desc = "git commit staged" })
 
 map("n", "<leader>gP", function()
   vim.fn.system('git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD) ')
-end, { desc = "git commit staged" })
+end, { desc = "git push" })
 
 -- nvimtree
 map("n", "<leader>a", "<cmd>NvimTreeFindFile<cr>", { desc = "nvimtree find current file" })
