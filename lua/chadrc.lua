@@ -4,9 +4,9 @@
 
 ---@type ChadrcConfig
 local M = {}
-require "debuggers"
+require "configs.debuggers"
 M.base46 = {
-  theme = "chadracula",
+  theme = "default-dark",
 
   hl_override = {
     Comment = { italic = true },
