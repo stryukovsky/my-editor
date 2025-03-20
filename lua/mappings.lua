@@ -277,10 +277,12 @@ map("n", "<leader>gC", function()
     return
   end
   vim.fn.system('git commit -m "' .. message .. '"')
+  print ""
 end, { desc = "git commit staged" })
 
 map("n", "<leader>gP", function()
-  vim.fn.system "git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD) "
+  local response = vim.fn.system "git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD) "
+  print(response)
 end, { desc = "git push" })
 
 map("n", "<leader>gS", function()
@@ -301,7 +303,7 @@ map("n", "<leader>tt", function()
   print(response)
 end, { desc = "terminal single command" })
 
--- multi cursor 
+-- multi cursor
 -- Add or skip cursor above/below the main cursor.
 map({ "n", "x" }, "<S-A-Up>", function()
   mc.lineAddCursor(-1)

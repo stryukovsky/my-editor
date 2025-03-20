@@ -50,6 +50,8 @@ lspconfig.golangci_lint_ls.setup {
   },
 }
 
+lspconfig.sqls.setup{}
+
 lspconfig.rust_analyzer.setup {}
 
 require("java").setup()
