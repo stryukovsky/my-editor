@@ -1,6 +1,6 @@
 require("dapui").setup {
   controls = {
-    element = "repl",
+    element = "breakpoints",
     enabled = true,
     icons = {
       disconnect = "",
@@ -54,13 +54,13 @@ require("dapui").setup {
     },
     {
       elements = {
-        -- {
-        --   id = "repl",
-        --   size = 0.5,
-        -- },
         {
           id = "repl",
           size = 1,
+        },
+        {
+          id = "console",
+          size = 0.01,
         },
       },
       position = "bottom",
@@ -73,7 +73,7 @@ require("dapui").setup {
     open = "o",
     remove = "d",
     repl = "r",
-    toggle = "t",
+    toggle = "<leader>t",
   },
   render = {
     indent = 1,
