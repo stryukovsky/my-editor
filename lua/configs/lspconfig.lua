@@ -55,4 +55,6 @@ lspconfig.jsonls.setup{}
 lspconfig.rust_analyzer.setup {}
 
 require("java").setup()
-require("lspconfig").jdtls.setup {}
+lspconfig.jdtls.setup {}
+lspconfig.bashls.setup{}
+lspconfig.solidity_ls_nomicfoundation.setup{}

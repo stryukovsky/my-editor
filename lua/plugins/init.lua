@@ -151,6 +151,10 @@ return {
         "go",
         "scala",
         "java",
+        "sql",
+        "dockerfile",
+        "solidity",
+        "rust"
       },
     },
   },
