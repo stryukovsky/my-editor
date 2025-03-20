@@ -230,4 +230,8 @@ return {
       require("dbee").setup(--[[optional config]])
     end,
   },
+  {
+    "jake-stewart/multicursor.nvim",
+    branch = "1.0",
+  },
 }
