@@ -82,3 +82,14 @@ hl(0, "MultiCursorMatchPreview", { link = "Search" })
 hl(0, "MultiCursorDisabledCursor", { link = "Visual" })
 hl(0, "MultiCursorDisabledVisual", { link = "Visual" })
 hl(0, "MultiCursorDisabledSign", { link = "SignColumn" })
+
+
+-- show nvdash when all buffers closed
+vim.api.nvim_create_autocmd("BufDelete", {
+  callback = function()
+    local bufs = vim.t.bufs
+    if #bufs == 1 and vim.api.nvim_buf_get_name(bufs[1]) == "" then
+      vim.cmd "Nvdash"
+    end
+  end,
+})

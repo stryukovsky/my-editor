@@ -16,6 +16,12 @@ unset({ "n" }, "<leader>v")
 unset({ "n" }, "<C-s>")
 unset({ "n" }, "<C-w>")
 
+-- terminal 
+--
+map({ "n", "t" }, "<A-t>", function()
+  require("nvchad.term").toggle { pos = "float", id = "floatTerm" }
+end, { desc = "terminal toggle floating term" })
+
 -- tabs navigation
 map("n", "<leader><Right>", function()
   require("nvchad.tabufline").next()
@@ -291,17 +297,6 @@ end, { desc = "git stage all changes" })
 
 -- nvimtree
 map("n", "<leader>a", "<cmd>NvimTreeFindFile<cr>", { desc = "nvimtree find current file" })
-
--- single terminal command
-map("n", "<leader>tt", function()
-  local command = tostring(vim.fn.input "Input command: ")
-  if command == "" then
-    print ""
-    return
-  end
-  local response = vim.fn.system(command)
-  print(response)
-end, { desc = "terminal single command" })
 
 -- multi cursor
 -- Add or skip cursor above/below the main cursor.
