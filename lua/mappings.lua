@@ -279,12 +279,11 @@ map("n", "<leader>gC", function()
 end, { desc = "git commit staged" })
 
 map("n", "<leader>gP", function()
-  vim.fn.system('git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD) ')
+  vim.fn.system "git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD) "
 end, { desc = "git push" })
 
-
 map("n", "<leader>gS", function()
-  vim.fn.system('git add .')
+  vim.fn.system "git add ."
 end, { desc = "git stage all changes" })
 
 -- nvimtree
@@ -297,5 +296,7 @@ map("n", "<leader>tt", function()
     print ""
     return
   end
-  vim.fn.system(command)
+  local response = vim.fn.system(command)
+  print(response)
 end, { desc = "terminal single command" })
+

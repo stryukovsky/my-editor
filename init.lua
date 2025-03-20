@@ -136,3 +136,16 @@ require("render-markdown").setup {
   file_types = { "markdown", "quarto" },
 }
 
+vim.cmd [[
+:hi link   NvimTreeExecFile            NvimTreeNormal              
+:hi link   NvimTreeImageFile           NvimTreeNormal              
+:hi link   NvimTreeSpecialFile         NvimTreeNormal              
+:hi link   NvimTreeSymlink             NvimTreeNormal              
+:hi   NvimTreeGitDeletedIcon      guifg=#ff0000 
+:hi   NvimTreeGitDirtyIcon        guifg=#ffff00 
+:hi   NvimTreeGitIgnoredIcon      guifg=#b0b0b0
+:hi   NvimTreeGitMergeIcon        guifg=#ffff00
+:hi   NvimTreeGitNewIcon          guifg=#00ff00 
+:hi   NvimTreeGitRenamedIcon      guifg=#ffff00 
+:hi   NvimTreeGitStagedIcon       guifg=#00ffff 
+]]

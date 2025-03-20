@@ -6,7 +6,7 @@
 local M = {}
 require "configs.debuggers"
 M.base46 = {
-  theme = "default-dark",
+  theme = "carbonfox",
 
   hl_override = {
     Comment = { italic = true },
