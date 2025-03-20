@@ -49,88 +49,9 @@ require("gomove").setup {
   move_past_end_col = false,
 }
 
-require("dapui").setup {
-  controls = {
-    element = "repl",
-    enabled = true,
-    icons = {
-      disconnect = "",
-      pause = "",
-      play = "",
-      run_last = "",
-      step_back = "",
-      step_into = "",
-      step_out = "",
-      step_over = "",
-      terminate = "",
-    },
-  },
-  element_mappings = {},
-  expand_lines = true,
-  floating = {
-    border = "single",
-    mappings = {
-      close = { "q", "<Esc>" },
-    },
-  },
-  force_buffers = true,
-  icons = {
-    collapsed = "",
-    current_frame = "",
-    expanded = "",
-  },
-  layouts = {
-    {
-      elements = {
-        {
-          id = "scopes",
-          size = 0.40,
-        },
-        {
-          id = "stacks",
-          size = 0.35,
-        },
-        {
-          id = "breakpoints",
-          size = 0.25,
-        },
-        -- {
-        --   id = "watches",
-        --   size = 0.25,
-        --   enabled = false
-        -- },
-      },
-      position = "left",
-      size = 40,
-    },
-    {
-      elements = {
-        -- {
-        --   id = "repl",
-        --   size = 0.5,
-        -- },
-        {
-          id = "repl",
-          size = 1,
-        },
-      },
-      position = "bottom",
-      size = 15,
-    },
-  },
-  mappings = {
-    edit = "e",
-    expand = { "<CR>", "<2-LeftMouse>" },
-    open = "o",
-    remove = "d",
-    repl = "r",
-    toggle = "t",
-  },
-  render = {
-    indent = 1,
-    max_value_lines = 100,
-  },
-}
+require "configs.debuggers"
+
+require("configs.dapui")
 
 require("render-markdown").setup {
   file_types = { "markdown", "quarto" },
@@ -141,11 +62,12 @@ vim.cmd [[
 :hi link   NvimTreeImageFile           NvimTreeNormal              
 :hi link   NvimTreeSpecialFile         NvimTreeNormal              
 :hi link   NvimTreeSymlink             NvimTreeNormal              
-:hi   NvimTreeGitDeletedIcon      guifg=#ff0000 
-:hi   NvimTreeGitDirtyIcon        guifg=#ffff00 
-:hi   NvimTreeGitIgnoredIcon      guifg=#b0b0b0
-:hi   NvimTreeGitMergeIcon        guifg=#ffff00
-:hi   NvimTreeGitNewIcon          guifg=#00ff00 
-:hi   NvimTreeGitRenamedIcon      guifg=#ffff00 
-:hi   NvimTreeGitStagedIcon       guifg=#00ffff 
+:hi        NvimTreeGitDeletedIcon      guifg=#ff4e33
+:hi link   NvimTreeGitDirtyIcon        PreProc
+:hi link   NvimTreeGitIgnoredIcon      Comment 
+:hi link   NvimTreeGitMergeIcon        PreProc
+:hi        NvimTreeGitNewIcon          guifg=#138808
+:hi link   NvimTreeGitRenamedIcon      PreProc
+:hi link   NvimTreeGitStagedIcon       PreProc 
 ]]
+

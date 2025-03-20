@@ -4,9 +4,8 @@
 
 ---@type ChadrcConfig
 local M = {}
-require "configs.debuggers"
 M.base46 = {
-  theme = "carbonfox",
+  theme = "gatekeeper",
 
   hl_override = {
     Comment = { italic = true },
