@@ -17,5 +17,9 @@ M.ui = {
   tabufline = {
     lazyload = false,
   },
+  statusline = {
+    theme = "vscode_colored",
+    separator_style = "round",
+  },
 }
 return M
