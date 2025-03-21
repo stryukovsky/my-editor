@@ -1,11 +1,36 @@
 # My Editor
+## Prerequisites
+### Install rust
 
-Setup:  
+```shell
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+### Install nvm
+https://github.com/nvm-sh/nvm
+
+Use latest node version `nvm install LATEST_VERSION`
+Run 
+
+```shell
+npm i -g yarn tsx ts-node typescript
+```
+
+### Install golang
+https://go.dev/dl/
+
+### Install coursier
+https://get-coursier.io/docs/cli-installation
+
+### Install SDKMAN
+curl -s "https://get.sdkman.io" | bash
+
+## Setup:  
 
 1) Install NvChad
 2) Make sure it installs initial config
 3) Remove `rm -rf ~/.config/nvim/`
-4) Clone this `https://github.com/stryukovsky/my-editor ~/.config/nvim/`
+4) Clone this `git clone https://github.com/stryukovsky/my-editor ~/.config/nvim/`
 5) Run in nvim command `:MasonInstallAll`
 
 Init mason dependencies:
