@@ -5,7 +5,7 @@
 ---@type ChadrcConfig
 local M = {}
 M.base46 = {
-  theme = "gatekeeper",
+  theme = "ayu_light",
 
   hl_override = {
     Comment = { italic = true },
@@ -21,5 +21,8 @@ M.ui = {
     theme = "vscode_colored",
     separator_style = "round",
   },
+  cmp = {
+    style= "atom"
+  }
 }
 return M
