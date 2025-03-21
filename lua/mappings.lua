@@ -236,8 +236,8 @@ map({ "n", "v", "t" }, "<A-d>", "<C-W>l", { desc = "switch window right" })
 map({ "n", "v", "t" }, "<A-s>", "<C-W>j", { desc = "switch window down" })
 map({ "n", "v", "t" }, "<A-w>", "<C-W>k", { desc = "switch window up" })
 
-map({ "n", "v", "t" }, "+", "<C-W>3>", { desc = "increase window width" })
-map({ "n", "v", "t" }, "_", "<C-W>3<", { desc = "decrease window width" })
+map({ "n", "v", "t" }, "+", "<C-W>3>", { desc = "window width increase" })
+map({ "n", "v", "t" }, "_", "<C-W>3<", { desc = "window width decrease" })
 
 -- telescope extensions
 -- undo
