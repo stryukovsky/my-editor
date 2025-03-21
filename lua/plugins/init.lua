@@ -8,7 +8,7 @@ return {
   -- file managing , picker etc
   {
     "nvim-tree/nvim-tree.lua",
-    cmd = {"NvimTreeOpen", "NvimTreeToggle", "NvimTreeFocus" },
+    cmd = { "NvimTreeOpen", "NvimTreeToggle", "NvimTreeFocus" },
     opts = function()
       return require "configs.nvimtree"
     end,
@@ -154,7 +154,7 @@ return {
         "sql",
         "dockerfile",
         "solidity",
-        "rust"
+        "rust",
       },
     },
   },
@@ -237,5 +237,14 @@ return {
   {
     "jake-stewart/multicursor.nvim",
     branch = "1.0",
+  },
+  {
+    "iamcco/markdown-preview.nvim",
+    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+    build = "cd app && yarn install",
+    init = function()
+      vim.g.mkdp_filetypes = { "markdown" }
+    end,
+    ft = { "markdown" },
   },
 }
