@@ -1,6 +1,7 @@
 dofile(vim.g.base46_cache .. "nvimtree")
 
 local api = require "nvim-tree.api"
+
 local git_add = function()
   local node = api.tree.get_node_under_cursor()
   local gs = node.git_status.file
@@ -24,24 +25,33 @@ local git_add = function()
 end
 
 -- function for left to assign to keybindings
-        local lefty = function ()
-            local node_at_cursor = api.tree.get_node_under_cursor()
-            -- if it's a node and it's open, close
-            if node_at_cursor.nodes and node_at_cursor.open then
-                api.node.open.edit()
-            -- else left jumps up to parent
-            else
-                api.node.navigate.parent()
-            end
-        end
-        -- function for right to assign to keybindings
-        local righty = function ()
-            local node_at_cursor = api.tree.get_node_under_cursor()
-            -- if it's a closed node, open it
-            if node_at_cursor.nodes and not node_at_cursor.open then
-                api.node.open.edit()
-            end
-        end
+local lefty = function()
+  local node_at_cursor = api.tree.get_node_under_cursor()
+  -- if it's a node and it's open, close
+  if node_at_cursor.nodes and node_at_cursor.open then
+    api.node.open.edit()
+    -- else left jumps up to parent
+  else
+    api.node.navigate.parent()
+  end
+end
+
+-- function for right to assign to keybindings
+local righty = function()
+  local node_at_cursor = api.tree.get_node_under_cursor()
+  -- if it's a closed node, open it
+  if node_at_cursor.nodes and not node_at_cursor.open then
+    api.node.open.edit()
+  end
+end
+
+local search_in_node = function()
+  local node_at_cursor = api.tree.get_node_under_cursor()
+  if node_at_cursor.nodes and not node_at_cursor.open then
+      vim.cmd("Telescope live_grep search_dirs=" .. node_at_cursor.absolute_path)
+  end
+end
+
 local function my_on_attach(bufnr)
   local function opts(desc)
     return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
@@ -57,6 +67,7 @@ local function my_on_attach(bufnr)
   vim.keymap.set("n", "r", api.tree.change_root_to_parent, opts "root to parent of current")
   vim.keymap.set("n", "s", git_add, opts "git stage/unstage")
   vim.keymap.set("n", "?", api.tree.toggle_help, opts "Help")
+  vim.keymap.set("n", "f", search_in_node, opts "Help")
 
   api.events.subscribe(api.events.Event.FileCreated, function(file)
     vim.cmd("edit " .. vim.fn.fnameescape(file.fname))
