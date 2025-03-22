@@ -67,7 +67,9 @@ vim.api.nvim_create_autocmd("BufDelete", {
 })
 
 -- disable spell in terminal
-
 vim.cmd("au TermOpen * setlocal nospell")
+
+-- setup tiny-code-actions
+require("configs.tiny-code-action")
 -- at the end, so all highlight rules can be applied
 require("highlight")

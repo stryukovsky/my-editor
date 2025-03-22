@@ -5,7 +5,6 @@ require "nvchad.mappings"
 local map = vim.keymap.set
 local unset = vim.keymap.del
 local dap, dapui = require "dap", require "dapui"
-local telescope_builtin = require "telescope.builtin"
 local neoscroll = require "neoscroll"
 local telescope = require "telescope"
 local mc = require "multicursor-nvim"
@@ -185,38 +184,6 @@ map("n", "<leader>dei", function()
 end, { desc = "debug evaluate input" })
 
 -- lsp interactions
-
-map("n", "<leader>lr", function()
-  telescope_builtin.lsp_references {}
-end, { desc = "lsp references (usages)" })
-
-map("n", "<leader>ltd", function()
-  telescope_builtin.lsp_type_definitions {}
-end, { desc = "lsp type definitions" })
-
-map("n", "<leader>li", function()
-  telescope_builtin.lsp_implementations {}
-end, { desc = "lsp implementations" })
-
-map("n", "<leader>ld", function()
-  telescope_builtin.lsp_definitions {}
-end, { desc = "lsp definitions" })
-
-map("n", "<leader>lci", function()
-  telescope_builtin.lsp_incoming_calls {}
-end, { desc = "lsp show incoming calls" })
-
-map("n", "<leader>lco", function()
-  telescope_builtin.lsp_outgoing_calls {}
-end, { desc = "lsp show outcoming calls" })
-
-map("n", "<leader>lp", function()
-  telescope_builtin.diagnostics { bufnr = 0 }
-end, { desc = "lsp inspections on current buffer" })
-
-map("n", "<leader>lP", function()
-  telescope_builtin.diagnostics {}
-end, { desc = "lsp inspections on all" })
 
 -- block of code moving
 map("n", "<S-Left>", "<Plug>GoNSMLeft", {})
