@@ -1,5 +1,6 @@
 local map = vim.keymap.set
 local telescope_builtin = require "telescope.builtin"
+local nvrenamer = require "configs.nvrenamer"
 
 return function(_, bufnr)
   local function opts(desc)
@@ -30,14 +31,13 @@ return function(_, bufnr)
     telescope_builtin.lsp_outgoing_calls {}
   end, opts "show outcoming calls")
 
-  map("n", "<leader>lp", function()
+  map("n", "<A-p>", function()
     telescope_builtin.diagnostics { bufnr = 0 }
   end, opts "inspections on current buffer")
 
-  local nvrenamer = require "configs.nvrenamer"
   map("n", "<leader>ra", nvrenamer, opts "renamer")
 
-  map("n", "<leader>lP", function()
+  map("n", "<A-P>", function()
     telescope_builtin.diagnostics {}
   end, opts "inspections on all")
 end
