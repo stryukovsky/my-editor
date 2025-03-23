@@ -67,9 +67,28 @@ vim.api.nvim_create_autocmd("BufDelete", {
 })
 
 -- disable spell in terminal
-vim.cmd("au TermOpen * setlocal nospell")
+-- vim.cmd("au TermOpen * setlocal nospell")
+vim.api.nvim_create_autocmd("TermOpen", {
+  callback = function()
+      vim.cmd("setlocal nospell")
+  end
+})
 
 -- setup tiny-code-actions
 require("configs.tiny-code-action")
+
+-- setup oil
+require("configs.oil")
+
+-- open preview in oil by default
+vim.api.nvim_create_autocmd("User", {
+  pattern = "OilEnter",
+  callback = vim.schedule_wrap(function(args)
+    local oil = require("oil")
+    if vim.api.nvim_get_current_buf() == args.data.buf and oil.get_cursor_entry() then
+      oil.open_preview()
+    end
+  end),
+})
 -- at the end, so all highlight rules can be applied
 require("highlight")
