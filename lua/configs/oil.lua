@@ -1,3 +1,14 @@
+-- open preview in oil by default
+vim.api.nvim_create_autocmd("User", {
+  pattern = "OilEnter",
+  callback = vim.schedule_wrap(function(args)
+    local oil = require("oil")
+    if vim.api.nvim_get_current_buf() == args.data.buf and oil.get_cursor_entry() then
+      oil.open_preview()
+    end
+  end),
+})
+
 require("oil").setup({
   -- Oil will take over directory buffers (e.g. `vim .` or `:e src/`)
   -- Set to false if you want some other plugin (e.g. netrw) to open when you edit directories.
