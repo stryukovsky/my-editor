@@ -8,6 +8,7 @@ local dapui = require "dapui"
 map("n", "<A-c>", "<cmd>Telescope git_commits<CR>", { desc = "telescope git commits" })
 map("n", "<A-g>", "<cmd>Telescope git_branches<CR>", { desc = "telescope git branches" })
 map("n", "<A-k>", "<cmd>Telescope git_status<CR>", { desc = "telescope git status" })
+map("n", "<A-u>", "<cmd>Telescope undo<CR>", { desc = "telescope undo tree" })
 
 -- windows focus move
 map({ "n", "v", "t" }, "<A-a>", "<C-W>h", { desc = "switch window left" })

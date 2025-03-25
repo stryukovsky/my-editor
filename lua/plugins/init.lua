@@ -53,14 +53,17 @@ return {
             width = 0.87,
             height = 0.80,
           },
-          mappings = {
-            n = { ["q"] = require("telescope.actions").close },
-          },
+          mappings = require "mappings.telescope.defaults",
         },
         extensions_list = { "themes", "terms", "undo" },
         extensions = {
           undo = {
-            -- telescope-undo.nvim config, see below
+            mappings = require "mappings.telescope.undo",
+          },
+        },
+        pickers = {
+          git_branches = {
+            mappings = require "mappings.telescope.git_branches",
           },
         },
       }
@@ -168,7 +171,7 @@ return {
   {
     "MeanderingProgrammer/render-markdown.nvim",
     -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
-    dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
     ---@module 'render-markdown'
     ---@type render.md.UserConfig
     opts = {},

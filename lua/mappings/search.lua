@@ -66,27 +66,3 @@ map("n", "<leader>ri", function()
   end
 end, { desc = "replace in interval" })
 
--- telescope extensions
--- undo
-map("n", "<leader>u", function()
-  telescope.extensions.undo.undo()
-end)
-
-require("telescope").setup {
-  extensions = {
-    undo = {
-      mappings = {
-        i = {
-          ["<A-y>"] = require("telescope-undo.actions").yank_additions,
-          ["<A-Y>"] = require("telescope-undo.actions").yank_deletions,
-          ["<A-r>"] = require("telescope-undo.actions").restore,
-        },
-        n = {
-          ["y"] = require("telescope-undo.actions").yank_additions,
-          ["Y"] = require("telescope-undo.actions").yank_deletions,
-          ["u"] = require("telescope-undo.actions").restore,
-        },
-      },
-    },
-  },
-}
