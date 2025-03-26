@@ -27,6 +27,7 @@ require "configs.oil"
 require "configs.gomove"
 require "configs.debuggers"
 require "configs.dapui"
+require "configs.lspsaga"
 
 -- at the end, so all highlight rules can be applied
 require "highlight"

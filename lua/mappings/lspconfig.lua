@@ -8,27 +8,23 @@ return function(_, bufnr)
   end
 
   map("n", "<leader>lr", function()
-    telescope_builtin.lsp_references {}
+    vim.cmd("Lspsaga finder")
   end, opts "references (usages)")
 
   map("n", "<leader>ltd", function()
-    telescope_builtin.lsp_type_definitions {}
+    vim.cmd("Lspsaga peek_type_definition")
   end, opts "type definitions")
 
-  map("n", "<leader>li", function()
-    telescope_builtin.lsp_implementations {}
-  end, opts "implementations")
-
   map("n", "<leader>ld", function()
-    telescope_builtin.lsp_definitions {}
+    vim.cmd("Lspsaga peek_definition")
   end, opts "definitions")
 
   map("n", "<leader>lci", function()
-    telescope_builtin.lsp_incoming_calls {}
+    vim.cmd("Lspsaga incoming_calls")
   end, opts "show incoming calls")
 
   map("n", "<leader>lco", function()
-    telescope_builtin.lsp_outgoing_calls {}
+    vim.cmd("Lspsaga outgoing_calls")
   end, opts "show outcoming calls")
 
   map("n", "<A-p>", function()
