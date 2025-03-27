@@ -37,7 +37,7 @@ map("n", "<leader>w", function()
 end, { desc = "close current buffer" })
 
 -- close others
-map("n", "<leader>ww", function()
+map("n", "<leader>W", function()
   require("nvchad.tabufline").closeAllBufs(false)
 end, { desc = "close other buffers" })
 

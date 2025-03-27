@@ -4,7 +4,7 @@ require("nvchad.configs.lspconfig").defaults()
 local lspconfig = require "lspconfig"
 
 -- EXAMPLE
-local lsp_with_default_conf = { "html", "cssls", "ts_ls" }
+local lsp_with_default_conf = { "html", "cssls", "ts_ls", "lua_ls" }
 local nvlsp = require "nvchad.configs.lspconfig"
 
 -- default nvchad mappings are overridden

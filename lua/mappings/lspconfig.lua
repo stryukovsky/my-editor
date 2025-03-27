@@ -8,23 +8,23 @@ return function(_, bufnr)
   end
 
   map("n", "<leader>lr", function()
-    vim.cmd("Lspsaga finder")
+    vim.cmd "Lspsaga finder"
   end, opts "references (usages)")
 
   map("n", "<leader>ltd", function()
-    vim.cmd("Lspsaga peek_type_definition")
+    telescope_builtin.lsp_type_definitions { bufnr = 0 }
   end, opts "type definitions")
 
   map("n", "<leader>ld", function()
-    vim.cmd("Lspsaga peek_definition")
+    telescope_builtin.lsp_definitions { bufnr = 0 }
   end, opts "definitions")
 
   map("n", "<leader>lci", function()
-    vim.cmd("Lspsaga incoming_calls")
+    vim.cmd "Lspsaga incoming_calls"
   end, opts "show incoming calls")
 
   map("n", "<leader>lco", function()
-    vim.cmd("Lspsaga outgoing_calls")
+    vim.cmd "Lspsaga outgoing_calls"
   end, opts "show outcoming calls")
 
   map("n", "<A-p>", function()
@@ -36,4 +36,6 @@ return function(_, bufnr)
   map("n", "<A-P>", function()
     telescope_builtin.diagnostics {}
   end, opts "inspections on all")
+
+  map("n", "K", vim.lsp.buf.signature_help, opts "Show signature help")
 end

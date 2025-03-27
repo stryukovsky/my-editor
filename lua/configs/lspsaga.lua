@@ -4,16 +4,10 @@ lspsaga.setup {
   finder = {
     max_height = 0.6,
     keys = {
-      close = "<Esc>",
+      -- close = "<Esc>",
+      quit = "<Esc>",
       toggle_or_open = "<cr>",
       shuttle = "<Tab>",
-    },
-  },
-  definition = {
-    max_height = 0.6,
-    keys = {
-      close = "<Esc>",
-      edit = "<cr>",
     },
   },
   callhierarchy = {
