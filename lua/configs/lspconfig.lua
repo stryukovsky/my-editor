@@ -4,7 +4,8 @@ require("nvchad.configs.lspconfig").defaults()
 local lspconfig = require "lspconfig"
 
 -- EXAMPLE
-local lsp_with_default_conf = { "html", "cssls", "ts_ls", "lua_ls" }
+local lsp_with_default_conf =
+  { "html", "cssls", "ts_ls", "lua_ls", "sqls", "jsonls", "rust_analyzer", "bashls", "solidity_ls_nomicfoundation" }
 local nvlsp = require "nvchad.configs.lspconfig"
 
 -- default nvchad mappings are overridden
@@ -34,11 +35,9 @@ lspconfig.gopls.setup {
   },
 }
 
-lspconfig.sqls.setup {}
-lspconfig.jsonls.setup {}
-lspconfig.rust_analyzer.setup {}
-
 require("java").setup()
-lspconfig.jdtls.setup {}
-lspconfig.bashls.setup {}
-lspconfig.solidity_ls_nomicfoundation.setup {}
+lspconfig.jdtls.setup {
+  on_attach = override_on_attach,
+  on_init = nvlsp.on_init,
+  capabilities = nvlsp.capabilities,
+}
