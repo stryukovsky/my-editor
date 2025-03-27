@@ -38,4 +38,5 @@ return function(_, bufnr)
   end, opts "inspections on all")
 
   map("n", "K", vim.lsp.buf.signature_help, opts "Show signature help")
+  map("n", "H", vim.lsp.buf.hover, opts "Hover")
 end
