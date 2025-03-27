@@ -9,6 +9,13 @@ lspsaga.setup {
       shuttle = "<Tab>",
     },
   },
+  definition = {
+    max_height = 0.6,
+    keys = {
+      close = "<Esc>",
+      edit = "<cr>",
+    },
+  },
   callhierarchy = {
     keys = {
       close = "<Esc>",
