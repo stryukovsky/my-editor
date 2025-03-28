@@ -3,7 +3,6 @@ require("render-markdown").setup {
 }
 
 require("multicursor-nvim").setup()
-require("diffview").setup()
 
 -- show nvdash when all buffers closed
 vim.api.nvim_create_autocmd("BufDelete", {
@@ -29,6 +28,7 @@ require "configs.gomove"
 require "configs.debuggers"
 require "configs.dapui"
 require "configs.lspsaga"
+require "configs.diffview"
 
 -- at the end, so all highlight rules can be applied
 require "highlight"

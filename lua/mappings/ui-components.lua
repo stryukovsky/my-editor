@@ -9,6 +9,8 @@ map("n", "<A-c>", "<cmd>Telescope git_commits<CR>", { desc = "telescope git comm
 map("n", "<A-g>", "<cmd>Telescope git_branches<CR>", { desc = "telescope git branches" })
 map("n", "<A-k>", "<cmd>Telescope git_status<CR>", { desc = "telescope git status" })
 map("n", "<A-u>", "<cmd>Telescope undo<CR>", { desc = "telescope undo tree" })
+map("n", "<A-f>", "<cmd>Telescope live_grep<CR>", { desc = "telescope search in project" })
+map("n", "<A-h>", "<cmd>DiffviewFileHistory<CR>", { desc = "diffview file history" })
 
 -- windows focus move
 map({ "n", "v", "t" }, "<A-a>", "<C-W>h", { desc = "switch window left" })

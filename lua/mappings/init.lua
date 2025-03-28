@@ -9,6 +9,7 @@ unset({ "n" }, "<C-s>")
 unset({ "n" }, "<C-w>")
 unset({ "n" }, "<leader>wK")
 unset({ "n" }, "<leader>wk")
+unset({ "n", "t" }, "<A-h>")
 
 require "mappings.dap"
 require "mappings.ui-components"
