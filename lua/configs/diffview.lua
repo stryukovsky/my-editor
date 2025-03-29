@@ -37,7 +37,7 @@ require("diffview").setup {
     },
     merge_tool = {
       -- Config for conflicted files in diff views during a merge or rebase.
-      layout = "diff3_horizontal",
+      layout = "diff3_mixed",
       disable_diagnostics = true, -- Temporarily disable diagnostics for diff buffers while in the view.
       winbar_info = true, -- See |diffview-config-view.x.winbar_info|
     },
@@ -98,6 +98,7 @@ require("diffview").setup {
       { "n", "<s-tab>", actions.select_prev_entry, { desc = "Open the diff for the previous file" } },
       { "n", "[F", actions.select_first_entry, { desc = "Open the diff for the first file" } },
       { "n", "]F", actions.select_last_entry, { desc = "Open the diff for the last file" } },
+      { "n", "<A-e>", actions.focus_files, { desc = "Focus files panel" } },
       {
         "n",
         "gf",
@@ -224,6 +225,14 @@ require("diffview").setup {
       { "n", "g?", actions.help { "view", "diff4" }, { desc = "Open the help panel" } },
     },
     file_panel = {
+      {
+        "n",
+        "<Esc>",
+        function()
+          vim.cmd "tabc"
+        end,
+        { desc = "Exit diffview" },
+      },
       {
         "n",
         "j",
@@ -376,6 +385,14 @@ require("diffview").setup {
       },
     },
     file_history_panel = {
+      {
+        "n",
+        "<Esc>",
+        function()
+          vim.cmd "tabc"
+        end,
+        { desc = "Exit diffview" },
+      },
       { "n", "g!", actions.options, { desc = "Open the option panel" } },
       {
         "n",
@@ -399,6 +416,8 @@ require("diffview").setup {
       { "n", "zo", actions.open_fold, { desc = "Expand fold" } },
       { "n", "zc", actions.close_fold, { desc = "Collapse fold" } },
       { "n", "h", actions.close_fold, { desc = "Collapse fold" } },
+      { "n", "<Left>", actions.close_fold, { desc = "Collapse fold" } },
+      { "n", "<Right>", actions.select_entry, { desc = "Open the diff for the selected entry" } },
       { "n", "za", actions.toggle_fold, { desc = "Toggle fold" } },
       { "n", "zR", actions.open_all_folds, { desc = "Expand all folds" } },
       { "n", "zM", actions.close_all_folds, { desc = "Collapse all folds" } },
