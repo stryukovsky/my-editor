@@ -124,6 +124,18 @@ require("diffview").setup {
       },
       {
         "n",
+        "x<Up>",
+        actions.prev_conflict,
+        { desc = "In the merge-tool: jump to the previous conflict" },
+      },
+      {
+        "n",
+        "x<Down>",
+        actions.next_conflict,
+        { desc = "In the merge-tool: jump to the next conflict" },
+      },
+      {
+        "n",
         "<leader>co",
         actions.conflict_choose "ours",
         { desc = "Choose the OURS version of a conflict" },
