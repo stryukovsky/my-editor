@@ -49,5 +49,7 @@ vim.cmd("MasonInstall sqls")
 vim.cmd("MasonInstall stylua")
 vim.cmd("MasonInstall typescript-language-server")
 vim.cmd("MasonInstall bash-language-server")
-vim.cmd("MasonInstall nomicfoundation-solidity-language-server")
+vim.cmd("MasonInstall solidity")
+vim.cmd("MasonInstall solidity-ls")
+vim.cmd("MasonInstall vscode-solidity-server")
 ```

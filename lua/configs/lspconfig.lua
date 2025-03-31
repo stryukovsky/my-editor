@@ -5,7 +5,7 @@ local lspconfig = require "lspconfig"
 
 -- EXAMPLE
 local lsp_with_default_conf =
-  { "html", "cssls", "ts_ls", "lua_ls", "sqls", "jsonls", "rust_analyzer", "bashls", "solidity_ls_nomicfoundation" }
+  { "html", "cssls", "ts_ls", "lua_ls", "sqls", "jsonls", "bashls", "solidity" }
 local nvlsp = require "nvchad.configs.lspconfig"
 
 -- default nvchad mappings are overridden

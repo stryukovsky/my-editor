@@ -12,6 +12,7 @@ map("n", "<A-u>", "<cmd>Telescope undo<CR>", { desc = "telescope undo tree" })
 map("n", "<A-f>", "<cmd>Telescope live_grep<CR>", { desc = "telescope search in project" })
 map("n", "<A-h>", "<cmd>DiffviewFileHistory<CR>", { desc = "diffview file history" })
 map("n", "<A-m>", "<cmd>DiffviewOpen<CR>", { desc = "diffview open merge tool" })
+map("n", "<A-l>", "<cmd>Telescope lsp_document_symbols<CR>", { desc = "telescope structure of file" })
 
 -- windows focus move
 map({ "n", "v", "t" }, "<A-a>", "<C-W>h", { desc = "switch window left" })
