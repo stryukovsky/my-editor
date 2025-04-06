@@ -14,20 +14,6 @@ map(
   { desc = "telescope find all files" }
 )
 
-map("n", "<leader>rr", function()
-  local toReplace = tostring(vim.fn.input "Input string to replace: ")
-  if toReplace == "" then
-    print ""
-    return
-  end
-  local replaceWith = tostring(vim.fn.input "Input new string: ")
-  if replaceWith == "" then
-    print ""
-    return
-  end
-  vim.api.nvim_feedkeys(":%s/" .. toReplace .. "/" .. replaceWith)
-end, { desc = "replace in file" })
-
 map("n", "<leader>ri", function()
   local toReplace = tostring(vim.fn.input "[Interval] Input string to replace: ")
   if toReplace == "" then
@@ -47,7 +33,7 @@ map("n", "<leader>ri", function()
     numbersCount = numbersCount + 1
   end
   if numbersCount == 2 then
-    vim.api.nvim_feedkeys(tostring(numbers[1]) .. "," .. tostring(numbers[2]) .. "s/" .. toReplace .. "/" .. replaceWith .. "/g")
+    vim.cmd(tostring(numbers[1]) .. "," .. tostring(numbers[2]) .. "s/" .. toReplace .. "/" .. replaceWith .. "/g")
   elseif numbersCount == 1 then
     local firstNumber = numbers[1]
     local secondNumberStr =
@@ -60,7 +46,7 @@ map("n", "<leader>ri", function()
         return
       end
     end
-    vim.api.nvim_feedkeys(tostring(numbers[1]) .. "," .. tostring(secondNumber) .. "s/" .. toReplace .. "/" .. replaceWith .. "/g")
+    vim.cmd(tostring(numbers[1]) .. "," .. tostring(secondNumber) .. "s/" .. toReplace .. "/" .. replaceWith .. "/g")
   else
     print "[Interval] Expected two numbers or one number"
   end

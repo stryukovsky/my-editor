@@ -52,4 +52,5 @@ vim.cmd("MasonInstall bash-language-server")
 vim.cmd("MasonInstall solidity")
 vim.cmd("MasonInstall solidity-ls")
 vim.cmd("MasonInstall vscode-solidity-server")
+vim.cmd("MasonInstall pyright")
 ```

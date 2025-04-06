@@ -69,8 +69,8 @@ require("dapui").setup {
   },
   mappings = {
     edit = "e",
-    expand = { "<CR>", "<2-LeftMouse>" },
-    open = "o",
+    expand = { "<CR>", "<2-LeftMouse>", "<Right>", "<Left>" },
+    open = {"<CR>", "o"},
     remove = "d",
     repl = "r",
     toggle = "<leader>t",

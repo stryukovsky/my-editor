@@ -37,6 +37,14 @@ return function(_, bufnr)
     telescope_builtin.diagnostics {}
   end, opts "inspections on all")
 
+  map("n", "<leader>pp", function()
+    vim.cmd("PyrightSetPythonPath " .. vim.fn.input("Provide path to python executable of project: "))
+  end, opts "Set python path")
+
+  map("n", "<leader>pv", function()
+    vim.cmd("PyrightSetPythonPath venv/bin/python")
+  end, opts "Set python to ./venv/bin/python")
+
   map("n", "K", vim.lsp.buf.signature_help, opts "Show signature help")
   map("n", "H", vim.lsp.buf.hover, opts "Hover")
 end
