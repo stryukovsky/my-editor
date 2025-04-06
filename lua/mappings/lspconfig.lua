@@ -38,11 +38,16 @@ return function(_, bufnr)
   end, opts "inspections on all")
 
   map("n", "<leader>pp", function()
-    vim.cmd("PyrightSetPythonPath " .. vim.fn.input("Provide path to python executable of project: "))
+    local path = vim.fn.input("Provide path to python executable of project: ")
+    vim.cmd("PyrightSetPythonPath " .. path)
+    require("dap-python").setup(path)
   end, opts "Set python path")
 
   map("n", "<leader>pv", function()
-    vim.cmd("PyrightSetPythonPath venv/bin/python")
+    local path = "venv/bin/python"
+    vim.fn.system(path .. " -m pip install pydebug")
+    vim.cmd("PyrightSetPythonPath " .. path )
+    require("dap-python").setup(path)
   end, opts "Set python to ./venv/bin/python")
 
   map("n", "K", vim.lsp.buf.signature_help, opts "Show signature help")
