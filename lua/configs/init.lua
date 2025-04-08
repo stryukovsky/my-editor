@@ -29,6 +29,7 @@ require "configs.debuggers"
 require "configs.dapui"
 require "configs.lspsaga"
 require "configs.diffview"
+require "configs.substitute"
 
 -- at the end, so all highlight rules can be applied
 require "highlight"

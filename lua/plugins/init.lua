@@ -286,6 +286,14 @@ return {
     lazy = false, -- This plugin is already lazy
   },
   {
-    "mfussenegger/nvim-dap-python"
+    "mfussenegger/nvim-dap-python",
+  },
+  {
+    "gbprod/substitute.nvim",
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+    },
   },
 }
