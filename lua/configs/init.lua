@@ -30,6 +30,7 @@ require "configs.dapui"
 require "configs.lspsaga"
 require "configs.diffview"
 require "configs.substitute"
+require "configs.neotest"
 
 -- at the end, so all highlight rules can be applied
 require "highlight"

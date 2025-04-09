@@ -13,7 +13,6 @@ require('substitute').setup({
     confirm = false,
     complete_word = false,
     subject = nil,
-    range = "%",
     suffix = "",
     auto_apply = false,
     cursor_position = "end",

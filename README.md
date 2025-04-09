@@ -25,6 +25,10 @@ https://get-coursier.io/docs/cli-installation
 ### Install SDKMAN
 curl -s "https://get.sdkman.io" | bash
 
+### Install bpytop
+
+https://github.com/aristocratos/bpytop  
+
 ## Setup:  
 
 1) Install NvChad
