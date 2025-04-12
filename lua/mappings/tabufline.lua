@@ -18,6 +18,10 @@ map("n", "<S-tab>", function()
   require("nvchad.tabufline").prev()
 end, { desc = "buffer goto prev" })
 
+-- navigate in jumps
+map("n", "<A-[>", "<cmd>pop<cr>", { desc = "jump prev" })
+map("n", "<A-]>", "<cmd>tag<cr>", { desc = "jump next" })
+
 -- navigate in code
 map({ "n", "v" }, "<A-Left>", "b")
 map({ "n", "v" }, "<A-Right>", "w")

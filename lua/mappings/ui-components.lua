@@ -9,6 +9,8 @@ map("n", "<A-g>", "<cmd>Telescope git_branches<CR>", { desc = "telescope git bra
 map("n", "<A-k>", "<cmd>Telescope git_status<CR>", { desc = "telescope git status" })
 map("n", "<A-u>", "<cmd>Telescope undo<CR>", { desc = "telescope undo tree" })
 map("n", "<A-f>", "<cmd>Telescope live_grep<CR>", { desc = "telescope search in project" })
+map("n", "<A-z>", "<cmd>Telescope oldfiles<CR>", { desc = "telescope previously opened files" })
+map("n", "<A-q>", "<cmd>Telescope buffers only_cwd=true<CR>", { desc = "telescope previously opened files" })
 
 local fileHistoryOpened = false
 map("n", "<A-h>", function()

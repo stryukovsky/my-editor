@@ -306,6 +306,8 @@ return {
 
       "nvim-neotest/neotest-go",
       "nvim-neotest/neotest-python",
+      "nvim-neotest/neotest-jest",
+      -- "stevanmilic/neotest-scala",
     },
   },
 }
