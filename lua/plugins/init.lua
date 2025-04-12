@@ -310,4 +310,8 @@ return {
       "stevanmilic/neotest-scala",
     },
   },
+  {
+    "folke/trouble.nvim",
+    cmd = "Trouble",
+  },
 }

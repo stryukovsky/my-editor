@@ -27,15 +27,7 @@ return function(_, bufnr)
     vim.cmd "Lspsaga outgoing_calls"
   end, opts "show outcoming calls")
 
-  map("n", "<A-p>", function()
-    telescope_builtin.diagnostics { bufnr = 0 }
-  end, opts "inspections on current buffer")
-
   map("n", "<leader>ra", nvrenamer, opts "renamer")
-
-  map("n", "<A-P>", function()
-    telescope_builtin.diagnostics {}
-  end, opts "inspections on all")
 
   map("n", "<leader>pp", function()
     local path = vim.fn.input("Provide path to python executable of project: ")

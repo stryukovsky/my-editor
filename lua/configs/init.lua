@@ -31,6 +31,7 @@ require "configs.lspsaga"
 require "configs.diffview"
 require "configs.substitute"
 require "configs.neotest"
+require "configs.trouble"
 
 -- at the end, so all highlight rules can be applied
 require "highlight"
