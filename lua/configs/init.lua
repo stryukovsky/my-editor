@@ -3,6 +3,7 @@ require("render-markdown").setup {
 }
 
 require("multicursor-nvim").setup()
+require("kulala").setup()
 
 -- show nvdash when all buffers closed
 vim.api.nvim_create_autocmd("BufDelete", {

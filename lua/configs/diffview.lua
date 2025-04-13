@@ -237,14 +237,14 @@ require("diffview").setup {
       { "n", "g?", actions.help { "view", "diff4" }, { desc = "Open the help panel" } },
     },
     file_panel = {
-      {
-        "n",
-        "<Esc>",
-        function()
-          vim.cmd "tabc"
-        end,
-        { desc = "Exit diffview" },
-      },
+      -- {
+      --   "n",
+      --   "<Esc>",
+      --   function()
+      --     vim.cmd "tabc"
+      --   end,
+      --   { desc = "Exit diffview" },
+      -- },
       {
         "n",
         "j",
@@ -397,14 +397,14 @@ require("diffview").setup {
       },
     },
     file_history_panel = {
-      {
-        "n",
-        "<Esc>",
-        function()
-          vim.cmd "tabc"
-        end,
-        { desc = "Exit diffview" },
-      },
+      -- {
+      --   "n",
+      --   "<Esc>",
+      --   function()
+      --     vim.cmd "tabc"
+      --   end,
+      --   { desc = "Exit diffview" },
+      -- },
       { "n", "g!", actions.options, { desc = "Open the option panel" } },
       {
         "n",
