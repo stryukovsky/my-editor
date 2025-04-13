@@ -1,5 +1,4 @@
 local map = require "mappings.map"
--- local substitute = require "substitute"
 local range = require "substitute.range"
 
 map("x", "<leader>r", function()
@@ -10,10 +9,6 @@ map("x", "<leader>r", function()
 end, { noremap = true })
 
 map("x", "<leader>R", function()
-  range.word {
-    -- prompt_current_text = true,
-    subject = function(_)
-      return ""
-    end,
-  }
+
+  vim.api.nvim_feedkeys(":s///", "ni", false)
 end, { noremap = true })

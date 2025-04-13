@@ -6,6 +6,7 @@ local unset = vim.keymap.del
 unset({ "n" }, "<leader>h")
 unset({ "n" }, "<leader>v")
 unset({ "n" }, "<C-s>")
+unset({ "n" }, "<A-v>")
 unset({ "n" }, "<C-w>")
 unset({ "n" }, "<leader>wK")
 unset({ "n" }, "<leader>wk")

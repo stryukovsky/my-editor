@@ -44,19 +44,6 @@ map({ "n", "v", "t" }, "<A-w>", "<C-W>k", { desc = "switch window up" })
 map({ "n", "v", "t" }, "+", "<C-W>3>", { desc = "window width increase" })
 map({ "n", "v", "t" }, "_", "<C-W>3<", { desc = "window width decrease" })
 
-local dapui_state_is_opened = false
-
--- toggle dapui
-map("n", "<A-r>", function()
-  if dapui_state_is_opened then
-    dapui.close()
-    vim.cmd "NvimTreeOpen"
-  else
-    dapui.open()
-    vim.cmd "NvimTreeClose"
-  end
-  dapui_state_is_opened = not dapui_state_is_opened
-end, { desc = "debug close view" })
 
 local monitorStarted = false
 map({ "n", "t" }, "<A-i>", function()
@@ -76,7 +63,7 @@ map({ "n", "t" }, "<A-i>", function()
       border = "single",
     },
   }
-end, { desc = "terminal toggle floating term" })
+end, { desc = "system resource inspector" })
 
 -- focus nvimtree
 map({ "n", "t" }, "<A-e>", function()
@@ -87,12 +74,23 @@ end, { desc = "nvimtree focus window" })
 local bottom_component_callback_close = function() end
 local right_component_callback_close = function() end
 
-local function toggle_views(view, opts)
-  if trouble.is_open(view) then
-    trouble.close(view)
+local dapui_state_is_opened = false
+-- toggle dapui
+map("n", "<A-r>", function()
+  if dapui_state_is_opened then
+    dapui.close()
+    vim.cmd "NvimTreeOpen"
   else
+    bottom_component_callback_close()
+    dapui.open()
+    bottom_component_callback_close = function ()
+      dapui_state_is_opened = false
+      dapui.close()
+    end
+    vim.cmd "NvimTreeClose"
   end
-end
+  dapui_state_is_opened = not dapui_state_is_opened
+end, { desc = "debug close view" })
 
 -- neotest
 local neotest_summary_opened = false
@@ -102,6 +100,7 @@ map("n", "<A-t>", function()
   else
     right_component_callback_close()
     right_component_callback_close = function()
+      neotest_summary_opened = false
       neotest.summary.close()
     end
     neotest.summary.open()
@@ -116,6 +115,7 @@ map("n", "<A-T>", function()
   else
     bottom_component_callback_close()
     bottom_component_callback_close = function()
+      neotest_output_opened = false
       neotest.output_panel.close()
     end
     neotest.output_panel.open()
@@ -136,8 +136,30 @@ map("n", "<A-p>", function()
     trouble.open { mode = "diagnostics", focus = true }
   end
 end, { desc = "trouble diagnostics" })
-map("n", "<A-l>", "<cmd>Trouble symbols toggle focus=true<cr>", { desc = "trouble list structure of buffer" })
-map("n", "<A-x>", "<cmd>Trouble lsp toggle focus=false win.position=right<cr>", { desc = "trouble x-ray definitions" })
+
+map("n", "<A-l>", function()
+  if trouble.is_open "symbols" then
+    trouble.close "symbols"
+  else
+    right_component_callback_close()
+    right_component_callback_close = function()
+      trouble.close "symbols"
+    end
+    trouble.open { mode = "symbols", focus = true }
+  end
+end, { desc = "trouble list structure of buffer" }) 
+
+map("n", "<A-x>", function()
+  if trouble.is_open "lsp" then
+    trouble.close "lsp"
+  else
+    right_component_callback_close()
+    right_component_callback_close = function()
+      trouble.close "lsp"
+    end
+    trouble.open { mode = "lsp", focus = false, win = { position = "right" } }
+  end
+end, { desc = "trouble x-ray definitions" })
 
 -- the same stuff but telescope mode
 -- local telescope_builtin = require "telescope.builtin"
