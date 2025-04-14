@@ -3,6 +3,7 @@ local dapui = require "dapui"
 local term = require "nvchad.term"
 local neotest = require "neotest"
 local trouble = require "trouble"
+local kulala = require "kulala"
 
 -- show git history
 map("n", "<A-c>", "<cmd>Telescope git_commits<CR>", { desc = "telescope git commits" })
@@ -13,26 +14,53 @@ map("n", "<A-f>", "<cmd>Telescope live_grep<CR>", { desc = "telescope search in 
 map("n", "<A-z>", "<cmd>Telescope oldfiles<CR>", { desc = "telescope previously opened files" })
 map("n", "<A-q>", "<cmd>Telescope buffers only_cwd=true<CR>", { desc = "telescope previously opened files" })
 
+local dialog_component_callback_close = function() end
+
+local kulala_state_is_opened = false
+map("n", "<A-y>", function()
+  if kulala_state_is_opened then
+    kulala.close()
+  else
+    dialog_component_callback_close()
+    kulala.open()
+    dialog_component_callback_close = function()
+      kulala_state_is_opened = false
+      kulala.close()
+    end
+  end
+  kulala_state_is_opened = not kulala_state_is_opened
+end, { desc = "kulala toggle" })
+
 local fileHistoryOpened = false
 map("n", "<A-h>", function()
   if fileHistoryOpened then
     vim.cmd "tabc"
-    fileHistoryOpened = false
+    dialog_component_callback_close = function() end
   else
+    dialog_component_callback_close()
     vim.cmd "DiffviewFileHistory"
-    fileHistoryOpened = true
+    dialog_component_callback_close = function()
+      fileHistoryOpened = false
+      vim.cmd "tabc"
+    end
   end
+  fileHistoryOpened = not fileHistoryOpened
 end, { desc = "diffview file history" })
 
 local diffViewOpened = false
 map("n", "<A-m>", function()
   if diffViewOpened then
     vim.cmd "tabc"
-    diffViewOpened = false
+    dialog_component_callback_close = function() end
   else
+    dialog_component_callback_close()
+    dialog_component_callback_close = function()
+      diffViewOpened = false
+      vim.cmd "tabc"
+    end
     vim.cmd "DiffviewOpen"
-    diffViewOpened = true
   end
+  diffViewOpened = not diffViewOpened
 end, { desc = "diffview open merge tool" })
 
 -- windows focus move
@@ -43,7 +71,6 @@ map({ "n", "v", "t" }, "<A-w>", "<C-W>k", { desc = "switch window up" })
 
 map({ "n", "v", "t" }, "+", "<C-W>3>", { desc = "window width increase" })
 map({ "n", "v", "t" }, "_", "<C-W>3<", { desc = "window width decrease" })
-
 
 local monitorStarted = false
 map({ "n", "t" }, "<A-i>", function()
@@ -83,7 +110,7 @@ map("n", "<A-r>", function()
   else
     bottom_component_callback_close()
     dapui.open()
-    bottom_component_callback_close = function ()
+    bottom_component_callback_close = function()
       dapui_state_is_opened = false
       dapui.close()
     end
@@ -147,7 +174,7 @@ map("n", "<A-l>", function()
     end
     trouble.open { mode = "symbols", focus = true }
   end
-end, { desc = "trouble list structure of buffer" }) 
+end, { desc = "trouble list structure of buffer" })
 
 map("n", "<A-x>", function()
   if trouble.is_open "lsp" then

@@ -158,7 +158,7 @@ return {
         "dockerfile",
         "solidity",
         "rust",
-        "http"
+        "http",
       },
     },
   },
@@ -317,11 +317,7 @@ return {
   },
   {
     "mistweaverco/kulala.nvim",
-    keys = {
-      { "<leader>hs", desc = "Send request" },
-      { "<leader>ha", desc = "Send all requests" },
-      { "<leader>hb", desc = "Open scratchpad" },
-    },
+    keys = {},
     ft = { "http", "rest" },
     opts = {
       -- your configuration comes here
