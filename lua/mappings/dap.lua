@@ -17,8 +17,12 @@ map("n", "<leader>dp", function()
 end, { desc = "debug pause" })
 
 map("n", "<leader>dk", function()
-  dap.stop()
+  dap.terminate()
 end, { desc = "debug kill" })
+
+map("n", "<leader>dr", function()
+  dap.restart_frame()
+end, { desc = "debug restart current frame" })
 
 map("n", "<leader>do", function()
   dap.step_over()

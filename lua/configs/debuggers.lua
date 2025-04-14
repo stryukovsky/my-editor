@@ -72,10 +72,10 @@ dap.configurations.typescript = {
   {
     type = "pwa-node",
     request = "launch",
-    name = "Launch command",
-    program = "${file}",
+    name = "Launch NPM script",
     cwd = "${workspaceFolder}",
-    runtimeExecutable = inputCommand,
+    runtimeExecutable = "npm",
+    runtimeArgs = { "run", inputCommand },
     skipFiles = { "${workspaceFolder}/node_modules/**" },
   },
   {
