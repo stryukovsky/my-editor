@@ -5,7 +5,7 @@
 ---@class ChadrcConfig
 local M = {}
 M.base46 = {
-  theme = "blossom_light",
+  theme = "github_dark",
 
   hl_override = {
     Comment = { italic = true },
