@@ -23,6 +23,8 @@ vim.api.nvim_create_autocmd("TermOpen", {
   end,
 })
 
+require("nvim-tree").setup(require "configs.nvimtree")
+
 require "configs.tiny-code-action"
 require "configs.oil"
 require "configs.gomove"

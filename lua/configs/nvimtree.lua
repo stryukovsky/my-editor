@@ -67,19 +67,13 @@ local function my_on_attach(bufnr)
   vim.keymap.set("n", "r", api.tree.change_root_to_parent, opts "root to parent of current")
   vim.keymap.set("n", "s", git_add, opts "git stage/unstage")
   vim.keymap.set("n", "?", api.tree.toggle_help, opts "Help")
-  vim.keymap.set("n", "f", search_in_node, opts "Help")
+  vim.keymap.set("n", "f", search_in_node, opts "Search")
 
   api.events.subscribe(api.events.Event.FileCreated, function(file)
     vim.cmd("edit " .. vim.fn.fnameescape(file.fname))
   end)
 end
 
--- pass to setup along with your other options
-require("nvim-tree").setup {
-  ---
-  on_attach = my_on_attach,
-  ---
-}
 return {
   filters = { dotfiles = false, custom = {".git"} },
   disable_netrw = true,
