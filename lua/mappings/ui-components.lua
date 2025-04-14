@@ -44,7 +44,7 @@ map("n", "<A-Y>", function()
     end
   end
   kulala_state_is_opened = not kulala_state_is_opened
-end, { desc = "kulala toggle" })
+end, { desc = "kulala toggle with sending request" })
 
 local fileHistoryOpened = false
 map("n", "<A-h>", function()
