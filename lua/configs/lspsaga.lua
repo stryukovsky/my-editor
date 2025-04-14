@@ -17,4 +17,7 @@ lspsaga.setup {
       shuttle = "<Tab>",
     },
   },
+  lightbulb = {
+    sign = false
+  }
 }

@@ -4,6 +4,7 @@ local term = require "nvchad.term"
 local neotest = require "neotest"
 local trouble = require "trouble"
 local kulala = require "kulala"
+local kulala_ui = require "kulala.ui"
 
 -- show git history
 map("n", "<A-c>", "<cmd>Telescope git_commits<CR>", { desc = "telescope git commits" })
@@ -19,13 +20,27 @@ local dialog_component_callback_close = function() end
 local kulala_state_is_opened = false
 map("n", "<A-y>", function()
   if kulala_state_is_opened then
-    kulala.close()
+    kulala_ui.close_kulala_buffer()
   else
     dialog_component_callback_close()
     kulala.open()
     dialog_component_callback_close = function()
       kulala_state_is_opened = false
-      kulala.close()
+      kulala_ui.close_kulala_buffer()
+    end
+  end
+  kulala_state_is_opened = not kulala_state_is_opened
+end, { desc = "kulala toggle" })
+
+map("n", "<A-Y>", function()
+  if kulala_state_is_opened then
+    kulala_ui.close_kulala_buffer()
+  else
+    dialog_component_callback_close()
+    kulala_ui.open() -- this is key difference - it runs query on cursor
+    dialog_component_callback_close = function()
+      kulala_state_is_opened = false
+      kulala_ui.close_kulala_buffer()
     end
   end
   kulala_state_is_opened = not kulala_state_is_opened
