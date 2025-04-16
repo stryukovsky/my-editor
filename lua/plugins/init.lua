@@ -319,10 +319,7 @@ return {
     "mistweaverco/kulala.nvim",
     keys = {},
     ft = { "http", "rest" },
-    opts = {
-      -- your configuration comes here
-      global_keymaps = true,
-    },
+    opts = {},
   },
   {
     "rmagatti/auto-session",

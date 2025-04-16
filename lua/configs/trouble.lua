@@ -132,7 +132,7 @@ trouble.setup({
         ["not"] = { ft = "lua", kind = "Package" },
         any = {
           -- all symbol kinds for help / markdown files
-          ft = { "help", "markdown" },
+          -- ft = { "help", "markdown" },
           -- default set of symbol kinds
           kind = {
             "Class",
