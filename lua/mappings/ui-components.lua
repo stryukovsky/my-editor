@@ -13,7 +13,7 @@ map("n", "<A-k>", "<cmd>Telescope git_status<CR>", { desc = "telescope git statu
 map("n", "<A-u>", "<cmd>Telescope undo<CR>", { desc = "telescope undo tree" })
 map("n", "<A-f>", "<cmd>Telescope live_grep<CR>", { desc = "telescope search in project" })
 map("n", "<A-z>", "<cmd>Telescope oldfiles<CR>", { desc = "telescope previously opened files" })
-map("n", "<A-v>", "<cmd>Telescope buffers only_cwd=true<CR>", { desc = "telescope previously opened files" })
+map("n", "<leader><leader>", "<cmd>Telescope buffers only_cwd=true<CR>", { desc = "telescope previously opened files" })
 map("n", "<A-j>", "<cmd>TodoTelescope<CR>", { desc = "telescope TODOs" })
 
 local dialog_component_callback_close = function() end
