@@ -147,7 +147,6 @@ map("n", "<A-t>", function()
       neotest.summary.close()
     end
     neotest.summary.open()
-    neotest.summary
   end
   neotest_summary_opened = not neotest_summary_opened
 end, { desc = "Test show summary" })
