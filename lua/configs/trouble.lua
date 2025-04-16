@@ -48,7 +48,6 @@ trouble.setup({
     ["?"] = "help",
     r = "refresh",
     R = "toggle_refresh",
-    q = "close",
     ["<Esc>"] = "close",
     o = "jump_close",
     ["<esc>"] = "cancel",

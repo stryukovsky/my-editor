@@ -10,6 +10,7 @@ unset({ "n" }, "<A-v>")
 unset({ "n" }, "<C-w>")
 unset({ "n" }, "<leader>wK")
 unset({ "n" }, "<leader>wk")
+unset({ "n", "v" }, "<leader>/")
 unset({ "n", "t" }, "<A-h>")
 
 require "mappings.dap"

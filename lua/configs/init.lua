@@ -28,6 +28,8 @@ vim.api.nvim_create_autocmd("TermOpen", {
 })
 
 require("nvim-tree").setup(require "configs.nvimtree")
+require("Comment").setup()
+require("todo-comments").setup()
 
 require "configs.tiny-code-action"
 require "configs.oil"

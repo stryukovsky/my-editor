@@ -48,7 +48,7 @@ end
 local search_in_node = function()
   local node_at_cursor = api.tree.get_node_under_cursor()
   if node_at_cursor.nodes and not node_at_cursor.open then
-      vim.cmd("Telescope live_grep search_dirs=" .. node_at_cursor.absolute_path)
+    vim.cmd("Telescope live_grep search_dirs=" .. node_at_cursor.absolute_path)
   end
 end
 
@@ -64,10 +64,11 @@ local function my_on_attach(bufnr)
   vim.keymap.set("n", "<Left>", lefty, opts "go out")
 
   -- custom mappings
-  vim.keymap.set("n", "r", api.tree.change_root_to_parent, opts "root to parent of current")
+  vim.keymap.set("n", "R", api.tree.change_root_to_parent, opts "root to parent of current")
   vim.keymap.set("n", "s", git_add, opts "git stage/unstage")
   vim.keymap.set("n", "?", api.tree.toggle_help, opts "Help")
   vim.keymap.set("n", "f", search_in_node, opts "Search")
+  vim.keymap.set("n", "r", api.fs.rename_full, opts "Rename")
 
   api.events.subscribe(api.events.Event.FileCreated, function(file)
     vim.cmd("edit " .. vim.fn.fnameescape(file.fname))
@@ -75,7 +76,7 @@ local function my_on_attach(bufnr)
 end
 
 return {
-  filters = { dotfiles = false, custom = {".git"} },
+  filters = { dotfiles = false, custom = { ".git" } },
   disable_netrw = true,
   hijack_cursor = true,
   sync_root_with_cwd = true,

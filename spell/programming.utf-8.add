@@ -28,7 +28,7 @@ luvit
 nvconfig
 ui
 NvChad
-github
+#ithub
 css
 lsps
 config
@@ -133,3 +133,6 @@ https
 https
 https
 cmd
+unstage
+unstaged
+github/!
