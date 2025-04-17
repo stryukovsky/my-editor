@@ -56,7 +56,7 @@ M.ui = {
     order = { "mode", "f", "git", "%=", "lsp_msg", "%=", "lsp", "cwd", "abc" },
     modules = {
       abc = function()
-        return "hi"
+        return ""
       end,
 
       f = "%f",
