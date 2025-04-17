@@ -5,7 +5,7 @@
 ---@class ChadrcConfig
 local M = {}
 M.base46 = {
-  theme = "ayu_light",
+  theme = "flex-light",
 
   hl_override = {
     Comment = { italic = true },
@@ -52,7 +52,15 @@ M.ui = {
   },
   statusline = {
     theme = "vscode_colored",
-    separator_style = "round",
+    separator_style = "arrow",
+    order = { "mode", "f", "git", "%=", "lsp_msg", "%=", "lsp", "cwd", "abc" },
+    modules = {
+      abc = function()
+        return "hi"
+      end,
+
+      f = "%f",
+    },
   },
   cmp = {
     style = "atom",

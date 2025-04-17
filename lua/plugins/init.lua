@@ -247,7 +247,7 @@ return {
     build = "cd app && yarn install",
     init = function()
       vim.g.mkdp_filetypes = { "markdown" }
-      vim.cmd("let g:mkdp_auto_close = 0")
+      vim.cmd "let g:mkdp_auto_close = 0"
       vim.cmd [[let g:mkdp_preview_options = {
     \ 'mkit': {},
     \ 'katex': {},
@@ -344,6 +344,8 @@ return {
     ---@module "auto-session"
     ---@type AutoSession.Config
     opts = {
+      close_unsupported_windows = true, -- Close windows that aren't backed by normal file before autosaving a session
+      use_git_branch = true, -- Include git branch name in session name
       suppressed_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
       -- log_level = 'debug',
     },
