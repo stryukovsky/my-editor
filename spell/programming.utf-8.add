@@ -136,3 +136,9 @@ cmd
 unstage
 unstaged
 github/!
+minio
+postgres
+postgresql
+metastore
+trino
+trinodb
