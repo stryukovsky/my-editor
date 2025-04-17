@@ -247,6 +247,7 @@ return {
     build = "cd app && yarn install",
     init = function()
       vim.g.mkdp_filetypes = { "markdown" }
+      vim.cmd("let g:mkdp_auto_close = 0")
       vim.cmd [[let g:mkdp_preview_options = {
     \ 'mkit': {},
     \ 'katex': {},

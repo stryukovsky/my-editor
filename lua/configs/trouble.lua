@@ -125,6 +125,7 @@ trouble.setup({
     symbols = {
       desc = "document symbols",
       mode = "lsp_document_symbols",
+      multiline = false,
       focus = false,
       win = { position = "right" },
       filter = {
