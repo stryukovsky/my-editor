@@ -36,7 +36,7 @@ return function(_, bufnr)
   end, opts "Set python path")
 
   map("n", "<leader>pv", function()
-    local path = "venv/bin/python"
+    local path = ".venv/bin/python"
     vim.fn.system(path .. " -m pip install pydebug")
     vim.cmd("PyrightSetPythonPath " .. path )
     require("dap-python").setup(path)
