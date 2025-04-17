@@ -19,11 +19,30 @@ npm i -g yarn tsx ts-node typescript
 ### Install golang
 https://go.dev/dl/
 
+Make sure `go` binary is available from your bash
+
 ### Install coursier
-https://get-coursier.io/docs/cli-installation
+https://get-coursier.io/docs/cli-installation  
+
+If needed, change permission to `cs` binary  
+
+Install metals  
+`cs install metals`  
 
 ### Install SDKMAN
-curl -s "https://get.sdkman.io" | bash
+`curl -s "https://get.sdkman.io" | bash`
+
+Install Java version needed
+
+`sdk install java YOUR_VERSION`
+
+### Install pyenv
+
+https://github.com/pyenv/pyenv
+
+Install your python version
+
+`pyenv install YOUR_VERSION`
 
 ### Install bpytop
 
