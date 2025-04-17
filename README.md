@@ -5,9 +5,11 @@
 
 https://github.com/neovim/neovim  
 
-**NOTE**: make sure you installed copy-paste buffer adapter for your desktop environment on Linux systems.  
+NOTE: make sure you installed copy-paste buffer adapter for your desktop environment on Linux systems.  
 
-### Install gcc
+### Install gcc and make
+
+This step mainly depends on platform you are running. Consider install these components using your system package manager.  
 
 ### Install ripgrep
 
