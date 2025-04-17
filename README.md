@@ -1,7 +1,17 @@
 # My Editor
 ## Prerequisites
 
+### Install neovim  
+
+https://github.com/neovim/neovim  
+
+**NOTE**: make sure you installed copy-paste buffer adapter for your desktop environment on Linux systems.  
+
 ### Install gcc
+
+### Install ripgrep
+
+https://github.com/BurntSushi/ripgrep
 
 ### Install rust
 
