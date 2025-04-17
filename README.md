@@ -1,5 +1,8 @@
 # My Editor
 ## Prerequisites
+
+### Install gcc
+
 ### Install rust
 
 ```shell
@@ -9,7 +12,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ### Install nvm
 https://github.com/nvm-sh/nvm
 
-Use latest node version `nvm install LATEST_VERSION`
+Use latest node version `nvm install LATEST_VERSION`  
+
 Run 
 
 ```shell
