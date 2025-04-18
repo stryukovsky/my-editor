@@ -46,6 +46,15 @@ M.nvdash = {
     { txt = "─", hl = "NvDashFooter", no_gap = true, rep = true },
   },
 }
+local function branch_name()
+  local branch = vim.fn.system "git branch --show-current 2> /dev/null | tr -d '\n'"
+  if branch ~= "" then
+    return branch
+  else
+    return ""
+  end
+end
+
 M.ui = {
   tabufline = {
     lazyload = false,
@@ -53,10 +62,10 @@ M.ui = {
   statusline = {
     theme = "vscode_colored",
     separator_style = "arrow",
-    order = { "mode", "f", "git", "%=", "lsp_msg", "%=", "lsp", "cwd", "abc" },
+    order = { "mode", "f", "%=", "lsp_msg", "%=", "lsp", "git_improved", "cwd" },
     modules = {
-      abc = function()
-        return ""
+      git_improved = function()
+        return "  " .. branch_name() .. " "
       end,
 
       f = "%f",

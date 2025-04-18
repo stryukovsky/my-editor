@@ -29,6 +29,8 @@ return function()
       local params = vim.lsp.util.make_position_params()
       params.newName = newName
       vim.lsp.buf_request(0, "textDocument/rename", params)
+      -- save all affected files silently
+      vim.cmd "silent! wa"
     end
   end)
 end
