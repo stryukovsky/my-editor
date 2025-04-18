@@ -13,7 +13,7 @@ M.base46 = {
   },
 }
 M.nvdash = {
-  load_on_startup = true,
+  load_on_startup = false,
   header = {
     "                            ",
     "     ▄▄         ▄ ▄▄▄▄▄▄▄   ",
