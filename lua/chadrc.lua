@@ -5,7 +5,7 @@
 ---@class ChadrcConfig
 local M = {}
 M.base46 = {
-  theme = "ashes",
+  theme = "catppuccin",
 
   hl_override = {
     Comment = { italic = true },
@@ -53,9 +53,9 @@ M.ui = {
     lazyload = false,
   },
   statusline = {
-    theme = "vscode_colored",
-    separator_style = "arrow",
-    order = { "mode", "f", "%=", "lsp_msg", "%=", "lsp", "git_improved", "cwd" },
+    theme = "default",
+    separator_style = "default",
+    order = { "mode", "file", "f", "%=", "lsp_msg", "%=", "diagnostics", "git_improved", "lsp", "cwd", "cursor" },
     modules = {
       git_improved = function()
         local branch = vim.fn.system "git branch --show-current 2> /dev/null | tr -d '\n'"
