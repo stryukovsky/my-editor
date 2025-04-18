@@ -3,25 +3,7 @@ require("render-markdown").setup {
 }
 
 require("multicursor-nvim").setup()
-require("kulala").setup()
-
--- show nvdash when all buffers closed
-vim.api.nvim_create_autocmd("BufDelete", {
-  callback = function()
-    local bufs = vim.t.bufs
-    if #bufs == 1 and vim.api.nvim_buf_get_name(bufs[1]) == "" then
-      vim.cmd "Nvdash"
-    end
-  end,
-})
-
--- disable spell in terminal
--- vim.cmd("au TermOpen * setlocal nospell")
-vim.api.nvim_create_autocmd("TermOpen", {
-  callback = function()
-    vim.cmd "setlocal nospell"
-  end,
-})
+require("kulala").setup(require("configs.kulala"))
 
 require("nvim-tree").setup(require "configs.nvimtree")
 require("Comment").setup()

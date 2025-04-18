@@ -170,3 +170,5 @@ dockerize'd
 timestamp
 bytea
 sha
+autocmd
+nvdash
