@@ -25,18 +25,15 @@ require("lazy").setup({
   { import = "plugins" },
 }, lazy_config)
 
--- show nvimtree on startup
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
     local bufs = vim.t.bufs
     if #bufs == 0 or #bufs == 1 and vim.api.nvim_buf_get_name(bufs[1]) == "" then
       vim.cmd "Nvdash"
     end
-    vim.schedule(function()
-      vim.cmd "NvimTreeOpen"
-    end)
   end,
 })
+
 -- show nvdash when all buffers closed
 vim.api.nvim_create_autocmd("BufDelete", {
   callback = function()

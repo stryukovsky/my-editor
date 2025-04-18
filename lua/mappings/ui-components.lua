@@ -204,6 +204,7 @@ map("n", "<A-x>", function()
   end
 end, { desc = "trouble x-ray definitions" })
 
+map("n", "<A-/>", "<cmd>SessionSearch<cr>", { desc = "open sessions available"})
 -- the same stuff but telescope mode
 -- local telescope_builtin = require "telescope.builtin"
 -- map("n", "<A-p>", function()

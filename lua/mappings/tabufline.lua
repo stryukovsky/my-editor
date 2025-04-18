@@ -47,7 +47,11 @@ end, { desc = "close other buffers" })
 
 -- format file, linter etc
 map("n", "<leader>fm", function()
-  require("conform").format { lsp_fallback = true }
+  require("conform").format({ lsp_fallback = true, async = true }, function(err, did_edit)
+    if did_edit then
+      vim.cmd "w"
+    end
+  end)
 end, { desc = "general format file" })
 
 -- block of code moving

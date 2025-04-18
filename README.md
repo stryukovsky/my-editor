@@ -21,6 +21,13 @@ https://github.com/BurntSushi/ripgrep
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
+Install rustfmt 
+
+```sh
+rustup component add rustfmt
+```
+
+
 ### Install nvm
 https://github.com/nvm-sh/nvm
 
@@ -28,8 +35,14 @@ Use latest node version `nvm install LATEST_VERSION`
 
 Run 
 
-```shell
+```sh
 npm i -g yarn tsx ts-node typescript
+```
+
+Install language server for kulala-ls
+
+```sh
+npm install -g @mistweaverco/kulala-ls
 ```
 
 ### Install golang
@@ -92,4 +105,6 @@ vim.cmd("MasonInstall solidity")
 vim.cmd("MasonInstall solidity-ls")
 vim.cmd("MasonInstall vscode-solidity-server")
 vim.cmd("MasonInstall pyright")
+vim.cmd("MasonInstall goimports")
+vim.cmd("MasonInstall prettier")
 ```

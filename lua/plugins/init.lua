@@ -343,12 +343,7 @@ return {
     ---enables autocomplete for opts
     ---@module "auto-session"
     ---@type AutoSession.Config
-    opts = {
-      close_unsupported_windows = true, -- Close windows that aren't backed by normal file before autosaving a session
-      use_git_branch = true, -- Include git branch name in session name
-      suppressed_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
-      -- log_level = 'debug',
-    },
+    opts = require("configs.autosession"),
   },
   {
     "numToStr/Comment.nvim",
