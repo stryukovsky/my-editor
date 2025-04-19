@@ -25,15 +25,6 @@ require("lazy").setup({
   { import = "plugins" },
 }, lazy_config)
 
-vim.api.nvim_create_autocmd("VimEnter", {
-  callback = function()
-    local bufs = vim.t.bufs
-    if #bufs == 1 and vim.api.nvim_buf_get_name(bufs[1]) == "" then
-      vim.cmd "Nvdash"
-    end
-  end,
-})
-
 -- show nvdash when all buffers closed
 vim.api.nvim_create_autocmd("BufDelete", {
   callback = function()
@@ -45,11 +36,11 @@ vim.api.nvim_create_autocmd("BufDelete", {
 })
 
 -- disable spell in terminal
-vim.api.nvim_create_autocmd("TermOpen", {
-  callback = function()
-    vim.cmd "setlocal nospell"
-  end,
-})
+-- vim.api.nvim_create_autocmd("TermOpen", {
+--   callback = function()
+--     vim.cmd "setlocal nospell"
+--   end,
+-- })
 
 -- load theme
 dofile(vim.g.base46_cache .. "defaults")

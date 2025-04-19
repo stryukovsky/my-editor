@@ -13,6 +13,7 @@ unset({ "n" }, "<leader>wk")
 unset({ "n", "v" }, "<leader>/")
 unset({ "n", "t" }, "<A-h>")
 
+require "mappings.lspconfig"
 require "mappings.dap"
 require "mappings.ui-components"
 require "mappings.search"
@@ -26,3 +27,4 @@ require "mappings.oil"
 require "mappings.substitute"
 require "mappings.neotest"
 require "mappings.markdownpreview"
+require "mappings.neotest"
