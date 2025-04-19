@@ -19,5 +19,9 @@ lspsaga.setup {
   },
   lightbulb = {
     sign = false
+  },
+  rename = {
+    auto_save = true,
+    project_max_width = 0.8
   }
 }

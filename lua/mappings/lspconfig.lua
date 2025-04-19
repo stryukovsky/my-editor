@@ -1,6 +1,5 @@
 local map = vim.keymap.set
 local telescope_builtin = require "telescope.builtin"
-local nvrenamer = require "configs.nvrenamer"
 
 local function opts(desc)
   return { desc = "LSP " .. desc }
@@ -26,10 +25,11 @@ map("n", "<leader>lco", function()
   vim.cmd "Lspsaga outgoing_calls"
 end, opts "show outcoming calls")
 
-map("n", "<leader>ra", nvrenamer, opts "renamer")
+map("n", "<leader>ra", "<cmd>Lspsaga rename<cr>", opts "renamer")
 
 map("n", "<leader>pp", function()
   local path = vim.fn.input "Provide path to python executable of project: "
+  vim.fn.system(path .. " -m pip install pydebug debugpy")
   vim.cmd("PyrightSetPythonPath " .. path)
   require("dap-python").setup(path)
 end, opts "Set python path")
