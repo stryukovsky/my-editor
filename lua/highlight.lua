@@ -21,6 +21,7 @@ hl(0, "NvimTreeGitMergeIcon", { link = "PreProc" })
 hl(0, "NvimTreeGitNewIcon", { fg="#138808" })
 hl(0, "NvimTreeGitRenamedIcon", { link = "PreProc" })
 hl(0, "NvimTreeGitStagedIcon", { link = "PreProc" })
+hl(0, "LspSignatureActiveParameter", { link = "#ffffff" })
 
 -- spell highlight
 hl(0, "SpellRare", {})

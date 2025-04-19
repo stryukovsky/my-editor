@@ -5,6 +5,7 @@ local neotest = require "neotest"
 local trouble = require "trouble"
 local kulala = require "kulala"
 local kulala_ui = require "kulala.ui"
+local new_branch = require "ui.new_branch"
 
 -- show git history
 map("n", "<A-c>", "<cmd>Telescope git_commits<CR>", { desc = "telescope git commits" })
@@ -204,7 +205,7 @@ map("n", "<A-x>", function()
   end
 end, { desc = "trouble x-ray definitions" })
 
-map("n", "<A-/>", "<cmd>SessionSearch<cr>", { desc = "open sessions available"})
+map("n", "<A-/>", "<cmd>SessionSearch<cr>", { desc = "open sessions available" })
 -- the same stuff but telescope mode
 -- local telescope_builtin = require "telescope.builtin"
 -- map("n", "<A-p>", function()
@@ -215,3 +216,8 @@ map("n", "<A-/>", "<cmd>SessionSearch<cr>", { desc = "open sessions available"})
 --   telescope_builtin.diagnostics {}
 -- end, opts "inspections on all")
 -- map("n", "<A-l>", "<cmd>Telescope lsp_document_symbols<CR>", { desc = "telescope structure of file" })
+--
+
+map("n", "<leader>gb", function()
+  new_branch()
+end)
