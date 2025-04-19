@@ -48,6 +48,15 @@ M.nvdash = {
   },
 }
 
+local function shorten(v)
+  local value = tostring(v)
+  if #value > 20 then
+    return value.sub(value, 1, 7) .. "..." .. value.sub(value, #value - 7, #value)
+  else
+    return value
+  end
+end
+
 M.ui = {
   tabufline = {
     lazyload = false,
@@ -58,7 +67,7 @@ M.ui = {
     order = { "mode", "file", "f", "%=", "lsp_msg", "%=", "diagnostics", "git_improved", "lsp", "cwd", "cursor" },
     modules = {
       git_improved = function()
-        local branch = vim.fn.system "git branch --show-current 2> /dev/null | tr -d '\n'"
+        local branch = shorten(vim.fn.system "git branch --show-current 2> /dev/null | tr -d '\n'")
         if branch ~= "" then
           return "  " .. branch .. " "
         else
