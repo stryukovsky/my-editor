@@ -14,14 +14,20 @@ hl(0, "NvimTreeExecFile", { link = "NvimTreeNormal" })
 hl(0, "NvimTreeImageFile", { link = "NvimTreeNormal" })
 hl(0, "NvimTreeSpecialFile", { link = "NvimTreeNormal" })
 hl(0, "NvimTreeSymlink", { link = "NvimTreeNormal" })
-hl(0, "NvimTreeGitDeletedIcon", { fg="#ff4e33" })
+hl(0, "NvimTreeGitDeletedIcon", { fg = "#ff4e33" })
 hl(0, "NvimTreeGitDirtyIcon", { link = "PreProc" })
 hl(0, "NvimTreeGitIgnoredIcon", { link = "Comment" })
 hl(0, "NvimTreeGitMergeIcon", { link = "PreProc" })
-hl(0, "NvimTreeGitNewIcon", { fg="#138808" })
+hl(0, "NvimTreeGitNewIcon", { fg = "#138808" })
 hl(0, "NvimTreeGitRenamedIcon", { link = "PreProc" })
 hl(0, "NvimTreeGitStagedIcon", { link = "PreProc" })
-hl(0, "LspSignatureActiveParameter", { link = "#ffffff" })
+
+-- here LspAttach is used to make sure native vim lsp highlight will not replace this rule
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function()
+    hl(0, "LspSignatureActiveParameter", { link = "DiagnosticInfo", force = true })
+  end,
+})
 
 -- spell highlight
 hl(0, "SpellRare", {})
