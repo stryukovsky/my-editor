@@ -233,9 +233,6 @@ return {
       --    "curl", "wget", "bitsadmin", "go"
       require("dbee").install()
     end,
-    config = function()
-      require("dbee").setup(--[[optional config]])
-    end,
   },
   {
     "jake-stewart/multicursor.nvim",
