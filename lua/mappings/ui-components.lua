@@ -6,6 +6,7 @@ local trouble = require "trouble"
 local kulala = require "kulala"
 local kulala_ui = require "kulala.ui"
 local new_branch = require "ui.new_branch"
+local commit = require "ui.commit"
 
 -- show git history
 map("n", "<A-c>", "<cmd>Telescope git_commits<CR>", { desc = "telescope git commits" })
@@ -220,4 +221,8 @@ map("n", "<A-/>", "<cmd>SessionSearch<cr>", { desc = "open sessions available" }
 
 map("n", "<leader>gb", function()
   new_branch()
-end)
+end, {desc = "git new branch create&checkout"})
+
+map("n", "<leader>gc", function()
+  commit()
+end, {desc = "git commit"})
