@@ -76,7 +76,7 @@ local function my_on_attach(bufnr)
 end
 
 return {
-  filters = { dotfiles = false, custom = { ".git" } },
+  filters = { dotfiles = false, custom = { "^.git$" } },
   disable_netrw = true,
   hijack_cursor = true,
   sync_root_with_cwd = true,
