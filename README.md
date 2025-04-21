@@ -7,7 +7,7 @@ https://github.com/neovim/neovim
 
 NOTE: make sure you installed copy-paste buffer adapter for your desktop environment on Linux systems.  
 
-### Install gcc and make
+### Install gcc, g++ and make
 
 This step mainly depends on platform you are running. Consider install these components using your system package manager.  
 
