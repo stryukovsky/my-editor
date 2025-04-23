@@ -1,4 +1,28 @@
 # My Editor
+Clone this repository:
+
+```sh 
+git clone https://github.com/stryukovsky/my-editor ~/.config/nvim/
+```
+
+In `~/.config/nvim/` run following:  
+
+```sh
+sudo bash setup.fedora.sh
+bash setup.commons.sh
+cp wezterm.lua ~/.wezterm.lua
+cp zsh.fedora.lua ~/.zshrc
+```
+
+Open neovim and run command
+```
+MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter json-lsp lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server solidity solidity-ls vscode-solidity-server pyright goimports prettier
+```
+
+
+
+# Manual Installation
+
 ## Prerequisites
 
 ### Install neovim  
