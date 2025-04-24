@@ -11,7 +11,7 @@ In `~/.config/nvim/` run following:
 sudo bash setup.fedora.sh
 bash setup.commons.sh
 cp wezterm.lua ~/.wezterm.lua
-cp zsh.fedora.lua ~/.zshrc
+cp zsh.fedora.sh ~/.zshrc
 ```
 
 Open neovim and run command
