@@ -1,7 +1,7 @@
 local dap = require "dap"
 
 local function inputCommand()
-  vim.fn.input "Command:"
+  return vim.fn.input "Command:"
 end
 
 -- js/typescript adapter
