@@ -78,8 +78,8 @@ config.keys = {
   },
   {
     key = "w",
-    mods = "CTRL",
-    action = wezterm.action.CloseCurrentTab,
+    mods = terminal_key_mod,
+    action = wezterm.action.CloseCurrentTab { confirm = false },
   },
   {
     key = "LeftArrow",
