@@ -5,6 +5,7 @@ dnf install xz-devel -y
 yum install bzip2-devel -y
 dnf install openssl-devel -y
 dnf install libsqlite3x-devel -y
+dnf install zlib-devel -y
 dnf install golang -y
 dnf install neovim  -y
 dnf install zsh -y
