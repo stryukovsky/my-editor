@@ -1,9 +1,16 @@
 # My Editor
+
+Install wezterm: 
+
+https://wezterm.org/index.html
+
 Clone this repository:
 
 ```sh 
 git clone https://github.com/stryukovsky/my-editor ~/.config/nvim/
 ```
+
+Install font from `fonts/` directory of this repo to your system  
 
 In `~/.config/nvim/` run following:  
 

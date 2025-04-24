@@ -191,3 +191,5 @@ stylua
 vscode
 pyright
 goimports
+rustfmt
+wezterm
