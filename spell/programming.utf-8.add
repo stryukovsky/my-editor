@@ -193,3 +193,4 @@ pyright
 goimports
 rustfmt
 wezterm
+uint

@@ -10,6 +10,7 @@ dnf install golang -y
 dnf install neovim  -y
 dnf install zsh -y
 dnf install fzf -y
+yum install libasan libubsan -y
 
 sudo chown -R $USER /usr/local/lib/
 sudo chown -R $USER /usr/local/bin/
