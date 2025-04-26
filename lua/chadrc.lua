@@ -5,7 +5,7 @@
 ---@class ChadrcConfig
 local M = {}
 M.base46 = {
-  theme = "ashes",
+  theme = "nord",
 
   hl_override = {
     Comment = { italic = true },
@@ -64,7 +64,20 @@ M.ui = {
   statusline = {
     theme = "default",
     separator_style = "default",
-    order = { "mode", "file", "f", "%=", "lsp_msg", "%=", "diagnostics", "git_improved", "lsp", "cwd", "cursor" },
+    order = {
+      "mode",
+      "file",
+      "f",
+      "%=",
+      "lsp_msg",
+      "%=",
+      "diagnostics",
+      "lsp",
+      "git_improved",
+      "cwd",
+      "cursor",
+      "time",
+    },
     modules = {
       git_improved = function()
         local branch = shorten(vim.fn.system "git branch --show-current 2> /dev/null | tr -d '\n'")
@@ -73,6 +86,10 @@ M.ui = {
         else
           return ""
         end
+      end,
+
+      time = function()
+        return vim.fn.strftime "%H:%M"
       end,
 
       f = "%f",
