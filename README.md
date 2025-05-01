@@ -55,6 +55,17 @@ To disable deep color you can add “nvidia-modeset.hdmi_deepcolor=0” to /etc/
 
 Also I don’t know if this can create issues to certain monitors or graphic cards but this fixed it for me.
 
+# Wireguard install
+First try in UI Networks add VPN from file. Note file shall be named as `somestring.conf`.  
+
+If failure:
+
+```sh
+wg-quick up  ~/Documents/vpn.conf
+```
+
+Repeat again interactions with UI.  
+
 ## Manual Installation (instead of usage setup.fedora.sh)
 
 ### Install neovim  

@@ -10,6 +10,7 @@ dnf install fzf -y
 dnf install lcov -y
 yum install libasan libubsan -y
 dnf install make gcc patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel libuuid-devel gdbm-libs libnsl2 -y
+dnf install wireguard-tools -y
 
 sudo chown -R $USER /usr/local/lib/
 sudo chown -R $USER /usr/local/bin/
