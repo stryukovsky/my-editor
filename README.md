@@ -26,11 +26,36 @@ Open neovim and run command
 MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter json-lsp lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server solidity solidity-ls vscode-solidity-server pyright goimports prettier clangd
 ```
 
+# Cuda NVIDIA
+Avante needs llama to be launched: 
+
+```sh
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+You need to install NVIDIA drivers:  
+
+https://rpmfusion.org/Howto/NVIDIA
 
 
-# Manual Installation (instead of setup.fedora.sh)
+```sh
+sudo dnf update -y 
+sudo dnf install akmod-nvidia 
+sudo dnf install xorg-x11-drv-nvidia-cuda 
+```
 
-## Prerequisites
+
+### Known problems with NVidia video drivers:  
+
+Out of range
+
+It seems that there is a problem with HDMI deepcolor which is enabled by default in NVIDIA drivers. Idk if it’s related to higher refresh rates or HDMI versions because changing from 2.0 to 1.4 also solves this (but with the 120hz limitation of 1.4).
+
+To disable deep color you can add “nvidia-modeset.hdmi_deepcolor=0” to /etc/default/grub parameters like this GRUB_CMDLINE_LINUX="<other-parameters> nvidia-modeset.hdmi_deepcolor=0" and then rebuid grub config using grub2-mkconfig.
+
+Also I don’t know if this can create issues to certain monitors or graphic cards but this fixed it for me.
+
+## Manual Installation (instead of usage setup.fedora.sh)
 
 ### Install neovim  
 
@@ -50,3 +75,10 @@ https://github.com/BurntSushi/ripgrep
 
 https://github.com/aristocratos/bpytop  
 
+### Install golang 
+
+https://go.dev/
+
+### Install pyenv build dependencies
+
+https://github.com/pyenv/pyenv/wiki#suggested-build-environment

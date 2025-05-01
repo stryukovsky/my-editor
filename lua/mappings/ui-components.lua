@@ -7,11 +7,11 @@ local kulala = require "kulala"
 local kulala_ui = require "kulala.ui"
 local new_branch = require "ui.new_branch"
 local commit = require "ui.commit"
+local avante = require("avante.api")
 
 -- show git history
 map("n", "<A-c>", "<cmd>Telescope git_commits<CR>", { desc = "telescope git commits" })
 map("n", "<A-g>", "<cmd>Telescope git_branches<CR>", { desc = "telescope git branches" })
-map("n", "<A-k>", "<cmd>Telescope git_status<CR>", { desc = "telescope git status" })
 map("n", "<A-u>", "<cmd>Telescope undo<CR>", { desc = "telescope undo tree" })
 map("n", "<A-f>", "<cmd>Telescope live_grep<CR>", { desc = "telescope search in project" })
 map("n", "<A-z>", "<cmd>Telescope oldfiles<CR>", { desc = "telescope previously opened files" })
@@ -153,6 +153,23 @@ map("n", "<A-t>", function()
   neotest_summary_opened = not neotest_summary_opened
 end, { desc = "Test show summary" })
 
+local avante_state_opened = false
+map({"n", "v", "i"}, "<A-.>", function ()
+  avante.ask()
+  if avante_state_opened then
+    vim.cmd("AvanteToggle")
+  else
+    right_component_callback_close()
+    right_component_callback_close = function()
+      avante_state_opened = false
+      vim.cmd("AvanteToggle")
+    end
+    vim.cmd("AvanteToggle")
+  end
+  avante_state_opened = not avante_state_opened
+end, {desc = "Avante toggle view"})
+
+
 local neotest_output_opened = false
 map("n", "<A-T>", function()
   if neotest_output_opened then
@@ -194,7 +211,8 @@ map("n", "<A-l>", function()
   end
 end, { desc = "trouble list structure of buffer" })
 
-map("n", "<A-x>", function()
+
+map("n", "<A-k>", function()
   if trouble.is_open "lsp" then
     trouble.close "lsp"
   else

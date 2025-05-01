@@ -32,5 +32,6 @@ pyenv global $PYTHON_VERSION
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 curl -L https://foundry.paradigm.xyz | bash
+curl -fsSL https://deno.land/install.sh | sh
 
 nvim
