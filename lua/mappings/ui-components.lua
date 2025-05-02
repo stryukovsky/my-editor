@@ -7,21 +7,22 @@ local kulala = require "kulala"
 local kulala_ui = require "kulala.ui"
 local new_branch = require "ui.new_branch"
 local commit = require "ui.commit"
-local avante = require("avante.api")
+
+local ui_components_modes = {"n", "t", "v", "i"}
 
 -- show git history
-map("n", "<A-c>", "<cmd>Telescope git_commits<CR>", { desc = "telescope git commits" })
-map("n", "<A-g>", "<cmd>Telescope git_branches<CR>", { desc = "telescope git branches" })
-map("n", "<A-u>", "<cmd>Telescope undo<CR>", { desc = "telescope undo tree" })
-map("n", "<A-f>", "<cmd>Telescope live_grep<CR>", { desc = "telescope search in project" })
-map("n", "<A-z>", "<cmd>Telescope oldfiles<CR>", { desc = "telescope previously opened files" })
-map("n", "<leader><leader>", "<cmd>Telescope buffers only_cwd=true<CR>", { desc = "telescope previously opened files" })
-map("n", "<A-j>", "<cmd>TodoTelescope<CR>", { desc = "telescope TODOs" })
+map(ui_components_modes, "<A-c>", "<cmd>Telescope git_commits<CR>", { desc = "telescope git commits" })
+map(ui_components_modes, "<A-g>", "<cmd>Telescope git_branches<CR>", { desc = "telescope git branches" })
+map(ui_components_modes, "<A-u>", "<cmd>Telescope undo<CR>", { desc = "telescope undo tree" })
+map(ui_components_modes, "<A-f>", "<cmd>Telescope live_grep<CR>", { desc = "telescope search in project" })
+map(ui_components_modes, "<A-z>", "<cmd>Telescope oldfiles<CR>", { desc = "telescope previously opened files" })
+map(ui_components_modes, "<leader><leader>", "<cmd>Telescope buffers only_cwd=true<CR>", { desc = "telescope previously opened files" })
+map(ui_components_modes, "<A-j>", "<cmd>TodoTelescope<CR>", { desc = "telescope TODOs" })
 
 local dialog_component_callback_close = function() end
 
 local kulala_state_is_opened = false
-map("n", "<A-y>", function()
+map(ui_components_modes, "<A-y>", function()
   if kulala_state_is_opened then
     kulala_ui.close_kulala_buffer()
   else
@@ -35,7 +36,7 @@ map("n", "<A-y>", function()
   kulala_state_is_opened = not kulala_state_is_opened
 end, { desc = "kulala toggle" })
 
-map("n", "<A-Y>", function()
+map(ui_components_modes, "<A-Y>", function()
   if kulala_state_is_opened then
     kulala_ui.close_kulala_buffer()
   else
@@ -50,7 +51,7 @@ map("n", "<A-Y>", function()
 end, { desc = "kulala toggle with sending request" })
 
 local fileHistoryOpened = false
-map("n", "<A-h>", function()
+map(ui_components_modes , "<A-h>", function()
   if fileHistoryOpened then
     vim.cmd "tabc"
     dialog_component_callback_close = function() end
@@ -66,7 +67,7 @@ map("n", "<A-h>", function()
 end, { desc = "diffview file history" })
 
 local diffViewOpened = false
-map("n", "<A-m>", function()
+map(ui_components_modes, "<A-m>", function()
   if diffViewOpened then
     vim.cmd "tabc"
     dialog_component_callback_close = function() end
@@ -82,16 +83,15 @@ map("n", "<A-m>", function()
 end, { desc = "diffview open merge tool" })
 
 -- windows focus move
-map({ "n", "v", "t" }, "<A-a>", "<C-W>h", { desc = "switch window left" })
-map({ "n", "v", "t" }, "<A-d>", "<C-W>l", { desc = "switch window right" })
-map({ "n", "v", "t" }, "<A-s>", "<C-W>j", { desc = "switch window down" })
-map({ "n", "v", "t" }, "<A-w>", "<C-W>k", { desc = "switch window up" })
-
-map({ "n", "v", "t" }, "+", "<C-W>3>", { desc = "window width increase" })
-map({ "n", "v", "t" }, "_", "<C-W>3<", { desc = "window width decrease" })
+map(ui_components_modes, "<A-a>", "<C-W>h", { desc = "switch window left" })
+map(ui_components_modes, "<A-d>", "<C-W>l", { desc = "switch window right" })
+map(ui_components_modes, "<A-s>", "<C-W>j", { desc = "switch window down" })
+map(ui_components_modes, "<A-w>", "<C-W>k", { desc = "switch window up" })
+map(ui_components_modes, "+", "<C-W>3>", { desc = "window width increase" })
+map(ui_components_modes, "_", "<C-W>3<", { desc = "window width decrease" })
 
 local monitorStarted = false
-map({ "n", "t" }, "<A-i>", function()
+map(ui_components_modes, "<A-i>", function()
   if not monitorStarted then
     monitorStarted = true
   end
@@ -110,8 +110,9 @@ map({ "n", "t" }, "<A-i>", function()
   }
 end, { desc = "system resource inspector" })
 
+
 -- focus nvimtree
-map({ "n", "t" }, "<A-e>", function()
+map(ui_components_modes, "<A-e>", function()
   dapui.close()
   vim.cmd "NvimTreeFocus"
 end, { desc = "nvimtree focus window" })
@@ -121,7 +122,7 @@ local right_component_callback_close = function() end
 
 local dapui_state_is_opened = false
 -- toggle dapui
-map("n", "<A-r>", function()
+map(ui_components_modes, "<A-r>", function()
   if dapui_state_is_opened then
     dapui.close()
     vim.cmd "NvimTreeOpen"
@@ -139,7 +140,7 @@ end, { desc = "debug close view" })
 
 -- neotest
 local neotest_summary_opened = false
-map("n", "<A-t>", function()
+map(ui_components_modes, "<A-t>", function()
   if neotest_summary_opened then
     neotest.summary.close()
   else
@@ -154,8 +155,7 @@ map("n", "<A-t>", function()
 end, { desc = "Test show summary" })
 
 local avante_state_opened = false
-map({"n", "v", "i"}, "<A-.>", function ()
-  avante.ask()
+map(ui_components_modes, "<A-q>", function ()
   if avante_state_opened then
     vim.cmd("AvanteToggle")
   else
@@ -171,7 +171,7 @@ end, {desc = "Avante toggle view"})
 
 
 local neotest_output_opened = false
-map("n", "<A-T>", function()
+map(ui_components_modes, "<A-T>", function()
   if neotest_output_opened then
     neotest.output_panel.close()
   else
@@ -187,7 +187,7 @@ end, { desc = "Test show output" })
 
 -- trouble plugin
 -- "<cmd>Trouble diagnostics toggle focus=true<CR>"
-map("n", "<A-p>", function()
+map(ui_components_modes, "<A-p>", function()
   if trouble.is_open "diagnostics" then
     trouble.close "diagnostics"
   else
@@ -199,7 +199,7 @@ map("n", "<A-p>", function()
   end
 end, { desc = "trouble diagnostics" })
 
-map("n", "<A-l>", function()
+map(ui_components_modes, "<A-l>", function()
   if trouble.is_open "symbols" then
     trouble.close "symbols"
   else
@@ -212,7 +212,7 @@ map("n", "<A-l>", function()
 end, { desc = "trouble list structure of buffer" })
 
 
-map("n", "<A-k>", function()
+map(ui_components_modes, "<A-k>", function()
   if trouble.is_open "lsp" then
     trouble.close "lsp"
   else
@@ -224,7 +224,7 @@ map("n", "<A-k>", function()
   end
 end, { desc = "trouble x-ray definitions" })
 
-map("n", "<A-/>", "<cmd>SessionSearch<cr>", { desc = "open sessions available" })
+map(ui_components_modes, "<A-/>", "<cmd>SessionSearch<cr>", { desc = "open sessions available" })
 -- the same stuff but telescope mode
 -- local telescope_builtin = require "telescope.builtin"
 -- map("n", "<A-p>", function()
@@ -237,10 +237,10 @@ map("n", "<A-/>", "<cmd>SessionSearch<cr>", { desc = "open sessions available" }
 -- map("n", "<A-l>", "<cmd>Telescope lsp_document_symbols<CR>", { desc = "telescope structure of file" })
 --
 
-map("n", "<leader>gb", function()
+map(ui_components_modes, "<leader>gb", function()
   new_branch()
 end, {desc = "git new branch create&checkout"})
 
-map("n", "<leader>gc", function()
+map(ui_components_modes, "<leader>gc", function()
   commit()
 end, {desc = "git commit"})
