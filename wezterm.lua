@@ -1,6 +1,6 @@
 -- Pull in the wezterm API
 local wezterm = require "wezterm"
-
+local mux = wezterm.mux
 -- This will hold the configuration.
 local config = wezterm.config_builder()
 
@@ -20,10 +20,11 @@ local function scheme_for_appearance(appearance)
   end
 end
 
-config.color_scheme = scheme_for_appearance(get_appearance())
+-- config.color_scheme = scheme_for_appearance(get_appearance())
+config.color_scheme = "Humanoid dark (base16)"
 
 -- Remove all padding
-config.window_padding = { left = 0, right = 0, top = 0, bottom = 0 }
+config.window_padding = { left = 10, right = 10, top = 10, bottom = 10 }
 
 -- URLs in Markdown files are not handled properly by default
 -- Source: https://github.com/wez/wezterm/issues/3803#issuecomment-1608954312
@@ -69,12 +70,34 @@ config.hyperlink_rules = {
   },
 }
 
-local terminal_key_mod = "CTRL"
+wezterm.on("gui-startup", function()
+  local tab, pane, window = mux.spawn_window{}
+  window:gui_window():maximize()
+end)
+
+local is_linux = function()
+  return wezterm.target_triple:find "linux" ~= nil
+end
+
+local is_darwin = function()
+  return wezterm.target_triple:find "darwin" ~= nil
+end
+
+local terminal_key_mod = "CTRL|ALT"
+if is_darwin() then
+  terminal_key_mod = "CMD"
+end
+
 config.keys = {
+  -- {
+  --   key = "F",
+  --   mods = terminal_key_mod,
+  --   action = wezterm.action.ToggleFullScreen,
+  -- },
   {
     key = "f",
-    mods = "CTRL|ALT",
-    action = wezterm.action.ToggleFullScreen,
+    mods = terminal_key_mod,
+    action = wezterm.action.Search("CurrentSelectionOrEmptyString"),
   },
   {
     key = "w",
@@ -184,9 +207,6 @@ config.freetype_render_target = "HorizontalLcd"
 
 -- Remove the title bar from the window
 config.window_decorations = "INTEGRATED_BUTTONS | RESIZE"
-
--- Use zsh by default
-config.default_prog = { "/usr/bin/zsh" }
 
 -- Don't hide cursor when typing
 config.hide_mouse_cursor_when_typing = false

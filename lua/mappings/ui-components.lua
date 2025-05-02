@@ -16,7 +16,7 @@ map(ui_components_modes, "<A-g>", "<cmd>Telescope git_branches<CR>", { desc = "t
 map(ui_components_modes, "<A-u>", "<cmd>Telescope undo<CR>", { desc = "telescope undo tree" })
 map(ui_components_modes, "<A-f>", "<cmd>Telescope live_grep<CR>", { desc = "telescope search in project" })
 map(ui_components_modes, "<A-z>", "<cmd>Telescope oldfiles<CR>", { desc = "telescope previously opened files" })
-map(ui_components_modes, "<leader><leader>", "<cmd>Telescope buffers only_cwd=true<CR>", { desc = "telescope previously opened files" })
+map("n", "<leader><leader>", "<cmd>Telescope buffers only_cwd=true<CR>", { desc = "telescope previously opened files" })
 map(ui_components_modes, "<A-j>", "<cmd>TodoTelescope<CR>", { desc = "telescope TODOs" })
 
 local dialog_component_callback_close = function() end
@@ -87,8 +87,8 @@ map(ui_components_modes, "<A-a>", "<C-W>h", { desc = "switch window left" })
 map(ui_components_modes, "<A-d>", "<C-W>l", { desc = "switch window right" })
 map(ui_components_modes, "<A-s>", "<C-W>j", { desc = "switch window down" })
 map(ui_components_modes, "<A-w>", "<C-W>k", { desc = "switch window up" })
-map(ui_components_modes, "+", "<C-W>3>", { desc = "window width increase" })
-map(ui_components_modes, "_", "<C-W>3<", { desc = "window width decrease" })
+map("n", "+", "<C-W>3>", { desc = "window width increase" })
+map("n", "_", "<C-W>3<", { desc = "window width decrease" })
 
 local monitorStarted = false
 map(ui_components_modes, "<A-i>", function()
@@ -237,10 +237,10 @@ map(ui_components_modes, "<A-/>", "<cmd>SessionSearch<cr>", { desc = "open sessi
 -- map("n", "<A-l>", "<cmd>Telescope lsp_document_symbols<CR>", { desc = "telescope structure of file" })
 --
 
-map(ui_components_modes, "<leader>gb", function()
+map("n", "<leader>gb", function()
   new_branch()
 end, {desc = "git new branch create&checkout"})
 
-map(ui_components_modes, "<leader>gc", function()
+map("n", "<leader>gc", function()
   commit()
 end, {desc = "git commit"})

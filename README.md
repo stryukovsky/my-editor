@@ -15,7 +15,7 @@ Install font from `fonts/` directory of this repo to your system
 In `~/.config/nvim/` run following:  
 
 ```sh
-sudo bash setup.fedora.sh
+sudo bash setup.fedora.sh # or macos
 bash setup.commons.sh
 cp wezterm.lua ~/.wezterm.lua
 cp zsh.fedora.sh ~/.zshrc
