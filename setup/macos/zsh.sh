@@ -1,8 +1,8 @@
 export ZSH="$HOME/.oh-my-zsh"
 
-ZSH_THEME="random"
+ZSH_THEME="agnoster"
 
-ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
+# ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
 
 zstyle ':omz:update' mode disabled  # disable automatic updates
 plugins=(git docker dnf docker-compose golang pip pyenv python rust sbt scala zsh-interactive-cd)
@@ -26,5 +26,5 @@ export SDKMAN_DIR="$HOME/.sdkman"
 . "$HOME/.cargo/env"            # Cargo: For sh/bash/zsh/ash/dash/pdksh
 
 export PATH="$PATH:$HOME/Library/Application Support/Coursier/bin"
-export PATH="$PATH:$HOME/dmitry/Tools"
+export PATH="$PATH:$HOME/Tools"
 export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
