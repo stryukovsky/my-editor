@@ -10,6 +10,14 @@ map("n", "<leader><Left>", function()
   require("nvchad.tabufline").prev()
 end, { desc = "buffer goto prev" })
 
+map("n", "<C-Right>", function()
+  require("nvchad.tabufline").next()
+end, { desc = "buffer goto next" })
+
+map("n", "<C-Left>", function()
+  require("nvchad.tabufline").prev()
+end, { desc = "buffer goto prev" })
+
 map("n", "<tab>", function()
   require("nvchad.tabufline").next()
 end, { desc = "buffer goto next" })
