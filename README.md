@@ -15,11 +15,19 @@ Install font from `fonts/` directory of this repo to your system
 In `~/.config/nvim/` run following:  
 
 ```sh
-sudo bash setup.fedora.sh # or macos
-bash setup.commons.sh
+sudo bash setup/fedora/setup.sh 
+bash setup/commons.sh
 cp wezterm.lua ~/.wezterm.lua
-cp zsh.fedora.sh ~/.zshrc
+cp setup/macos/zsh.sh ~/.zshrc
 ```
+
+```sh
+sudo bash setup/macos/setup.sh 
+bash setup/commons.sh
+cp wezterm.lua ~/.wezterm.lua
+cp setup/macos/zsh.sh ~/.zshrc
+```
+
 
 Open neovim and run command
 ```
@@ -66,7 +74,7 @@ wg-quick up  ~/Documents/vpn.conf
 
 Repeat again interactions with UI.  
 
-## Manual Installation (instead of usage setup.fedora.sh)
+## Manual Installation (instead of usage `setup.fedora.sh`)
 
 ### Install neovim  
 
