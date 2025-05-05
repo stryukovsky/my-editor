@@ -16,7 +16,7 @@ local actions = require "telescope.actions"
 
 return {
   n = {
-    ["<Esc>"] = function() end,
+    -- ["<Esc>"] = function() end,
     -- ["q"] = actions.close,
     ["<Left>"] = actions.results_scrolling_left,
     ["<Right>"] = actions.results_scrolling_right,

@@ -40,14 +40,24 @@ end
 local righty = function()
   local node_at_cursor = api.tree.get_node_under_cursor()
   -- if it's a closed node, open it
-  if node_at_cursor.nodes and not node_at_cursor.open then
-    api.node.open.edit()
+  -- if node_at_cursor.nodes and not node_at_cursor.open then
+  api.node.open.edit()
+  local nodes = node_at_cursor.nodes
+  local nodes_count = nodes
+  if nodes_count == 1 then
+    local first_node = nodes[1]
+    first_node.open.edit()
   end
+  if #node_at_cursor.nodes <= 0 then
+  end
+  -- if #node_at_cursor.nodes > 1 then
+  --   api.node.open.edit()
+  -- end
 end
 
 local search_in_node = function()
   local node_at_cursor = api.tree.get_node_under_cursor()
-  if node_at_cursor.nodes and not node_at_cursor.open then
+  if node_at_cursor.nodes then
     vim.cmd("Telescope live_grep search_dirs=" .. node_at_cursor.absolute_path)
   end
 end
