@@ -20,8 +20,7 @@ local function scheme_for_appearance(appearance)
   end
 end
 
--- config.color_scheme = scheme_for_appearance(get_appearance())
-config.color_scheme = "Humanoid dark (base16)"
+config.color_scheme = scheme_for_appearance(get_appearance())
 
 -- Remove all padding
 config.window_padding = { left = 10, right = 10, top = 10, bottom = 10 }
@@ -83,7 +82,7 @@ local is_darwin = function()
   return wezterm.target_triple:find "darwin" ~= nil
 end
 
-local terminal_key_mod = "CTRL|ALT"
+local terminal_key_mod = "CTRL"
 if is_darwin() then
   terminal_key_mod = "CMD"
 end
@@ -105,7 +104,7 @@ config.keys = {
     action = wezterm.action.CloseCurrentTab { confirm = false },
   },
   {
-    key = "LeftArrow",
+    key = "DownArrow",
     mods = terminal_key_mod,
     action = wezterm.action_callback(function(window, pane)
       local tab = window:mux_window():active_tab()
@@ -117,7 +116,7 @@ config.keys = {
     end),
   },
   {
-    key = "RightArrow",
+    key = "UpArrow",
     mods = terminal_key_mod,
     action = wezterm.action_callback(function(window, pane)
       local tab = window:mux_window():active_tab()
