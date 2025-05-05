@@ -1,4 +1,3 @@
-
 local function focus_preview(prompt_bufnr)
   local action_state = require "telescope.actions.state"
   local picker = action_state.get_current_picker(prompt_bufnr)
@@ -17,7 +16,8 @@ local actions = require "telescope.actions"
 
 return {
   n = {
-    ["q"] = actions.close,
+    ["<Esc>"] = function() end,
+    -- ["q"] = actions.close,
     ["<Left>"] = actions.results_scrolling_left,
     ["<Right>"] = actions.results_scrolling_right,
     ["<A-Left>"] = actions.results_scrolling_left,
