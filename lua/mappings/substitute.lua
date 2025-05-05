@@ -9,5 +9,5 @@ map("x", "<leader>rr", function()
 end, { noremap = true })
 
 map("x", "<leader>ri", function()
-  vim.api.nvim_feedkeys(":s///", "ni", false)
+  vim.api.nvim_feedkeys(":s///g", "ni", false)
 end, { noremap = true })

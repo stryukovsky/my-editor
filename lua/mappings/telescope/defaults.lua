@@ -24,7 +24,7 @@ return {
     ["<A-Right>"] = actions.results_scrolling_right,
   },
   i = {
-    ["<Esc>"] = actions.close,
+    -- ["<Esc>"] = actions.close,
     ["<A-Left>"] = actions.results_scrolling_left,
     ["<A-Right>"] = actions.results_scrolling_right,
     ["<Tab>"] = focus_preview,

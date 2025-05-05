@@ -7,19 +7,45 @@ local kulala = require "kulala"
 local kulala_ui = require "kulala.ui"
 local new_branch = require "ui.new_branch"
 local commit = require "ui.commit"
+local telescope = require "telescope.actions"
 
-local ui_components_modes = {"n", "t", "v", "i"}
+local ui_components_modes = { "n", "t", "v", "i" }
 
--- show git history
-map(ui_components_modes, "<A-c>", "<cmd>Telescope git_commits<CR>", { desc = "telescope git commits" })
-map(ui_components_modes, "<A-g>", "<cmd>Telescope git_branches<CR>", { desc = "telescope git branches" })
-map(ui_components_modes, "<A-u>", "<cmd>Telescope undo<CR>", { desc = "telescope undo tree" })
-map(ui_components_modes, "<A-f>", "<cmd>Telescope live_grep<CR>", { desc = "telescope search in project" })
-map(ui_components_modes, "<A-z>", "<cmd>Telescope oldfiles<CR>", { desc = "telescope previously opened files" })
-map("n", "<leader><leader>", "<cmd>Telescope buffers only_cwd=true<CR>", { desc = "telescope previously opened files" })
-map(ui_components_modes, "<A-j>", "<cmd>TodoTelescope<CR>", { desc = "telescope TODOs" })
+local telescope_components = {
+  { modes = ui_components_modes, shortcut = "<A-c>", command = "Telescope git_commits", desc = "telescope git commits" },
+  { modes = ui_components_modes, shortcut = "<A-g>", command = "Telescope git_branches", desc = "telescope git branches" },
+  { modes = ui_components_modes, shortcut = "<A-u>", command = "Telescope undo", desc = "telescope undo tree" },
+  { modes = ui_components_modes, shortcut = "<A-f>", command = "Telescope live_grep", desc = "telescope search in project" },
+  { modes = ui_components_modes, shortcut = "<A-z>", command = "Telescope oldfiles", desc = "telescope previously opened files" },
+  { modes = ui_components_modes, shortcut = "<A-j>", command = "TodoTelescope", desc = "telescope TODOs" },
+  { modes = {"n"}, shortcut = "<leader><leader>", command = "Telescope buffers only_cwd=true<CR>", desc = "telescope previously opened files" }
+}
+
+local current_opened_telescope_bufnr = 0
 
 local dialog_component_callback_close = function() end
+for _, value in ipairs(telescope_components) do
+  map(value.modes, value.shortcut, function()
+    if current_opened_telescope_bufnr ~= 0 then
+      pcall(function()
+        telescope.close(current_opened_telescope_bufnr)
+      end)
+      current_opened_telescope_bufnr = 0
+    else
+      dialog_component_callback_close()
+      vim.cmd(value.command)
+      current_opened_telescope_bufnr = vim.fn.bufnr()
+      dialog_component_callback_close = function()
+        if current_opened_telescope_bufnr ~= 0 then
+          pcall(function()
+            telescope.close(current_opened_telescope_bufnr)
+          end)
+          current_opened_telescope_bufnr = 0
+        end
+      end
+    end
+  end, { desc = value.desc })
+end
 
 local kulala_state_is_opened = false
 map(ui_components_modes, "<A-y>", function()
@@ -51,7 +77,7 @@ map(ui_components_modes, "<A-Y>", function()
 end, { desc = "kulala toggle with sending request" })
 
 local fileHistoryOpened = false
-map(ui_components_modes , "<A-h>", function()
+map(ui_components_modes, "<A-h>", function()
   if fileHistoryOpened then
     vim.cmd "tabc"
     dialog_component_callback_close = function() end
@@ -110,7 +136,6 @@ map(ui_components_modes, "<A-i>", function()
   }
 end, { desc = "system resource inspector" })
 
-
 -- focus nvimtree
 map(ui_components_modes, "<A-e>", function()
   dapui.close()
@@ -155,20 +180,19 @@ map(ui_components_modes, "<A-t>", function()
 end, { desc = "Test show summary" })
 
 local avante_state_opened = false
-map(ui_components_modes, "<A-q>", function ()
+map(ui_components_modes, "<A-q>", function()
   if avante_state_opened then
-    vim.cmd("AvanteToggle")
+    vim.cmd "AvanteToggle"
   else
     right_component_callback_close()
     right_component_callback_close = function()
       avante_state_opened = false
-      vim.cmd("AvanteToggle")
+      vim.cmd "AvanteToggle"
     end
-    vim.cmd("AvanteToggle")
+    vim.cmd "AvanteToggle"
   end
   avante_state_opened = not avante_state_opened
-end, {desc = "Avante toggle view"})
-
+end, { desc = "Avante toggle view" })
 
 local neotest_output_opened = false
 map(ui_components_modes, "<A-T>", function()
@@ -211,7 +235,6 @@ map(ui_components_modes, "<A-l>", function()
   end
 end, { desc = "trouble list structure of buffer" })
 
-
 map(ui_components_modes, "<A-k>", function()
   if trouble.is_open "lsp" then
     trouble.close "lsp"
@@ -239,8 +262,8 @@ map(ui_components_modes, "<A-/>", "<cmd>SessionSearch<cr>", { desc = "open sessi
 
 map("n", "<leader>gb", function()
   new_branch()
-end, {desc = "git new branch create&checkout"})
+end, { desc = "git new branch create&checkout" })
 
 map("n", "<leader>gc", function()
   commit()
-end, {desc = "git commit"})
+end, { desc = "git commit" })
