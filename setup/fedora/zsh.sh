@@ -4,9 +4,7 @@ export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
-ZSH_THEME="random"
-
-ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
+ZSH_THEME="philips"
 
 zstyle ':omz:update' mode disabled  # disable automatic updates
 # zstyle ':omz:update' mode auto      # update automatically without asking

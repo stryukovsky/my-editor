@@ -23,7 +23,7 @@ end
 config.color_scheme = scheme_for_appearance(get_appearance())
 
 -- Remove all padding
-config.window_padding = { left = 10, right = 10, top = 10, bottom = 10 }
+config.window_padding = { left = 10, right = 5, top = 5, bottom = 0 }
 
 -- URLs in Markdown files are not handled properly by default
 -- Source: https://github.com/wez/wezterm/issues/3803#issuecomment-1608954312
@@ -70,7 +70,7 @@ config.hyperlink_rules = {
 }
 
 wezterm.on("gui-startup", function()
-  local tab, pane, window = mux.spawn_window{}
+  local tab, pane, window = mux.spawn_window {}
   window:gui_window():maximize()
 end)
 
@@ -96,12 +96,19 @@ config.keys = {
   {
     key = "f",
     mods = terminal_key_mod,
-    action = wezterm.action.Search("CurrentSelectionOrEmptyString"),
+    action = wezterm.action.Search "CurrentSelectionOrEmptyString",
   },
   {
     key = "w",
     mods = terminal_key_mod,
     action = wezterm.action.CloseCurrentTab { confirm = false },
+  },
+  {
+    key = "t",
+    mods = terminal_key_mod,
+    action = wezterm.action.SpawnTab {
+      DomainName = "unix",
+    },
   },
   {
     key = "DownArrow",

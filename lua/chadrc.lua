@@ -5,7 +5,7 @@
 ---@class ChadrcConfig
 local M = {}
 M.base46 = {
-  theme = "nano-light",
+  theme = "tokyonight",
   theme_toggle = { "tokyonight", "nano-light" },
 
   hl_override = {

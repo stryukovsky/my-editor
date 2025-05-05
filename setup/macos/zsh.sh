@@ -1,8 +1,6 @@
 export ZSH="$HOME/.oh-my-zsh"
 
-ZSH_THEME="agnoster"
-
-# ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
+ZSH_THEME="philips"
 
 zstyle ':omz:update' mode disabled  # disable automatic updates
 plugins=(git docker dnf docker-compose golang pip pyenv python rust sbt scala zsh-interactive-cd)

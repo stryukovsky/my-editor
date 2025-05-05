@@ -5,6 +5,7 @@ local neotest = require "neotest"
 local trouble = require "trouble"
 local kulala = require "kulala"
 local kulala_ui = require "kulala.ui"
+local oil = require("oil")
 local new_branch = require "ui.new_branch"
 local commit = require "ui.commit"
 local telescope = require "telescope.actions"
@@ -93,7 +94,7 @@ map(ui_components_modes, "<A-h>", function()
 end, { desc = "diffview file history" })
 
 local diffViewOpened = false
-map(ui_components_modes, "<A-m>", function()
+map(ui_components_modes, "<A-k>", function()
   if diffViewOpened then
     vim.cmd "tabc"
     dialog_component_callback_close = function() end
@@ -107,6 +108,23 @@ map(ui_components_modes, "<A-m>", function()
   end
   diffViewOpened = not diffViewOpened
 end, { desc = "diffview open merge tool" })
+
+local oilOpened = false
+map("n", "<A-o>", function ()
+  if oilOpened then
+      oil.close()
+    dialog_component_callback_close = function() end
+  else
+    dialog_component_callback_close()
+    dialog_component_callback_close = function()
+      oilOpened = false
+      oil.close()
+    end
+    oil.open()
+  end
+  oilOpened = not oilOpened
+end, { desc = "oil toggle float browser"})
+
 
 -- windows focus move
 map(ui_components_modes, "<A-a>", "<C-W>h", { desc = "switch window left" })
@@ -235,7 +253,7 @@ map(ui_components_modes, "<A-l>", function()
   end
 end, { desc = "trouble list structure of buffer" })
 
-map(ui_components_modes, "<A-k>", function()
+map(ui_components_modes, "<A-m>", function()
   if trouble.is_open "lsp" then
     trouble.close "lsp"
   else
@@ -245,7 +263,7 @@ map(ui_components_modes, "<A-k>", function()
     end
     trouble.open { mode = "lsp", focus = false, win = { position = "right" } }
   end
-end, { desc = "trouble x-ray definitions" })
+end, { desc = "trouble monitor definitions" })
 
 map(ui_components_modes, "<A-/>", "<cmd>SessionSearch<cr>", { desc = "open sessions available" })
 -- the same stuff but telescope mode
