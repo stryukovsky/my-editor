@@ -19,8 +19,10 @@ local telescope_components = {
   { modes = ui_components_modes, shortcut = "<A-f>", command = "Telescope live_grep", desc = "telescope search in project" },
   { modes = ui_components_modes, shortcut = "<A-z>", command = "Telescope oldfiles", desc = "telescope previously opened files" },
   { modes = ui_components_modes, shortcut = "<A-j>", command = "TodoTelescope", desc = "telescope TODOs" },
-  { modes = {"n"}, shortcut = "<leader><leader>", command = "Telescope buffers only_cwd=true<CR>", desc = "telescope previously opened files" }
 }
+
+map("n", "<leader>ga", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", {desc = "telescope spelling"})
+map("n", "<leader><leader>", "<cmd>Telescope buffers only_cwd=true theme=get_cursor previewer=false<cr>", {desc = "telescope buffers"})
 
 local current_opened_telescope_bufnr = 0
 
