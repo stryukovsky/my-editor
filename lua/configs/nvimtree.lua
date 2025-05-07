@@ -36,19 +36,37 @@ local lefty = function()
   end
 end
 
+local function get_keys(t)
+  local keys = {}
+  for key, _ in pairs(t) do
+    table.insert(keys, key)
+  end
+  return keys
+end
+
 local righty
 -- function for right to assign to keybindings
 righty = function()
   local node_at_cursor = api.tree.get_node_under_cursor()
-  -- if it's a closed node, open it
-  -- if node_at_cursor.nodes and not node_at_cursor.open then
-  api.node.open.edit()
-  if node_at_cursor.nodes == nil or node_at_cursor.nodes == {} then
-  else
+  if node_at_cursor.type == "directory" then
     local nodes = node_at_cursor.nodes
-    local nodes_count = #nodes
+    local nodes_count
+    local cursor_movement
+    if node_at_cursor.open then
+      nodes_count = #nodes -- if already open then firstly read child nodes count
+      api.node.open.edit() -- then close current node
+      cursor_movement = false
+    else
+      api.node.open.edit() -- if closed then firstly open
+      nodes_count = #nodes -- and then read count
+      cursor_movement = true
+    end
+    -- vim.print("Current node is " .. node_at_cursor.type .. " And its nodes are ".. #node_at_cursor.nodes)
+    -- vim.print(get_keys(node_at_cursor.nodes))
     if nodes_count == 1 then
-      vim.cmd "normal! j"
+      if cursor_movement then
+        vim.cmd "normal! j"
+      end
       righty()
     end
   end
