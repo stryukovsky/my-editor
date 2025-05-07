@@ -114,7 +114,7 @@ return {
     update_root = false,
   },
   view = {
-    width = 30,
+    width = 40,
     preserve_window_proportions = true,
   },
   renderer = {
@@ -137,6 +137,11 @@ return {
         },
       },
     },
+  },
+  actions = {
+    open_file = {
+      resize_window = false
+    }
   },
   on_attach = my_on_attach,
 }
