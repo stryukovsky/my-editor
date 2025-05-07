@@ -93,9 +93,11 @@ local function my_on_attach(bufnr)
   -- custom mappings
   vim.keymap.set("n", "R", api.tree.change_root_to_parent, opts "root to parent of current")
   vim.keymap.set("n", "s", git_add, opts "git stage/unstage")
+  vim.keymap.set("n", "s", git_add, opts "git stage/unstage")
   vim.keymap.set("n", "?", api.tree.toggle_help, opts "Help")
   vim.keymap.set("n", "f", search_in_node, opts "Search")
   vim.keymap.set("n", "r", api.fs.rename_full, opts "Rename")
+  vim.keymap.set("n", "K", api.tree.toggle_git_clean_filter, opts "Git changes")
 
   api.events.subscribe(api.events.Event.FileCreated, function(file)
     vim.cmd("edit " .. vim.fn.fnameescape(file.fname))
