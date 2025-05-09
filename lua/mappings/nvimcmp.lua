@@ -43,18 +43,18 @@ cmp.setup.global {
       group_index = 1,
     },
     {
-      name = "luasnip",
+      name = "treesitter",
+      keyword_length = 4,
       group_index = 2,
+    },
+    {
+      name = "luasnip",
+      group_index = 3,
       option = { use_show_condition = true },
       entry_filter = function()
         local context = require "cmp.config.context"
         return not context.in_treesitter_capture "string" and not context.in_syntax_group "String"
       end,
-    },
-    {
-      name = "treesitter",
-      keyword_length = 4,
-      group_index = 3,
     },
     {
       name = "path",
