@@ -107,5 +107,13 @@ dap.configurations.scala = {
       runType = "testTarget",
     },
   },
+  {
+    type = "scala",
+    request = "launch",
+    name = "Sbt run",
+    metals = {
+      shellCommand = "sbt run"
+    },
+  },
 }
 
