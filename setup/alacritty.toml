@@ -21,5 +21,3 @@ style = "Italic"
 family = "0xProtoNerdFont"
 style = "Regular"
 
-[terminal]
-shell = "zellij"

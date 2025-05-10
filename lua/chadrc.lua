@@ -77,7 +77,6 @@ M.ui = {
       "git_improved",
       "cwd",
       "cursor",
-      "time",
     },
     modules = {
       git_improved = function()
@@ -87,10 +86,6 @@ M.ui = {
         else
           return ""
         end
-      end,
-
-      time = function()
-        return vim.fn.strftime "%H:%M"
       end,
 
       f = "%f",
