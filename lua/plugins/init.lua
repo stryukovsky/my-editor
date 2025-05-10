@@ -33,6 +33,7 @@ return {
 
   {
     "nvim-telescope/telescope.nvim",
+    tag = "0.1.8",
     dependencies = {
       "nvim-lua/plenary.nvim",
       "debugloop/telescope-undo.nvim",
@@ -41,9 +42,9 @@ return {
       require("telescope").setup {
         -- the rest of your telescope config goes here
         defaults = {
-          prompt_prefix = "   ",
-          selection_caret = " ",
-          entry_prefix = " ",
+          --     prompt_prefix = "   ",
+          --     selection_caret = "",
+          --     entry_prefix = "",
           sorting_strategy = "ascending",
           layout_config = {
             horizontal = {
@@ -335,15 +336,6 @@ return {
     keys = {},
     ft = { "http", "rest" },
     opts = {},
-  },
-  {
-    "rmagatti/auto-session",
-    lazy = false,
-
-    ---enables autocomplete for opts
-    ---@module "auto-session"
-    ---@type AutoSession.Config
-    opts = require "configs.autosession",
   },
   {
     "numToStr/Comment.nvim",
