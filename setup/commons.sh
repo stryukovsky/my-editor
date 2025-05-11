@@ -8,8 +8,7 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 nvm install $NODE_VERSION
-npm i -g yarn tsx ts-node typescript @mistweaverco/kulala-ls
-
+npm i -g yarn tsx ts-node typescript 
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 . "$HOME/.cargo/env"            

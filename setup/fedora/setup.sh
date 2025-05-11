@@ -7,5 +7,5 @@ mkdir -p $HOME/Tools/
 curl -fL "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz" | gzip -d > $HOME/Tools/cs
 chmod 700 $HOME/Tools/cs
 
-cp fonts/0xProto/*.ttf ~/.local/share/fonts/
+cp fonts/0xProto/*.ttf $USER/.local/share/fonts/
 
