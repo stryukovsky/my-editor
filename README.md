@@ -1,8 +1,5 @@
 # My Editor
 
-Install wezterm: 
-
-https://wezterm.org/index.html
 
 Clone this repository:
 
@@ -10,13 +7,15 @@ Clone this repository:
 git clone https://github.com/stryukovsky/my-editor ~/.config/nvim/
 ```
 
-Install font from `fonts/` directory of this repo to your system  
 
 In `~/.config/nvim/` run following:  
 
 Fedora:  
+
+Execute every line separately!!!  
 ```sh
 sudo bash setup/fedora/setup.sh 
+bash setup/fedora/pyenv.sh
 bash setup/commons.sh
 cp setup/alacritty.toml ~/.alacritty.toml
 cp setup/tmux.conf ~/.tmux.conf
@@ -24,6 +23,9 @@ cp setup/fedora/zsh.sh ~/.zshrc
 ```
 
 MacOS:  
+Install alacritty:  
+https://alacritty.org/  
+Install font from `fonts/` directory of this repo to your system.   
 ```sh
 sudo bash setup/macos/setup.sh 
 bash setup/commons.sh
@@ -80,9 +82,11 @@ Repeat again interactions with UI.
 
 ## Manual Installation (instead of usage `setup.fedora.sh`)
 
-### Install neovim  
+### Install neovim tmux alacritty 
 
-https://github.com/neovim/neovim  
+https://github.com/neovim/neovim   
+https://alacritty.org/  
+https://github.com/tmux/tmux  
 
 NOTE: make sure you installed copy-paste buffer adapter for your desktop environment on Linux systems.  
 
