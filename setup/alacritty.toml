@@ -10,14 +10,14 @@ decorations_theme_variant = "Light" # "Dark"
 size = 12.0
 
 [font.bold]
-family = "0xProtoNerdFont"
+family = "0xProto Nerd Font"
 style = "Bold"
 
 [font.italic]
-family = "0xProtoNerdFont"
+family = "0xProto Nerd Font"
 style = "Italic"
 
 [font.normal]
-family = "0xProtoNerdFont"
+family = "0xProto Nerd Font"
 style = "Regular"
 
