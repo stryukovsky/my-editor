@@ -14,17 +14,21 @@ Install font from `fonts/` directory of this repo to your system
 
 In `~/.config/nvim/` run following:  
 
+Fedora:  
 ```sh
 sudo bash setup/fedora/setup.sh 
 bash setup/commons.sh
-cp wezterm.lua ~/.wezterm.lua
-cp setup/macos/zsh.sh ~/.zshrc
+cp setup/alacritty.toml ~/.alacritty.toml
+cp setup/tmux.conf ~/.tmux.conf
+cp setup/fedora/zsh.sh ~/.zshrc
 ```
 
+MacOS:  
 ```sh
 sudo bash setup/macos/setup.sh 
 bash setup/commons.sh
-cp wezterm.lua ~/.wezterm.lua
+cp setup/alacritty.toml ~/.alacritty.toml
+cp setup/tmux.conf ~/.tmux.conf
 cp setup/macos/zsh.sh ~/.zshrc
 ```
 
