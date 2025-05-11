@@ -5,22 +5,51 @@ local neotest = require "neotest"
 local trouble = require "trouble"
 local kulala = require "kulala"
 local kulala_ui = require "kulala.ui"
-local oil = require("oil")
+local oil = require "oil"
 local new_branch = require "ui.new_branch"
 local commit = require "ui.commit"
 local telescope = require "telescope.actions"
+local gitsigns_async = require "gitsigns.async"
+local gitsigns_blame = require "gitsigns.blame"
 
 local ui_components_modes = { "n", "t", "v", "i" }
 
 local telescope_components = {
-  { modes = ui_components_modes, shortcut = "<A-c>", command = "Telescope git_commits", desc = "telescope git commits" },
-  { modes = ui_components_modes, shortcut = "<A-g>", command = "Telescope git_branches", desc = "telescope git branches" },
+  {
+    modes = ui_components_modes,
+    shortcut = "<A-c>",
+    command = "Telescope git_commits",
+    desc = "telescope git commits",
+  },
+  {
+    modes = ui_components_modes,
+    shortcut = "<A-g>",
+    command = "Telescope git_branches",
+    desc = "telescope git branches",
+  },
   { modes = ui_components_modes, shortcut = "<A-u>", command = "Telescope undo", desc = "telescope undo tree" },
-  { modes = ui_components_modes, shortcut = "<A-f>", command = "Telescope live_grep", desc = "telescope search in project" },
-  { modes = ui_components_modes, shortcut = "<A-z>", command = "Telescope oldfiles", desc = "telescope previously opened files" },
+  {
+    modes = ui_components_modes,
+    shortcut = "<A-f>",
+    command = "Telescope live_grep",
+    desc = "telescope search in project",
+  },
+  {
+    modes = ui_components_modes,
+    shortcut = "<A-z>",
+    command = "Telescope oldfiles",
+    desc = "telescope previously opened files",
+  },
   { modes = ui_components_modes, shortcut = "<A-j>", command = "TodoTelescope", desc = "telescope TODOs" },
-  { modes = {"n"}, shortcut = "<leader><leader>", command = "Telescope buffers only_cwd=true<CR>", desc = "telescope previously opened files" }
 }
+
+map("n", "<leader>ga", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", { desc = "telescope spelling" })
+map(
+  "n",
+  "<leader><leader>",
+  "<cmd>Telescope buffers only_cwd=true theme=get_cursor previewer=false<cr>",
+  { desc = "telescope buffers" }
+)
 
 local current_opened_telescope_bufnr = 0
 
@@ -110,9 +139,9 @@ map(ui_components_modes, "<A-k>", function()
 end, { desc = "diffview open merge tool" })
 
 local oilOpened = false
-map("n", "<A-o>", function ()
+map("n", "<A-o>", function()
   if oilOpened then
-      oil.close()
+    oil.close()
     dialog_component_callback_close = function() end
   else
     dialog_component_callback_close()
@@ -123,8 +152,7 @@ map("n", "<A-o>", function ()
     oil.open()
   end
   oilOpened = not oilOpened
-end, { desc = "oil toggle float browser"})
-
+end, { desc = "oil toggle float browser" })
 
 -- windows focus move
 map(ui_components_modes, "<A-a>", "<C-W>h", { desc = "switch window left" })
@@ -285,3 +313,18 @@ end, { desc = "git new branch create&checkout" })
 map("n", "<leader>gc", function()
   commit()
 end, { desc = "git commit" })
+
+local git_blame_bufnr = 0
+map("n", "<A-b>", function()
+  if git_blame_bufnr == 0 then
+    if vim.api.nvim_get_option_value("buftype", { buf = vim.fn.bufnr() }) == "" then
+      gitsigns_async.create(0, function()
+        gitsigns_blame.blame()
+        git_blame_bufnr = vim.fn.bufnr()
+      end)()
+    end
+  else
+    vim.cmd(tostring(git_blame_bufnr) .. "bw")
+    git_blame_bufnr = 0
+  end
+end, { desc = "git blame buffer" })

@@ -5,8 +5,8 @@
 ---@class ChadrcConfig
 local M = {}
 M.base46 = {
-  theme = "tokyonight",
-  theme_toggle = { "tokyonight", "nano-light" },
+  theme = "default-light",
+  theme_toggle = { "tokyonight", "default-light" },
 
   hl_override = {
     Comment = { italic = true },
@@ -77,7 +77,6 @@ M.ui = {
       "git_improved",
       "cwd",
       "cursor",
-      "time",
     },
     modules = {
       git_improved = function()
@@ -87,10 +86,6 @@ M.ui = {
         else
           return ""
         end
-      end,
-
-      time = function()
-        return vim.fn.strftime "%H:%M"
       end,
 
       f = "%f",

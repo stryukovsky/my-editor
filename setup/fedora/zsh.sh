@@ -44,6 +44,7 @@ export NVM_DIR="$HOME/.nvm"
 . "$HOME/.cargo/env"            # Cargo: For sh/bash/zsh/ash/dash/pdksh
 
 export PATH="$PATH:$HOME/Tools/" # Coursier binary is stored here
+export PATH="$PATH:$HOME/.local/share/coursier/bin/" # Coursier binary is stored here
 
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"

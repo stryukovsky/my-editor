@@ -2,7 +2,7 @@ dofile(vim.g.base46_cache .. "lsp")
 require("nvchad.lsp").diagnostic_config()
 
 local lsp_with_default_conf =
-  { "html", "cssls", "ts_ls", "lua_ls", "sqls", "jsonls", "bashls", "solidity_ls", "pyright", "gopls", "jdtls", "clangd" }
+  { "html", "cssls", "ts_ls", "lua_ls", "sqls", "jsonls", "bashls", "solidity_ls", "pyright", "gopls", "clangd" }
 
 vim.lsp.config("solidity_ls", {
   cmd = { "vscode-solidity-server", "--stdio" },
@@ -27,7 +27,7 @@ vim.lsp.config("solidity_ls", {
   },
 })
 
-require("java").setup()
+-- require("java").setup()
 for _, lsp_name in ipairs(lsp_with_default_conf) do
   vim.schedule(function()
     vim.lsp.enable(lsp_name)

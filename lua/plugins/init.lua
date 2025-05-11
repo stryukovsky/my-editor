@@ -33,6 +33,7 @@ return {
 
   {
     "nvim-telescope/telescope.nvim",
+    -- tag = "0.1.8",
     dependencies = {
       "nvim-lua/plenary.nvim",
       "debugloop/telescope-undo.nvim",
@@ -41,9 +42,9 @@ return {
       require("telescope").setup {
         -- the rest of your telescope config goes here
         defaults = {
-          prompt_prefix = "   ",
-          selection_caret = " ",
-          entry_prefix = " ",
+          --     prompt_prefix = "   ",
+          --     selection_caret = "",
+          --     entry_prefix = "",
           sorting_strategy = "ascending",
           layout_config = {
             horizontal = {
@@ -180,51 +181,51 @@ return {
     },
     ft = { "markdown", "Avante" },
   },
-  {
-    "nvim-java/nvim-java",
-    config = false,
-    dependencies = {
-      {
-        "neovim/nvim-lspconfig",
-        opts = {
-          servers = {
-            -- Your JDTLS configuration goes here
-            jdtls = {
-              -- settings = {
-              --   java = {
-              --     configuration = {
-              --       runtimes = {
-              --         {
-              --           name = "JavaSE-23",
-              --           path = "/usr/local/sdkman/candidates/java/23-tem",
-              --         },
-              --       },
-              --     },
-              --   },
-              -- },
-            },
-          },
-          setup = {
-            jdtls = function()
-              -- Your nvim-java configuration goes here
-              require("java").setup {
-                -- root_markers = {
-                --   "settings.gradle",
-                --   "settings.gradle.kts",
-                --   "pom.xml",
-                --   "build.gradle",
-                --   "mvnw",
-                --   "gradlew",
-                --   "build.gradle",
-                --   "build.gradle.kts",
-                -- },
-              }
-            end,
-          },
-        },
-      },
-    },
-  },
+  -- {
+  --   "nvim-java/nvim-java",
+  --   config = false,
+  --   dependencies = {
+  --     {
+  --       "neovim/nvim-lspconfig",
+  --       opts = {
+  --         servers = {
+  --           -- Your JDTLS configuration goes here
+  --           jdtls = {
+  --             -- settings = {
+  --             --   java = {
+  --             --     configuration = {
+  --             --       runtimes = {
+  --             --         {
+  --             --           name = "JavaSE-23",
+  --             --           path = "/usr/local/sdkman/candidates/java/23-tem",
+  --             --         },
+  --             --       },
+  --             --     },
+  --             --   },
+  --             -- },
+  --           },
+  --         },
+  --         setup = {
+  --           jdtls = function()
+  --             -- Your nvim-java configuration goes here
+  --             require("java").setup {
+  --               -- root_markers = {
+  --               --   "settings.gradle",
+  --               --   "settings.gradle.kts",
+  --               --   "pom.xml",
+  --               --   "build.gradle",
+  --               --   "mvnw",
+  --               --   "gradlew",
+  --               --   "build.gradle",
+  --               --   "build.gradle.kts",
+  --               -- },
+  --             }
+  --           end,
+  --         },
+  --       },
+  --     },
+  --   },
+  -- },
   {
     "kndndrj/nvim-dbee",
     dependencies = {
@@ -335,15 +336,6 @@ return {
     keys = {},
     ft = { "http", "rest" },
     opts = {},
-  },
-  {
-    "rmagatti/auto-session",
-    lazy = false,
-
-    ---enables autocomplete for opts
-    ---@module "auto-session"
-    ---@type AutoSession.Config
-    opts = require "configs.autosession",
   },
   {
     "numToStr/Comment.nvim",

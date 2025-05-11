@@ -36,23 +36,40 @@ local lefty = function()
   end
 end
 
+local function get_keys(t)
+  local keys = {}
+  for key, _ in pairs(t) do
+    table.insert(keys, key)
+  end
+  return keys
+end
+
+local righty
 -- function for right to assign to keybindings
-local righty = function()
+righty = function()
   local node_at_cursor = api.tree.get_node_under_cursor()
-  -- if it's a closed node, open it
-  -- if node_at_cursor.nodes and not node_at_cursor.open then
-  api.node.open.edit()
-  local nodes = node_at_cursor.nodes
-  local nodes_count = nodes
-  if nodes_count == 1 then
-    local first_node = nodes[1]
-    first_node.open.edit()
+  if node_at_cursor.type == "directory" then
+    local nodes = node_at_cursor.nodes
+    local nodes_count
+    local cursor_movement
+    if node_at_cursor.open then
+      nodes_count = #nodes -- if already open then firstly read child nodes count
+      api.node.open.edit() -- then close current node
+      cursor_movement = false
+    else
+      api.node.open.edit() -- if closed then firstly open
+      nodes_count = #nodes -- and then read count
+      cursor_movement = true
+    end
+    -- vim.print("Current node is " .. node_at_cursor.type .. " And its nodes are ".. #node_at_cursor.nodes)
+    -- vim.print(get_keys(node_at_cursor.nodes))
+    if nodes_count == 1 then
+      if cursor_movement then
+        vim.cmd "normal! j"
+      end
+      righty()
+    end
   end
-  if #node_at_cursor.nodes <= 0 then
-  end
-  -- if #node_at_cursor.nodes > 1 then
-  --   api.node.open.edit()
-  -- end
 end
 
 local search_in_node = function()
@@ -76,9 +93,11 @@ local function my_on_attach(bufnr)
   -- custom mappings
   vim.keymap.set("n", "R", api.tree.change_root_to_parent, opts "root to parent of current")
   vim.keymap.set("n", "s", git_add, opts "git stage/unstage")
+  vim.keymap.set("n", "s", git_add, opts "git stage/unstage")
   vim.keymap.set("n", "?", api.tree.toggle_help, opts "Help")
   vim.keymap.set("n", "f", search_in_node, opts "Search")
   vim.keymap.set("n", "r", api.fs.rename_full, opts "Rename")
+  vim.keymap.set("n", "K", api.tree.toggle_git_clean_filter, opts "Git changes")
 
   api.events.subscribe(api.events.Event.FileCreated, function(file)
     vim.cmd("edit " .. vim.fn.fnameescape(file.fname))
@@ -95,7 +114,7 @@ return {
     update_root = false,
   },
   view = {
-    width = 30,
+    width = 40,
     preserve_window_proportions = true,
   },
   renderer = {
@@ -118,6 +137,11 @@ return {
         },
       },
     },
+  },
+  actions = {
+    open_file = {
+      resize_window = false
+    }
   },
   on_attach = my_on_attach,
 }
