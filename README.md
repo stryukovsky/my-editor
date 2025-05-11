@@ -17,6 +17,7 @@ Execute every line separately!!!
 sudo bash setup/fedora/setup.sh 
 bash setup/fedora/pyenv.sh
 bash setup/commons.sh
+bash setup/fedora/gnome.sh
 cp setup/alacritty.toml ~/.alacritty.toml
 cp setup/tmux.conf ~/.tmux.conf
 cp setup/fedora/zsh.sh ~/.zshrc
