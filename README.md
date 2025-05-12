@@ -12,7 +12,14 @@ In `~/.config/nvim/` run following:
 
 Fedora:  
 
+Firstly make sure system is up-to-date:  
+
+```
+sudo dnf upgrade
+```
+
 Execute every line separately!!!  
+
 ```sh
 sudo bash setup/fedora/setup.sh 
 bash setup/fedora/pyenv.sh
