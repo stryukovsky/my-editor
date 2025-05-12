@@ -134,14 +134,15 @@ return {
         git = {
           unmerged = "",
           unstaged = "*",
+          untracked = "",
         },
       },
     },
   },
   actions = {
     open_file = {
-      resize_window = false
-    }
+      resize_window = false,
+    },
   },
   on_attach = my_on_attach,
 }
