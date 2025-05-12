@@ -19,6 +19,4 @@ curl -s "https://get.sdkman.io" | bash
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 curl -L https://foundry.paradigm.xyz | bash
-cp setup/tmux.conf ~/.tmux.conf
-cp setup/alacritty.toml ~/.alacritty.toml
 nvim
