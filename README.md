@@ -18,7 +18,7 @@ sudo bash setup/fedora/setup.sh
 bash setup/fedora/pyenv.sh
 bash setup/commons.sh
 bash setup/fedora/gnome.sh
-cp setup/alacritty.toml ~/.alacritty.toml
+cp setup/fedora/alacritty.toml ~/.alacritty.toml
 cp setup/tmux.conf ~/.tmux.conf
 cp setup/fedora/zsh.sh ~/.zshrc
 ```
@@ -30,7 +30,7 @@ Install font from `fonts/` directory of this repo to your system.
 ```sh
 sudo bash setup/macos/setup.sh 
 bash setup/commons.sh
-cp setup/alacritty.toml ~/.alacritty.toml
+cp setup/macos/alacritty.toml ~/.alacritty.toml
 cp setup/tmux.conf ~/.tmux.conf
 cp setup/macos/zsh.sh ~/.zshrc
 ```

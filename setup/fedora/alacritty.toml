@@ -21,3 +21,5 @@ style = "Italic"
 family = "0xProto Nerd Font"
 style = "Regular"
 
+[terminal]
+shell = "tmux"
