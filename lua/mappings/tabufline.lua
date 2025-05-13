@@ -1,6 +1,20 @@
 local map = require "mappings.map"
 local neoscroll = require "neoscroll"
 
+-- toggle numbering
+
+local is_relative = false
+map("n", "<A-1>", function()
+  if vim.api.nvim_get_option_value("buftype", { buf = vim.fn.bufnr() }) == "" then
+    if is_relative then
+      vim.cmd "set number norelativenumber"
+    else
+      vim.cmd "set relativenumber"
+    end
+    is_relative = not is_relative
+  end
+end, { desc = "toggle relative numbering" })
+
 -- tabs navigation
 map("n", "<leader><Right>", function()
   require("nvchad.tabufline").next()
@@ -10,11 +24,11 @@ map("n", "<leader><Left>", function()
   require("nvchad.tabufline").prev()
 end, { desc = "buffer goto prev" })
 
-map("n", "<C-Right>", function()
+map("n", "<A-Right>", function()
   require("nvchad.tabufline").next()
 end, { desc = "buffer goto next" })
 
-map("n", "<C-Left>", function()
+map("n", "<A-Left>", function()
   require("nvchad.tabufline").prev()
 end, { desc = "buffer goto prev" })
 
@@ -31,8 +45,6 @@ map("n", "<A-[>", "<cmd>pop<cr>", { desc = "jump prev" })
 map("n", "<A-]>", "<cmd>tag<cr>", { desc = "jump next" })
 
 -- navigate in code
-map({ "n", "v" }, "<A-Left>", "b")
-map({ "n", "v" }, "<A-Right>", "w")
 map({ "n", "v" }, "<A-Up>", function()
   neoscroll.scroll(-0.2, { move_cursor = true, duration = 120 })
 end)

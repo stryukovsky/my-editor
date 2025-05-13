@@ -293,7 +293,6 @@ map(ui_components_modes, "<A-m>", function()
   end
 end, { desc = "trouble monitor definitions" })
 
-map(ui_components_modes, "<A-/>", "<cmd>SessionSearch<cr>", { desc = "open sessions available" })
 -- the same stuff but telescope mode
 -- local telescope_builtin = require "telescope.builtin"
 -- map("n", "<A-p>", function()
