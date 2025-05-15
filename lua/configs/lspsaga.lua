@@ -20,11 +20,4 @@ lspsaga.setup {
   lightbulb = {
     sign = false,
   },
-  rename = {
-    auto_save = true,
-    max_width = 2,
-    keys = {
-      quit = "<Esc>",
-    },
-  },
 }
