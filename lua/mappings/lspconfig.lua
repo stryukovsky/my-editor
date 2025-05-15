@@ -1,6 +1,5 @@
 local map = vim.keymap.set
 local telescope_builtin = require "telescope.builtin"
-
 local function opts(desc)
   return { desc = "LSP " .. desc }
 end
@@ -25,7 +24,9 @@ map("n", "<leader>lco", function()
   vim.cmd "Lspsaga outgoing_calls"
 end, opts "show outcoming calls")
 
-map("n", "<leader>ra", "<cmd>Lspsaga rename<cr>", opts "renamer")
+map("n", "<leader>rn", function()
+  vim.lsp.buf.rename()
+end, opts "renamer")
 
 map("n", "<leader>pp", function()
   local path = vim.fn.input "Provide path to python executable of project: "

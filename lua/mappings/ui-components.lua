@@ -86,7 +86,7 @@ map("n", "<A-?>", function()
         nvcheatsheet_bufnr = vim.fn.bufnr()
     end
   else
-    vim.cmd(tostring(nvcheatsheet_bufnr) .. "bw")
+    vim.cmd("silent! " .. tostring(nvcheatsheet_bufnr) .. "bw")
     nvcheatsheet_bufnr = 0
   end
 end, { desc = "UI help" })
