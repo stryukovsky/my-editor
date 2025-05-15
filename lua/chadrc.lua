@@ -14,6 +14,7 @@ M.base46 = {
   },
 }
 
+
 M.cheatsheet = {
   theme = "simple", -- simple/grid
   excluded_groups = {
