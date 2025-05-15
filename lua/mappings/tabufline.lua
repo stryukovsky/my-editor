@@ -13,36 +13,36 @@ map("n", "<A-1>", function()
     end
     is_relative = not is_relative
   end
-end, { desc = "toggle relative numbering" })
+end, { desc = "Navigation toggle relative numbering" })
 
 -- tabs navigation
 map("n", "<leader><Right>", function()
   require("nvchad.tabufline").next()
-end, { desc = "buffer goto next" })
+end, { desc = "Navigation buffer goto next" })
 
 map("n", "<leader><Left>", function()
   require("nvchad.tabufline").prev()
-end, { desc = "buffer goto prev" })
+end, { desc = "Navigation buffer goto prev" })
 
 map("n", "<A-Right>", function()
   require("nvchad.tabufline").next()
-end, { desc = "buffer goto next" })
+end, { desc = "Navigation buffer goto next" })
 
 map("n", "<A-Left>", function()
   require("nvchad.tabufline").prev()
-end, { desc = "buffer goto prev" })
+end, { desc = "Navigation buffer goto prev" })
 
 map("n", "<tab>", function()
   require("nvchad.tabufline").next()
-end, { desc = "buffer goto next" })
+end, { desc = "Navigation buffer goto next" })
 
 map("n", "<S-tab>", function()
   require("nvchad.tabufline").prev()
-end, { desc = "buffer goto prev" })
+end, { desc = "Navigation buffer goto prev" })
 
 -- navigate in jumps
-map("n", "<A-[>", "<cmd>pop<cr>", { desc = "jump prev" })
-map("n", "<A-]>", "<cmd>tag<cr>", { desc = "jump next" })
+map("n", "<A-[>", "<cmd>pop<cr>", { desc = "Navigation jump prev" })
+map("n", "<A-]>", "<cmd>tag<cr>", { desc = "Navigation jump next" })
 
 -- navigate in code
 map({ "n", "v" }, "<A-Up>", function()
@@ -53,18 +53,18 @@ map({ "n", "v" }, "<A-Down>", function()
 end)
 
 -- save
-map("n", "<leader>s", ":w<cr>", { desc = "save file" })
 
 -- close current tab
-map("n", "<leader>w", function()
+map("n", "<leader>x", function()
   require("nvchad.tabufline").close_buffer()
-end, { desc = "close current buffer" })
+end, { desc = "Navigation close current buffer" })
 
 -- close others
-map("n", "<leader>W", function()
+map("n", "<leader>X", function()
   require("nvchad.tabufline").closeAllBufs(false)
-end, { desc = "close other buffers" })
+end, { desc = "Navigation close other buffers" })
 
+map("n", "<leader>s", ":w<cr>", { desc = "File save file" })
 -- format file, linter etc
 map("n", "<leader>fm", function()
   require("conform").format({ lsp_fallback = true, async = true }, function(err, did_edit)
@@ -72,7 +72,7 @@ map("n", "<leader>fm", function()
       vim.cmd "w"
     end
   end)
-end, { desc = "general format file" })
+end, { desc = "File format file" })
 
 -- block of code moving
 map("n", "<S-Left>", "<Plug>GoNSMLeft", {})

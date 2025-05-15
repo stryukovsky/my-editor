@@ -1,7 +1,7 @@
 -- This file needs to have same structure as nvconfig.lua
 -- https://github.com/NvChad/ui/blob/v3.0/lua/nvconfig.lua
 -- Please read that file to know all available options :(
-
+--
 ---@class ChadrcConfig
 local M = {}
 M.base46 = {
@@ -13,6 +13,34 @@ M.base46 = {
     ["@comment"] = { italic = true },
   },
 }
+
+M.cheatsheet = {
+  theme = "simple", -- simple/grid
+  excluded_groups = {
+    "terminal (t)",
+    "autopairs",
+    "Nvim",
+    "Opens",
+    "telescope",
+    "UI (t)",
+    "UI (i)",
+    "UI (v)",
+    "move (i)",
+    ":help (i)",
+    ":help",
+    "switch",
+    "Debug (v)",
+    "LSP (v)",
+    "General (x)",
+    "Comment (x)",
+    "nvimtree",
+    "vim.snippet.jump (i)",
+    "vim.snippet.jump (s)",
+    "avante: (i)",
+    "Add"
+  }, -- can add group name or with mode
+}
+
 M.nvdash = {
   -- nvdash display condition is synced with auto-session, so here we need to skip its load on startup
   load_on_startup = false, -- nvdash is started on startup in autocmd
@@ -94,5 +122,9 @@ M.ui = {
   cmp = {
     style = "atom",
   },
+  -- cheatsheet = {
+  --   theme = "simple", -- simple/grid
+  --   excluded_groups = { "terminal (t)", "autopairs", "Nvim", "Opens" }, -- can add group name or with mode
+  -- },
 }
 return M

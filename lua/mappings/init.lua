@@ -6,12 +6,21 @@ local unset = vim.keymap.del
 unset({ "n" }, "<leader>h")
 unset({ "n" }, "<leader>v")
 unset({ "n" }, "<C-s>")
+unset({ "n" }, "<leader>x")
 unset({ "n" }, "<A-v>")
 unset({ "n" }, "<C-w>")
 unset({ "n" }, "<leader>wK")
 unset({ "n" }, "<leader>wk")
 unset({ "n", "v" }, "<leader>/")
 unset({ "n", "t" }, "<A-h>")
+unset("i", "<C-h>")
+unset("i", "<C-j>")
+unset("i", "<C-k>")
+unset("i", "<C-l>")
+unset("i", "<C-b>")
+unset("n", "<leader>ch")
+unset("n", "<leader>n")
+unset("n", "<leader>rn")
 
 require "mappings.lspconfig"
 require "mappings.dap"

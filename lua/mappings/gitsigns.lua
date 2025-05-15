@@ -8,8 +8,8 @@ map("n", "<leader>gs", "<cmd>Gitsigns stage_buffer<cr>", { desc = "git stage buf
 map("n", "<leader>gR", "<cmd>Gitsigns reset_buffer<cr>", { desc = "git reset buffer" })
 map("n", "<leader>bl", "<cmd>Gitsigns blame_line<cr>", { desc = "git blame line" })
 
-map("n", "g<Down>", "<cmd>Gitsigns next_hunk<cr>", { desc = "git next hunk" })
-map("n", "g<Up>", "<cmd>Gitsigns prev_hunk<cr>", { desc = "git prev hunk" })
+map("n", "]g", "<cmd>Gitsigns next_hunk<cr>", { desc = "Jump To the git next hunk" })
+map("n", "[g", "<cmd>Gitsigns prev_hunk<cr>", { desc = "Jump To the git prev hunk" })
 
 map("n", "<leader>gP", function()
   local response = vim.fn.system "git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD) "
