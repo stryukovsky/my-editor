@@ -5,7 +5,9 @@ require("oil").setup {
     "size",
     -- "mtime",
   },
-
+  view_options = {
+    show_hidden = false,
+  },
   keymaps = {
     ["g?"] = { "actions.show_help", mode = "n" },
     ["<CR>"] = "actions.select",
@@ -15,8 +17,8 @@ require("oil").setup {
     ["<A-p>"] = "actions.preview",
     -- ["<C-c>"] = { "actions.close", mode = "n" },
     -- ["<C-l>"] = "actions.refresh",
-    ["-"] = { "actions.parent", mode = "n" },
-    ["_"] = { "actions.open_cwd", mode = "n" },
+    --  ["-"] = { "actions.parent", mode = "n" },
+    --  ["_"] = { "actions.open_cwd", mode = "n" },
     -- ["`"] = { "actions.cd", mode = "n" },
     -- ["~"] = { "actions.cd", opts = { scope = "tab" }, mode = "n" },
     -- ["gs"] = { "actions.change_sort", mode = "n" },

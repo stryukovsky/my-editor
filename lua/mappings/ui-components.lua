@@ -77,13 +77,12 @@ for _, value in ipairs(telescope_components) do
   end, { desc = value.desc })
 end
 
-
 local nvcheatsheet_bufnr = 0
 map("n", "<A-?>", function()
   if nvcheatsheet_bufnr == 0 then
     if vim.api.nvim_get_option_value("buftype", { buf = vim.fn.bufnr() }) == "" then
-      vim.cmd("NvCheatsheet")
-        nvcheatsheet_bufnr = vim.fn.bufnr()
+      vim.cmd "NvCheatsheet"
+      nvcheatsheet_bufnr = vim.fn.bufnr()
     end
   else
     vim.cmd("silent! " .. tostring(nvcheatsheet_bufnr) .. "bw")
@@ -163,7 +162,7 @@ map("n", "<A-o>", function()
       oilOpened = false
       oil.close()
     end
-    oil.open()
+    oil.open_float(nil, {preview = {vertical = true}})
   end
   oilOpened = not oilOpened
 end, { desc = "UI oil toggle float browser" })
