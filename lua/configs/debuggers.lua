@@ -112,8 +112,18 @@ dap.configurations.scala = {
     request = "launch",
     name = "Sbt run",
     metals = {
-      shellCommand = "sbt run"
+      shellCommand = "sbt run",
     },
   },
 }
 
+dap.configurations.python = {
+  {
+    type = "python",
+    request = "launch",
+    name = "run command",
+    program = "${file}",
+    cwd = "${workspaceFolder}",
+    runtimeExecutable = inputCommand,
+  },
+}

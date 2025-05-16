@@ -31,15 +31,17 @@ end, opts "renamer")
 map("n", "<leader>pp", function()
   local path = vim.fn.input "Provide path to python executable of project: "
   vim.fn.system(path .. " -m pip install pydebug debugpy")
-  vim.cmd("PyrightSetPythonPath " .. path)
+  vim.cmd("LspPyrightSetPythonPath " .. path)
   require("dap-python").setup(path)
+  vim.print("Python venv setup completed")
 end, opts "Set python path")
 
 map("n", "<leader>pv", function()
   local path = ".venv/bin/python"
   vim.fn.system(path .. " -m pip install pydebug debugpy")
-  vim.cmd("PyrightSetPythonPath " .. path)
+  vim.cmd("LspPyrightSetPythonPath " .. path)
   require("dap-python").setup(path)
+  vim.print("Python venv setup completed")
 end, opts "Set python to ./venv/bin/python")
 
 map("n", "K", vim.lsp.buf.signature_help, opts "Show signature help")
