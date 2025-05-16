@@ -85,7 +85,7 @@ map("n", "<A-?>", function()
       nvcheatsheet_bufnr = vim.fn.bufnr()
     end
   else
-    vim.cmd("silent! " .. tostring(nvcheatsheet_bufnr) .. "bw")
+    require("nvchad.tabufline").close_buffer(nvcheatsheet_bufnr)
     nvcheatsheet_bufnr = 0
   end
 end, { desc = "UI help" })
