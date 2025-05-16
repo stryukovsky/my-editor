@@ -32,12 +32,13 @@ M.cheatsheet = {
     "switch",
     "Debug (v)",
     "LSP (v)",
-    "General (x)",
+    "general (x)",
     "Comment (x)",
     "nvimtree",
     "vim.snippet.jump (i)",
     "vim.snippet.jump (s)",
     "avante: (i)",
+    "avante: (v)",
     "Add"
   }, -- can add group name or with mode
 }
