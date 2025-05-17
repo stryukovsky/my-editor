@@ -22,4 +22,4 @@ family = "0xProto Nerd Font"
 style = "Regular"
 
 [terminal]
-shell = "tmux"
+shell = "tmux a || tmux"
