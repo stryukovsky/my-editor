@@ -36,14 +36,6 @@ local lefty = function()
   end
 end
 
-local function get_keys(t)
-  local keys = {}
-  for key, _ in pairs(t) do
-    table.insert(keys, key)
-  end
-  return keys
-end
-
 local righty
 -- function for right to assign to keybindings
 righty = function()
@@ -79,6 +71,19 @@ local search_in_node = function()
   end
 end
 
+local function open_in_os_explorer()
+  local node_at_cursor = api.tree.get_node_under_cursor()
+  local command = "dirname -- " .. node_at_cursor.absolute_path
+  if node_at_cursor.nodes then
+    -- if selected is dir then no dirname call is needed
+    command = node_at_cursor.absolute_path
+  end
+
+  if vim.loop.os_uname().sysname == "Darwin" then
+    vim.system { "open", command }
+  end
+end
+
 local function my_on_attach(bufnr)
   local function opts(desc)
     return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
@@ -97,6 +102,7 @@ local function my_on_attach(bufnr)
   vim.keymap.set("n", "?", api.tree.toggle_help, opts "Help")
   vim.keymap.set("n", "f", search_in_node, opts "Search")
   vim.keymap.set("n", "r", api.fs.rename_full, opts "Rename")
+  vim.keymap.set("n", "O", open_in_os_explorer, opts "Open in explorer")
   vim.keymap.set("n", "K", api.tree.toggle_git_clean_filter, opts "Git changes")
 
   api.events.subscribe(api.events.Event.FileCreated, function(file)
