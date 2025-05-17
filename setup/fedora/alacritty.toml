@@ -22,4 +22,4 @@ family = "0xProto Nerd Font"
 style = "Regular"
 
 [terminal]
-shell = "tmux a || tmux"
+shell = { program = "/bin/bash", args = ["-c", "tmux a || tmux"] }
