@@ -73,14 +73,17 @@ end
 
 local function open_in_os_explorer()
   local node_at_cursor = api.tree.get_node_under_cursor()
-  local command = "dirname -- " .. node_at_cursor.absolute_path
-  if node_at_cursor.nodes then
-    -- if selected is dir then no dirname call is needed
-    command = node_at_cursor.absolute_path
+  local searched_node = node_at_cursor.absolute_path
+  if not node_at_cursor.nodes then
+    searched_node = tostring(vim.system { "dirname", "--", node_at_cursor.absolute_path })
   end
-
-  if vim.loop.os_uname().sysname == "Darwin" then
-    vim.system { "open", command }
+  local sysname = vim.loop.os_uname().sysname
+  if sysname == "Darwin" then
+    vim.system { "open", searched_node }
+  elseif sysname == "Linux" then
+    vim.system { "nautilus", searched_node }
+  else
+    vim.print("Unknown platform " .. sysname)
   end
 end
 
@@ -103,6 +106,7 @@ local function my_on_attach(bufnr)
   vim.keymap.set("n", "f", search_in_node, opts "Search")
   vim.keymap.set("n", "r", api.fs.rename_full, opts "Rename")
   vim.keymap.set("n", "O", open_in_os_explorer, opts "Open in explorer")
+  vim.keymap.set("n", "o", open_in_os_explorer, opts "Open in explorer")
   vim.keymap.set("n", "K", api.tree.toggle_git_clean_filter, opts "Git changes")
 
   api.events.subscribe(api.events.Event.FileCreated, function(file)
