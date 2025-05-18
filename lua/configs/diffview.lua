@@ -1,10 +1,12 @@
 local actions = require "diffview.actions"
 ---@diagnostic disable-next-line: missing-fields
 require("diffview").setup {
-  merge_tool = {
-    layout = "diff3_horizontal",
-    disable_diagnostics = true,
-    winbar_info = true,
+  view = {
+    merge_tool = {
+      layout = "diff3_mixed",
+      disable_diagnostics = true,
+      winbar_info = true,
+    },
   },
   file_history_panel = {
     log_options = {
