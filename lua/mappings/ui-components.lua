@@ -8,6 +8,7 @@ local kulala_ui = require "kulala.ui"
 local oil = require "oil"
 local new_branch = require "ui.new_branch"
 local commit = require "ui.commit"
+local commit_amend = require "ui.commit_amend"
 local telescope = require "telescope.actions"
 local gitsigns_async = require "gitsigns.async"
 local gitsigns_blame = require "gitsigns.blame"
@@ -325,6 +326,10 @@ end, { desc = "git new branch create&checkout" })
 map("n", "<leader>gc", function()
   commit()
 end, { desc = "git commit" })
+
+map("n", "<leader>gC", function()
+  commit_amend()
+end, { desc = "git commit amend" })
 
 local git_blame_bufnr = 0
 map("n", "<A-b>", function()

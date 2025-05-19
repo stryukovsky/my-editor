@@ -34,6 +34,7 @@ require("diffview").setup {
     file_panel = {
       { "n", "<Left>", actions.close_fold, { desc = "Collapse fold" } },
       { "n", "<Right>", actions.select_entry, { desc = "Open the diff for the selected entry" } },
+      { "n", "o", actions.goto_file_tab, { desc = "Go to file" } },
     },
   },
 }
