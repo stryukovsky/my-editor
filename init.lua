@@ -25,29 +25,6 @@ require("lazy").setup({
   { import = "plugins" },
 }, lazy_config)
 
--- show nvdash when all buffers closed
-vim.api.nvim_create_autocmd("BufDelete", {
-  callback = function()
-    local bufs = vim.t.bufs
-    if #bufs == 1 and vim.api.nvim_buf_get_name(bufs[1]) == "" then
-      vim.cmd "Nvdash"
-    end
-  end,
-})
-
--- local function open_nvim_tree()
---
---   -- open the tree
---   require("nvim-tree.api").tree.open()
--- end
--- vim.api.nvim_create_autocmd({ "VimEnter" }, { callback = open_nvim_tree })
-
--- disable spell in terminal
--- vim.api.nvim_create_autocmd("TermOpen", {
---   callback = function()
---     vim.cmd "setlocal nospell"
---   end,
--- })
 
 -- load theme
 dofile(vim.g.base46_cache .. "defaults")
