@@ -123,11 +123,15 @@ end, { desc = "UI kulala toggle with sending request" })
 local fileHistoryOpened = false
 map(ui_components_modes, "<A-h>", function()
   if fileHistoryOpened then
-    vim.cmd "tabc"
+    pcall(function()
+      vim.cmd "tabc"
+    end)
     dialog_component_callback_close = function() end
   else
     dialog_component_callback_close()
-    vim.cmd "DiffviewFileHistory"
+    pcall(function()
+      vim.cmd "DiffviewFileHistory"
+    end)
     dialog_component_callback_close = function()
       fileHistoryOpened = false
       vim.cmd "tabc"
@@ -145,9 +149,13 @@ map(ui_components_modes, "<A-k>", function()
     dialog_component_callback_close()
     dialog_component_callback_close = function()
       diffViewOpened = false
-      vim.cmd "tabc"
+      pcall(function()
+        vim.cmd "tabc"
+      end)
     end
-    vim.cmd "DiffviewOpen"
+    pcall(function()
+      vim.cmd "DiffviewOpen"
+    end)
   end
   diffViewOpened = not diffViewOpened
 end, { desc = "UI diffview open merge tool" })
@@ -163,7 +171,7 @@ map("n", "<A-o>", function()
       oilOpened = false
       oil.close()
     end
-    oil.open_float(nil, {preview = {vertical = true}})
+    oil.open_float(nil, { preview = { vertical = true } })
   end
   oilOpened = not oilOpened
 end, { desc = "UI oil toggle float browser" })

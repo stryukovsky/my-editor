@@ -45,7 +45,7 @@ M.cheatsheet = {
 
 M.nvdash = {
   -- nvdash display condition is synced with auto-session, so here we need to skip its load on startup
-  load_on_startup = true, -- nvdash is started on startup in autocmd
+  load_on_startup = false, -- nvdash is started on startup in autocmd
   header = {
     "                            ",
     "     ▄▄         ▄ ▄▄▄▄▄▄▄   ",
