@@ -11,3 +11,12 @@ vim.keymap.set(
   end,
   { silent = true, buffer = bufnr }
 )
+
+vim.keymap.set(
+  "n",
+  "<leader>dd", -- Override Neovim's built-in hover keymap with rustaceanvim's hover actions
+  function()
+    vim.cmd.RustLsp "debuggables"
+  end,
+  { silent = true, buffer = bufnr }
+)
