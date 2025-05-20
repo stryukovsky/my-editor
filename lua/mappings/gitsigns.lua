@@ -14,11 +14,16 @@ map("n", "[g", "<cmd>Gitsigns prev_hunk<cr>", { desc = "Jump To the git prev hun
 map("n", "<leader>gPush", function()
   vim.system({ "git", "push", "--set-upstream", "origin", "$(git rev-parse --abbrev-ref HEAD)" }, {}, function(response)
     print(response.stdout)
+    if response.stderr:gsub("%s+", "") == "" then
+      print(response.stdout)
+    else
+      print(response.stderr)
+    end
   end)
 end, { desc = "git push" })
 
 map("n", "<leader>gPull", function()
-  vim.system({ "git", "pull"}, {}, function(response)
+  vim.system({ "git", "pull" }, {}, function(response)
     print(response.stdout)
   end)
 end, { desc = "git pull" })
