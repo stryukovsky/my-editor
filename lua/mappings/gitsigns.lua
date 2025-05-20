@@ -11,10 +11,17 @@ map("n", "<leader>bl", "<cmd>Gitsigns blame_line<cr>", { desc = "git blame line"
 map("n", "]g", "<cmd>Gitsigns next_hunk<cr>", { desc = "Jump To the git next hunk" })
 map("n", "[g", "<cmd>Gitsigns prev_hunk<cr>", { desc = "Jump To the git prev hunk" })
 
-map("n", "<leader>gP", function()
-  local response = vim.fn.system "git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD) "
-  print(response)
+map("n", "<leader>gPush", function()
+  vim.system({ "git", "push", "--set-upstream", "origin", "$(git rev-parse --abbrev-ref HEAD)" }, {}, function(response)
+    print(response.stdout)
+  end)
 end, { desc = "git push" })
+
+map("n", "<leader>gPull", function()
+  vim.system({ "git", "pull"}, {}, function(response)
+    print(response.stdout)
+  end)
+end, { desc = "git pull" })
 
 map("n", "<leader>gS", function()
   vim.fn.system "git add ."
