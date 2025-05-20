@@ -16,7 +16,7 @@ map("n", "<leader>gPush", function()
   if branch_result.stderr:gsub("%s+", "") ~= "" then
     vim.print(branch_result.stderr)
   end
-  local branch = branch_result.stdout
+  local branch = branch_result.stdout:gsub("%s+", "")
 
   vim.system({ "git", "push", "--set-upstream", "origin", branch }, {}, function(response)
     if response.stderr:gsub("%s+", "") == "" then
