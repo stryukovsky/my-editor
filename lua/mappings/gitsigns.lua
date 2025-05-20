@@ -12,12 +12,17 @@ map("n", "]g", "<cmd>Gitsigns next_hunk<cr>", { desc = "Jump To the git next hun
 map("n", "[g", "<cmd>Gitsigns prev_hunk<cr>", { desc = "Jump To the git prev hunk" })
 
 map("n", "<leader>gPush", function()
-  vim.system({ "git", "push", "--set-upstream", "origin", "$(git rev-parse --abbrev-ref HEAD)" }, {}, function(response)
-    print(response.stdout)
+  local branch_result = vim.system({ "git", "rev-parse", "--abbrev-ref", "HEAD" }):wait()
+  if branch_result.stderr:gsub("%s+", "") ~= "" then
+    vim.print(branch_result.stderr)
+  end
+  local branch = branch_result.stdout
+
+  vim.system({ "git", "push", "--set-upstream", "origin", branch }, {}, function(response)
     if response.stderr:gsub("%s+", "") == "" then
-      print(response.stdout)
+      vim.print(response.stdout)
     else
-      print(response.stderr)
+      vim.print(response.stderr)
     end
   end)
 end, { desc = "git push" })
