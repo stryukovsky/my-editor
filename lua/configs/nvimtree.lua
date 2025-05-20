@@ -75,7 +75,7 @@ local function open_in_os_explorer()
   local node_at_cursor = api.tree.get_node_under_cursor()
   local searched_node = node_at_cursor.absolute_path
   if not node_at_cursor.nodes then
-    searched_node = tostring(vim.system { "dirname", "--", node_at_cursor.absolute_path })
+    searched_node = vim.system({ "dirname", "--", node_at_cursor.absolute_path }):wait().stdout:gsub("%s+", "")
   end
   local sysname = vim.loop.os_uname().sysname
   if sysname == "Darwin" then
