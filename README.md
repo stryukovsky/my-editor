@@ -1,6 +1,5 @@
 # My Editor
 
-
 Clone this repository:
 
 ```sh 
@@ -8,9 +7,10 @@ git clone https://github.com/stryukovsky/my-editor ~/.config/nvim/
 ```
 
 
-In `~/.config/nvim/` run following:  
+In `~/.config/nvim/` you need to run setup scripts:  
 
-Fedora:  
+# Ready instructions on platforms
+## Fedora:  
 
 Firstly make sure system is up-to-date:  
 
@@ -30,7 +30,7 @@ cp setup/tmux.conf ~/.tmux.conf
 cp setup/fedora/zsh.sh ~/.zshrc
 ```
 
-MacOS:  
+## MacOS:  
 Install alacritty:  
 https://alacritty.org/  
 Install font from `fonts/` directory of this repo to your system.   
@@ -42,13 +42,28 @@ cp setup/tmux.conf ~/.tmux.conf
 cp setup/macos/zsh.sh ~/.zshrc
 ```
 
-
+# Setup mason plugins
 Open neovim and run command
 ```
 MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter json-lsp lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server solidity solidity-ls vscode-solidity-server pyright goimports prettier clangd
 ```
 
-# Cuda NVIDIA
+# Other stuff
+
+## Gnome look
+
+Install plugins
+
+- https://extensions.gnome.org/extension/19/user-themes/
+- https://extensions.gnome.org/extension/7065/tiling-shell/
+- https://extensions.gnome.org/extension/1460/vitals/
+
+
+Install orchis theme
+
+https://github.com/vinceliuice/Orchis-theme
+
+## Cuda NVIDIA & ollama 
 Avante needs llama to be launched: 
 
 ```sh
@@ -59,7 +74,6 @@ You need to install NVIDIA drivers:
 
 https://rpmfusion.org/Howto/NVIDIA
 
-
 ```sh
 sudo dnf update -y 
 sudo dnf install akmod-nvidia 
@@ -67,7 +81,7 @@ sudo dnf install xorg-x11-drv-nvidia-cuda
 ```
 
 
-### Known problems with NVidia video drivers:  
+### Known problems with NVidia drivers:  
 
 Out of range
 
@@ -77,7 +91,7 @@ To disable deep color you can add “nvidia-modeset.hdmi_deepcolor=0” to /etc/
 
 Also I don’t know if this can create issues to certain monitors or graphic cards but this fixed it for me.
 
-# Wireguard install
+## Wireguard install
 First try in UI Networks add VPN from file. Note file shall be named as `somestring.conf`.  
 
 If failure:
@@ -88,9 +102,9 @@ wg-quick up  ~/Documents/vpn.conf
 
 Repeat again interactions with UI.  
 
-## Manual Installation (instead of usage `setup.fedora.sh`)
+# Manual Installation (instead of usage ready setup instructions)
 
-### Install neovim tmux alacritty 
+## Links 
 
 https://github.com/neovim/neovim   
 https://alacritty.org/  
@@ -98,22 +112,22 @@ https://github.com/tmux/tmux
 
 NOTE: make sure you installed copy-paste buffer adapter for your desktop environment on Linux systems.  
 
-### Install gcc, g++ and make
+### gcc, g++ and make
 
-This step mainly depends on platform you are running. Consider install these components using your system package manager.  
+https://gcc.gnu.org/
 
-### Install ripgrep
+### ripgrep
 
 https://github.com/BurntSushi/ripgrep
 
-### Install bpytop
+### bpytop
 
 https://github.com/aristocratos/bpytop  
 
-### Install golang 
+### golang 
 
 https://go.dev/
 
-### Install pyenv build dependencies
+### pyenv build dependencies
 
 https://github.com/pyenv/pyenv/wiki#suggested-build-environment
