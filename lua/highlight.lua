@@ -25,10 +25,11 @@ hl(0, "NvimTreeGitStagedIcon", { link = "PreProc" })
 -- here LspAttach is used to make sure native vim lsp highlight will not replace this rule
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function()
-    hl(0, "LspSignatureActiveParameter", { link = "DiagnosticInfo", force = true })
+    hl(0, "LspSignatureActiveParameter", {force = true, fg = "#ff0000"})
   end,
 })
 
+hl(0, "TelescopeSelection", {fg = "#ffffff", bg = "#000000", force = true})
 -- spell highlight
 hl(0, "SpellRare", {})
 hl(0, "SpellCap", {})

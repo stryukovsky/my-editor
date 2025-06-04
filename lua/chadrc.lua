@@ -5,8 +5,8 @@
 ---@class ChadrcConfig
 local M = {}
 M.base46 = {
-  theme = "tokyonight",
-  theme_toggle = { "tokyonight", "default-light" },
+  theme = "github_light",
+  theme_toggle = { "github_light", "github_dark" },
 
   hl_override = {
     Comment = { italic = true },
@@ -41,42 +41,6 @@ M.cheatsheet = {
     "avante: (v)",
     "Add"
   }, -- can add group name or with mode
-}
-
-M.nvdash = {
-  -- nvdash display condition is synced with auto-session, so here we need to skip its load on startup
-  load_on_startup = false, -- nvdash is started on startup in autocmd
-  header = {
-    "                            ",
-    "     ▄▄         ▄ ▄▄▄▄▄▄▄   ",
-    "   ▄▀███▄     ▄██ █████▀    ",
-    "   ██▄▀███▄   ███           ",
-    "   ███  ▀███▄ ███           ",
-    "   ███    ▀██ ███           ",
-    "   ███      ▀ ███           ",
-    "   ▀██ █████▄▀█▀▄██████▄    ",
-    "     ▀ ▀▀▀▀▀▀▀ ▀▀▀▀▀▀▀▀▀▀   ",
-    "                            ",
-    "                            ",
-  },
-  buttons = {
-    { txt = "󱥚  Themes", keys = "th", cmd = ":lua require('nvchad.themes').open()" },
-    { txt = "  Mappings", keys = "ch", cmd = "NvCheatsheet" },
-
-    { txt = "─", hl = "NvDashFooter", no_gap = true, rep = true },
-
-    {
-      txt = function()
-        local stats = require("lazy").stats()
-        local ms = math.floor(stats.startuptime) .. " ms"
-        return "  Loaded " .. stats.loaded .. "/" .. stats.count .. " plugins in " .. ms
-      end,
-      hl = "NvDashFooter",
-      no_gap = true,
-    },
-
-    { txt = "─", hl = "NvDashFooter", no_gap = true, rep = true },
-  },
 }
 
 local function shorten(v)
