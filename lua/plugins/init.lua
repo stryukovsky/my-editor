@@ -11,6 +11,12 @@ return {
     opts = {},
   },
   {
+    "nvim-lualine/lualine.nvim",
+  },
+  {
+    "neovim/nvim-lspconfig"
+  },
+  {
     "folke/which-key.nvim",
     event = "VeryLazy",
     opts = {
@@ -393,11 +399,13 @@ return {
     opts = {
       -- add any opts here
       -- for example
-      provider = "ollama",
-      ollama = {
-        endpoint = "http://127.0.0.1:11434", -- Note that there is no /v1 at the end.
-        model = "llama3.2",
+      providers = {
+        ollama = {
+          endpoint = "http://127.0.0.1:11434", -- Note that there is no /v1 at the end.
+          model = "llama3.2",
+        },
       },
+      provider = "ollama",
     },
     -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
     build = "make",

@@ -183,8 +183,8 @@ map(ui_components_modes, "<A-s>", "<C-W>j", { desc = "UI switch window down" })
 map(ui_components_modes, "<A-w>", "<C-W>k", { desc = "UI switch window up" })
 map("n", "+", "<C-W>3>", { desc = "UI window width increase" })
 map("n", "_", "<C-W>3<", { desc = "UI window width decrease" })
-map("n", "<leader>day", "<cmd>colorscheme tokyonight-day<cr>", { desc = "UI window width decrease" })
-map("n", "<leader>night", "<cmd>colorscheme tokyonight-night<cr>", { desc = "UI window width decrease" })
+map("n", "<leader>thd", "<cmd>colorscheme tokyonight-day<cr>", { desc = "Theme: day" })
+map("n", "<leader>thn", "<cmd>colorscheme tokyonight-night<cr>", { desc = "Theme: night" })
 
 -- local monitorStarted = false
 -- map(ui_components_modes, "<A-i>", function()

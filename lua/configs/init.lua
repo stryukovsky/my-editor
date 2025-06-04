@@ -3,8 +3,7 @@ require("render-markdown").setup {
 }
 
 require("multicursor-nvim").setup()
-require("kulala").setup(require("configs.kulala"))
-
+require("kulala").setup(require "configs.kulala")
 require("nvim-tree").setup(require "configs.nvimtree")
 require("Comment").setup()
 require("todo-comments").setup()
@@ -19,6 +18,11 @@ require "configs.diffview"
 require "configs.substitute"
 require "configs.neotest"
 require "configs.trouble"
+require "configs.lualine"
+require "configs.theme"
+require "lspconfig"
+require "configs.lspinit"
+
 
 -- at the end, so all highlight rules can be applied
 require "highlight"
