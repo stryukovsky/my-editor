@@ -1,6 +1,6 @@
 local map = require "mappings.map"
 local dapui = require "dapui"
-local term = require "nvchad.term"
+-- local term = require "nvchad.term"
 local neotest = require "neotest"
 local trouble = require "trouble"
 local kulala = require "kulala"
@@ -183,26 +183,28 @@ map(ui_components_modes, "<A-s>", "<C-W>j", { desc = "UI switch window down" })
 map(ui_components_modes, "<A-w>", "<C-W>k", { desc = "UI switch window up" })
 map("n", "+", "<C-W>3>", { desc = "UI window width increase" })
 map("n", "_", "<C-W>3<", { desc = "UI window width decrease" })
+map("n", "<leader>day", "<cmd>colorscheme tokyonight-day<cr>", { desc = "UI window width decrease" })
+map("n", "<leader>night", "<cmd>colorscheme tokyonight-night<cr>", { desc = "UI window width decrease" })
 
-local monitorStarted = false
-map(ui_components_modes, "<A-i>", function()
-  if not monitorStarted then
-    monitorStarted = true
-  end
-  term.toggle {
-    pos = "float",
-    id = "floatTerm",
-    cmd = "bpytop",
-    float_opts = {
-      relative = "editor",
-      row = 0.1,
-      col = 0.25,
-      width = 0.5,
-      height = 0.9,
-      border = "single",
-    },
-  }
-end, { desc = "UI system resource inspector" })
+-- local monitorStarted = false
+-- map(ui_components_modes, "<A-i>", function()
+--   if not monitorStarted then
+--     monitorStarted = true
+--   end
+--   term.toggle {
+--     pos = "float",
+--     id = "floatTerm",
+--     cmd = "bpytop",
+--     float_opts = {
+--       relative = "editor",
+--       row = 0.1,
+--       col = 0.25,
+--       width = 0.5,
+--       height = 0.9,
+--       border = "single",
+--     },
+--   }
+-- end, { desc = "UI system resource inspector" })
 
 -- focus nvimtree
 map(ui_components_modes, "<A-e>", function()
@@ -314,18 +316,6 @@ map(ui_components_modes, "<A-m>", function()
     trouble.open { mode = "lsp", focus = false, win = { position = "right" } }
   end
 end, { desc = "UI trouble monitor definitions" })
-
--- the same stuff but telescope mode
--- local telescope_builtin = require "telescope.builtin"
--- map("n", "<A-p>", function()
---   telescope_builtin.diagnostics { bufnr = 0 }
--- end, opts "inspections on current buffer")
---
--- map("n", "<A-P>", function()
---   telescope_builtin.diagnostics {}
--- end, opts "inspections on all")
--- map("n", "<A-l>", "<cmd>Telescope lsp_document_symbols<CR>", { desc = "UI telescope structure of file" })
---
 
 map("n", "<leader>gb", function()
   new_branch()
