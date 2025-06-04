@@ -29,7 +29,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
   end,
 })
 
-hl(0, "TelescopeSelection", {fg = "#ffffff", bg = "#000000", force = true})
+-- hl(0, "TelescopeSelection", {fg = "#ffffff", bg = "#000000", force = true})
 -- spell highlight
 hl(0, "SpellRare", {})
 hl(0, "SpellCap", {})

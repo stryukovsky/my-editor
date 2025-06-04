@@ -78,18 +78,18 @@ for _, value in ipairs(telescope_components) do
   end, { desc = value.desc })
 end
 
-local nvcheatsheet_bufnr = 0
-map("n", "<A-?>", function()
-  if nvcheatsheet_bufnr == 0 then
-    if vim.api.nvim_get_option_value("buftype", { buf = vim.fn.bufnr() }) == "" then
-      vim.cmd "NvCheatsheet"
-      nvcheatsheet_bufnr = vim.fn.bufnr()
-    end
-  else
-    require("nvchad.tabufline").close_buffer(nvcheatsheet_bufnr)
-    nvcheatsheet_bufnr = 0
-  end
-end, { desc = "UI help" })
+-- local nvcheatsheet_bufnr = 0
+-- map("n", "<A-?>", function()
+--   if nvcheatsheet_bufnr == 0 then
+--     if vim.api.nvim_get_option_value("buftype", { buf = vim.fn.bufnr() }) == "" then
+--       vim.cmd "NvCheatsheet"
+--       nvcheatsheet_bufnr = vim.fn.bufnr()
+--     end
+--   else
+--     require("nvchad.tabufline").close_buffer(nvcheatsheet_bufnr)
+--     nvcheatsheet_bufnr = 0
+--   end
+-- end, { desc = "UI help" })
 
 local kulala_state_is_opened = false
 map(ui_components_modes, "<A-y>", function()
@@ -183,8 +183,15 @@ map(ui_components_modes, "<A-s>", "<C-W>j", { desc = "UI switch window down" })
 map(ui_components_modes, "<A-w>", "<C-W>k", { desc = "UI switch window up" })
 map("n", "+", "<C-W>3>", { desc = "UI window width increase" })
 map("n", "_", "<C-W>3<", { desc = "UI window width decrease" })
-map("n", "<leader>thd", "<cmd>colorscheme tokyonight-day<cr>", { desc = "Theme: day" })
-map("n", "<leader>thn", "<cmd>colorscheme tokyonight-night<cr>", { desc = "Theme: night" })
+map("n", "<leader>thd", function()
+  vim.cmd "colorscheme tokyonight-day"
+  require "highlight"
+end, { desc = "Theme: day" })
+
+map("n", "<leader>thn", function()
+  vim.cmd "colorscheme tokyonight-night"
+  require "highlight"
+end, { desc = "Theme: night" })
 
 -- local monitorStarted = false
 -- map(ui_components_modes, "<A-i>", function()
