@@ -21,7 +21,7 @@ require "configs.trouble"
 require "configs.lualine"
 require "configs.theme"
 require "lspconfig"
-require "configs.lspinit"
+require "configs.lspconfig"
 
 
 -- at the end, so all highlight rules can be applied
