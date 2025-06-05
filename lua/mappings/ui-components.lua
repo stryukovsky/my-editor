@@ -48,7 +48,7 @@ map("n", "<leader>ga", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", { de
 map(
   "n",
   "<leader><leader>",
-  "<cmd>Telescope buffers only_cwd=true theme=get_cursor previewer=false sort_lastused=true<cr>",
+  "<cmd>Telescope buffers only_cwd=true theme=get_cursor previewer=false sort_lastused=true sort_mru=true<cr>",
   { desc = "UI telescope buffers" }
 )
 
