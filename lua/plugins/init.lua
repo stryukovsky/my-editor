@@ -1,8 +1,32 @@
 return {
+  { "saadparwaiz1/cmp_luasnip" },
+  {
+    "L3MON4D3/LuaSnip",
+    -- follow latest release.
+    version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
+    -- install jsregexp (optional!).
+    dependencies = { "rafamadriz/friendly-snippets" },
+    build = "make install_jsregexp",
+  },
+  {
+    "hrsh7th/nvim-cmp",
+    event = "InsertEnter",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+      "L3MON4D3/LuaSnip",
+      "saadparwaiz1/cmp_luasnip",
+    },
+  },
   {
     "stevearc/conform.nvim",
     -- event = 'BufWritePre', -- uncomment for format on save
     opts = require "configs.conform",
+  },
+  {
+    "mason-org/mason.nvim",
+    opts = {},
   },
   {
     "folke/tokyonight.nvim",
@@ -15,16 +39,6 @@ return {
   },
   {
     "neovim/nvim-lspconfig", -- REQUIRED: for native Neovim LSP integration
-  },
-  { 'saadparwaiz1/cmp_luasnip' },
-  {
-    "hrsh7th/nvim-cmp",
-    event = "InsertEnter",
-    dependencies = {
-      "hrsh7th/cmp-nvim-lsp",
-      "hrsh7th/cmp-buffer",
-      "hrsh7th/cmp-path",
-    },
   },
   {
     "folke/which-key.nvim",
@@ -67,14 +81,6 @@ return {
 
   {
     "lewis6991/gitsigns.nvim",
-  },
-  {
-    "L3MON4D3/LuaSnip",
-    -- follow latest release.
-    version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
-    -- install jsregexp (optional!).
-    dependencies = { "rafamadriz/friendly-snippets" },
-    build = "make install_jsregexp",
   },
   {
     "rcarriga/nvim-dap-ui",

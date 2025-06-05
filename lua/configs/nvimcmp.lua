@@ -22,23 +22,26 @@ cmp.setup {
     -- ["<Tab>"] = cmp.mapping.select_next_item(),
     -- ["<S-Tab>"] = cmp.mapping.select_prev_item(),
     ["<C-x>"] = cmp.mapping.abort(),
-    ["<CR>"] = cmp.mapping {
-      i = function(fallback)
-        if
-          cmp.visible() --[[ and cmp.get_active_entry() ]]
-        then
-          if luasnip.expandable() then
-            luasnip.expand()
-          else
-            cmp.confirm { behavior = cmp.ConfirmBehavior.Replace, select = false }
-          end
-        else
-          fallback()
-        end
-      end,
-      s = cmp.mapping.confirm { select = true },
-      c = cmp.mapping.confirm { behavior = cmp.ConfirmBehavior.Replace, select = true },
+    ["<CR>"] = cmp.mapping.confirm {
+      behavior = cmp.ConfirmBehavior.Insert,
+      select = true,
     },
+    -- ["<CR>"] = cmp.mapping {
+    --   i = function(fallback)
+    --     if cmp.visible() then
+    --       if luasnip.expandable() and
+    --         vim.print("Here")
+    --         luasnip.expand()
+    --       else
+    --         cmp.confirm { behavior = cmp.ConfirmBehavior.Replace, select = true}
+    --       end
+    --     else
+    --       fallback()
+    --     end
+    --   end,
+    --   s = cmp.mapping.confirm { select = true },
+    --   c = cmp.mapping.confirm { behavior = cmp.ConfirmBehavior.Replace, select = true },
+    -- },
 
     ["<Tab>"] = cmp.mapping(function(fallback)
       if cmp.visible() then
@@ -68,7 +71,7 @@ cmp.setup {
   -- }),
   sources = {
     { name = "nvim_lsp" },
-    { name = "luasnip" },
+    { name = "luasnip", option = { show_autosnippets = true } },
     { name = "buffer" },
     { name = "nvim_lua" },
     { name = "path" },
