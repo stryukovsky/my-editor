@@ -13,35 +13,19 @@ return {
   {
     "nvim-lualine/lualine.nvim",
   },
-{
-  "neovim/nvim-lspconfig", -- REQUIRED: for native Neovim LSP integration
-  lazy = false, -- REQUIRED: tell lazy.nvim to start this plugin at startup
-  dependencies = {
-    -- main one
-    { "ms-jpq/coq_nvim", branch = "coq" },
-
-    -- 9000+ Snippets
-    { "ms-jpq/coq.artifacts", branch = "artifacts" },
-
-    -- lua & third party sources -- See https://github.com/ms-jpq/coq.thirdparty
-    -- Need to **configure separately**
-    { 'ms-jpq/coq.thirdparty', branch = "3p" }
-    -- - shell repl
-    -- - nvim lua api
-    -- - scientific calculator
-    -- - comment banner
-    -- - etc
+  {
+    "neovim/nvim-lspconfig", -- REQUIRED: for native Neovim LSP integration
   },
-  init = function()
-    vim.g.coq_settings = {
-        auto_start = true, -- if you want to start COQ at startup
-        -- Your COQ settings here
-    }
-  end,
-  config = function()
-    -- Your LSP settings here
-  end,
-},
+  { 'saadparwaiz1/cmp_luasnip' },
+  {
+    "hrsh7th/nvim-cmp",
+    event = "InsertEnter",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+    },
+  },
   {
     "folke/which-key.nvim",
     event = "VeryLazy",
@@ -89,6 +73,7 @@ return {
     -- follow latest release.
     version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
     -- install jsregexp (optional!).
+    dependencies = { "rafamadriz/friendly-snippets" },
     build = "make install_jsregexp",
   },
   {
@@ -448,19 +433,19 @@ return {
       "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
     },
   },
-  -- {"cmp-buffer 
-  -- {"cmp-nvim-lsp 
-  -- {"cmp-nvim-lua 
-  -- {"cmp-path 
-  -- {"cmp_luasnip 
-  -- {"friendly-snippets 
-  -- {"img-clip.nvim 
-  -- {"indent-blankline.nvim 
-  -- {"mason.nvim 
-  -- {"menu 
-  -- {"minty 
-  -- {"NvChad 
-  -- {"nvim-autopairs 
-  -- {"ui 
+  -- {"cmp-buffer
+  -- {"cmp-nvim-lsp
+  -- {"cmp-nvim-lua
+  -- {"cmp-path
+  -- {"cmp_luasnip
+  -- {"friendly-snippets
+  -- {"img-clip.nvim
+  -- {"indent-blankline.nvim
+  -- {"mason.nvim
+  -- {"menu
+  -- {"minty
+  -- {"NvChad
+  -- {"nvim-autopairs
+  -- {"ui
   -- {"volt
 }

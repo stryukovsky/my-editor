@@ -20,6 +20,8 @@ require "configs.neotest"
 require "configs.trouble"
 require "configs.lualine"
 require "configs.theme"
+require "configs.nvimcmp"
+require "configs.luasnip"
 require "lspconfig"
 require "configs.lspconfig"
 
