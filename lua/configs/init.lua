@@ -24,7 +24,8 @@ require "configs.nvimcmp"
 require "configs.luasnip"
 require "lspconfig"
 require "configs.lspconfig"
-
+require "configs.diagnostic"
+require "configs.trouble"
 
 -- at the end, so all highlight rules can be applied
 require "highlight"

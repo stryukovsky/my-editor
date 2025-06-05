@@ -12,6 +12,7 @@ local commit_amend = require "ui.commit_amend"
 local telescope = require "telescope.actions"
 local gitsigns_async = require "gitsigns.async"
 local gitsigns_blame = require "gitsigns.blame"
+local avante = require("avante")
 
 local ui_components_modes = { "n", "t", "v", "i" }
 
@@ -259,14 +260,14 @@ end, { desc = "UI Test show summary" })
 local avante_state_opened = false
 map(ui_components_modes, "<A-q>", function()
   if avante_state_opened then
-    vim.cmd "AvanteToggle"
+    avante.close_sidebar()
   else
     right_component_callback_close()
     right_component_callback_close = function()
       avante_state_opened = false
-      vim.cmd "AvanteToggle"
+      avante.close_sidebar()
     end
-    vim.cmd "AvanteToggle"
+    avante.open_sidebar()
   end
   avante_state_opened = not avante_state_opened
 end, { desc = "UI Avante toggle view" })
