@@ -43,16 +43,12 @@ return {
   {
     "folke/which-key.nvim",
     event = "VeryLazy",
-    opts = {
-      -- your configuration comes here
-      -- or leave it empty to use the default settings
-      -- refer to the configuration section below
-    },
+    opts = require "configs.whichkey",
     keys = {
       {
         "<leader>?",
         function()
-          require("which-key").show { global = false }
+          require("which-key").show { global = true }
         end,
         desc = "Buffer Local Keymaps (which-key)",
       },
@@ -122,11 +118,13 @@ return {
           git_branches = {
             mappings = require "mappings.telescope.git_branches",
           },
+          buffers = {
+            mappings = require "mappings.telescope.buffers",
+          },
         },
       }
     end,
   },
-
   {
     "folke/lazydev.nvim",
     ft = "lua", -- only load on lua files
@@ -238,51 +236,6 @@ return {
     ft = { "markdown", "Avante" },
     lazy = true,
   },
-  -- {
-  --   "nvim-java/nvim-java",
-  --   config = false,
-  --   dependencies = {
-  --     {
-  --       "neovim/nvim-lspconfig",
-  --       opts = {
-  --         servers = {
-  --           -- Your JDTLS configuration goes here
-  --           jdtls = {
-  --             -- settings = {
-  --             --   java = {
-  --             --     configuration = {
-  --             --       runtimes = {
-  --             --         {
-  --             --           name = "JavaSE-23",
-  --             --           path = "/usr/local/sdkman/candidates/java/23-tem",
-  --             --         },
-  --             --       },
-  --             --     },
-  --             --   },
-  --             -- },
-  --           },
-  --         },
-  --         setup = {
-  --           jdtls = function()
-  --             -- Your nvim-java configuration goes here
-  --             require("java").setup {
-  --               -- root_markers = {
-  --               --   "settings.gradle",
-  --               --   "settings.gradle.kts",
-  --               --   "pom.xml",
-  --               --   "build.gradle",
-  --               --   "mvnw",
-  --               --   "gradlew",
-  --               --   "build.gradle",
-  --               --   "build.gradle.kts",
-  --               -- },
-  --             }
-  --           end,
-  --         },
-  --       },
-  --     },
-  --   },
-  -- },
   {
     "kndndrj/nvim-dbee",
     dependencies = {
@@ -439,19 +392,10 @@ return {
       "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
     },
   },
-  -- {"cmp-buffer
-  -- {"cmp-nvim-lsp
-  -- {"cmp-nvim-lua
-  -- {"cmp-path
-  -- {"cmp_luasnip
-  -- {"friendly-snippets
-  -- {"img-clip.nvim
-  -- {"indent-blankline.nvim
-  -- {"mason.nvim
-  -- {"menu
-  -- {"minty
-  -- {"NvChad
-  -- {"nvim-autopairs
-  -- {"ui
-  -- {"volt
+  {
+    "Pocco81/auto-save.nvim",
+  },
+  {
+    "ghillb/cybu.nvim",
+  },
 }

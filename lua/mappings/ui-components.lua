@@ -79,19 +79,6 @@ for _, value in ipairs(telescope_components) do
   end, { desc = value.desc })
 end
 
--- local nvcheatsheet_bufnr = 0
--- map("n", "<A-?>", function()
---   if nvcheatsheet_bufnr == 0 then
---     if vim.api.nvim_get_option_value("buftype", { buf = vim.fn.bufnr() }) == "" then
---       vim.cmd "NvCheatsheet"
---       nvcheatsheet_bufnr = vim.fn.bufnr()
---     end
---   else
---     require("nvchad.tabufline").close_buffer(nvcheatsheet_bufnr)
---     nvcheatsheet_bufnr = 0
---   end
--- end, { desc = "UI help" })
-
 local kulala_state_is_opened = false
 map(ui_components_modes, "<A-y>", function()
   if kulala_state_is_opened then
@@ -193,26 +180,6 @@ map("n", "<leader>thn", function()
   vim.cmd "colorscheme tokyonight-night"
   require "highlight"
 end, { desc = "Theme: night" })
-
--- local monitorStarted = false
--- map(ui_components_modes, "<A-i>", function()
---   if not monitorStarted then
---     monitorStarted = true
---   end
---   term.toggle {
---     pos = "float",
---     id = "floatTerm",
---     cmd = "bpytop",
---     float_opts = {
---       relative = "editor",
---       row = 0.1,
---       col = 0.25,
---       width = 0.5,
---       height = 0.9,
---       border = "single",
---     },
---   }
--- end, { desc = "UI system resource inspector" })
 
 -- focus nvimtree
 map(ui_components_modes, "<A-e>", function()

@@ -7,6 +7,7 @@ require("kulala").setup(require "configs.kulala")
 require("nvim-tree").setup(require "configs.nvimtree")
 require("Comment").setup()
 require("todo-comments").setup()
+require("cybu").setup()
 
 require "configs.tiny-code-action"
 require "configs.oil"
@@ -26,6 +27,7 @@ require "lspconfig"
 require "configs.lspconfig"
 require "configs.diagnostic"
 require "configs.trouble"
+require "configs.autosave"
 
 -- at the end, so all highlight rules can be applied
 require "highlight"
