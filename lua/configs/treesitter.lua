@@ -1,0 +1,17 @@
+return {
+        "vim",
+        "lua",
+        "vimdoc",
+        "html",
+        "css",
+        "javascript",
+        "typescript",
+        "go",
+        "scala",
+        "java",
+        "sql",
+        "dockerfile",
+        "solidity",
+        "rust",
+        "http",
+      }

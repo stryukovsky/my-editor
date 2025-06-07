@@ -112,7 +112,7 @@ local function my_on_attach(bufnr)
   end)
 end
 
-return {
+require("nvim-tree").setup {
   filters = { dotfiles = false, custom = { "^.git$" } },
   disable_netrw = true,
   hijack_cursor = true,

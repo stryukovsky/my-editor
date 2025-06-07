@@ -70,4 +70,3 @@ vim.api.nvim_create_autocmd("BufEnter", {
     close_empty_unnamed_buffers()
   end,
 })
-

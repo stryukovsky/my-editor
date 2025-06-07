@@ -1,5 +1,11 @@
 return {
-  { "saadparwaiz1/cmp_luasnip" },
+  -- CORE PLUGINS
+  {
+    "saadparwaiz1/cmp_luasnip",
+  },
+  {
+    "nvim-tree/nvim-web-devicons",
+  },
   {
     "L3MON4D3/LuaSnip",
     -- follow latest release.
@@ -29,14 +35,12 @@ return {
     opts = {},
   },
   {
-    "marko-cerovac/material.nvim",
-  },
-  {
     "nvim-lualine/lualine.nvim",
   },
   {
-    "neovim/nvim-lspconfig", -- REQUIRED: for native Neovim LSP integration
+    "marko-cerovac/material.nvim",
   },
+
   {
     "folke/which-key.nvim",
     event = "VeryLazy",
@@ -51,27 +55,16 @@ return {
       },
     },
   },
-  -- file managing , picker etc
   {
     "nvim-tree/nvim-tree.lua",
     cmd = { "NvimTreeOpen", "NvimTreeToggle", "NvimTreeFocus" },
-    opts = function()
-      return require "configs.nvimtree"
-    end,
   },
-
-  -- These are some examples, uncomment them if you want to see them work!
   {
     "neovim/nvim-lspconfig",
-    config = function()
-      require "configs.lspconfig"
-    end,
   },
-
   {
     "mfussenegger/nvim-dap",
   },
-
   {
     "lewis6991/gitsigns.nvim",
   },
@@ -79,7 +72,6 @@ return {
     "rcarriga/nvim-dap-ui",
     dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" },
   },
-
   {
     "nvim-telescope/telescope.nvim",
     -- tag = "0.1.8",
@@ -87,40 +79,41 @@ return {
       "nvim-lua/plenary.nvim",
       "debugloop/telescope-undo.nvim",
     },
-    config = function()
-      require("telescope").setup {
-        -- the rest of your telescope config goes here
-        defaults = {
-          --     prompt_prefix = "   ",
-          --     selection_caret = "",
-          --     entry_prefix = "",
-          sorting_strategy = "ascending",
-          layout_config = {
-            horizontal = {
-              prompt_position = "top",
-              preview_width = 0.55,
-            },
-            width = 0.87,
-            height = 0.80,
-          },
-          mappings = require "mappings.telescope.defaults",
-        },
-        extensions_list = { "themes", "terms", "undo" },
-        extensions = {
-          undo = {
-            mappings = require "mappings.telescope.undo",
-          },
-        },
-        pickers = {
-          git_branches = {
-            mappings = require "mappings.telescope.git_branches",
-          },
-          buffers = {
-            mappings = require "mappings.telescope.buffers",
-          },
-        },
-      }
-    end,
+  },
+  {
+    "nvim-treesitter/nvim-treesitter",
+    opts = {
+      ensure_installed = require "configs.treesitter",
+    },
+  },
+  {
+    "stevearc/oil.nvim",
+    ---@module 'oil'
+    ---@type oil.SetupOpts
+    opts = {},
+    -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
+    lazy = false,
+  },
+  {
+    "sindrets/diffview.nvim",
+  },
+  {
+    "nvim-neotest/neotest",
+    dependencies = {
+      "nvim-neotest/nvim-nio",
+      "nvim-lua/plenary.nvim",
+      "antoinemadec/FixCursorHold.nvim",
+      "nvim-treesitter/nvim-treesitter",
+
+      "nvim-neotest/neotest-go",
+      "nvim-neotest/neotest-python",
+      "nvim-neotest/neotest-jest",
+      "stevanmilic/neotest-scala",
+    },
+  },
+  {
+    "folke/trouble.nvim",
+    cmd = "Trouble",
   },
   {
     "folke/lazydev.nvim",
@@ -133,7 +126,55 @@ return {
       },
     },
   },
-
+  {
+    "folke/todo-comments.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+    },
+  },
+  {
+    "numToStr/Comment.nvim",
+    opts = {
+      -- add any options here
+    },
+  },
+  {
+    "nvimdev/lspsaga.nvim",
+  },
+  {
+    "yetone/avante.nvim",
+    event = "VeryLazy",
+    version = false, -- Never set this value to "*"! Never!
+    opts = {
+      -- add any opts here
+      -- for example
+      providers = {
+        ollama = {
+          endpoint = "http://127.0.0.1:11434", -- Note that there is no /v1 at the end.
+          model = "gemma3:12b",
+        },
+      },
+      provider = "ollama",
+    },
+    -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
+    build = "make",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "stevearc/dressing.nvim",
+      "nvim-lua/plenary.nvim",
+      "MunifTanjim/nui.nvim",
+      --- The below dependencies are optional,
+      "echasnovski/mini.pick", -- for file_selector provider mini.pick
+      "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
+      "hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
+      "ibhagwan/fzf-lua", -- for file_selector provider fzf
+      "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
+    },
+  },
+  -- LANGUAGE-SPECIFIC-PLUGINS
   {
     "leoluz/nvim-dap-go",
     ft = "go",
@@ -193,27 +234,15 @@ return {
     end,
   },
   {
-    "nvim-treesitter/nvim-treesitter",
-    opts = {
-      ensure_installed = {
-        "vim",
-        "lua",
-        "vimdoc",
-        "html",
-        "css",
-        "javascript",
-        "typescript",
-        "go",
-        "scala",
-        "java",
-        "sql",
-        "dockerfile",
-        "solidity",
-        "rust",
-        "http",
-      },
-    },
+    "mrcjkb/rustaceanvim",
+    version = "^5", -- Recommended
+    lazy = false, -- This plugin is already lazy
   },
+  {
+    "mfussenegger/nvim-dap-python",
+  },
+
+  -- SMALL functionalities
   {
     "karb94/neoscroll.nvim",
     opts = {},
@@ -250,146 +279,6 @@ return {
     branch = "1.0",
   },
   {
-    "iamcco/markdown-preview.nvim",
-    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-    build = "cd app && yarn install",
-    init = function()
-      vim.g.mkdp_filetypes = { "markdown" }
-      vim.cmd "let g:mkdp_auto_close = 0"
-      vim.cmd [[let g:mkdp_preview_options = {
-    \ 'mkit': {},
-    \ 'katex': {},
-    \ 'uml': {},
-    \ 'maid': {},
-    \ 'disable_sync_scroll': 1,
-    \ 'sync_scroll_type': 'middle',
-    \ 'hide_yaml_meta': 1,
-    \ 'sequence_diagrams': {},
-    \ 'flowchart_diagrams': {},
-    \ 'content_editable': v:false,
-    \ 'disable_filename': 0,
-    \ 'toc': {}
-    \ }]]
-    end,
-    ft = { "markdown" },
-  },
-  {
-    "rachartier/tiny-code-action.nvim",
-    dependencies = {
-      { "nvim-lua/plenary.nvim" },
-      { "nvim-telescope/telescope.nvim" },
-    },
-    event = "LspAttach",
-    config = function()
-      require("tiny-code-action").setup()
-    end,
-  },
-  {
-    "stevearc/oil.nvim",
-    ---@module 'oil'
-    ---@type oil.SetupOpts
-    opts = {},
-    -- Optional dependencies
-    dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
-    -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
-    lazy = false,
-  },
-  {
-    "nvimdev/lspsaga.nvim",
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter", -- optional
-      "nvim-tree/nvim-web-devicons", -- optional
-    },
-  },
-  {
-    "sindrets/diffview.nvim",
-  },
-  {
-    "mrcjkb/rustaceanvim",
-    version = "^5", -- Recommended
-    lazy = false, -- This plugin is already lazy
-  },
-  {
-    "mfussenegger/nvim-dap-python",
-  },
-  {
-    "gbprod/substitute.nvim",
-    opts = {
-      -- your configuration comes here
-      -- or leave it empty to use the default settings
-      -- refer to the configuration section below
-    },
-  },
-  {
-    "nvim-neotest/neotest",
-    dependencies = {
-      "nvim-neotest/nvim-nio",
-      "nvim-lua/plenary.nvim",
-      "antoinemadec/FixCursorHold.nvim",
-      "nvim-treesitter/nvim-treesitter",
-
-      "nvim-neotest/neotest-go",
-      "nvim-neotest/neotest-python",
-      "nvim-neotest/neotest-jest",
-      "stevanmilic/neotest-scala",
-    },
-  },
-  {
-    "folke/trouble.nvim",
-    cmd = "Trouble",
-  },
-  {
-    "mistweaverco/kulala.nvim",
-    keys = {},
-    ft = { "http", "rest" },
-    opts = {},
-  },
-  {
-    "numToStr/Comment.nvim",
-    opts = {
-      -- add any options here
-    },
-  },
-  {
-    "folke/todo-comments.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    opts = {
-      -- your configuration comes here
-      -- or leave it empty to use the default settings
-      -- refer to the configuration section below
-    },
-  },
-  {
-    "yetone/avante.nvim",
-    event = "VeryLazy",
-    version = false, -- Never set this value to "*"! Never!
-    opts = {
-      -- add any opts here
-      -- for example
-      providers = {
-        ollama = {
-          endpoint = "http://127.0.0.1:11434", -- Note that there is no /v1 at the end.
-          model = "gemma3:12b",
-        },
-      },
-      provider = "ollama",
-    },
-    -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
-    build = "make",
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter",
-      "stevearc/dressing.nvim",
-      "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
-      --- The below dependencies are optional,
-      "echasnovski/mini.pick", -- for file_selector provider mini.pick
-      "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
-      "hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
-      "ibhagwan/fzf-lua", -- for file_selector provider fzf
-      "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
-    },
-  },
-  {
     "Pocco81/auto-save.nvim",
   },
   {
@@ -400,5 +289,26 @@ return {
     config = function()
       require("textcase").setup {}
     end,
+  },
+  {
+    "iamcco/markdown-preview.nvim",
+    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+    build = "cd app && yarn install",
+    init = require "configs.markdown-preview",
+    ft = { "markdown" },
+  },
+  {
+    "rachartier/tiny-code-action.nvim",
+    dependencies = {
+      { "nvim-lua/plenary.nvim" },
+      { "nvim-telescope/telescope.nvim" },
+    },
+    event = "LspAttach",
+  },
+  {
+    "mistweaverco/kulala.nvim",
+    keys = {},
+    ft = { "http", "rest" },
+    opts = {},
   },
 }
