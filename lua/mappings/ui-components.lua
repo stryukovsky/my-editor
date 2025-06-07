@@ -1,6 +1,5 @@
 local map = require "mappings.map"
 local dapui = require "dapui"
--- local term = require "nvchad.term"
 local neotest = require "neotest"
 local trouble = require "trouble"
 local kulala = require "kulala"
@@ -9,10 +8,9 @@ local oil = require "oil"
 local new_branch = require "ui.new_branch"
 local commit = require "ui.commit"
 local commit_amend = require "ui.commit_amend"
-local telescope = require "telescope.actions"
 local gitsigns_async = require "gitsigns.async"
 local gitsigns_blame = require "gitsigns.blame"
-local avante = require("avante")
+local avante = require "avante"
 
 local ui_components_modes = { "n", "t", "v", "i" }
 
@@ -20,29 +18,59 @@ local telescope_components = {
   {
     modes = ui_components_modes,
     shortcut = "<A-c>",
-    command = "Telescope git_commits",
+    command = function()
+      vim.cmd "Telescope git_commits"
+    end,
     desc = "UI telescope git commits",
   },
   {
     modes = ui_components_modes,
     shortcut = "<A-g>",
-    command = "Telescope git_branches",
+    command = function()
+      vim.cmd "Telescope git_branches"
+    end,
     desc = "UI telescope git branches",
   },
-  { modes = ui_components_modes, shortcut = "<A-u>", command = "Telescope undo", desc = "UI telescope undo tree" },
+  {
+    modes = ui_components_modes,
+    shortcut = "<A-u>",
+    command = function()
+      vim.cmd "Telescope undo"
+    end,
+    desc = "UI telescope undo tree",
+  },
   {
     modes = ui_components_modes,
     shortcut = "<A-f>",
-    command = "Telescope live_grep",
+    command = function()
+      vim.cmd "Telescope live_grep"
+    end,
     desc = "UI telescope search in project",
   },
   {
     modes = ui_components_modes,
     shortcut = "<A-z>",
-    command = "Telescope oldfiles",
+    command = function()
+      vim.cmd "Telescope oldfiles"
+    end,
     desc = "UI telescope previously opened files",
   },
-  { modes = ui_components_modes, shortcut = "<A-j>", command = "TodoTelescope", desc = "UI telescope TODOs" },
+  {
+    modes = ui_components_modes,
+    shortcut = "<A-j>",
+    command = function()
+      vim.cmd "TodoTelescope"
+    end,
+    desc = "UI telescope TODOs",
+  },
+  {
+    modes = ui_components_modes,
+    shortcut = "<A-l>",
+    command = function()
+      require("telescope.builtin").lsp_document_symbols { symbols = { "class", "field", "method", "module", "namespace" } }
+    end,
+    desc = "UI telescope previously opened files",
+  },
 }
 
 map("n", "<leader>ga", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", { desc = "Actions: spelling" })
@@ -53,27 +81,33 @@ map(
   { desc = "UI telescope buffers" }
 )
 
-local current_opened_telescope_bufnr = 0
+local last_opened_telescope = ""
+local function close_telescope()
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.api.nvim_get_option_value("filetype", { buf = buf }) == "TelescopePrompt" then
+      vim.api.nvim_win_close(win, true)
+      return true
+    end
+  end
+  return false
+end
 
 local dialog_component_callback_close = function() end
 for _, value in ipairs(telescope_components) do
   map(value.modes, value.shortcut, function()
-    if current_opened_telescope_bufnr ~= 0 then
-      pcall(function()
-        telescope.close(current_opened_telescope_bufnr)
-      end)
-      current_opened_telescope_bufnr = 0
+    if close_telescope() then
+      if last_opened_telescope ~= value.desc then
+        value.command()
+        last_opened_telescope = value.desc
+      end
     else
       dialog_component_callback_close()
-      vim.cmd(value.command)
-      current_opened_telescope_bufnr = vim.fn.bufnr()
+      value.command()
+      last_opened_telescope = value.desc
       dialog_component_callback_close = function()
-        if current_opened_telescope_bufnr ~= 0 then
-          pcall(function()
-            telescope.close(current_opened_telescope_bufnr)
-          end)
-          current_opened_telescope_bufnr = 0
-        end
+        close_telescope()
+        last_opened_telescope = value.desc
       end
     end
   end, { desc = value.desc })
@@ -173,12 +207,12 @@ map("n", "+", "<C-W>3>", { desc = "UI window width increase" })
 map("n", "_", "<C-W>3<", { desc = "UI window width decrease" })
 map("n", "<leader>thd", function()
   vim.g.material_style = "lighter"
-  vim.cmd 'colorscheme material'
+  vim.cmd "colorscheme material"
 end, { desc = "Theme: day" })
 
 map("n", "<leader>thn", function()
   vim.g.material_style = "deep ocean"
-  vim.cmd 'colorscheme material'
+  vim.cmd "colorscheme material"
 end, { desc = "Theme: night" })
 
 -- focus nvimtree
@@ -267,18 +301,6 @@ map(ui_components_modes, "<A-p>", function()
     trouble.open { mode = "diagnostics", focus = true }
   end
 end, { desc = "UI trouble diagnostics" })
-
-map(ui_components_modes, "<A-l>", function()
-  if trouble.is_open "symbols" then
-    trouble.close "symbols"
-  else
-    right_component_callback_close()
-    right_component_callback_close = function()
-      trouble.close "symbols"
-    end
-    trouble.open { mode = "symbols", focus = true }
-  end
-end, { desc = "UI trouble list structure of buffer" })
 
 map(ui_components_modes, "<A-m>", function()
   if trouble.is_open "lsp" then

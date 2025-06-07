@@ -10,7 +10,6 @@ local function focus_preview(prompt_bufnr)
       vim.cmd(string.format("noautocmd lua vim.api.nvim_set_current_win(%s)", prompt_win))
     end, { buffer = bufnr })
     vim.cmd(string.format("noautocmd lua vim.api.nvim_set_current_win(%s)", winid))
-    -- api.nvim_set_current_win(winid)
   end
 end
 
