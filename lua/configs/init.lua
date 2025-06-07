@@ -7,8 +7,8 @@ require("kulala").setup(require "configs.kulala")
 require("nvim-tree").setup(require "configs.nvimtree")
 require("Comment").setup()
 require("todo-comments").setup()
-require("cybu").setup()
 
+require("configs.cybu")
 require "configs.tiny-code-action"
 require "configs.oil"
 require "configs.gomove"
@@ -27,6 +27,7 @@ require "configs.lspconfig"
 require "configs.diagnostic"
 require "configs.trouble"
 require "configs.autosave"
+require "configs.text-case"
 
 -- at the end, so all highlight rules can be applied
 require "configs.theme"

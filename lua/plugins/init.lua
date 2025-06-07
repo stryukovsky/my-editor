@@ -369,7 +369,7 @@ return {
       providers = {
         ollama = {
           endpoint = "http://127.0.0.1:11434", -- Note that there is no /v1 at the end.
-          model = "llama3.2",
+          model = "gemma3:12b",
         },
       },
       provider = "ollama",
@@ -394,5 +394,11 @@ return {
   },
   {
     "ghillb/cybu.nvim",
+  },
+  {
+    "johmsalas/text-case.nvim",
+    config = function()
+      require("textcase").setup {}
+    end,
   },
 }

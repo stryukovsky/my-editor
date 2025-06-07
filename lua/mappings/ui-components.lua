@@ -45,7 +45,7 @@ local telescope_components = {
   { modes = ui_components_modes, shortcut = "<A-j>", command = "TodoTelescope", desc = "UI telescope TODOs" },
 }
 
-map("n", "<leader>ga", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", { desc = "UI telescope spelling" })
+map("n", "<leader>ga", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", { desc = "Actions: spelling" })
 map(
   "n",
   "<leader><leader>",
