@@ -1,5 +1,3 @@
-dofile(vim.g.base46_cache .. "nvimtree")
-
 local api = require "nvim-tree.api"
 
 local git_add = function()

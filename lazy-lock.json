@@ -23,6 +23,7 @@
   "lualine.nvim": { "branch": "master", "commit": "0c6cca9f2c63dadeb9225c45bc92bb95a151d4af" },
   "markdown-preview.nvim": { "branch": "master", "commit": "a923f5fc5ba36a3b17e289dc35dc17f66d0548ee" },
   "mason.nvim": { "branch": "main", "commit": "8024d64e1330b86044fed4c8494ef3dcd483a67c" },
+  "material.nvim": { "branch": "main", "commit": "0004ec60f91d581d47563a39f7dac62cb758f7ea" },
   "mini.pick": { "branch": "main", "commit": "c272dc61cd0326b344761cd9d031bfcdef1978c7" },
   "multicursor.nvim": { "branch": "1.0", "commit": "9eedebdd395bbbc4711081e33b0606c079e054c3" },
   "neoscroll.nvim": { "branch": "master", "commit": "f957373912e88579e26fdaea4735450ff2ef5c9c" },
@@ -54,7 +55,6 @@
   "telescope.nvim": { "branch": "master", "commit": "b4da76be54691e854d3e0e02c36b0245f945c2c7" },
   "tiny-code-action.nvim": { "branch": "main", "commit": "45c94feb9a0d1454eb5b38f31017f67b0b6e3ff1" },
   "todo-comments.nvim": { "branch": "main", "commit": "304a8d204ee787d2544d8bc23cd38d2f929e7cc5" },
-  "tokyonight.nvim": { "branch": "main", "commit": "057ef5d260c1931f1dffd0f052c685dcd14100a3" },
   "trouble.nvim": { "branch": "main", "commit": "85bedb7eb7fa331a2ccbecb9202d8abba64d37b3" },
   "which-key.nvim": { "branch": "main", "commit": "370ec46f710e058c9c1646273e6b225acf47cbed" }
 }

@@ -59,7 +59,15 @@ vim.env.PATH = table.concat({ vim.fn.stdpath "data", "mason", "bin" }, sep) .. d
 
 o.cursorlineopt = "both" -- to enable cursorline!
 o.spelllang = "programming,en,ru"
-vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
+local current_hour = tonumber(tostring(vim.fn.strftime "%H"))
+
+if current_hour >= 20 or current_hour <= 7 then
+  g.material_style = "deep ocean"
+else
+  g.material_style = "lighter"
+end
+
+-- vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 vim.api.nvim_create_autocmd("BufWinEnter", {
   callback = function()
     o.spell = true

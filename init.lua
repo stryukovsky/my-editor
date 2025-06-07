@@ -1,4 +1,3 @@
-vim.g.base46_cache = vim.fn.stdpath "data" .. "/base46/"
 vim.g.mapleader = " "
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
@@ -22,7 +21,6 @@ require("lazy").setup({
 }, lazy_config)
 
 require "options"
--- require "nvchad.autocmds"
 
 vim.schedule(function()
   require "mappings"
@@ -73,13 +71,3 @@ vim.api.nvim_create_autocmd("BufEnter", {
   end,
 })
 
--- vim.api.nvim_create_autocmd("VimEnter", {
---   callback = function(args)
---     current_hour = tonumber(tostring(vim.fn.strftime "%H"))
---     if current_hour >= 22 then
---       vim.cmd "colorscheme tokyonight-night"
---     else
---       vim.cmd "colorscheme tokyonight-day"
---     end
---   end,
--- })

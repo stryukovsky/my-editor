@@ -29,10 +29,7 @@ return {
     opts = {},
   },
   {
-    "folke/tokyonight.nvim",
-    lazy = false,
-    priority = 1000,
-    opts = {},
+    "marko-cerovac/material.nvim",
   },
   {
     "nvim-lualine/lualine.nvim",

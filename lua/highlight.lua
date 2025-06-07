@@ -1,5 +1,6 @@
 local hl = vim.api.nvim_set_hl
 
+hl(0, "PreProc", { link = "Comment" })
 -- Customize how cursors look.
 hl(0, "MultiCursorCursor", { link = "Cursor" })
 hl(0, "MultiCursorVisual", { link = "Visual" })
@@ -15,12 +16,12 @@ hl(0, "NvimTreeImageFile", { link = "NvimTreeNormal" })
 hl(0, "NvimTreeSpecialFile", { link = "NvimTreeNormal" })
 hl(0, "NvimTreeSymlink", { link = "NvimTreeNormal" })
 hl(0, "NvimTreeGitDeletedIcon", { fg = "#ff4e33" })
-hl(0, "NvimTreeGitDirtyIcon", { link = "PreProc" })
 hl(0, "NvimTreeGitIgnoredIcon", { link = "Comment" })
-hl(0, "NvimTreeGitMergeIcon", { link = "PreProc" })
 hl(0, "NvimTreeGitNewIcon", { fg = "#138808" })
-hl(0, "NvimTreeGitRenamedIcon", { link = "PreProc" })
-hl(0, "NvimTreeGitStagedIcon", { link = "PreProc" })
+hl(0, "NvimTreeGitDirtyIcon", { link = "String" })
+hl(0, "NvimTreeGitRenamedIcon", { link = "String" })
+hl(0, "NvimTreeGitMergeIcon", { link = "String" })
+hl(0, "NvimTreeGitStagedIcon", { link = "String" })
 
 -- here LspAttach is used to make sure native vim lsp highlight will not replace this rule
 vim.api.nvim_create_autocmd("LspAttach", {

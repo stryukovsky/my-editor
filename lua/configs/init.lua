@@ -20,7 +20,6 @@ require "configs.substitute"
 require "configs.neotest"
 require "configs.trouble"
 require "configs.lualine"
-require "configs.theme"
 require "configs.nvimcmp"
 require "configs.luasnip"
 require "lspconfig"
@@ -30,4 +29,5 @@ require "configs.trouble"
 require "configs.autosave"
 
 -- at the end, so all highlight rules can be applied
+require "configs.theme"
 require "highlight"
