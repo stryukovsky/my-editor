@@ -172,12 +172,14 @@ map(ui_components_modes, "<A-w>", "<C-W>k", { desc = "UI switch window up" })
 map("n", "+", "<C-W>3>", { desc = "UI window width increase" })
 map("n", "_", "<C-W>3<", { desc = "UI window width decrease" })
 map("n", "<leader>thd", function()
-  vim.cmd "colorscheme tokyonight-day"
+  vim.g.material_style = "lighter"
+  vim.cmd 'colorscheme material'
   require "highlight"
 end, { desc = "Theme: day" })
 
 map("n", "<leader>thn", function()
-  vim.cmd "colorscheme tokyonight-night"
+  vim.g.material_style = "deep ocean"
+  vim.cmd 'colorscheme material'
   require "highlight"
 end, { desc = "Theme: night" })
 
