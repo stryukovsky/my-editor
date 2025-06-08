@@ -67,11 +67,13 @@ local telescope_components = {
     modes = ui_components_modes,
     shortcut = "<A-l>",
     command = function()
-      require("telescope.builtin").lsp_document_symbols {
-        symbols = { "class", "field", "method", "module", "namespace" },
-      }
+      if vim.g.neotree_compat_first_file_picker then
+        vim.cmd "Neotree focus source=document_symbols current"
+      else
+        vim.cmd "Neotree focus source=document_symbols left"
+      end
     end,
-    desc = "UI telescope previously opened files",
+    desc = "UI file structure",
   },
 }
 

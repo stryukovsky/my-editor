@@ -57,6 +57,7 @@ local config = {
     "filesystem",
     "git_status",
     "buffers",
+    "document_symbols",
   },
   default_source = "filesystem", -- you can choose a specific source `last` here which indicates the last used source
   enable_diagnostics = false,
@@ -70,6 +71,15 @@ local config = {
   popup_border_style = "", -- "double", "rounded", "single", "solid", (or "" to use 'winborder' on Neovim v0.11+)
   source_selector = {
     winbar = true, -- toggle to show selector on winbar
+    statusline = false, -- toggle to show selector on statusline
+    show_scrolled_off_parent_node = false, -- this will replace the tabs with the parent path
+    -- of the top visible node when scrolled down.
+    sources = {
+      { source = "filesystem" },
+      { source = "buffers" },
+      { source = "git_status" },
+      { source = "document_symbols" },
+    },
   },
   event_handlers = {
 
@@ -164,22 +174,6 @@ local config = {
       --["Z"] = "expand_all_nodes",
       ["W"] = "expand_all_subnodes",
       ["R"] = "refresh",
-      ["a"] = {
-        "add",
-        -- some commands may take optional config options, see `:h neo-tree-mappings` for details
-        config = {
-          show_path = "none", -- "none", "relative", "absolute"
-        },
-      },
-      ["A"] = "add_directory", -- also accepts the config.show_path and config.insert_as options.
-      ["d"] = "delete",
-      ["r"] = "rename",
-      ["y"] = "copy_to_clipboard",
-      ["x"] = "cut_to_clipboard",
-      ["p"] = "paste_from_clipboard",
-      ["c"] = "copy", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
-      ["m"] = "move", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
-      ["e"] = "toggle_auto_expand_width",
       -- ["q"] = "close_window",
       ["?"] = "show_help",
       ["<"] = "prev_source",
@@ -192,6 +186,22 @@ local config = {
         ["o"] = "system_open",
         ["F"] = "telescope_find",
         ["f"] = "telescope_grep",
+        ["a"] = {
+          "add",
+          -- some commands may take optional config options, see `:h neo-tree-mappings` for details
+          config = {
+            show_path = "none", -- "none", "relative", "absolute"
+          },
+        },
+        ["c"] = "copy", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
+        ["d"] = "delete",
+        ["A"] = "add_directory", -- also accepts the config.show_path and config.insert_as options.
+        ["m"] = "move", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
+        ["r"] = "rename",
+        ["y"] = "copy_to_clipboard",
+        ["p"] = "paste_from_clipboard",
+        ["x"] = "cut_to_clipboard",
+        ["e"] = "toggle_auto_expand_width",
       },
     },
   },
