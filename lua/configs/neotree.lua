@@ -56,6 +56,7 @@ local config = {
   sources = {
     "filesystem",
     "git_status",
+    "buffers",
   },
   default_source = "filesystem", -- you can choose a specific source `last` here which indicates the last used source
   enable_diagnostics = false,
@@ -69,6 +70,19 @@ local config = {
   popup_border_style = "", -- "double", "rounded", "single", "solid", (or "" to use 'winborder' on Neovim v0.11+)
   source_selector = {
     winbar = true, -- toggle to show selector on winbar
+  },
+  event_handlers = {
+
+    {
+      event = "file_open_requested",
+      handler = function()
+        -- auto close
+        -- vim.cmd("Neotree close")
+        -- OR
+        require("neo-tree.command").execute { action = "close" }
+        vim.g.neotree_compat_first_file_picker = false
+      end,
+    },
   },
   commands = {
     ["system_open"] = function(state)
@@ -104,8 +118,16 @@ local config = {
       telescope.live_grep(getTelescopeOpts(state, path))
     end,
   }, -- A list of functions
-
   window = { -- see https://github.com/MunifTanjim/nui.nvim/tree/main/lua/nui/popup for
+    auto_expand_width = false, -- expand the window when file exceeds the window width. does not work with position = "float"
+
+    -- position = "50%", -- 50% means center it
+    follow_current_file = {
+      enabled = true, -- This will find and focus the file in the active buffer every time
+      --               -- the current file is changed while the tree is open.
+      leave_dirs_open = false, -- `false` closes auto expanded dirs, such as with `:Neotree reveal`
+    },
+    group_empty_dirs = true, -- when true, empty folders will be grouped together
     mappings = {
       ["<space>"] = {
         "toggle_node",
@@ -162,7 +184,6 @@ local config = {
       ["?"] = "show_help",
       ["<"] = "prev_source",
       [">"] = "next_source",
-      ["K"] = "git_status",
     },
   },
   filesystem = {
@@ -190,3 +211,4 @@ local config = {
 }
 
 require("neo-tree").setup(config)
+vim.cmd "Neotree reveal current"

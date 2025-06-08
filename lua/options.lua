@@ -74,3 +74,6 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
     vim.o.spelloptions = "camel,noplainbuffer"
   end,
 })
+
+
+g.neotree_compat_first_file_picker = true

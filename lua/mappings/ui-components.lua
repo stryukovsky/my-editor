@@ -67,7 +67,9 @@ local telescope_components = {
     modes = ui_components_modes,
     shortcut = "<A-l>",
     command = function()
-      require("telescope.builtin").lsp_document_symbols { symbols = { "class", "field", "method", "module", "namespace" } }
+      require("telescope.builtin").lsp_document_symbols {
+        symbols = { "class", "field", "method", "module", "namespace" },
+      }
     end,
     desc = "UI telescope previously opened files",
   },
@@ -218,8 +220,12 @@ end, { desc = "Theme: night" })
 -- focus nvimtree
 map(ui_components_modes, "<A-e>", function()
   dapui.close()
-  vim.cmd "Neotree reveal"
-end, { desc = "UI nvimtree focus window" })
+  if vim.g.neotree_compat_first_file_picker then
+    vim.cmd "Neotree focus current"
+  else
+    vim.cmd "Neotree focus left"
+  end
+end, { desc = "UI neotree focus window" })
 
 local bottom_component_callback_close = function() end
 local right_component_callback_close = function() end
