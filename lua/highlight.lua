@@ -25,6 +25,14 @@ local function override_highlights()
   hl(0, "NvimTreeGitMergeIcon", { link = "String" })
   hl(0, "NvimTreeGitStagedIcon", { link = "String" })
 
+  hl(0, "IlluminatedWordText", { underline = true })
+  hl(0, "IlluminatedWordRead", { underline = true })
+  hl(0, "IlluminatedWordWrite", { underline = true })
+
+  hl(0, "CybuBorder", { link = "Exception" })
+  -- hl(0, "Visual", { link = "GitSignsAddInline", force = true })
+  hl(0, "Visual", { fg = "#ff0000", underline = true, force = true })
+
   hl(0, "LspSignatureActiveParameter", { force = true, fg = "#ff0000" })
   -- hl(0, "TelescopeSelection", {fg = "#ffffff", bg = "#000000", force = true})
 
@@ -34,8 +42,8 @@ local function override_highlights()
   hl(0, "SpellLocal", {})
 end
 
-vim.api.nvim_create_autocmd('ColorScheme', {
-  pattern = '*',
+vim.api.nvim_create_autocmd("ColorScheme", {
+  pattern = "*",
   callback = override_highlights,
 })
 

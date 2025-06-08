@@ -63,27 +63,16 @@ local telescope_components = {
     end,
     desc = "UI telescope TODOs",
   },
-  {
-    modes = ui_components_modes,
-    shortcut = "<A-l>",
-    command = function()
-      if vim.g.neotree_compat_first_file_picker then
-        vim.cmd "Neotree focus source=document_symbols current"
-      else
-        vim.cmd "Neotree focus source=document_symbols left"
-      end
-    end,
-    desc = "UI file structure",
-  },
 }
 
 map("n", "<leader>ga", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", { desc = "Actions: spelling" })
-map(
-  "n",
-  "<leader><leader>",
-  "<cmd>Telescope buffers only_cwd=true theme=get_cursor previewer=false sort_lastused=true sort_mru=true<cr>",
-  { desc = "UI telescope buffers" }
-)
+
+-- map(
+--   "n",
+--   "<leader><leader>",
+--   "<cmd>Telescope buffers only_cwd=true theme=get_cursor previewer=false sort_lastused=true sort_mru=true<cr>",
+--   { desc = "UI telescope buffers" }
+-- )
 
 local last_opened_telescope = ""
 local function close_telescope()
@@ -219,15 +208,34 @@ map("n", "<leader>thn", function()
   vim.cmd "colorscheme material"
 end, { desc = "Theme: night" })
 
--- focus nvimtree
+-- neotree
 map(ui_components_modes, "<A-e>", function()
   dapui.close()
   if vim.g.neotree_compat_first_file_picker then
-    vim.cmd "Neotree focus current"
+    vim.cmd "Neotree focus current source=filesystem"
   else
-    vim.cmd "Neotree focus left"
+    vim.cmd "Neotree focus left source=filesystem"
   end
-end, { desc = "UI neotree focus window" })
+end, { desc = "UI neotree files" })
+
+
+map(ui_components_modes, "<A-b>", function()
+  dapui.close()
+  if vim.g.neotree_compat_first_file_picker then
+    vim.cmd "Neotree focus current source=buffers"
+  else
+    vim.cmd "Neotree focus left source=buffers"
+  end
+end, { desc = "UI neotree buffers" })
+
+map(ui_components_modes, "<A-l>", function()
+  dapui.close()
+  if vim.g.neotree_compat_first_file_picker then
+    vim.cmd "Neotree focus current source=document_symbols"
+  else
+    vim.cmd "Neotree focus left source=document_symbols"
+  end
+end, { desc = "UI neotree structure" })
 
 local bottom_component_callback_close = function() end
 local right_component_callback_close = function() end

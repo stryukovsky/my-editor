@@ -205,6 +205,14 @@ local config = {
       },
     },
   },
+  document_symbols = {
+    window = {
+      mappings = {
+        ["<Left>"] = "toggle_node",
+        ["<Right>"] = "toggle_node",
+      },
+    },
+  },
   filtered_items = {
     visible = false, -- when true, they will just be displayed differently than normal items
     force_visible_in_empty_folder = false, -- when true, hidden files will be shown if the root folder is otherwise empty
