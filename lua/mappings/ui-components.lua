@@ -218,7 +218,7 @@ end, { desc = "Theme: night" })
 -- focus nvimtree
 map(ui_components_modes, "<A-e>", function()
   dapui.close()
-  vim.cmd "NvimTreeFocus"
+  vim.cmd "Neotree reveal"
 end, { desc = "UI nvimtree focus window" })
 
 local bottom_component_callback_close = function() end
