@@ -34,7 +34,7 @@ require("material").setup {
     -- "indent-blankline",
     "lspsaga",
     -- "mini",
-    "neo-tree",
+    -- "neo-tree",
     -- "neogit",
     -- "neorg",
     "neotest",
@@ -42,7 +42,7 @@ require("material").setup {
     "nvim-cmp",
     -- "nvim-navic",
     -- "nvim-notify",
-    "nvim-tree",
+    -- "nvim-tree",
     "nvim-web-devicons",
     -- "rainbow-delimiters",
     -- "sneak",
@@ -51,15 +51,15 @@ require("material").setup {
     "which-key",
   },
   custom_highlights = {
-    TabLine = function(colors, _)
-      return {
-        fg = colors.main.gray,
-        italic = true,
-      }
-    end,
-    TabLineSel = function(_, highlights)
-      return vim.tbl_extend("force", highlights.main_highlights.editor()["TabLineSel"], { bold = true })
-    end,
+    -- TabLine = function(colors, _)
+    --   return {
+    --     fg = colors.main.gray,
+    --     italic = true,
+    --   }
+    -- end,
+    -- TabLineSel = function(_, highlights)
+    --   return vim.tbl_extend("force", highlights.main_highlights.editor()["TabLineSel"], { bold = true })
+    -- end,
   },
   lualine_style = "default", -- Lualine style ( can be 'stealth' or 'default' )
 }

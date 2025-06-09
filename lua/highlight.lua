@@ -29,9 +29,21 @@ local function override_highlights()
   hl(0, "IlluminatedWordRead", { underline = true })
   hl(0, "IlluminatedWordWrite", { underline = true })
 
+  hl(0, "IlluminatedWordText", { underline = true })
+  hl(0, "IlluminatedWordRead", { underline = true })
+  hl(0, "IlluminatedWordWrite", { underline = true })
+
+  local bg_color = vim.api.nvim_get_hl(0, {name = "Normal"}).bg
+  local foreground_inactive = vim.api.nvim_get_hl(0, {name = "Normal"}).fg
+  local foreground_active = vim.api.nvim_get_hl(0, {name = "Title"}).fg
+  hl(0, "NeoTreeTabInactive", { bg = bg_color, fg = foreground_inactive})
+  hl(0, "NeoTreeTabActive", { bg = bg_color, fg = foreground_active})
+  hl(0, "NeoTreeTabSeparatorInactive", { bg = bg_color, fg = foreground_inactive})
+  hl(0, "NeoTreeTabSeparatorActive", { bg = bg_color, fg = foreground_active})
+
   hl(0, "CybuBorder", { link = "Exception" })
   -- hl(0, "Visual", { link = "GitSignsAddInline", force = true })
-  hl(0, "Visual", { fg = "#ff0000", underline = true, force = true })
+  -- hl(0, "Visual", { fg = "#ff0000", underline = true, force = true })
 
   hl(0, "LspSignatureActiveParameter", { force = true, fg = "#ff0000" })
   -- hl(0, "TelescopeSelection", {fg = "#ffffff", bg = "#000000", force = true})
@@ -53,9 +65,9 @@ vim.fn.sign_define("DapLogPoint", { text = "", texthl = "ErrorMsg", linehl = 
 vim.fn.sign_define("DapStopped", { text = "", texthl = "ErrorMsg", linehl = "Substitute", numhl = "Substitute" })
 vim.fn.sign_define("DapBreakpointRejected", { text = "", texthl = "WarningMsg", linehl = "", numhl = "" })
 vim.fn.sign_define("HarpoonLine", {
-    text = "⇁",  -- The symbol you want to display
-    texthl = "ErrorMsg",  -- Highlight group (optional)
-    linehl = "",  -- Line highlight (optional)
-    numhl = "",   -- Number column highlight (optional)
+  text = "⇁", -- The symbol you want to display
+  texthl = "ErrorMsg", -- Highlight group (optional)
+  linehl = "", -- Line highlight (optional)
+  numhl = "", -- Number column highlight (optional)
 })
 override_highlights()

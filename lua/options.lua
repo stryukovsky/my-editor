@@ -62,7 +62,7 @@ o.spelllang = "programming,en,ru"
 local current_hour = tonumber(tostring(vim.fn.strftime "%H"))
 
 if current_hour >= 20 or current_hour <= 7 then
-  g.material_style = "deep ocean"
+  g.material_style = "palenight"
 else
   g.material_style = "lighter"
 end

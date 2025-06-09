@@ -204,7 +204,7 @@ map("n", "<leader>thd", function()
 end, { desc = "Theme: day" })
 
 map("n", "<leader>thn", function()
-  vim.g.material_style = "deep ocean"
+  vim.g.material_style = "palenight"
   vim.cmd "colorscheme material"
 end, { desc = "Theme: night" })
 

@@ -83,19 +83,8 @@ local config = {
   },
   event_handlers = {
     {
-      event = "file_opened",
-      handler = function()
-        vim.print("Works")
-        vim.g.neotree_compat_first_file_picker = false
-      end,
-    },
-    {
       event = "file_open_requested",
       handler = function()
-        -- auto close
-        -- vim.cmd("Neotree close")
-        -- OR
-        vim.print("Works")
         require("neo-tree.command").execute { action = "close" }
         vim.g.neotree_compat_first_file_picker = false
       end,
