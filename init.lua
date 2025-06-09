@@ -79,6 +79,6 @@ vim.api.nvim_create_autocmd("BufRead", {
   pattern = "*",
   callback = function()
     -- After first file is opened, we set this flag to false
-    vim.g.neotree_compat_first_file_picker = false
+    vim.g.neotree_compat_idle = false
   end,
 })

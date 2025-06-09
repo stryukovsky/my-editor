@@ -76,4 +76,5 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 })
 
 
-g.neotree_compat_first_file_picker = true
+-- flag saying neotree not initialized yet
+g.neotree_compat_idle = true

@@ -137,6 +137,9 @@ end, { desc = "UI kulala toggle with sending request" })
 
 local fileHistoryOpened = false
 map(ui_components_modes, "<A-h>", function()
+  if vim.g.neotree_compat_idle then
+    return
+  end
   if fileHistoryOpened then
     pcall(function()
       vim.cmd "tabc"
@@ -157,6 +160,9 @@ end, { desc = "UI diffview file history" })
 
 local diffViewOpened = false
 map(ui_components_modes, "<A-k>", function()
+  if vim.g.neotree_compat_idle then
+    return
+  end
   if diffViewOpened then
     vim.cmd "tabc"
     dialog_component_callback_close = function() end
@@ -211,7 +217,7 @@ end, { desc = "Theme: night" })
 -- neotree
 map(ui_components_modes, "<A-e>", function()
   dapui.close()
-  if vim.g.neotree_compat_first_file_picker then
+  if vim.g.neotree_compat_idle then
     vim.cmd "Neotree reveal current source=filesystem"
   else
     vim.cmd "Neotree reveal left source=filesystem"
@@ -221,7 +227,7 @@ end, { desc = "UI neotree files" })
 
 map(ui_components_modes, "<A-b>", function()
   dapui.close()
-  if vim.g.neotree_compat_first_file_picker then
+  if vim.g.neotree_compat_idle then
     vim.cmd "Neotree focus current source=buffers"
   else
     vim.cmd "Neotree focus left source=buffers"
@@ -230,7 +236,7 @@ end, { desc = "UI neotree buffers" })
 
 map(ui_components_modes, "<A-l>", function()
   dapui.close()
-  if vim.g.neotree_compat_first_file_picker then
+  if vim.g.neotree_compat_idle then
     vim.cmd "Neotree focus current source=document_symbols"
   else
     vim.cmd "Neotree focus left source=document_symbols"
