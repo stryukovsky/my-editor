@@ -1,3 +1,16 @@
+local trouble = require "trouble"
+local symbols = trouble.statusline {
+  mode = "lsp_document_symbols",
+  groups = {},
+  title = false,
+  filter = { range = true },
+  format = "{kind_icon}{symbol.name:Normal}",
+  -- The following line is needed to fix the background color
+  -- Set it to the lualine section you want to use
+  hl_group = "lualine_c_normal",
+}
+
+
 require("lualine").setup {
   options = {
     icons_enabled = true,
@@ -40,6 +53,15 @@ require("lualine").setup {
           unnamed = "[No Name]", -- Text to show for unnamed buffers.
           newfile = "[New]", -- Text to show for newly created file before first write
         },
+      },
+      {
+        symbols.get,
+        cond = symbols.has,
+        -- fmt = function(symbols_source, _)
+        --   local src = tostring(symbols_source)
+        --   vim.print(vim.inspect(src))
+        --   return src:gsub("%* ", "%*%#ErrorMsg#a%*_")
+        -- end
       },
     },
 

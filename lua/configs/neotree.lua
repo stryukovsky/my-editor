@@ -77,7 +77,7 @@ local config = {
     sources = {
       { source = "filesystem" },
       { source = "buffers" },
-      { source = "git_status" },
+      -- { source = "git_status" },
       { source = "document_symbols" },
     },
   },
@@ -123,6 +123,45 @@ local config = {
       local path = node:get_id()
       telescope.live_grep(getTelescopeOpts(state, path))
     end,
+    ["copy_path"] = function(state)
+      -- NeoTree is based on [NuiTree](https://github.com/MunifTanjim/nui.nvim/tree/main/lua/nui/tree)
+      -- The node is based on [NuiNode](https://github.com/MunifTanjim/nui.nvim/tree/main/lua/nui/tree#nuitreenode)
+      local node = state.tree:get_node()
+      local filepath = node:get_id()
+      local filename = node.name
+      local modify = vim.fn.fnamemodify
+
+      local results = {
+        filepath,
+        modify(filepath, ":."),
+        modify(filepath, ":~"),
+        filename,
+        modify(filename, ":r"),
+        modify(filename, ":e"),
+      }
+
+      vim.ui.select({
+        "1. Absolute path: " .. results[1],
+        "2. Path relative to CWD: " .. results[2],
+        "3. Path relative to HOME: " .. results[3],
+        "4. Filename: " .. results[4],
+        "5. Filename without extension: " .. results[5],
+        "6. Extension of the filename: " .. results[6],
+      }, { prompt = "Choose to copy to clipboard:" }, function(choice)
+        if choice then
+          local i = tonumber(choice:sub(1, 1))
+          if i then
+            local result = results[i]
+            vim.fn.setreg('"', result)
+            vim.notify("Copied: " .. result)
+          else
+            vim.notify "Invalid selection"
+          end
+        else
+          vim.notify "Selection cancelled"
+        end
+      end)
+    end,
   }, -- A list of functions
   window = { -- see https://github.com/MunifTanjim/nui.nvim/tree/main/lua/nui/popup for
     auto_expand_width = false, -- expand the window when file exceeds the window width. does not work with position = "float"
@@ -160,7 +199,7 @@ local config = {
       -- ["sr"] = "open_rightbelow_vs",
       -- ["sl"] = "open_leftabove_vs",
       -- ["s"] = "vsplit_with_window_picker",
-      ["t"] = "open_tabnew",
+      ["t"] = "noop",
       -- ["<cr>"] = "open_drop",
       -- ["t"] = "open_tab_drop",
       ["w"] = "open_with_window_picker",
@@ -189,15 +228,27 @@ local config = {
             show_path = "none", -- "none", "relative", "absolute"
           },
         },
-        ["c"] = "copy", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
+        ["c"] = "copy_to_clipboard", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
         ["d"] = "delete",
         ["A"] = "add_directory", -- also accepts the config.show_path and config.insert_as options.
         ["m"] = "move", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
         ["r"] = "rename",
-        ["y"] = "copy_to_clipboard",
         ["p"] = "paste_from_clipboard",
         ["x"] = "cut_to_clipboard",
         ["e"] = "toggle_auto_expand_width",
+      ["y"] = "copy_path",
+      },
+    },
+    filtered_items = {
+      visible = false, -- when true, they will just be displayed differently than normal items
+      force_visible_in_empty_folder = false, -- when true, hidden files will be shown if the root folder is otherwise empty
+      show_hidden_count = false, -- when true, the number of hidden items in each folder will be shown as the last entry
+      hide_dotfiles = false,
+      hide_gitignored = false,
+      hide_by_name = {
+        ".DS_Store",
+        "thumbs.db",
+        --"node_modules",
       },
     },
   },
@@ -207,19 +258,6 @@ local config = {
         ["<Left>"] = "toggle_node",
         ["<Right>"] = "toggle_node",
       },
-    },
-  },
-  filtered_items = {
-    visible = false, -- when true, they will just be displayed differently than normal items
-    force_visible_in_empty_folder = false, -- when true, hidden files will be shown if the root folder is otherwise empty
-    show_hidden_count = true, -- when true, the number of hidden items in each folder will be shown as the last entry
-    hide_dotfiles = true,
-    hide_gitignored = true,
-    hide_hidden = true, -- only works on Windows for hidden files/directories
-    hide_by_name = {
-      ".DS_Store",
-      "thumbs.db",
-      --"node_modules",
     },
   },
 }

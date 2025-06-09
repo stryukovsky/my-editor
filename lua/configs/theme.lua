@@ -61,7 +61,7 @@ require("material").setup {
     --   return vim.tbl_extend("force", highlights.main_highlights.editor()["TabLineSel"], { bold = true })
     -- end,
   },
-  lualine_style = "default", -- Lualine style ( can be 'stealth' or 'default' )
+  lualine_style = "stealth", -- Lualine style ( can be 'stealth' or 'default' )
 }
 
 vim.cmd "colorscheme material"
