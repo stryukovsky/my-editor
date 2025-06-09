@@ -212,9 +212,9 @@ end, { desc = "Theme: night" })
 map(ui_components_modes, "<A-e>", function()
   dapui.close()
   if vim.g.neotree_compat_first_file_picker then
-    vim.cmd "Neotree focus current source=filesystem"
+    vim.cmd "Neotree reveal current source=filesystem"
   else
-    vim.cmd "Neotree focus left source=filesystem"
+    vim.cmd "Neotree reveal left source=filesystem"
   end
 end, { desc = "UI neotree files" })
 

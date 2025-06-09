@@ -64,6 +64,7 @@ local config = {
   enable_cursor_hijack = true, -- If enabled neotree will keep the cursor on the first letter of the filename when moving in the tree.
   hide_root_node = false, -- Hide the root node.
   retain_hidden_root_indent = false, -- IF the root node is hidden, keep the indentation anyhow.
+  use_libuv_file_watcher = true,
   -- This is needed if you use expanders because they render in the indent.
   -- popup_border_style is for input and confirmation dialogs.
   -- Configurtaion of floating window is done in the individual source sections.

@@ -25,14 +25,14 @@ map("n", "<c-leftdrag>", mc.handleMouseDrag)
 map("n", "<c-leftrelease>", mc.handleMouseRelease)
 
 -- Disable and enable cursors.
-map({ "n", "x" }, "<S-A-c>", mc.toggleCursor)
+map({ "n", "x" }, "<leader>C", mc.toggleCursor, {desc = "Multicursor: toggle cursor"})
 
 -- Mappings defined in a keymap layer only apply when there are
 -- multiple cursors. This lets you have overlapping mappings.
 mc.addKeymapLayer(function(layerSet)
   -- Select a different cursor as the main one.
-  layerSet({ "n", "x" }, "<S-Up>", mc.prevCursor)
-  layerSet({ "n", "x" }, "<S-Down>", mc.nextCursor)
+  layerSet({ "n", "x" }, "<A-Up>", mc.prevCursor)
+  layerSet({ "n", "x" }, "<A-Down>", mc.nextCursor)
 
   -- Delete the main cursor.
   layerSet({ "n", "x" }, "<leader>x", mc.deleteCursor)

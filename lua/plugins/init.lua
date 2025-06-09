@@ -40,7 +40,14 @@ return {
   {
     "marko-cerovac/material.nvim",
   },
-
+  {
+    "ThePrimeagen/refactoring.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    lazy = false,
+  },
   {
     "folke/which-key.nvim",
     event = "VeryLazy",
