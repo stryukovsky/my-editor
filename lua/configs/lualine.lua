@@ -57,11 +57,6 @@ require("lualine").setup {
       {
         symbols.get,
         cond = symbols.has,
-        -- fmt = function(symbols_source, _)
-        --   local src = tostring(symbols_source)
-        --   vim.print(vim.inspect(src))
-        --   return src:gsub("%* ", "%*%#ErrorMsg#a%*_")
-        -- end
       },
     },
 
