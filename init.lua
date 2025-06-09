@@ -43,6 +43,9 @@ local function close_empty_unnamed_buffers()
     then
       -- Get all lines in the buffer
       local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+      if #lines > 1 then
+        goto continue
+      end
 
       -- Initialize a variable to store the total number of characters
       local total_characters = 0
@@ -59,6 +62,7 @@ local function close_empty_unnamed_buffers()
         })
       end
     end
+    ::continue::
   end
 end
 
@@ -68,5 +72,13 @@ end
 vim.api.nvim_create_autocmd("BufEnter", {
   callback = function(args)
     close_empty_unnamed_buffers()
+  end,
+})
+
+vim.api.nvim_create_autocmd("BufRead", {
+  pattern = "*",
+  callback = function()
+    -- After first file is opened, we set this flag to false
+    vim.g.neotree_compat_first_file_picker = false
   end,
 })

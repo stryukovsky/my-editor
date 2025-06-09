@@ -52,5 +52,10 @@ vim.fn.sign_define("DapBreakpointCondition", { text = "", texthl = "ErrorMsg"
 vim.fn.sign_define("DapLogPoint", { text = "", texthl = "ErrorMsg", linehl = "", numhl = "" })
 vim.fn.sign_define("DapStopped", { text = "", texthl = "ErrorMsg", linehl = "Substitute", numhl = "Substitute" })
 vim.fn.sign_define("DapBreakpointRejected", { text = "", texthl = "WarningMsg", linehl = "", numhl = "" })
-
+vim.fn.sign_define("HarpoonLine", {
+    text = "⇁",  -- The symbol you want to display
+    texthl = "ErrorMsg",  -- Highlight group (optional)
+    linehl = "",  -- Line highlight (optional)
+    numhl = "",   -- Number column highlight (optional)
+})
 override_highlights()

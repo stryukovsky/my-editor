@@ -343,7 +343,7 @@ map("n", "<leader>gC", function()
 end, { desc = "git commit amend" })
 
 local git_blame_bufnr = 0
-map("n", "<A-b>", function()
+map("n", "<A-B>", function()
   if git_blame_bufnr == 0 then
     if vim.api.nvim_get_option_value("buftype", { buf = vim.fn.bufnr() }) == "" then
       gitsigns_async.create(0, function()
