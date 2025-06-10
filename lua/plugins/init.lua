@@ -9,7 +9,16 @@ return {
       -- Only one of these is needed.
       "nvim-telescope/telescope.nvim", -- optional
     },
-  },
+  },{
+  'nvimdev/dashboard-nvim',
+  event = 'VimEnter',
+  config = function()
+    require('dashboard').setup {
+      -- config
+    }
+  end,
+  dependencies = { {'nvim-tree/nvim-web-devicons'}}
+},
   {
     "saadparwaiz1/cmp_luasnip",
   },

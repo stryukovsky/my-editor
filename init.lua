@@ -68,17 +68,17 @@ end
 
 -- Clear the mandatory, empty, unnamed buffer when a real file is opened:
 -- vim.api.nvim_command('autocmd BufReadPost * lua require()
+--
+-- vim.api.nvim_create_autocmd("BufEnter", {
+--   callback = function(args)
+--     close_empty_unnamed_buffers()
+--   end,
+-- })
 
-vim.api.nvim_create_autocmd("BufEnter", {
-  callback = function(args)
-    close_empty_unnamed_buffers()
-  end,
-})
-
-vim.api.nvim_create_autocmd("BufRead", {
-  pattern = "*",
-  callback = function()
-    -- After first file is opened, we set this flag to false
-    vim.g.neotree_compat_idle = false
-  end,
-})
+-- vim.api.nvim_create_autocmd("BufRead", {
+--   pattern = "*",
+--   callback = function()
+--     -- After first file is opened, we set this flag to false
+--     vim.g.neotree_compat_idle = false
+--   end,
+-- })

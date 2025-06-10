@@ -87,7 +87,7 @@ local config = {
       event = "file_open_requested",
       handler = function()
         require("neo-tree.command").execute { action = "close" }
-        vim.g.neotree_compat_idle = false
+        -- vim.g.neotree_compat_idle = false
       end,
     },
   },
@@ -264,4 +264,3 @@ local config = {
 }
 
 require("neo-tree").setup(config)
-vim.cmd "Neotree reveal current"
