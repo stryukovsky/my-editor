@@ -40,6 +40,14 @@ local telescope_components = {
     modes = ui_components_modes,
     shortcut = "<A-f>",
     command = function()
+      vim.cmd "Telescope current_buffer_fuzzy_find"
+    end,
+    desc = "UI telescope find in current buffer",
+  },
+  {
+    modes = ui_components_modes,
+    shortcut = "<A-F>",
+    command = function()
       vim.cmd "Telescope live_grep"
     end,
     desc = "UI telescope search in project",

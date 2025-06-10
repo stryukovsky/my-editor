@@ -69,6 +69,12 @@ return {
     },
   },
   {
+    "j-hui/fidget.nvim",
+    opts = {
+      -- options
+    },
+  },
+  {
     "ThePrimeagen/refactoring.nvim",
     dependencies = {
       "nvim-lua/plenary.nvim",
@@ -243,10 +249,6 @@ return {
     "scalameta/nvim-metals",
     dependencies = {
       "nvim-lua/plenary.nvim",
-      {
-        "j-hui/fidget.nvim",
-        opts = {},
-      },
     },
     ft = { "scala", "sbt" },
     opts = function()

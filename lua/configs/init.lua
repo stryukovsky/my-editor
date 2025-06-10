@@ -29,6 +29,7 @@ require "configs.illuminate"
 require "configs.neotree"
 require "configs.neogit-setup"
 require "configs.dashboard"
+require "configs.fidget"
 
 -- at the end, so all highlight rules can be applied
 require "configs.theme"
