@@ -81,15 +81,6 @@ local config = {
       { source = "document_symbols" },
     },
   },
-  -- event_handlers = {
-  --   {
-  --     event = "file_open_requested",
-  --     handler = function()
-  --       require("neo-tree.command").execute { action = "close" }
-  --       -- vim.g.neotree_compat_idle = false
-  --     end,
-  --   },
-  -- },
   commands = {
     ["system_open"] = function(state)
       local node = state.tree:get_node()
@@ -195,7 +186,7 @@ local config = {
       -- ["l"] = "focus_preview",
       ["S"] = "open_split",
       -- ["S"] = "split_with_window_picker",
-      ["s"] = "open_vsplit",
+      ["s"] = "noop",
       -- ["sr"] = "open_rightbelow_vs",
       -- ["sl"] = "open_leftabove_vs",
       -- ["s"] = "vsplit_with_window_picker",
@@ -221,6 +212,8 @@ local config = {
         ["o"] = "system_open",
         ["F"] = "telescope_find",
         ["f"] = "telescope_grep",
+        ["s"] = "git_add_file",
+        ["u"] = "git_unstage_file",
         ["a"] = {
           "add",
           -- some commands may take optional config options, see `:h neo-tree-mappings` for details
