@@ -9,16 +9,17 @@ return {
       -- Only one of these is needed.
       "nvim-telescope/telescope.nvim", -- optional
     },
-  },{
-  'nvimdev/dashboard-nvim',
-  event = 'VimEnter',
-  config = function()
-    require('dashboard').setup {
-      -- config
-    }
-  end,
-  dependencies = { {'nvim-tree/nvim-web-devicons'}}
-},
+  },
+  {
+    "nvimdev/dashboard-nvim",
+    event = "VimEnter",
+    config = function()
+      require("dashboard").setup {
+        -- config
+      }
+    end,
+    dependencies = { { "nvim-tree/nvim-web-devicons" } },
+  },
   {
     "saadparwaiz1/cmp_luasnip",
   },
@@ -40,6 +41,7 @@ return {
       "hrsh7th/cmp-nvim-lsp",
       "hrsh7th/cmp-buffer",
       "hrsh7th/cmp-path",
+      "hrsh7th/cmp-nvim-lsp-signature-help",
       "L3MON4D3/LuaSnip",
       "saadparwaiz1/cmp_luasnip",
     },
@@ -58,6 +60,13 @@ return {
   },
   {
     "marko-cerovac/material.nvim",
+  },
+  {
+    "ray-x/lsp_signature.nvim",
+    event = "InsertEnter",
+    opts = {
+      -- cfg options
+    },
   },
   {
     "ThePrimeagen/refactoring.nvim",

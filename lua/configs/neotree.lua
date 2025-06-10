@@ -218,7 +218,8 @@ local config = {
           "add",
           -- some commands may take optional config options, see `:h neo-tree-mappings` for details
           config = {
-            show_path = "none", -- "none", "relative", "absolute"
+            show_path = "relative", -- "none", "relative", "absolute"
+            follow_current_file = true
           },
         },
         ["c"] = "copy_to_clipboard", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
