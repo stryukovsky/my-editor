@@ -63,8 +63,10 @@ local current_hour = tonumber(tostring(vim.fn.strftime "%H"))
 
 if current_hour >= 20 or current_hour <= 7 then
   g.material_style = "palenight"
+  o.background = "dark"
 else
   g.material_style = "lighter"
+  o.background = "light"
 end
 
 -- vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"

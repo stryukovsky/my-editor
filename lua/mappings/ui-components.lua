@@ -211,12 +211,14 @@ map("n", "+", "<C-W>3>", { desc = "UI window width increase" })
 map("n", "_", "<C-W>3<", { desc = "UI window width decrease" })
 map("n", "<leader>thd", function()
   vim.g.material_style = "lighter"
-  vim.cmd "colorscheme material"
+  vim.o.background = "light"
+  require "configs.theme"
+  require "highlight"
 end, { desc = "Theme: day" })
 
 map("n", "<leader>thn", function()
   vim.g.material_style = "palenight"
-  vim.cmd "colorscheme material"
+  vim.o.background = "dark"
 end, { desc = "Theme: night" })
 
 -- neotree
@@ -225,17 +227,16 @@ map(ui_components_modes, "<A-e>", function()
   -- if vim.g.neotree_compat_idle then
   --   vim.cmd "Neotree reveal current source=filesystem"
   -- else
-    vim.cmd "Neotree reveal left source=filesystem"
+  vim.cmd "Neotree reveal left source=filesystem"
   -- end
 end, { desc = "UI neotree files" })
-
 
 map(ui_components_modes, "<A-b>", function()
   dapui.close()
   -- if vim.g.neotree_compat_idle then
   --   vim.cmd "Neotree focus current source=buffers"
   -- else
-    vim.cmd "Neotree focus left source=buffers"
+  vim.cmd "Neotree focus left source=buffers"
   -- end
 end, { desc = "UI neotree buffers" })
 
@@ -244,7 +245,7 @@ map(ui_components_modes, "<A-l>", function()
   -- if vim.g.neotree_compat_idle then
   --   vim.cmd "Neotree focus current source=document_symbols"
   -- else
-    vim.cmd "Neotree focus left source=document_symbols"
+  vim.cmd "Neotree focus left source=document_symbols"
   -- end
 end, { desc = "UI neotree structure" })
 

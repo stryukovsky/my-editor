@@ -64,4 +64,4 @@ require("material").setup {
   lualine_style = "stealth", -- Lualine style ( can be 'stealth' or 'default' )
 }
 
-vim.cmd "colorscheme material"
+vim.cmd.colorscheme "everforest"
