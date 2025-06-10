@@ -33,7 +33,12 @@ local function override_highlights()
   hl(0, "IlluminatedWordRead", { underline = true })
   hl(0, "IlluminatedWordWrite", { underline = true })
 
+  hl(0, "NeogitPopupConfigKey", { link = "Title" })
+  hl(0, "NeogitPopupActionKey", { link = "Title" })
+  hl(0, "NeogitPopupOptionKey", { link = "Title" })
+  hl(0, "NeogitPopupSwitchKey", { link = "Title" })
 
+  hl(0, "DiffViewFilePanelTitle", { link = "Title" })
   hl(0, "DiffViewFilePanelFileName", { link = "Normal" })
 
   local bg_color = vim.api.nvim_get_hl(0, { name = "Normal" }).bg
@@ -44,7 +49,7 @@ local function override_highlights()
   hl(0, "NeoTreeTabSeparatorInactive", { bg = bg_color, fg = foreground_inactive })
   hl(0, "NeoTreeTabSeparatorActive", { bg = bg_color, fg = foreground_active })
 
-  hl(0, "StatusLine", { bg = bg_color})
+  hl(0, "StatusLine", { bg = bg_color })
   hl(0, "CybuBorder", { link = "Exception" })
   hl(0, "LspSignatureActiveParameter", { force = true, fg = "#ff0000" })
 

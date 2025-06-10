@@ -5,9 +5,6 @@ local trouble = require "trouble"
 local kulala = require "kulala"
 local kulala_ui = require "kulala.ui"
 local oil = require "oil"
-local new_branch = require "ui.new_branch"
-local commit = require "ui.commit"
-local commit_amend = require "ui.commit_amend"
 local gitsigns_async = require "gitsigns.async"
 local gitsigns_blame = require "gitsigns.blame"
 local avante = require "avante"
@@ -335,18 +332,6 @@ map(ui_components_modes, "<A-m>", function()
     trouble.open { mode = "lsp", focus = false, win = { position = "right" } }
   end
 end, { desc = "UI trouble monitor definitions" })
-
-map("n", "<leader>gb", function()
-  new_branch()
-end, { desc = "git new branch create&checkout" })
-
-map("n", "<leader>gc", function()
-  commit()
-end, { desc = "git commit" })
-
-map("n", "<leader>gC", function()
-  commit_amend()
-end, { desc = "git commit amend" })
 
 local git_blame_bufnr = 0
 map("n", "<A-B>", function()
