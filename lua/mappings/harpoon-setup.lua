@@ -3,7 +3,7 @@ local harpoon = require "harpoon"
 vim.keymap.set("n", "<leader>h", function()
   harpoon:list():add()
   vim.print "Harpooned!"
-end)
+end, { desc = "Harpoon add"})
 
 -- basic telescope configuration
 local conf = require("telescope.config").values
