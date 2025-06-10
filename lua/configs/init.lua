@@ -28,6 +28,7 @@ require "configs.text-case"
 require "configs.illuminate"
 require "configs.neotree"
 require "configs.neogit-setup"
+require "configs.dashboard"
 
 -- at the end, so all highlight rules can be applied
 require "configs.theme"
