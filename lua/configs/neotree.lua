@@ -78,19 +78,18 @@ local config = {
     sources = {
       { source = "filesystem" },
       { source = "buffers" },
-      -- { source = "git_status" },
       { source = "document_symbols" },
     },
   },
-  event_handlers = {
-    {
-      event = "file_open_requested",
-      handler = function()
-        require("neo-tree.command").execute { action = "close" }
-        -- vim.g.neotree_compat_idle = false
-      end,
-    },
-  },
+  -- event_handlers = {
+  --   {
+  --     event = "file_open_requested",
+  --     handler = function()
+  --       require("neo-tree.command").execute { action = "close" }
+  --       -- vim.g.neotree_compat_idle = false
+  --     end,
+  --   },
+  -- },
   commands = {
     ["system_open"] = function(state)
       local node = state.tree:get_node()
