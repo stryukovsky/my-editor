@@ -46,8 +46,8 @@ local function override_highlights()
   local foreground_active = vim.api.nvim_get_hl(0, { name = "Title" }).fg
   hl(0, "NeoTreeTabInactive", { bg = bg_color, fg = foreground_inactive })
   hl(0, "NeoTreeTabActive", { bg = bg_color, fg = foreground_active })
-  hl(0, "NeoTreeTabSeparatorInactive", { bg = bg_color, fg = foreground_inactive })
-  hl(0, "NeoTreeTabSeparatorActive", { bg = bg_color, fg = foreground_active })
+  hl(0, "NeoTreeTabSeparatorInactive", { bg = bg_color, fg = bg_color})
+  hl(0, "NeoTreeTabSeparatorActive", { bg = bg_color, fg = bg_color })
 
   hl(0, "StatusLine", { bg = bg_color })
   hl(0, "CybuBorder", { link = "Exception" })

@@ -16,7 +16,7 @@ o.shiftwidth = 2
 o.smartindent = true
 o.tabstop = 2
 o.softtabstop = 2
-
+vim.g.matchparen_disable_cursor_hl = 1
 opt.fillchars = { eob = " " }
 o.ignorecase = true
 o.smartcase = true
