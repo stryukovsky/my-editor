@@ -76,5 +76,4 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 })
 
 
--- flag saying neotree not initialized yet
--- g.neotree_compat_idle = true
+g.barbar_auto_setup = false -- disable auto-setup

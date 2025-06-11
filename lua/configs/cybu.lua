@@ -1,6 +1,6 @@
 require("cybu").setup {
   position = {
-    relative_to = "win", -- win, editor, cursor
+    relative_to = "cursor", -- win, editor, cursor
     anchor = "topcenter", -- topleft, topcenter, topright,
     -- centerleft, center, centerright,
     -- bottomleft, bottomcenter, bottomright
@@ -29,5 +29,5 @@ require("cybu").setup {
     },
     show_on_autocmd = false, -- event to trigger cybu (eg. "BufEnter")
   },
-  display_time = 1800, -- time the cybu window is displayed
+  display_time = 800, -- time the cybu window is displayed
 }

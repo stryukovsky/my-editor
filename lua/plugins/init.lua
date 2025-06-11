@@ -97,8 +97,7 @@ return {
     },
   },
   {
-    "nvim-tree/nvim-tree.lua",
-    cmd = { "NvimTreeOpen", "NvimTreeToggle", "NvimTreeFocus" },
+    "romgrk/barbar.nvim",
   },
   {
     "nvim-neo-tree/neo-tree.nvim",

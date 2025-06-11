@@ -250,7 +250,6 @@ local dapui_state_is_opened = false
 map(ui_components_modes, "<A-r>", function()
   if dapui_state_is_opened then
     dapui.close()
-    vim.cmd "NvimTreeOpen"
   else
     bottom_component_callback_close()
     dapui.open()
@@ -258,7 +257,6 @@ map(ui_components_modes, "<A-r>", function()
       dapui_state_is_opened = false
       dapui.close()
     end
-    vim.cmd "NvimTreeClose"
   end
   dapui_state_is_opened = not dapui_state_is_opened
 end, { desc = "UI debug close view" })

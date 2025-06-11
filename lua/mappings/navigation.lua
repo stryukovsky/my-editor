@@ -16,11 +16,17 @@ map("n", "<A-1>", function()
 end, { desc = "Navigation toggle relative numbering" })
 
 -- tabs navigation
-map("n", "<A-Left>", "<Plug>(CybuPrev)",{ desc = "Navigation prev buffer" })
-map("n", "<A-Right>", "<Plug>(CybuNext)",{ desc = "Navigation next buffer" })
 map("n", "<Tab>", "<plug>(CybuLastusedNext)", { desc = "Navigation next used buffer" })
 map("n", "<S-Tab>", "<plug>(CybuLastusedPrev)", { desc = "Navigation prev used buffer" })
 
+map("n", "<A-Left>","<CMD>BufferPrevious<CR>",{ desc = "Navigation prev buffer" })
+map("n", "<A-Right>", "<CMD>BufferNext<CR>",{ desc = "Navigation next buffer" })
+map("n", "<leader>x", "<CMD>BufferClose<CR>", { desc = "Navigation close buffer" })
+map("n", "<leader>X", "<CMD>BufferCloseAllButCurrent<CR>", { desc = "Navigation close other buffers" })
+
+map("n", "<leader><Left>", "<CMD>BufferMovePrevious<CR>", { desc = "Navigation move buffer left" })
+map("n", "<leader><Right>", "<CMD>BufferMoveNext<CR>", { desc = "Navigation move buffer right" })
+map("n", "<leader>pin", "<CMD>BufferPin<CR>", { desc = "Navigation pin buffer" })
 -- navigate in jumps
 map("n", "<A-[>", "<cmd>pop<cr>", { desc = "Navigation jump prev" })
 map("n", "<A-]>", "<cmd>tag<cr>", { desc = "Navigation jump next" })

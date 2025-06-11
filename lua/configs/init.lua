@@ -5,7 +5,7 @@ require("Comment").setup()
 require("todo-comments").setup()
 
 require("configs.cybu")
-require("configs.nvimtree")
+require("configs.barbar")
 require("configs.kulala")
 require "configs.tiny-code-action"
 require "configs.oil"
