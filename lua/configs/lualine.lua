@@ -10,26 +10,37 @@ local symbols = trouble.statusline {
   hl_group = "lualine_c_normal",
 }
 
+local function to_hex_color(color)
+  return "#" .. string.format("%x", color)
+end
+
+local function get_lualine_theme()
+  local bg_color = to_hex_color(vim.api.nvim_get_hl(0, { name = "Normal" }).bg)
+  -- local fg_color = to_hex_color(vim.api.nvim_get_hl(0, { name = "Normal" }).fg)
+  local lualine_theme = require "lualine.themes.auto"
+  -- lualine_theme.normal.c.bg = bg_color
+  -- lualine_theme.normal.b.bg = bg_color
+  for k, _ in pairs(lualine_theme) do
+    lualine_theme[k].b.bg = bg_color
+    lualine_theme[k].c.bg = bg_color
+  end
+  return lualine_theme
+end
+
+vim.api.nvim_create_autocmd({ "ColorScheme" }, {
+  pattern = "*",
+  callback = function()
+    require("lualine").setup {
+      options = {
+        theme = get_lualine_theme(),
+      },
+    }
+  end,
+})
 
 require("lualine").setup {
   options = {
-    icons_enabled = true,
-    theme = "material",
-    component_separators = { left = "", right = "" },
-    section_separators = { left = "", right = "" },
-    disabled_filetypes = {
-      statusline = {},
-      winbar = {},
-    },
-    ignore_focus = {},
-    always_divide_middle = true,
-    always_show_tabline = true,
-    globalstatus = true,
-    refresh = {
-      statusline = 100,
-      tabline = 100,
-      winbar = 100,
-    },
+    theme = get_lualine_theme(),
   },
   sections = {
     lualine_a = { "mode" },

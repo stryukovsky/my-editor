@@ -209,17 +209,10 @@ map(ui_components_modes, "<A-s>", "<C-W>j", { desc = "UI switch window down" })
 map(ui_components_modes, "<A-w>", "<C-W>k", { desc = "UI switch window up" })
 map("n", "+", "<C-W>3>", { desc = "UI window width increase" })
 map("n", "_", "<C-W>3<", { desc = "UI window width decrease" })
-map("n", "<leader>thd", function()
-  vim.g.material_style = "lighter"
-  vim.o.background = "light"
-  require "configs.theme"
-  require "highlight"
-end, { desc = "Theme: day" })
 
-map("n", "<leader>thn", function()
-  vim.g.material_style = "palenight"
-  vim.o.background = "dark"
-end, { desc = "Theme: night" })
+map("n", "<leader>th", function()
+  vim.cmd("Telescope colorscheme")
+end, { desc = "Theme" })
 
 -- neotree
 map(ui_components_modes, "<A-e>", function()
