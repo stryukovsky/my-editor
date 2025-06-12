@@ -136,6 +136,7 @@ return {
       "debugloop/telescope-undo.nvim",
     },
   },
+  { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
   {
     "nvim-treesitter/nvim-treesitter",
     opts = {

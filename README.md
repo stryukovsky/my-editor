@@ -10,7 +10,26 @@ git clone https://github.com/stryukovsky/my-editor ~/.config/nvim/
 In `~/.config/nvim/` you need to run setup scripts:  
 
 # Ready instructions on platforms
-## Fedora:  
+
+## Basics
+Install basics with script on every platform  
+
+### MacOS:  
+Install alacritty:  
+https://alacritty.org/  
+Install font from `fonts/` directory of this repo to your system.   
+
+Execute every line separately!!!  
+
+```sh
+sudo bash setup/macos/setup.sh 
+bash setup/commons.sh
+cp setup/macos/alacritty.toml ~/.alacritty.toml
+cp setup/tmux.conf ~/.tmux.conf
+cp setup/macos/zsh.sh ~/.zshrc
+```
+
+### Fedora:  
 
 Firstly make sure system is up-to-date:  
 
@@ -30,25 +49,15 @@ cp setup/tmux.conf ~/.tmux.conf
 cp setup/fedora/zsh.sh ~/.zshrc
 ```
 
-## MacOS:  
-Install alacritty:  
-https://alacritty.org/  
-Install font from `fonts/` directory of this repo to your system.   
-```sh
-sudo bash setup/macos/setup.sh 
-bash setup/commons.sh
-cp setup/macos/alacritty.toml ~/.alacritty.toml
-cp setup/tmux.conf ~/.tmux.conf
-cp setup/macos/zsh.sh ~/.zshrc
-```
+**Note**: read all stuff related to fedora below. Especially drivers and root password
 
-# Setup mason plugins
-Open neovim and run command
+## Setup mason plugins
+After installation of basics, open neovim and run command
 ```
 MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter json-lsp lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server solidity solidity-ls vscode-solidity-server pyright goimports prettier clangd
 ```
 
-# Other stuff
+# Other Fedora stuff
 
 ## Gnome look
 
@@ -102,7 +111,17 @@ wg-quick up  ~/Documents/vpn.conf
 
 Repeat again interactions with UI.  
 
-# Manual Installation (instead of usage ready setup instructions)
+## Fedora root password set
+
+Important stuff  
+
+```sh
+sudo passwd root
+```
+
+And then reboot  
+
+# Manual Installation (instead of usage of ready basics setup instructions)
 
 ## Links 
 
