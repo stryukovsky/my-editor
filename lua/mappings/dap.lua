@@ -42,11 +42,12 @@ end, { desc = "debug toggle breakpoint" })
 
 -- open Dap UI automatically when debug starts
 dap.listeners.before.attach.dapui_config = function()
-  vim.cmd "NvimTreeClose"
+  vim.cmd "Neotree close"
   dapui.open()
 end
+
 dap.listeners.before.launch.dapui_config = function()
-  vim.cmd "NvimTreeClose"
+  vim.cmd "Neotree close"
   dapui.open()
 end
 

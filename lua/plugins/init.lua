@@ -103,11 +103,6 @@ return {
       -- {"3rd/image.nvim", opts = {}}, -- Optional image support in preview window: See `# Preview Mode` for more information
     },
     lazy = false, -- neo-tree will lazily load itself
-    ---@module "neo-tree"
-    ---@type neotree.Config?
-    opts = {
-      -- fill any relevant options here
-    },
   },
   {
     "neovim/nvim-lspconfig",
@@ -139,9 +134,6 @@ return {
   },
   {
     "stevearc/oil.nvim",
-    ---@module 'oil'
-    ---@type oil.SetupOpts
-    opts = {},
     -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
     lazy = false,
   },
@@ -180,17 +172,9 @@ return {
   {
     "folke/todo-comments.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
-    opts = {
-      -- your configuration comes here
-      -- or leave it empty to use the default settings
-      -- refer to the configuration section below
-    },
   },
   {
     "numToStr/Comment.nvim",
-    opts = {
-      -- add any options here
-    },
   },
   {
     "nvimdev/lspsaga.nvim",
@@ -199,17 +183,7 @@ return {
     "yetone/avante.nvim",
     event = "VeryLazy",
     version = false, -- Never set this value to "*"! Never!
-    opts = {
-      -- add any opts here
-      -- for example
-      providers = {
-        ollama = {
-          endpoint = "http://127.0.0.1:11434", -- Note that there is no /v1 at the end.
-          model = "gemma3:12b",
-        },
-      },
-      provider = "ollama",
-    },
+    opts = require "configs.avante",
     -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
     build = "make",
     dependencies = {
@@ -217,11 +191,8 @@ return {
       "stevearc/dressing.nvim",
       "nvim-lua/plenary.nvim",
       "MunifTanjim/nui.nvim",
-      --- The below dependencies are optional,
-      "echasnovski/mini.pick", -- for file_selector provider mini.pick
       "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
       "hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
-      "ibhagwan/fzf-lua", -- for file_selector provider fzf
       "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
     },
   },
@@ -240,45 +211,7 @@ return {
       "nvim-lua/plenary.nvim",
     },
     ft = { "scala", "sbt" },
-    opts = function()
-      local metals_config = require("metals").bare_config()
-
-      -- Example of settings
-      metals_config.settings = {
-        showImplicitArguments = true,
-        excludedPackages = { "akka.actor.typed.javadsl", "com.github.swagger.akka.javadsl" },
-      }
-
-      -- *READ THIS*
-      -- I *highly* recommend setting statusBarProvider to either "off" or "on"
-      --
-      -- "off" will enable LSP progress notifications by Metals and you'll need
-      -- to ensure you have a plugin like fidget.nvim installed to handle them.
-      --
-      -- "on" will enable the custom Metals status extension and you *have* to have
-      -- a have settings to capture this in your statusline or else you'll not see
-      -- any messages from metals. There is more info in the help docs about this
-      metals_config.init_options.statusBarProvider = "off"
-
-      -- Example if you are using cmp how to make sure the correct capabilities for snippets are set
-      metals_config.capabilities = require("cmp_nvim_lsp").default_capabilities()
-
-      metals_config.on_attach = function(client, bufnr)
-        require("metals").setup_dap()
-      end
-
-      return metals_config
-    end,
-    config = function(self, metals_config)
-      local nvim_metals_group = vim.api.nvim_create_augroup("nvim-metals", { clear = true })
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = self.ft,
-        callback = function()
-          require("metals").initialize_or_attach(metals_config)
-        end,
-        group = nvim_metals_group,
-      })
-    end,
+    config = require "configs.scalametals",
   },
   {
     "mrcjkb/rustaceanvim",

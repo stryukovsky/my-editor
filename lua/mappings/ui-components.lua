@@ -285,29 +285,17 @@ end, { desc = "Theme" })
 -- neotree
 map(ui_components_modes, "<A-e>", function()
   dapui.close()
-  -- if vim.g.neotree_compat_idle then
-  --   vim.cmd "Neotree reveal current source=filesystem"
-  -- else
   vim.cmd "Neotree reveal left source=filesystem"
-  -- end
 end, { desc = "UI neotree files" })
 
 map(ui_components_modes, "<A-b>", function()
   dapui.close()
-  -- if vim.g.neotree_compat_idle then
-  --   vim.cmd "Neotree focus current source=buffers"
-  -- else
   vim.cmd "Neotree focus left source=buffers"
-  -- end
 end, { desc = "UI neotree buffers" })
 
 map(ui_components_modes, "<A-l>", function()
   dapui.close()
-  -- if vim.g.neotree_compat_idle then
-  --   vim.cmd "Neotree focus current source=document_symbols"
-  -- else
   vim.cmd "Neotree focus left source=document_symbols"
-  -- end
 end, { desc = "UI neotree structure" })
 
 local bottom_component_callback_close = function() end
@@ -318,7 +306,9 @@ local dapui_state_is_opened = false
 map(ui_components_modes, "<A-r>", function()
   if dapui_state_is_opened then
     dapui.close()
+    vim.cmd "Neotree reveal left source=filesystem"
   else
+    vim.cmd "Neotree close"
     bottom_component_callback_close()
     dapui.open()
     bottom_component_callback_close = function()

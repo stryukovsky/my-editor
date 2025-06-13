@@ -21,6 +21,4 @@ require("lazy").setup({
 
 require "options"
 require "configs"
-vim.schedule(function()
-  require "mappings"
-end)
+require "mappings"
