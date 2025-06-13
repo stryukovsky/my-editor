@@ -1,4 +1,4 @@
-local map = vim.keymap.set
+local map = require("mappings.map")
 local telescope_builtin = require "telescope.builtin"
 local function opts(desc)
   return { desc = "LSP " .. desc }

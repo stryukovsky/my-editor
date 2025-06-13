@@ -1,5 +1,3 @@
--- require "nvchad.mappings"
--- require "nvchad.configs.lspconfig"
 local unset = vim.keymap.del
 
 -- unset nvchad shortcuts
@@ -39,7 +37,7 @@ require "mappings.substitute"
 require "mappings.markdownpreview"
 require "mappings.neotest"
 require "mappings.text-case"
-require "mappings.harpoon-setup"
 require "mappings.refactoring-setup"
 require "mappings.neogit-setup"
 require "mappings.fidget"
+require "mappings.grapple"

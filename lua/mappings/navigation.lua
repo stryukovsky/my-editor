@@ -16,8 +16,8 @@ map("n", "<A-1>", function()
 end, { desc = "Navigation toggle relative numbering" })
 
 -- tabs navigation
-map("n", "<Tab>", "<plug>(CybuLastusedNext)", { desc = "Navigation next used buffer" })
-map("n", "<S-Tab>", "<plug>(CybuLastusedPrev)", { desc = "Navigation prev used buffer" })
+-- map("n", "<Tab>", "<plug>(CybuLastusedNext)", { desc = "Navigation next used buffer" })
+-- map("n", "<S-Tab>", "<plug>(CybuLastusedPrev)", { desc = "Navigation prev used buffer" })
 
 map("n", "<A-Left>","<CMD>BufferPrevious<CR>",{ desc = "Navigation prev buffer" })
 map("n", "<A-Right>", "<CMD>BufferNext<CR>",{ desc = "Navigation next buffer" })

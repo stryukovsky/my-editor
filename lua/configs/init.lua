@@ -4,7 +4,6 @@ require("multicursor-nvim").setup()
 require("Comment").setup()
 require("todo-comments").setup()
 
-require("configs.cybu")
 require("configs.barbar")
 require("configs.kulala")
 require "configs.tiny-code-action"
@@ -30,6 +29,8 @@ require "configs.neotree"
 require "configs.neogit-setup"
 require "configs.dashboard"
 require "configs.fidget"
+require "configs.grapple"
+require "configs.langmapper"
 
 -- at the end, so all highlight rules can be applied
 require "configs.theme"

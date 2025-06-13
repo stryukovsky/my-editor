@@ -14,6 +14,14 @@ local ui_components_modes = { "n", "t", "v", "i" }
 local telescope_components = {
   {
     modes = ui_components_modes,
+    shortcut = "<A-m>",
+    command = function()
+      vim.cmd "Telescope grapple tags"
+    end,
+    desc = "UI telescope marks",
+  },
+  {
+    modes = ui_components_modes,
     shortcut = "<A-c>",
     command = function()
       vim.cmd "Telescope git_commits"
@@ -211,7 +219,7 @@ map("n", "+", "<C-W>3>", { desc = "UI window width increase" })
 map("n", "_", "<C-W>3<", { desc = "UI window width decrease" })
 
 map("n", "<leader>th", function()
-  vim.cmd("Telescope colorscheme")
+  vim.cmd "Telescope colorscheme"
 end, { desc = "Theme" })
 
 -- neotree
@@ -320,18 +328,6 @@ map(ui_components_modes, "<A-p>", function()
     trouble.open { mode = "diagnostics", focus = true }
   end
 end, { desc = "UI trouble diagnostics" })
-
-map(ui_components_modes, "<A-m>", function()
-  if trouble.is_open "lsp" then
-    trouble.close "lsp"
-  else
-    right_component_callback_close()
-    right_component_callback_close = function()
-      trouble.close "lsp"
-    end
-    trouble.open { mode = "lsp", focus = false, win = { position = "right" } }
-  end
-end, { desc = "UI trouble monitor definitions" })
 
 local git_blame_bufnr = 0
 map("n", "<A-B>", function()

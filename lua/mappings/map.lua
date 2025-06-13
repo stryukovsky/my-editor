@@ -1,2 +1,1 @@
-return vim.keymap.set
-
+return require("langmapper").map

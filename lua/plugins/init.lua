@@ -231,11 +231,6 @@ return {
       "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
     },
   },
-  {
-    "ThePrimeagen/harpoon",
-    branch = "harpoon2",
-    dependencies = { "nvim-lua/plenary.nvim" },
-  },
   -- LANGUAGE-SPECIFIC-PLUGINS
   {
     "leoluz/nvim-dap-go",
@@ -327,9 +322,6 @@ return {
     "Pocco81/auto-save.nvim",
   },
   {
-    "ghillb/cybu.nvim",
-  },
-  {
     "johmsalas/text-case.nvim",
     config = function()
       require("textcase").setup {}
@@ -358,5 +350,16 @@ return {
   },
   {
     "RRethy/vim-illuminate",
+  },
+  {
+    "cbochs/grapple.nvim",
+    dependencies = {
+      { "nvim-tree/nvim-web-devicons", lazy = true },
+    },
+  },
+  {
+    "Wansmer/langmapper.nvim",
+    lazy = false,
+    priority = 1, -- High priority is needed if you will use `autoremap()`
   },
 }
