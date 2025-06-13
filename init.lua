@@ -20,9 +20,7 @@ require("lazy").setup({
 }, lazy_config)
 
 require "options"
-
+require "configs"
 vim.schedule(function()
   require "mappings"
 end)
-
-require "configs"

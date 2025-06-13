@@ -8,6 +8,7 @@ local oil = require "oil"
 local gitsigns_async = require "gitsigns.async"
 local gitsigns_blame = require "gitsigns.blame"
 local avante = require "avante"
+local diffview_actions = require "diffview.actions"
 
 local ui_components_modes = { "n", "t", "v", "i" }
 
@@ -173,9 +174,6 @@ end, { desc = "UI diffview file history" })
 
 local diffViewOpened = false
 map(ui_components_modes, "<A-k>", function()
-  -- if vim.g.neotree_compat_idle then
-  --   return
-  -- end
   if diffViewOpened then
     vim.cmd "tabc"
     dialog_component_callback_close = function() end
@@ -193,6 +191,68 @@ map(ui_components_modes, "<A-k>", function()
   end
   diffViewOpened = not diffViewOpened
 end, { desc = "UI diffview open merge tool" })
+
+local function open_file_from_diffview()
+  diffViewOpened = false
+  fileHistoryOpened = false
+  diffview_actions.goto_file_tab()
+  local opened_file = vim.fn.expand "%"
+  -- file is opened in new tab
+  -- so we need to close tab with opened file and also tab with diffview
+  vim.cmd "2tabc"
+  vim.cmd("edit " .. opened_file)
+end
+
+require("diffview").setup {
+  keymaps = {
+    view = {
+      {
+        "n",
+        "<A-k>",
+        function()
+          vim.cmd "tabc"
+        end,
+        { desc = "Close diffview " },
+      },
+      {
+        "n",
+        "<A-h>",
+        function()
+          vim.cmd "tabc"
+        end,
+        { desc = "Close diffview " },
+      },
+    },
+    file_history_panel = {
+      {
+        "n",
+        "o",
+        open_file_from_diffview,
+        { desc = "Go to file" },
+      },
+      {
+        "n",
+        "O",
+        open_file_from_diffview,
+        { desc = "Go to file" },
+      },
+    },
+    file_panel = {
+      {
+        "n",
+        "o",
+        open_file_from_diffview,
+        { desc = "Go to file" },
+      },
+      {
+        "n",
+        "O",
+        open_file_from_diffview,
+        { desc = "Go to file" },
+      },
+    },
+  },
+}
 
 local oilOpened = false
 map("n", "<A-o>", function()
