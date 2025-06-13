@@ -15,12 +15,15 @@ map("n", "<A-1>", function()
   end
 end, { desc = "Navigation toggle relative numbering" })
 
--- tabs navigation
--- map("n", "<Tab>", "<plug>(CybuLastusedNext)", { desc = "Navigation next used buffer" })
--- map("n", "<S-Tab>", "<plug>(CybuLastusedPrev)", { desc = "Navigation prev used buffer" })
+local enable_virtual_text = true
+map("n", "<A-v>", function()
+  enable_virtual_text = not enable_virtual_text
+  vim.diagnostic.config { virtual_lines = enable_virtual_text }
+end, { desc = "Navigation toggle virtual diagnostics" })
 
-map("n", "<A-Left>","<CMD>BufferPrevious<CR>",{ desc = "Navigation prev buffer" })
-map("n", "<A-Right>", "<CMD>BufferNext<CR>",{ desc = "Navigation next buffer" })
+-- tabs navigation
+map("n", "<A-Left>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
+map("n", "<A-Right>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
 map("n", "<leader>x", "<CMD>BufferClose<CR>", { desc = "Navigation close buffer" })
 map("n", "<leader>X", "<CMD>BufferCloseAllButCurrent<CR>", { desc = "Navigation close other buffers" })
 

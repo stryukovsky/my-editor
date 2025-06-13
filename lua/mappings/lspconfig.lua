@@ -1,5 +1,6 @@
-local map = require("mappings.map")
+local map = require "mappings.map"
 local telescope_builtin = require "telescope.builtin"
+local lsp_signature = require "lsp_signature"
 local function opts(desc)
   return { desc = "LSP " .. desc }
 end
@@ -44,7 +45,14 @@ map("n", "<leader>pv", function()
   vim.print "Python venv setup completed"
 end, opts "Set python to ./venv/bin/python")
 
-map("n", "K", vim.lsp.buf.signature_help, opts "Show signature help")
-map("i", "<C-k>", vim.lsp.buf.signature_help, opts "Show signature help")
+map("n", "K", function()
+  lsp_signature.check_signature_should_close()
+  lsp_signature.toggle_float_win()
+end, { silent = true, noremap = true, desc = "LSP toggle signature" })
+
+map("i", "<C-k>", function()
+  lsp_signature.toggle_float_win()
+end, { desc = "LSP toggle signature" })
+
 map("n", "H", vim.lsp.buf.hover, opts "Hover")
 map("i", "<C-h>", vim.lsp.buf.hover, opts "Hover")

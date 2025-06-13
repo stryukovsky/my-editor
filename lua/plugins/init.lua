@@ -64,15 +64,9 @@ return {
   {
     "ray-x/lsp_signature.nvim",
     event = "InsertEnter",
-    opts = {
-      -- cfg options
-    },
   },
   {
     "j-hui/fidget.nvim",
-    opts = {
-      -- options
-    },
   },
   {
     "ThePrimeagen/refactoring.nvim",
@@ -317,9 +311,6 @@ return {
   {
     "jake-stewart/multicursor.nvim",
     branch = "1.0",
-  },
-  {
-    "Pocco81/auto-save.nvim",
   },
   {
     "johmsalas/text-case.nvim",

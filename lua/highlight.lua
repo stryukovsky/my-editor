@@ -54,6 +54,8 @@ local function override_highlights()
   hl(0, "VertSplit", { bg = background, fg = foreground_inactive })
   hl(0, "NeoTreeNormal", { bg = background })
   hl(0, "NeoTreeEndOfBuffer", { bg = background })
+  hl(0, "RenderMarkdownCode", { bg = background })
+  hl(0, "NormalFloat", { bg = background })
 
   hl(0, "SpellRare", {})
   hl(0, "SpellCap", {})
