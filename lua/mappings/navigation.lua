@@ -2,16 +2,17 @@ local map = require "mappings.map"
 local neoscroll = require "neoscroll"
 
 -- toggle numbering
-
 local is_relative = false
 map("n", "<A-1>", function()
   if vim.api.nvim_get_option_value("buftype", { buf = vim.fn.bufnr() }) == "" then
-    if is_relative then
-      vim.cmd "set number norelativenumber"
-    else
-      vim.cmd "set relativenumber"
-    end
     is_relative = not is_relative
+    if is_relative then
+      vim.opt.number = true
+      vim.opt.relativenumber = false
+    else
+      vim.opt.number = true
+      vim.opt.relativenumber = true
+    end
   end
 end, { desc = "Navigation toggle relative numbering" })
 

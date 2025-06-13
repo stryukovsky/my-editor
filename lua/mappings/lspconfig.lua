@@ -52,7 +52,7 @@ end, { silent = true, noremap = true, desc = "LSP toggle signature" })
 
 map("i", "<C-k>", function()
   lsp_signature.toggle_float_win()
-end, { desc = "LSP toggle signature" })
+end, { silent = true, noremap = true, desc = "LSP toggle signature" })
 
 map("n", "H", vim.lsp.buf.hover, opts "Hover")
 map("i", "<C-h>", vim.lsp.buf.hover, opts "Hover")
