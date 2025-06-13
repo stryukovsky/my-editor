@@ -204,8 +204,35 @@ local function open_file_from_diffview()
 end
 
 require("diffview").setup {
+  view = {
+    merge_tool = {
+      layout = "diff3_mixed",
+      disable_diagnostics = true,
+      winbar_info = true,
+    },
+  },
+  file_history_panel = {
+    log_options = {
+      git = {
+        single_file = {
+          diff_merges = "first-parent",
+          follow = true,
+        },
+        multi_file = {
+          diff_merges = "first-parent",
+        },
+      },
+    },
+    win_config = {
+      position = "bottom",
+      height = 16,
+      win_opts = {},
+    },
+  },
+
   keymaps = {
     view = {
+      { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       {
         "n",
         "<A-k>",
@@ -222,6 +249,8 @@ require("diffview").setup {
         end,
         { desc = "Close diffview " },
       },
+      { "n", "<Left>", diffview_actions.close_fold, { desc = "Collapse fold" } },
+      { "n", "<Right>", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
     },
     file_history_panel = {
       {

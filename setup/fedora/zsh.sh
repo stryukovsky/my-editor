@@ -48,3 +48,7 @@ export PATH="$PATH:$HOME/.local/share/coursier/bin/" # Coursier binary is stored
 
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+#
+# Set up fzf key bindings and fuzzy completion
+source <(fzf --zsh)
+export FZF_DEFAULT_OPTS='--height 40% --tmux center,40% --layout reverse --border top'

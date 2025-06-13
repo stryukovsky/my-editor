@@ -31,4 +31,7 @@ export SDKMAN_DIR="$HOME/.sdkman"
 export PATH="$PATH:$HOME/Library/Application Support/Coursier/bin"
 export PATH="$PATH:$HOME/Tools"
 export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
-
+#
+# Set up fzf key bindings and fuzzy completion
+source <(fzf --zsh)
+export FZF_DEFAULT_OPTS='--height 40% --tmux center,40% --layout reverse --border top'

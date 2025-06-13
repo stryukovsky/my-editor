@@ -31,6 +31,7 @@ require "configs.fidget"
 require "configs.grapple"
 require "configs.langmapper"
 require "configs.lsp_signature"
+require "configs.siblingswap"
 
 -- at the end, so all highlight rules can be applied
 require "configs.theme"
