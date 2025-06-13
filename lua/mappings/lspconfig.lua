@@ -1,4 +1,4 @@
-local map = vim.keymap.set
+local map = require("mappings.map")
 local telescope_builtin = require "telescope.builtin"
 local function opts(desc)
   return { desc = "LSP " .. desc }
@@ -33,7 +33,7 @@ map("n", "<leader>pp", function()
   vim.fn.system(path .. " -m pip install pydebug debugpy")
   vim.cmd("LspPyrightSetPythonPath " .. path)
   require("dap-python").setup(path)
-  vim.print("Python venv setup completed")
+  vim.print "Python venv setup completed"
 end, opts "Set python path")
 
 map("n", "<leader>pv", function()
@@ -41,8 +41,10 @@ map("n", "<leader>pv", function()
   vim.fn.system(path .. " -m pip install pydebug debugpy")
   vim.cmd("LspPyrightSetPythonPath " .. path)
   require("dap-python").setup(path)
-  vim.print("Python venv setup completed")
+  vim.print "Python venv setup completed"
 end, opts "Set python to ./venv/bin/python")
 
 map("n", "K", vim.lsp.buf.signature_help, opts "Show signature help")
+map("i", "<C-k>", vim.lsp.buf.signature_help, opts "Show signature help")
 map("n", "H", vim.lsp.buf.hover, opts "Hover")
+map("i", "<C-h>", vim.lsp.buf.hover, opts "Hover")

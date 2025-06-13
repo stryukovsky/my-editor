@@ -1,36 +1,133 @@
 return {
+  -- CORE PLUGINS
+  {
+    "NeogitOrg/neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim", -- required
+      "sindrets/diffview.nvim", -- optional - Diff integration
+
+      -- Only one of these is needed.
+      "nvim-telescope/telescope.nvim", -- optional
+    },
+  },
+  {
+    "nvimdev/dashboard-nvim",
+    event = "VimEnter",
+    config = function()
+      require("dashboard").setup {
+        -- config
+      }
+    end,
+    dependencies = { { "nvim-tree/nvim-web-devicons" } },
+  },
+  {
+    "saadparwaiz1/cmp_luasnip",
+  },
+  {
+    "nvim-tree/nvim-web-devicons",
+  },
+  {
+    "L3MON4D3/LuaSnip",
+    -- follow latest release.
+    version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
+    -- install jsregexp (optional!).
+    dependencies = { "rafamadriz/friendly-snippets" },
+    build = "make install_jsregexp",
+  },
+  {
+    "hrsh7th/nvim-cmp",
+    event = "InsertEnter",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+      "hrsh7th/cmp-nvim-lsp-signature-help",
+      "L3MON4D3/LuaSnip",
+      "saadparwaiz1/cmp_luasnip",
+    },
+  },
   {
     "stevearc/conform.nvim",
     -- event = 'BufWritePre', -- uncomment for format on save
     opts = require "configs.conform",
   },
-
-  -- file managing , picker etc
   {
-    "nvim-tree/nvim-tree.lua",
-    cmd = { "NvimTreeOpen", "NvimTreeToggle", "NvimTreeFocus" },
-    opts = function()
-      return require "configs.nvimtree"
-    end,
+    "mason-org/mason.nvim",
+    opts = {},
   },
-
-  -- These are some examples, uncomment them if you want to see them work!
+  {
+    "nvim-lualine/lualine.nvim",
+  },
+  {
+    "marko-cerovac/material.nvim",
+  },
+  {
+    "ray-x/lsp_signature.nvim",
+    event = "InsertEnter",
+    opts = {
+      -- cfg options
+    },
+  },
+  {
+    "j-hui/fidget.nvim",
+    opts = {
+      -- options
+    },
+  },
+  {
+    "ThePrimeagen/refactoring.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    lazy = false,
+  },
+  {
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    opts = require "configs.whichkey",
+    keys = {
+      {
+        "<leader>?",
+        function()
+          require("which-key").show { global = true }
+        end,
+        desc = "Buffer Local Keymaps (which-key)",
+      },
+    },
+  },
+  {
+    "romgrk/barbar.nvim",
+  },
+  {
+    "nvim-neo-tree/neo-tree.nvim",
+    branch = "v3.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+      "MunifTanjim/nui.nvim",
+      -- {"3rd/image.nvim", opts = {}}, -- Optional image support in preview window: See `# Preview Mode` for more information
+    },
+    lazy = false, -- neo-tree will lazily load itself
+    ---@module "neo-tree"
+    ---@type neotree.Config?
+    opts = {
+      -- fill any relevant options here
+    },
+  },
   {
     "neovim/nvim-lspconfig",
-    config = function()
-      require "configs.lspconfig"
-    end,
   },
-
   {
     "mfussenegger/nvim-dap",
   },
-
+  {
+    "lewis6991/gitsigns.nvim",
+  },
   {
     "rcarriga/nvim-dap-ui",
     dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" },
   },
-
   {
     "nvim-telescope/telescope.nvim",
     -- tag = "0.1.8",
@@ -38,39 +135,43 @@ return {
       "nvim-lua/plenary.nvim",
       "debugloop/telescope-undo.nvim",
     },
-    config = function()
-      require("telescope").setup {
-        -- the rest of your telescope config goes here
-        defaults = {
-          --     prompt_prefix = "   ",
-          --     selection_caret = "",
-          --     entry_prefix = "",
-          sorting_strategy = "ascending",
-          layout_config = {
-            horizontal = {
-              prompt_position = "top",
-              preview_width = 0.55,
-            },
-            width = 0.87,
-            height = 0.80,
-          },
-          mappings = require "mappings.telescope.defaults",
-        },
-        extensions_list = { "themes", "terms", "undo" },
-        extensions = {
-          undo = {
-            mappings = require "mappings.telescope.undo",
-          },
-        },
-        pickers = {
-          git_branches = {
-            mappings = require "mappings.telescope.git_branches",
-          },
-        },
-      }
-    end,
   },
+  { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+  {
+    "nvim-treesitter/nvim-treesitter",
+    opts = {
+      ensure_installed = require "configs.treesitter",
+    },
+  },
+  {
+    "stevearc/oil.nvim",
+    ---@module 'oil'
+    ---@type oil.SetupOpts
+    opts = {},
+    -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
+    lazy = false,
+  },
+  {
+    "sindrets/diffview.nvim",
+  },
+  {
+    "nvim-neotest/neotest",
+    dependencies = {
+      "nvim-neotest/nvim-nio",
+      "nvim-lua/plenary.nvim",
+      "antoinemadec/FixCursorHold.nvim",
+      "nvim-treesitter/nvim-treesitter",
 
+      "nvim-neotest/neotest-go",
+      "nvim-neotest/neotest-python",
+      "nvim-neotest/neotest-jest",
+      "stevanmilic/neotest-scala",
+    },
+  },
+  {
+    "folke/trouble.nvim",
+    cmd = "Trouble",
+  },
   {
     "folke/lazydev.nvim",
     ft = "lua", -- only load on lua files
@@ -82,7 +183,55 @@ return {
       },
     },
   },
-
+  {
+    "folke/todo-comments.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+    },
+  },
+  {
+    "numToStr/Comment.nvim",
+    opts = {
+      -- add any options here
+    },
+  },
+  {
+    "nvimdev/lspsaga.nvim",
+  },
+  {
+    "yetone/avante.nvim",
+    event = "VeryLazy",
+    version = false, -- Never set this value to "*"! Never!
+    opts = {
+      -- add any opts here
+      -- for example
+      providers = {
+        ollama = {
+          endpoint = "http://127.0.0.1:11434", -- Note that there is no /v1 at the end.
+          model = "gemma3:12b",
+        },
+      },
+      provider = "ollama",
+    },
+    -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
+    build = "make",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "stevearc/dressing.nvim",
+      "nvim-lua/plenary.nvim",
+      "MunifTanjim/nui.nvim",
+      --- The below dependencies are optional,
+      "echasnovski/mini.pick", -- for file_selector provider mini.pick
+      "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
+      "hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
+      "ibhagwan/fzf-lua", -- for file_selector provider fzf
+      "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
+    },
+  },
+  -- LANGUAGE-SPECIFIC-PLUGINS
   {
     "leoluz/nvim-dap-go",
     ft = "go",
@@ -95,10 +244,6 @@ return {
     "scalameta/nvim-metals",
     dependencies = {
       "nvim-lua/plenary.nvim",
-      {
-        "j-hui/fidget.nvim",
-        opts = {},
-      },
     },
     ft = { "scala", "sbt" },
     opts = function()
@@ -142,27 +287,14 @@ return {
     end,
   },
   {
-    "nvim-treesitter/nvim-treesitter",
-    opts = {
-      ensure_installed = {
-        "vim",
-        "lua",
-        "vimdoc",
-        "html",
-        "css",
-        "javascript",
-        "typescript",
-        "go",
-        "scala",
-        "java",
-        "sql",
-        "dockerfile",
-        "solidity",
-        "rust",
-        "http",
-      },
-    },
+    "mrcjkb/rustaceanvim",
+    version = "^5", -- Recommended
+    lazy = false, -- This plugin is already lazy
   },
+  {
+    "mfussenegger/nvim-dap-python",
+  },
+  -- SMALL functionalities
   {
     "karb94/neoscroll.nvim",
     opts = {},
@@ -182,89 +314,24 @@ return {
     ft = { "markdown", "Avante" },
     lazy = true,
   },
-  -- {
-  --   "nvim-java/nvim-java",
-  --   config = false,
-  --   dependencies = {
-  --     {
-  --       "neovim/nvim-lspconfig",
-  --       opts = {
-  --         servers = {
-  --           -- Your JDTLS configuration goes here
-  --           jdtls = {
-  --             -- settings = {
-  --             --   java = {
-  --             --     configuration = {
-  --             --       runtimes = {
-  --             --         {
-  --             --           name = "JavaSE-23",
-  --             --           path = "/usr/local/sdkman/candidates/java/23-tem",
-  --             --         },
-  --             --       },
-  --             --     },
-  --             --   },
-  --             -- },
-  --           },
-  --         },
-  --         setup = {
-  --           jdtls = function()
-  --             -- Your nvim-java configuration goes here
-  --             require("java").setup {
-  --               -- root_markers = {
-  --               --   "settings.gradle",
-  --               --   "settings.gradle.kts",
-  --               --   "pom.xml",
-  --               --   "build.gradle",
-  --               --   "mvnw",
-  --               --   "gradlew",
-  --               --   "build.gradle",
-  --               --   "build.gradle.kts",
-  --               -- },
-  --             }
-  --           end,
-  --         },
-  --       },
-  --     },
-  --   },
-  -- },
-  {
-    "kndndrj/nvim-dbee",
-    dependencies = {
-      "MunifTanjim/nui.nvim",
-    },
-    build = function()
-      -- Install tries to automatically detect the install method.
-      -- if it fails, try calling it with one of these parameters:
-      --    "curl", "wget", "bitsadmin", "go"
-      require("dbee").install()
-    end,
-  },
   {
     "jake-stewart/multicursor.nvim",
     branch = "1.0",
   },
   {
+    "Pocco81/auto-save.nvim",
+  },
+  {
+    "johmsalas/text-case.nvim",
+    config = function()
+      require("textcase").setup {}
+    end,
+  },
+  {
     "iamcco/markdown-preview.nvim",
     cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
     build = "cd app && yarn install",
-    init = function()
-      vim.g.mkdp_filetypes = { "markdown" }
-      vim.cmd "let g:mkdp_auto_close = 0"
-      vim.cmd [[let g:mkdp_preview_options = {
-    \ 'mkit': {},
-    \ 'katex': {},
-    \ 'uml': {},
-    \ 'maid': {},
-    \ 'disable_sync_scroll': 1,
-    \ 'sync_scroll_type': 'middle',
-    \ 'hide_yaml_meta': 1,
-    \ 'sequence_diagrams': {},
-    \ 'flowchart_diagrams': {},
-    \ 'content_editable': v:false,
-    \ 'disable_filename': 0,
-    \ 'toc': {}
-    \ }]]
-    end,
+    init = require "configs.markdown-preview",
     ft = { "markdown" },
   },
   {
@@ -274,63 +341,6 @@ return {
       { "nvim-telescope/telescope.nvim" },
     },
     event = "LspAttach",
-    config = function()
-      require("tiny-code-action").setup()
-    end,
-  },
-  {
-    "stevearc/oil.nvim",
-    ---@module 'oil'
-    ---@type oil.SetupOpts
-    opts = {},
-    -- Optional dependencies
-    dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
-    -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
-    lazy = false,
-  },
-  {
-    "nvimdev/lspsaga.nvim",
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter", -- optional
-      "nvim-tree/nvim-web-devicons", -- optional
-    },
-  },
-  {
-    "sindrets/diffview.nvim",
-  },
-  {
-    "mrcjkb/rustaceanvim",
-    version = "^5", -- Recommended
-    lazy = false, -- This plugin is already lazy
-  },
-  {
-    "mfussenegger/nvim-dap-python",
-  },
-  {
-    "gbprod/substitute.nvim",
-    opts = {
-      -- your configuration comes here
-      -- or leave it empty to use the default settings
-      -- refer to the configuration section below
-    },
-  },
-  {
-    "nvim-neotest/neotest",
-    dependencies = {
-      "nvim-neotest/nvim-nio",
-      "nvim-lua/plenary.nvim",
-      "antoinemadec/FixCursorHold.nvim",
-      "nvim-treesitter/nvim-treesitter",
-
-      "nvim-neotest/neotest-go",
-      "nvim-neotest/neotest-python",
-      "nvim-neotest/neotest-jest",
-      "stevanmilic/neotest-scala",
-    },
-  },
-  {
-    "folke/trouble.nvim",
-    cmd = "Trouble",
   },
   {
     "mistweaverco/kulala.nvim",
@@ -339,46 +349,17 @@ return {
     opts = {},
   },
   {
-    "numToStr/Comment.nvim",
-    opts = {
-      -- add any options here
-    },
+    "RRethy/vim-illuminate",
   },
   {
-    "folke/todo-comments.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    opts = {
-      -- your configuration comes here
-      -- or leave it empty to use the default settings
-      -- refer to the configuration section below
-    },
-  },
-  {
-    "yetone/avante.nvim",
-    event = "VeryLazy",
-    version = false, -- Never set this value to "*"! Never!
-    opts = {
-      -- add any opts here
-      -- for example
-      provider = "ollama",
-      ollama = {
-        endpoint = "http://127.0.0.1:11434", -- Note that there is no /v1 at the end.
-        model = "llama3.2",
-      },
-    },
-    -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
-    build = "make",
+    "cbochs/grapple.nvim",
     dependencies = {
-      "nvim-treesitter/nvim-treesitter",
-      "stevearc/dressing.nvim",
-      "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
-      --- The below dependencies are optional,
-      "echasnovski/mini.pick", -- for file_selector provider mini.pick
-      "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
-      "hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
-      "ibhagwan/fzf-lua", -- for file_selector provider fzf
-      "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
+      { "nvim-tree/nvim-web-devicons", lazy = true },
     },
+  },
+  {
+    "Wansmer/langmapper.nvim",
+    lazy = false,
+    priority = 1, -- High priority is needed if you will use `autoremap()`
   },
 }

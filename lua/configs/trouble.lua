@@ -2,9 +2,6 @@ local trouble = require "trouble"
 
 ---@diagnostic disable-next-line: missing-fields
 trouble.setup {
-  symbols = {
-    multiline = false,
-  },
   warn_no_results = false, -- show a warning when there are no results
   open_no_results = false, -- open the trouble window when there are no results
   keys = {

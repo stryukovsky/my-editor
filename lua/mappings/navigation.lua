@@ -16,30 +16,17 @@ map("n", "<A-1>", function()
 end, { desc = "Navigation toggle relative numbering" })
 
 -- tabs navigation
-map("n", "<leader><Right>", function()
-  require("nvchad.tabufline").next()
-end, { desc = "Navigation buffer goto next" })
+-- map("n", "<Tab>", "<plug>(CybuLastusedNext)", { desc = "Navigation next used buffer" })
+-- map("n", "<S-Tab>", "<plug>(CybuLastusedPrev)", { desc = "Navigation prev used buffer" })
 
-map("n", "<leader><Left>", function()
-  require("nvchad.tabufline").prev()
-end, { desc = "Navigation buffer goto prev" })
+map("n", "<A-Left>","<CMD>BufferPrevious<CR>",{ desc = "Navigation prev buffer" })
+map("n", "<A-Right>", "<CMD>BufferNext<CR>",{ desc = "Navigation next buffer" })
+map("n", "<leader>x", "<CMD>BufferClose<CR>", { desc = "Navigation close buffer" })
+map("n", "<leader>X", "<CMD>BufferCloseAllButCurrent<CR>", { desc = "Navigation close other buffers" })
 
-map("n", "<A-Right>", function()
-  require("nvchad.tabufline").next()
-end, { desc = "Navigation buffer goto next" })
-
-map("n", "<A-Left>", function()
-  require("nvchad.tabufline").prev()
-end, { desc = "Navigation buffer goto prev" })
-
-map("n", "<tab>", function()
-  require("nvchad.tabufline").next()
-end, { desc = "Navigation buffer goto next" })
-
-map("n", "<S-tab>", function()
-  require("nvchad.tabufline").prev()
-end, { desc = "Navigation buffer goto prev" })
-
+map("n", "<leader><Left>", "<CMD>BufferMovePrevious<CR>", { desc = "Navigation move buffer left" })
+map("n", "<leader><Right>", "<CMD>BufferMoveNext<CR>", { desc = "Navigation move buffer right" })
+map("n", "<leader>pin", "<CMD>BufferPin<CR>", { desc = "Navigation pin buffer" })
 -- navigate in jumps
 map("n", "<A-[>", "<cmd>pop<cr>", { desc = "Navigation jump prev" })
 map("n", "<A-]>", "<cmd>tag<cr>", { desc = "Navigation jump next" })
@@ -51,18 +38,6 @@ end)
 map({ "n", "v" }, "<A-Down>", function()
   neoscroll.scroll(0.2, { move_cursor = true, duration = 120 })
 end)
-
--- save
-
--- close current tab
-map("n", "<leader>x", function()
-  require("nvchad.tabufline").close_buffer()
-end, { desc = "Navigation close current buffer" })
-
--- close others
-map("n", "<leader>X", function()
-  require("nvchad.tabufline").closeAllBufs(false)
-end, { desc = "Navigation close other buffers" })
 
 map("n", "<leader>s", ":w<cr>", { desc = "File save file" })
 -- format file, linter etc

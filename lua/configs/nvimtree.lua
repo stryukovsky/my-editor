@@ -1,5 +1,3 @@
-dofile(vim.g.base46_cache .. "nvimtree")
-
 local api = require "nvim-tree.api"
 
 local git_add = function()
@@ -114,7 +112,7 @@ local function my_on_attach(bufnr)
   end)
 end
 
-return {
+require("nvim-tree").setup {
   filters = { dotfiles = false, custom = { "^.git$" } },
   disable_netrw = true,
   hijack_cursor = true,
@@ -147,11 +145,6 @@ return {
           untracked = "",
         },
       },
-    },
-  },
-  actions = {
-    open_file = {
-      resize_window = false,
     },
   },
   on_attach = my_on_attach,
