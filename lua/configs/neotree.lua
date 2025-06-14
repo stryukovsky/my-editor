@@ -242,6 +242,7 @@ local config = {
       hide_by_name = {
         ".DS_Store",
         "thumbs.db",
+        ".git",
         --"node_modules",
       },
     },
