@@ -143,7 +143,7 @@ local config = {
           local i = tonumber(choice:sub(1, 1))
           if i then
             local result = results[i]
-            vim.fn.setreg('"', result)
+            vim.fn.setreg("+", result)
             vim.notify("Copied: " .. result)
           else
             vim.notify "Invalid selection"
@@ -219,7 +219,7 @@ local config = {
           -- some commands may take optional config options, see `:h neo-tree-mappings` for details
           config = {
             show_path = "relative", -- "none", "relative", "absolute"
-            follow_current_file = true
+            follow_current_file = true,
           },
         },
         ["c"] = "copy_to_clipboard", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
