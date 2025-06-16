@@ -379,6 +379,21 @@ map(ui_components_modes, "<A-q>", function()
   avante_state_opened = not avante_state_opened
 end, { desc = "UI Avante toggle view" })
 
+map(ui_components_modes, "<A-Q>", function()
+  if avante_state_opened then
+    avante.close_sidebar()
+  else
+    right_component_callback_close()
+    right_component_callback_close = function()
+      avante_state_opened = false
+      avante.close_sidebar()
+    end
+    avante.open_sidebar()
+    vim.cmd("AvanteChatNew")
+  end
+  avante_state_opened = not avante_state_opened
+end, { desc = "UI Avante new chat" })
+
 local neotest_output_opened = false
 map(ui_components_modes, "<A-T>", function()
   if neotest_output_opened then
