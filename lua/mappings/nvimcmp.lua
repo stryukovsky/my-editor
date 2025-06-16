@@ -2,8 +2,23 @@
 local cmp = require "cmp"
 local luasnip = require "luasnip"
 
---
 local nvim_cmp_next = function(fallback)
+  if cmp.visible() then
+    cmp.select_next_item()
+  else
+    fallback()
+  end
+end
+
+local nvim_cmp_prev = function(fallback)
+  if cmp.visible() then
+    cmp.select_prev_item()
+  else
+    fallback()
+  end
+end
+
+local nvim_cmp_next_with_snippet = function(fallback)
   if cmp.visible() then
     cmp.select_next_item()
   elseif luasnip.expand_or_jumpable() then
@@ -13,7 +28,7 @@ local nvim_cmp_next = function(fallback)
   end
 end
 
-local nvim_cmp_prev = function(fallback)
+local nvim_cmp_prev_with_snippet = function(fallback)
   if cmp.visible() then
     cmp.select_prev_item()
   elseif luasnip.jumpable(-1) then
@@ -25,17 +40,23 @@ end
 
 cmp.setup.global {
   mapping = cmp.mapping.preset.insert {
+    ["<Tab>"] = cmp.mapping(nvim_cmp_next_with_snippet, { "i" }),
+    ["<S-Tab>"] = cmp.mapping(nvim_cmp_prev_with_snippet, { "i" }),
+    ["<A-Down>"] = cmp.mapping(nvim_cmp_next_with_snippet, { "i" }),
+    ["<A-Up>"] = cmp.mapping(nvim_cmp_prev_with_snippet, { "i" }),
     ["<Down>"] = cmp.mapping(nvim_cmp_next, { "i" }),
     ["<Up>"] = cmp.mapping(nvim_cmp_prev, { "i" }),
-    ["<A-Down>"] = cmp.mapping(nvim_cmp_next, { "i" }),
-    ["<A-Up>"] = cmp.mapping(nvim_cmp_prev, { "i" }),
   },
   view = {
     entries = {
       name = "custom",
-      selection_order = "near_cursor",
-      follow_cursor = true,
+      selection_order = "top_down",
+      follow_cursor = false,
     },
+  },
+  window = {
+    completion = cmp.config.window.bordered(),
+    documentation = cmp.config.window.bordered(),
   },
   sources = cmp.config.sources {
     {
@@ -78,7 +99,17 @@ cmp.setup.global {
   },
   ---@diagnostic disable-next-line: missing-fields
   formatting = {
-    expandable_indicator = true,
+    format = function(entry, vim_item)
+      if vim.tbl_contains({ "path" }, entry.source.name) then
+        local icon, hl_group = require("nvim-web-devicons").get_icon(entry.completion_item.label)
+        if icon then
+          vim_item.kind = icon
+          vim_item.kind_hl_group = hl_group
+          return vim_item
+        end
+      end
+      return require("lspkind").cmp_format { with_text = false }(entry, vim_item)
+    end,
   },
   sorting = {
     priority_weight = 1,
@@ -95,9 +126,3 @@ cmp.setup.global {
   },
 }
 
--- cmp.setup.cmdline(":", {
---   mapping = cmp.mapping.preset.cmdline {
---     ["<Down>"] = cmp.mapping(nvim_cmp_next, { "c" }),
---     ["<Up>"] = cmp.mapping(nvim_cmp_prev, { "c" }),
---   },
--- })

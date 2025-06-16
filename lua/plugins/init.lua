@@ -24,6 +24,9 @@ return {
     "saadparwaiz1/cmp_luasnip",
   },
   {
+    "onsails/lspkind.nvim",
+  },
+  {
     "nvim-tree/nvim-web-devicons",
   },
   {
@@ -116,6 +119,9 @@ return {
   {
     "rcarriga/nvim-dap-ui",
     dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" },
+  },
+  {
+    "theHamsta/nvim-dap-virtual-text",
   },
   {
     "nvim-telescope/telescope.nvim",

@@ -32,6 +32,7 @@ require "configs.grapple"
 require "configs.langmapper"
 require "configs.lsp_signature"
 require "configs.siblingswap"
+require "configs.nvimdap-virtual-text"
 
 -- at the end, so all highlight rules can be applied
 require "configs.theme"
