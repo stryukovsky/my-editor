@@ -42,7 +42,6 @@ map({ "n", "v" }, "<A-Down>", function()
   neoscroll.scroll(0.2, { move_cursor = true, duration = 120 })
 end)
 
-map("n", "<leader>s", ":w<cr>", { desc = "File save file" })
 -- format file, linter etc
 map("n", "<leader>fm", function()
   require("conform").format({ lsp_fallback = true, async = true }, function(err, did_edit)

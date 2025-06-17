@@ -31,6 +31,7 @@ require "configs.fidget"
 require "configs.grapple"
 require "configs.langmapper"
 require "configs.lsp_signature"
+require("configs.noice")
 require "configs.siblingswap"
 require "configs.nvimdap-virtual-text"
 

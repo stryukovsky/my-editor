@@ -3,6 +3,7 @@ require("lsp_signature").setup {
   handler_opts = {
     border = "rounded",
   },
+  hint_enable = false,
 }
 
 vim.api.nvim_create_autocmd("InsertEnter", {
