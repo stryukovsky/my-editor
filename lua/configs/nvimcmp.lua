@@ -1,6 +1,5 @@
 local cmp = require "cmp"
 local luasnip = require "luasnip"
-
 cmp.setup {
   completion = { completeopt = "menu,menuone" },
 
@@ -18,9 +17,13 @@ cmp.setup {
     ["<C-Down>"] = cmp.mapping.scroll_docs(-4),
     ["<C-Up>"] = cmp.mapping.scroll_docs(4),
     -- ["<C-k>"] = cmp.mapping.open_docs(),
-    ["<C-Space>"] = cmp.mapping.complete(),
-    -- ["<Tab>"] = cmp.mapping.select_next_item(),
-    -- ["<S-Tab>"] = cmp.mapping.select_prev_item(),
+    ["<C-Space>"] = function()
+      if cmp.visible() then
+        cmp.abort()
+      else
+        cmp.complete()
+      end
+    end,
     ["<C-x>"] = cmp.mapping.abort(),
     ["<CR>"] = cmp.mapping.confirm {
       behavior = cmp.ConfirmBehavior.Insert,
