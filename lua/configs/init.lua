@@ -1,11 +1,11 @@
-require("configs.telescope")
+require "configs.telescope"
 require("render-markdown").setup()
 require("multicursor-nvim").setup()
 require("Comment").setup()
 require("todo-comments").setup()
 
-require("configs.barbar")
-require("configs.kulala")
+require "configs.barbar"
+require "configs.kulala"
 require "configs.tiny-code-action"
 require "configs.oil"
 require "configs.gomove"
@@ -30,8 +30,7 @@ require "configs.dashboard"
 require "configs.fidget"
 require "configs.grapple"
 require "configs.langmapper"
-require "configs.lsp_signature"
-require("configs.noice")
+require "configs.noice"
 require "configs.siblingswap"
 require "configs.nvimdap-virtual-text"
 

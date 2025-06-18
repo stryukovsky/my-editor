@@ -29,6 +29,11 @@ cmp.setup {
         cmp.complete()
       end
     end,
+    ["<C-S>"] = cmp.mapping(function(fallback)
+      if luasnip.expandable then
+        luasnip.expand({})
+      end
+    end),
     ["<C-x>"] = cmp.mapping.abort(),
     ["<CR>"] = cmp.mapping.confirm {
       behavior = cmp.ConfirmBehavior.Insert,

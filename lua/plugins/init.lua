@@ -65,10 +65,6 @@ return {
     "marko-cerovac/material.nvim",
   },
   {
-    "ray-x/lsp_signature.nvim",
-    event = "InsertEnter",
-  },
-  {
     "j-hui/fidget.nvim",
   },
   {

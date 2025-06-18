@@ -1,7 +1,4 @@
 local map = require "mappings.map"
-map({ "n", "x" }, "<leader>ra", function()
-  require("telescope").extensions.refactoring.refactors()
-end, { desc = "Actions: refactoring" })
 
 local refactoring = require "refactoring"
 map({ "n", "x" }, "<leader>Re", function()
