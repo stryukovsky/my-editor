@@ -56,6 +56,7 @@ local function override_highlights()
   hl(0, "NeoTreeEndOfBuffer", { bg = background })
   hl(0, "RenderMarkdownCode", { bg = background })
   hl(0, "NormalFloat", { bg = background })
+  hl(0, "NotifyBackground", { bg = background })
 
   hl(0, "SpellRare", {})
   hl(0, "SpellCap", {})
