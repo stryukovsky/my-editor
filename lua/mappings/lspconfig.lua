@@ -5,7 +5,7 @@ local function opts(desc)
 end
 
 map("n", "<leader>lr", function()
-  vim.cmd "Lspsaga finder"
+  vim.print "Use <A-i> instead"
 end, opts "references (usages)")
 
 map("n", "<leader>ltd", function()
@@ -17,11 +17,11 @@ map("n", "<leader>ld", function()
 end, opts "definitions")
 
 map("n", "<leader>lci", function()
-  vim.cmd "Lspsaga incoming_calls"
+  telescope_builtin.lsp_incoming_calls { bufnr = 0 }
 end, opts "show incoming calls")
 
 map("n", "<leader>lco", function()
-  vim.cmd "Lspsaga outgoing_calls"
+  telescope_builtin.lsp_outgoing_calls{ bufnr = 0 }
 end, opts "show outcoming calls")
 
 map("n", "<leader>rn", function()

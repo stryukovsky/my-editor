@@ -389,7 +389,7 @@ map(ui_components_modes, "<A-Q>", function()
       avante.close_sidebar()
     end
     avante.open_sidebar()
-    vim.cmd("AvanteChatNew")
+    vim.cmd "AvanteChatNew"
   end
   avante_state_opened = not avante_state_opened
 end, { desc = "UI Avante new chat" })
@@ -412,6 +412,9 @@ end, { desc = "UI Test show output" })
 -- trouble plugin
 -- "<cmd>Trouble diagnostics toggle focus=true<CR>"
 map(ui_components_modes, "<A-p>", function()
+  if trouble.is_open "lsp" then
+    trouble.close "lsp"
+  end
   if trouble.is_open "diagnostics" then
     trouble.close "diagnostics"
   else
@@ -422,6 +425,23 @@ map(ui_components_modes, "<A-p>", function()
     trouble.open { mode = "diagnostics", focus = true }
   end
 end, { desc = "UI trouble diagnostics" })
+
+-- trouble plugin
+-- "<cmd>Trouble diagnostics toggle focus=true<CR>"
+map(ui_components_modes, "<A-i>", function()
+  if trouble.is_open "diagnostics" then
+    trouble.close "diagnostics"
+  end
+  if trouble.is_open "lsp" then
+    trouble.close "lsp"
+  else
+    bottom_component_callback_close()
+    bottom_component_callback_close = function()
+      trouble.close "lsp"
+    end
+    trouble.open { mode = "lsp", focus = true }
+  end
+end, { desc = "UI trouble inspect" })
 
 local git_blame_bufnr = 0
 map("n", "<A-B>", function()

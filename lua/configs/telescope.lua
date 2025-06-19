@@ -32,8 +32,8 @@ require("telescope").setup {
     git_branches = {
       mappings = require "mappings.telescope.git_branches",
     },
-    buffers = {
-      mappings = require "mappings.telescope.buffers",
+    live_grep = {
+      mappings = require "mappings.telescope.live_grep",
     },
   },
 }

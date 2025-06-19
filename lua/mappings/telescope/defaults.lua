@@ -12,9 +12,9 @@ local function focus_preview(prompt_bufnr)
     vim.cmd(string.format("noautocmd lua vim.api.nvim_set_current_win(%s)", winid))
   end
 end
-
+local function dummy() end
 local actions = require "telescope.actions"
-
+local open_with_trouble = require("trouble.sources.telescope").open
 return {
   n = {
     -- ["<Esc>"] = function() end,
@@ -27,6 +27,11 @@ return {
     ["<A-Down>"] = actions.results_scrolling_down,
     -- ["<Up>"] = actions.results_scrolling_up,
     ["<A-Up>"] = actions.results_scrolling_up,
+    ["<A-t>"] = open_with_trouble,
+    ["<A-a>"] = dummy,
+    ["<A-s>"] = dummy,
+    ["<A-d>"] = dummy,
+    ["<A-w>"] = dummy,
   },
   i = {
     -- ["<Left>"] = actions.results_scrolling_left,
@@ -41,5 +46,10 @@ return {
     -- ["<A-Left>"] = actions.results_scrolling_left,
     -- ["<A-Right>"] = actions.results_scrolling_right,
     ["<Tab>"] = focus_preview,
+    ["<A-t>"] = open_with_trouble,
+    ["<A-a>"] = dummy,
+    ["<A-s>"] = dummy,
+    ["<A-d>"] = dummy,
+    ["<A-w>"] = dummy,
   },
 }

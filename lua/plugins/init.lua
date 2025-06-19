@@ -191,9 +191,6 @@ return {
     "numToStr/Comment.nvim",
   },
   {
-    "nvimdev/lspsaga.nvim",
-  },
-  {
     "yetone/avante.nvim",
     event = "VeryLazy",
     version = false, -- Never set this value to "*"! Never!
