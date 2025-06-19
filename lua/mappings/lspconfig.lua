@@ -1,6 +1,5 @@
 local map = require "mappings.map"
 local telescope_builtin = require "telescope.builtin"
-local lsp_signature = require "lsp_signature"
 local function opts(desc)
   return { desc = "LSP " .. desc }
 end
@@ -46,13 +45,18 @@ map("n", "<leader>pv", function()
 end, opts "Set python to ./venv/bin/python")
 
 map("n", "K", function()
-  lsp_signature.check_signature_should_close()
-  lsp_signature.toggle_float_win()
+  vim.lsp.buf.signature_help()
 end, { silent = true, noremap = true, desc = "LSP toggle signature" })
 
 map("i", "<C-k>", function()
-  lsp_signature.toggle_float_win()
+  vim.lsp.buf.signature_help()
 end, { silent = true, noremap = true, desc = "LSP toggle signature" })
 
-map("n", "H", vim.lsp.buf.hover, opts "Hover")
-map("i", "<C-h>", vim.lsp.buf.hover, opts "Hover")
+local hover_params = { max_height = 25, max_width = 120 }
+
+map("n", "H", function()
+  vim.lsp.buf.hover(hover_params)
+end, opts "Hover")
+map("i", "<C-h>", function()
+  vim.lsp.buf.hover(hover_params)
+end, opts "Hover")

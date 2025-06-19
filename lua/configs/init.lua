@@ -30,9 +30,9 @@ require "configs.dashboard"
 require "configs.fidget"
 require "configs.grapple"
 require "configs.langmapper"
-require "configs.noice"
 require "configs.siblingswap"
 require "configs.nvimdap-virtual-text"
+require "configs.noice"
 
 -- at the end, so all highlight rules can be applied
 require "configs.theme"
