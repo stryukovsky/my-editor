@@ -1,22 +1,21 @@
-local open_with_trouble = require("trouble.sources.telescope").open
-local actions = require "telescope.actions"
+local trouble = require("trouble.sources.telescope")
 local action_state = require "telescope.actions.state"
+
+local function open_with_trouble(bufnr)
+  local selection = action_state.get_selected_entry()
+---@diagnostic disable-next-line: missing-fields
+  trouble.open(bufnr, { focus = false, mode = "telescope_files" })
+  vim.schedule(function()
+    vim.cmd("edit! " .. selection.path)
+    vim.api.nvim_win_set_cursor(0, {selection.lnum, selection.col})
+  end)
+end
+
 return {
   n = {
-    ["<cr>"] = function(bufnr, opts)
-      local picker = action_state.get_current_picker(prompt_bufnr)
-      open_with_trouble(bufnr, { focus = true })
-      vim.schedule(function()
-        actions.select_default(bufnr, opts)
-      end)
-    end,
+    ["<cr>"] = open_with_trouble,
   },
   i = {
-    ["<cr>"] = function(bufnr, opts)
-      open_with_trouble(bufnr, { focus = true, mode = "telescope_files" })
-      -- vim.schedule(function()
-      --   actions.select_default(bufnr, opts)
-      -- end)
-    end,
+    ["<cr>"] = open_with_trouble,
   },
 }
