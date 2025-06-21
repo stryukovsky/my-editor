@@ -20,4 +20,6 @@ return {
   "bash",
   "toml",
   "tmux",
+  "markdown",
+  "markdown_inline",
 }
