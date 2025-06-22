@@ -30,8 +30,10 @@ cmp.setup {
       end
     end,
     ["<C-S>"] = cmp.mapping(function(fallback)
-      if luasnip.expandable then
+      if luasnip.expandable() then
         luasnip.expand {}
+      else
+        fallback()
       end
     end),
     ["<C-x>"] = cmp.mapping.abort(),
