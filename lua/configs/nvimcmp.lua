@@ -31,14 +31,20 @@ cmp.setup {
     end,
     ["<C-S>"] = cmp.mapping(function(fallback)
       if luasnip.expandable then
-        luasnip.expand({})
+        luasnip.expand {}
       end
     end),
     ["<C-x>"] = cmp.mapping.abort(),
-    ["<CR>"] = cmp.mapping.confirm {
-      behavior = cmp.ConfirmBehavior.Insert,
-      select = true,
-    },
+    ["<CR>"] = cmp.mapping(function(callback)
+      if has_words_before() then
+        cmp.confirm {
+          behavior = cmp.ConfirmBehavior.Insert,
+          select = true,
+        }
+      else
+        cmp.confirm { select = true }
+      end
+    end),
     ["<Tab>"] = cmp.mapping(function(fallback)
       if cmp.visible() then
         if #cmp.get_entries() == 1 then
