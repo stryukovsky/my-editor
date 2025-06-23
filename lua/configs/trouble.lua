@@ -12,6 +12,8 @@ trouble.setup {
     o = "jump_close",
     ["<esc>"] = "cancel",
     ["<cr>"] = "jump",
+    ["<Right>"] = "jump",
+    ["<Left>"] = "fold_close",
     ["<2-leftmouse>"] = "jump",
     ["<c-s>"] = "jump_split",
     ["<c-v>"] = "jump_vsplit",

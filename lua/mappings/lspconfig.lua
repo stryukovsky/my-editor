@@ -1,11 +1,12 @@
 local map = require "mappings.map"
 local telescope_builtin = require "telescope.builtin"
+local trouble = require "trouble"
 local function opts(desc)
   return { desc = "LSP " .. desc }
 end
 
 map("n", "<leader>lr", function()
-  vim.print "Use <A-i> instead"
+  trouble.open { mode = "lsp", focus = true }
 end, opts "references (usages)")
 
 map("n", "<leader>ltd", function()
@@ -21,7 +22,7 @@ map("n", "<leader>lci", function()
 end, opts "show incoming calls")
 
 map("n", "<leader>lco", function()
-  telescope_builtin.lsp_outgoing_calls{ bufnr = 0 }
+  telescope_builtin.lsp_outgoing_calls { bufnr = 0 }
 end, opts "show outcoming calls")
 
 map("n", "<leader>rn", function()
