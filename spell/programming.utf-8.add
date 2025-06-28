@@ -245,3 +245,7 @@ neogit
 󰨇
 gonic
 api
+tx
+gorm
+idx
+sql
