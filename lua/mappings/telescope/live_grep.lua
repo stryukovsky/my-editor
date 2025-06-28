@@ -1,14 +1,18 @@
 local trouble = require "trouble.sources.telescope"
 local action_state = require "telescope.actions.state"
-local pickers = require "telescope.pickers"
 
 local function open_with_trouble(bufnr)
-  local picker = pickers.get_picker(pickers.get_current_picker_id())
+  local picker = action_state.get_current_picker(bufnr)
   if not picker then
     return
   end
   local selection = action_state.get_selected_entry()
-  if #picker:get_result_entries() > 1 then
+  if not selection then
+    return
+  end
+  -- vim.print(vim.inspect(picker))
+  local count = picker.manager:num_results()
+  if count > 1 then
     ---@diagnostic disable-next-line: missing-fields
     trouble.open(bufnr, { focus = false, mode = "telescope_files" })
   end
