@@ -227,6 +227,7 @@ local config = {
         ["A"] = "add_directory", -- also accepts the config.show_path and config.insert_as options.
         ["m"] = "move", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
         ["r"] = "rename",
+        ["<leader>rn"] = "rename",
         ["p"] = "paste_from_clipboard",
         ["x"] = "cut_to_clipboard",
         ["e"] = "toggle_auto_expand_width",
