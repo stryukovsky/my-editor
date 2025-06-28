@@ -2,6 +2,7 @@ local map = require "mappings.map"
 
 local dap = require "dap"
 local dapui = require "dapui"
+local trouble = require "trouble"
 
 -- debugger
 map("n", "<leader>dd", function()
@@ -43,11 +44,13 @@ end, { desc = "debug toggle breakpoint" })
 -- open Dap UI automatically when debug starts
 dap.listeners.before.attach.dapui_config = function()
   vim.cmd "Neotree close"
+  trouble.close()
   dapui.open()
 end
 
 dap.listeners.before.launch.dapui_config = function()
   vim.cmd "Neotree close"
+    trouble.close()
   dapui.open()
 end
 

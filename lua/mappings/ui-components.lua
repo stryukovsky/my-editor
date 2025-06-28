@@ -342,6 +342,7 @@ map(ui_components_modes, "<A-r>", function()
     vim.cmd "Neotree reveal left source=filesystem"
   else
     vim.cmd "Neotree close"
+    trouble.close()
     bottom_component_callback_close()
     dapui.open()
     bottom_component_callback_close = function()
