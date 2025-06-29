@@ -32,6 +32,38 @@ require "configs.siblingswap"
 require "configs.nvimdap-virtual-text"
 require "configs.noice"
 
+-- require("codecompanion").setup {
+--   strategies = {
+--     chat = {
+--       adapter = "deepseekr1",
+--     },
+--     inline = {
+--       adapter = "deepseekr1",
+--     },
+--     cmd = {
+--       adapter = "deepseekr1",
+--     },
+--   },
+--   adapters = {
+--     deepseekr1 = function()
+--       return require("codecompanion.adapters").extend("ollama", {
+--         name = "deepseekr1", -- Give this adapter a different name to differentiate it from the default ollama adapter
+--         schema = {
+--           model = {
+--             default = "deepseek-r1:latest",
+--           },
+--           num_ctx = {
+--             default = 16384,
+--           },
+--           num_predict = {
+--             default = -1,
+--           },
+--         },
+--       })
+--     end,
+--   },
+-- }
+
 require "configs.blink"
 -- at the end, so all highlight rules can be applied
 require "configs.theme"
