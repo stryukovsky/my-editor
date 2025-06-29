@@ -34,7 +34,7 @@ require("material").setup {
     -- "indent-blankline",
     "lspsaga",
     -- "mini",
-    -- "neo-tree",
+    "neo-tree",
     "neogit",
     -- "neorg",
     "neotest",
