@@ -22,6 +22,14 @@ local telescope_components = {
     desc = "UI telescope marks",
   },
   {
+    modes = {"n"},
+    shortcut = "<leader><leader>",
+    command = function()
+      vim.cmd "Telescope grapple tags"
+    end,
+    desc = "UI telescope marks",
+  },
+  {
     modes = ui_components_modes,
     shortcut = "<A-c>",
     command = function()
@@ -318,7 +326,7 @@ end, { desc = "Theme" })
 -- neotree
 map(ui_components_modes, "<A-e>", function()
   dapui.close()
-  vim.cmd "Neotree reveal left source=filesystem"
+  vim.cmd "Neotree reveal_force_cwd=false left source=filesystem "
 end, { desc = "UI neotree files" })
 
 map(ui_components_modes, "<A-b>", function()
