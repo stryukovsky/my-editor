@@ -1,6 +1,6 @@
 # My Editor
 
-Clone this repository:
+Cfsdflone this repository:
 
 ```sh 
 git clone https://github.com/stryukovsky/my-editor ~/.config/nvim/

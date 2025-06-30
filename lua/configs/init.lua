@@ -1,5 +1,4 @@
 require "configs.telescope"
-require("render-markdown").setup()
 require("multicursor-nvim").setup()
 require("Comment").setup()
 require("todo-comments").setup()
@@ -15,7 +14,7 @@ require "configs.diffview"
 require "configs.neotest"
 require "configs.trouble"
 require "configs.lualine"
--- require "configs.luasnip"
+require "configs.render-markdown"
 require "lspconfig"
 require "configs.lspconfig"
 require "configs.diagnostic"
@@ -31,40 +30,8 @@ require "configs.langmapper"
 require "configs.siblingswap"
 require "configs.nvimdap-virtual-text"
 require "configs.noice"
-
--- require("codecompanion").setup {
---   strategies = {
---     chat = {
---       adapter = "deepseekr1",
---     },
---     inline = {
---       adapter = "deepseekr1",
---     },
---     cmd = {
---       adapter = "deepseekr1",
---     },
---   },
---   adapters = {
---     deepseekr1 = function()
---       return require("codecompanion.adapters").extend("ollama", {
---         name = "deepseekr1", -- Give this adapter a different name to differentiate it from the default ollama adapter
---         schema = {
---           model = {
---             default = "deepseek-r1:latest",
---           },
---           num_ctx = {
---             default = 16384,
---           },
---           num_predict = {
---             default = -1,
---           },
---         },
---       })
---     end,
---   },
--- }
-
 require "configs.blink"
+require "configs.llm"
 -- at the end, so all highlight rules can be applied
 require "configs.theme"
 require "highlight"

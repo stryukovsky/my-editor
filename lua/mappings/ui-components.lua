@@ -7,7 +7,7 @@ local kulala_ui = require "kulala.ui"
 local oil = require "oil"
 local gitsigns_async = require "gitsigns.async"
 local gitsigns_blame = require "gitsigns.blame"
-local avante = require "avante"
+-- local avante = require "avante"
 local diffview_actions = require "diffview.actions"
 
 local ui_components_modes = { "n", "t", "v", "i" }
@@ -22,12 +22,12 @@ local telescope_components = {
     desc = "UI telescope marks",
   },
   {
-    modes = {"n"},
+    modes = { "n" },
     shortcut = "<leader><leader>",
     command = function()
-      vim.cmd "Telescope grapple tags"
+      vim.cmd "Telescope find_files"
     end,
-    desc = "UI telescope marks",
+    desc = "UI telescope files",
   },
   {
     modes = ui_components_modes,
@@ -89,13 +89,6 @@ local telescope_components = {
 
 map("n", "<leader>ga", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", { desc = "Actions: spelling" })
 
--- map(
---   "n",
---   "<leader><leader>",
---   "<cmd>Telescope buffers only_cwd=true theme=get_cursor previewer=false sort_lastused=true sort_mru=true<cr>",
---   { desc = "UI telescope buffers" }
--- )
-
 local last_opened_telescope = ""
 local function close_telescope()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -142,6 +135,22 @@ map(ui_components_modes, "<A-y>", function()
   end
   kulala_state_is_opened = not kulala_state_is_opened
 end, { desc = "UI kulala toggle" })
+
+local avante_state_opened = false
+map(ui_components_modes, "<A-q>", function()
+  if avante_state_opened then
+    vim.cmd "LLMSessionToggle"
+  else
+    dialog_component_callback_close()
+    dialog_component_callback_close = function()
+      vim.api.nvim_command "stopinsert"
+      avante_state_opened = false
+      vim.cmd "LLMSessionToggle"
+    end
+    vim.cmd "LLMSessionToggle"
+  end
+  avante_state_opened = not avante_state_opened
+end, { desc = "UI LLM toggle view" })
 
 map(ui_components_modes, "<A-Y>", function()
   if kulala_state_is_opened then
@@ -376,36 +385,6 @@ map(ui_components_modes, "<A-t>", function()
   end
   neotest_summary_opened = not neotest_summary_opened
 end, { desc = "UI Test show summary" })
-
-local avante_state_opened = false
-map(ui_components_modes, "<A-q>", function()
-  if avante_state_opened then
-    avante.close_sidebar()
-  else
-    right_component_callback_close()
-    right_component_callback_close = function()
-      avante_state_opened = false
-      avante.close_sidebar()
-    end
-    avante.open_sidebar()
-  end
-  avante_state_opened = not avante_state_opened
-end, { desc = "UI Avante toggle view" })
-
-map(ui_components_modes, "<A-Q>", function()
-  if avante_state_opened then
-    avante.close_sidebar()
-  else
-    right_component_callback_close()
-    right_component_callback_close = function()
-      avante_state_opened = false
-      avante.close_sidebar()
-    end
-    avante.open_sidebar()
-    vim.cmd "AvanteChatNew"
-  end
-  avante_state_opened = not avante_state_opened
-end, { desc = "UI Avante new chat" })
 
 local neotest_output_opened = false
 map(ui_components_modes, "<A-T>", function()

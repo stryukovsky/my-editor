@@ -22,9 +22,6 @@ local unset = vim.keymap.del
 local map = require "mappings.map"
 map("n", "<Esc>", "<cmd>noh<CR>", { desc = "general clear highlights" })
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "general copy whole file" })
-map("n", "<leader>qwerty", function()
-  require("avante").get_suggestion():suggest()
-end)
 require "mappings.lspconfig"
 require "mappings.dap"
 require "mappings.ui-components"
