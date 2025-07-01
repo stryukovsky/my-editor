@@ -35,5 +35,14 @@ require("telescope").setup {
     live_grep = {
       mappings = require "mappings.telescope.live_grep",
     },
+    lsp_references = {
+      mappings = require "mappings.telescope.lsp",
+    },
+    lsp_definitions = {
+      mappings = require "mappings.telescope.lsp",
+    },
+    lsp_type_definitions = {
+      mappings = require "mappings.telescope.lsp",
+    },
   },
 }

@@ -6,7 +6,7 @@ local function opts(desc)
 end
 
 map("n", "<leader>lr", function()
-  trouble.open { mode = "lsp", focus = true }
+  telescope_builtin.lsp_references { bufnr = 0 }
 end, opts "references (usages)")
 
 map("n", "<leader>ltd", function()

@@ -1,7 +1,7 @@
 [window]
 
 decorations = "None"
-opacity = 0.8
+opacity = 1
 startup_mode = "Maximized"
 option_as_alt = "Both"
 decorations_theme_variant = "Light" # "Dark"

@@ -421,9 +421,6 @@ end, { desc = "UI trouble diagnostics" })
 -- trouble plugin
 -- "<cmd>Trouble diagnostics toggle focus=true<CR>"
 map(ui_components_modes, "<A-i>", function()
-  if trouble.is_open "diagnostics" then
-    trouble.close "diagnostics"
-  end
   if trouble.is_open "lsp" then
     trouble.close "lsp"
   else
@@ -431,6 +428,7 @@ map(ui_components_modes, "<A-i>", function()
     bottom_component_callback_close = function()
       trouble.close "lsp"
     end
+    trouble.close()
     trouble.open { mode = "lsp", focus = true }
   end
 end, { desc = "UI trouble inspect" })
