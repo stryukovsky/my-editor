@@ -32,6 +32,7 @@ return {
     ["<A-s>"] = dummy,
     ["<A-d>"] = dummy,
     ["<A-w>"] = dummy,
+    ["<A-q>"] = dummy,
   },
   i = {
     -- ["<Left>"] = actions.results_scrolling_left,
@@ -51,5 +52,6 @@ return {
     ["<A-s>"] = dummy,
     ["<A-d>"] = dummy,
     ["<A-w>"] = dummy,
+    ["<A-q>"] = dummy,
   },
 }

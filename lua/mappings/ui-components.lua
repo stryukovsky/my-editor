@@ -7,6 +7,7 @@ local kulala_ui = require "kulala.ui"
 local oil = require "oil"
 local gitsigns_async = require "gitsigns.async"
 local gitsigns_blame = require "gitsigns.blame"
+local llm_state = require "configs.llm_compat"
 -- local avante = require "avante"
 local diffview_actions = require "diffview.actions"
 
@@ -136,20 +137,18 @@ map(ui_components_modes, "<A-y>", function()
   kulala_state_is_opened = not kulala_state_is_opened
 end, { desc = "UI kulala toggle" })
 
-local avante_state_opened = false
 map(ui_components_modes, "<A-q>", function()
-  if avante_state_opened then
+  if llm_state.is_open() then
     vim.cmd "LLMSessionToggle"
+    vim.api.nvim_command "stopinsert"
   else
     dialog_component_callback_close()
     dialog_component_callback_close = function()
-      vim.api.nvim_command "stopinsert"
-      avante_state_opened = false
       vim.cmd "LLMSessionToggle"
+      vim.api.nvim_command "stopinsert"
     end
     vim.cmd "LLMSessionToggle"
   end
-  avante_state_opened = not avante_state_opened
 end, { desc = "UI LLM toggle view" })
 
 map(ui_components_modes, "<A-Y>", function()
@@ -332,10 +331,22 @@ map("n", "<leader>th", function()
   vim.cmd "Telescope colorscheme"
 end, { desc = "Theme" })
 
+local function get_current_file()
+  return file_path
+end
+
 -- neotree
 map(ui_components_modes, "<A-e>", function()
   dapui.close()
-  vim.cmd "Neotree reveal_force_cwd=false left source=filesystem "
+  local current_buf = vim.api.nvim_get_current_buf()
+  local file_path = vim.api.nvim_buf_get_name(current_buf)
+  require("neo-tree.command").execute {
+    action = "focus", -- Focus NeoTree
+    source = "filesystem", -- Default source
+    position = "left", -- Or "right", "float"
+    reveal_file = file_path, -- Auto-highlight the file
+    reveal_force_cwd = true, -- Ensure correct working dir
+  }
 end, { desc = "UI neotree files" })
 
 map(ui_components_modes, "<A-b>", function()

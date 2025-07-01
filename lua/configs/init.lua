@@ -33,5 +33,5 @@ require "configs.noice"
 require "configs.blink"
 require "configs.llm"
 -- at the end, so all highlight rules can be applied
-require "configs.theme"
+require "configs.material-theme"
 require "highlight"
