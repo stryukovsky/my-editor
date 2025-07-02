@@ -18,7 +18,6 @@ local unset = vim.keymap.del
 -- unset("i", "<C-b>")
 -- unset("n", "<leader>ch")
 -- unset("n", "<leader>n")
--- unset("n", "<leader>rn")
 local map = require "mappings.map"
 map("n", "<Esc>", "<cmd>noh<CR>", { desc = "general clear highlights" })
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "general copy whole file" })
@@ -40,3 +39,4 @@ require "mappings.neogit-setup"
 require "mappings.fidget"
 require "mappings.grapple"
 require "mappings.llm"
+-- unset("n", "<leader>")

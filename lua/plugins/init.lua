@@ -1,13 +1,4 @@
-
 return {
-  {
-    "Kurama622/llm.nvim",
-    -- dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" },
-    -- cmd = { "LLMSessionToggle", "LLMSelectedTextHandler" },
-    -- keys = {
-    --   { "<leader>ac", mode = "n", "<cmd>LLMSessionToggle<cr>" },
-    -- },
-  },
   -- CORE PLUGINS
   {
     "NeogitOrg/neogit",
@@ -165,9 +156,9 @@ return {
   {
     "sindrets/diffview.nvim",
   },
-  {
-    "olimorris/codecompanion.nvim",
-  },
+  -- {
+  --   "olimorris/codecompanion.nvim",
+  -- },
   {
     "nvim-neotest/neotest",
     dependencies = {
@@ -308,5 +299,8 @@ return {
   },
   {
     "Wansmer/sibling-swap.nvim",
+  },
+  {
+    "Kurama622/llm.nvim",
   },
 }

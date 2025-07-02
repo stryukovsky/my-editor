@@ -133,7 +133,7 @@ llm.setup {
         display = {
           mapping = {
             mode = "n",
-            keys = { "d" },
+            keys = { "<cr>" },
           },
           action = nil,
         },
@@ -185,10 +185,10 @@ llm.setup {
     -- ["Session:Close"]     = { mode = "n", key = {"<esc>", "Q"} },
 
     -- Scroll
-    ["PageUp"]            = { mode = {"i","n"}, key = "<C-b>" },
-    ["PageDown"]          = { mode = {"i","n"}, key = "<C-f>" },
-    ["HalfPageUp"]        = { mode = {"i","n"}, key = "<C-u>" },
-    ["HalfPageDown"]      = { mode = {"i","n"}, key = "<C-d>" },
+    ["PageUp"]            = { mode = {"i","n"}, key = "<A-Up>" },
+    ["PageDown"]          = { mode = {"i","n"}, key = "<A-Down>" },
+    -- ["HalfPageUp"]        = { mode = {"i","n"}, key = "<C-u>" },
+    -- ["HalfPageDown"]      = { mode = {"i","n"}, key = "<C-d>" },
     ["JumpToTop"]         = { mode = "n", key = "gg" },
     ["JumpToBottom"]      = { mode = "n", key = "G" },
   },
