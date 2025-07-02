@@ -110,6 +110,59 @@ llm.setup {
         enter_flexible_window = false,
       },
     },
+    Ask = {
+      handler = tools.disposable_ask_handler,
+      opts = {
+        position = {
+          row = 2,
+          col = 0,
+        },
+        title = " Ask ",
+        inline_assistant = true,
+
+        -- Whether to use the current buffer as context without selecting any text (the tool is called in normal mode)
+        enable_buffer_context = true,
+        language = "English",
+        url = "http://localhost:11434/api/chat",
+        api_type = "ollama",
+        model = "qwen2.5-coder:1.5b",
+        -- parse_handler = local_llm_parse_handler,
+        exit_on_move = true,
+        enter_flexible_window = false,
+        -- display diff
+        display = {
+          mapping = {
+            mode = "n",
+            keys = { "d" },
+          },
+          action = nil,
+        },
+        -- accept diff
+        accept = {
+          mapping = {
+            mode = "n",
+            keys = { "<C-s>", "<leader>y", "<cr>" },
+          },
+          action = nil,
+        },
+        -- reject diff
+        reject = {
+          mapping = {
+            mode = "n",
+            keys = { "<C-x>", "<C-c>" },
+          },
+          action = nil,
+        },
+        -- close diff
+        close = {
+          mapping = {
+            mode = "n",
+            keys = { "<esc>", "q", "Q", "<A-q" },
+          },
+          action = nil,
+        },
+      },
+    },
   },
   -- stylua: ignore
   keys = {

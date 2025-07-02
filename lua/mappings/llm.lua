@@ -5,8 +5,13 @@ local function explain()
 end
 
 local function ask()
-  vim.cmd "LLMSelectedTextHandler ask"
+  vim.cmd "LLMAppHandler Ask"
+end
+
+local function translate()
+  vim.cmd "LLMAppHandler WordTranslate"
 end
 
 map("v", "<leader>exp", explain, { desc = "LLM Explain" })
 map("v", "<leader>ask", ask, { desc = "LLM Ask" })
+map("v", "<leader>tra", translate, { desc = "LLM Translate" })
