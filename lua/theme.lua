@@ -5,5 +5,5 @@ if current_hour >= 20 or current_hour <= 7 then
   vim.cmd.colorscheme "material-darker"
 else
   vim.o.background = "light"
-  vim.cmd.colorscheme "material-ligher"
+  vim.cmd.colorscheme "material-lighter"
 end

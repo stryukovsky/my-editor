@@ -22,6 +22,11 @@ local function local_llm_parse_handler(chunk)
   local assistant_output = chunk.message.content
   return assistant_output
 end
+
+local keys_close = { "<esc>", "q", "Q", "<A-q>", "<A-a>", "<A-s>", "<A-w>", "<A-d>" }
+local keys_accept = { "<C-s>", "<leader>y", "<cr>" }
+local keys_reject = { "<C-x>", "<C-c>" }
+
 vim.env.LLM_KEY = ""
 local llm = require "llm"
 local tools = require "llm.tools"
@@ -30,7 +35,7 @@ llm.setup {
   api_type = "ollama",
   temperature = 0.3,
   top_p = 0.7,
-  model = "qwen2.5-coder:1.5b",
+  model = "qwen2.5-coder:7b",
   streaming_handler = local_llm_streaming_handler,
   app_handler = {
     Completion = {
@@ -41,12 +46,12 @@ llm.setup {
         ---                   ollama
         -------------------------------------------------
         url = "http://localhost:11434/v1/completions",
-        model = "qwen2.5-coder:1.5b",
+        model = "qwen2.5-coder:7b",
         api_type = "ollama",
 
         n_completions = 1,
-        context_window = 32,
-        max_tokens = 256,
+        context_window = 142,
+        max_tokens = 20,
 
         -- A mapping of filetype to true or false, to enable completion.
         filetypes = {
@@ -123,9 +128,8 @@ llm.setup {
         -- Whether to use the current buffer as context without selecting any text (the tool is called in normal mode)
         enable_buffer_context = true,
         language = "English",
-        url = "http://localhost:11434/api/chat",
-        api_type = "ollama",
-        model = "qwen2.5-coder:1.5b",
+        -- url = "http://localhost:11434/api/chat",
+        -- api_type = "ollama",
         -- parse_handler = local_llm_parse_handler,
         exit_on_move = true,
         enter_flexible_window = false,
@@ -137,27 +141,99 @@ llm.setup {
           },
           action = nil,
         },
-        -- accept diff
         accept = {
           mapping = {
             mode = "n",
-            keys = { "<C-s>", "<leader>y", "<cr>" },
+            keys = keys_accept,
           },
           action = nil,
         },
-        -- reject diff
         reject = {
           mapping = {
             mode = "n",
-            keys = { "<C-x>", "<C-c>" },
+            keys = keys_reject,
           },
           action = nil,
         },
-        -- close diff
         close = {
           mapping = {
             mode = "n",
-            keys = { "<esc>", "q", "Q", "<A-q" },
+            keys = keys_close,
+          },
+          action = nil,
+        },
+      },
+    },
+    TestCode = {
+      handler = tools.side_by_side_handler,
+      prompt = [[ Write some test cases for the following code, only return the test cases.
+Give the code content directly, do not use code blocks or other tags to wrap it. ]],
+      opts = {
+        right = {
+          title = " Test Cases ",
+        },
+        accept = {
+          mapping = {
+            mode = "n",
+            keys = keys_accept,
+          },
+          action = nil,
+        },
+        reject = {
+          mapping = {
+            mode = "n",
+            keys = keys_reject,
+          },
+          action = nil,
+        },
+        close = {
+          mapping = {
+            mode = "n",
+            keys = keys_close,
+          },
+          action = nil,
+        },
+      },
+    },
+    DocString = {
+      prompt = [[ You are an AI programming assistant. You need to write a really good docstring that follows a best practice for the given language.
+
+Your core tasks include:
+- parameter and return types (if applicable).
+- any errors that might be raised or returned, depending on the language.
+
+You must:
+- Place the generated docstring before the start of the code.
+- Follow the format of examples carefully if the examples are provided.
+- Use Markdown formatting in your answers.
+- Include the programming language name at the start of the Markdown code blocks.]],
+      handler = tools.action_handler,
+      opts = {
+        only_display_diff = true,
+        templates = {
+          lua = [[- For the Lua language, you should use the LDoc style.
+- Start all comment lines with "---".
+]],
+          go = "use godoc format for documentation",
+        },
+        accept = {
+          mapping = {
+            mode = "n",
+            keys = keys_accept,
+          },
+          action = nil,
+        },
+        reject = {
+          mapping = {
+            mode = "n",
+            keys = keys_reject,
+          },
+          action = nil,
+        },
+        close = {
+          mapping = {
+            mode = "n",
+            keys = keys_close,
           },
           action = nil,
         },
