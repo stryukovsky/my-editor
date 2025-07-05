@@ -57,6 +57,7 @@ if is_ollama_installed() then
           url = "http://localhost:11434/v1/completions",
           api_type = "ollama",
 
+          model = model,
           n_completions = 1,
           context_window = 142,
           max_tokens = 20,
