@@ -2,13 +2,12 @@ require "configs.telescope"
 require("multicursor-nvim").setup()
 require("Comment").setup()
 require("todo-comments").setup()
-
+--
 require "configs.barbar"
 require "configs.kulala"
 require "configs.tiny-code-action"
 require "configs.oil"
 require "configs.gomove"
-require "configs.debuggers"
 require "configs.dapui"
 require "configs.diffview"
 require "configs.neotest"
@@ -32,6 +31,7 @@ require "configs.nvimdap-virtual-text"
 require "configs.noice"
 require "configs.blink"
 require "configs.llm"
+require "configs.debuggers"
 -- at the end, so all highlight rules can be applied
 require "configs.material-theme"
 require "highlight"

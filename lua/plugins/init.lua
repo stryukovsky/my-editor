@@ -10,6 +10,7 @@ return {
       "nvim-telescope/telescope.nvim", -- optional
     },
   },
+  { "nvim-telescope/telescope-ui-select.nvim" },
   {
     "nvimdev/dashboard-nvim",
     event = "VimEnter",
