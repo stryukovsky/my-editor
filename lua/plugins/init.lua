@@ -10,6 +10,7 @@ return {
       "nvim-telescope/telescope.nvim", -- optional
     },
   },
+  { "nvim-telescope/telescope-ui-select.nvim" },
   {
     "nvimdev/dashboard-nvim",
     event = "VimEnter",
@@ -156,6 +157,9 @@ return {
   {
     "sindrets/diffview.nvim",
   },
+  -- {
+  --   "olimorris/codecompanion.nvim",
+  -- },
   {
     "nvim-neotest/neotest",
     dependencies = {
@@ -203,23 +207,6 @@ return {
   },
   {
     "numToStr/Comment.nvim",
-  },
-  {
-    "yetone/avante.nvim",
-    event = "VeryLazy",
-    version = false, -- Never set this value to "*"! Never!
-    opts = require "configs.avante",
-    -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
-    build = "make",
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter",
-      "stevearc/dressing.nvim",
-      "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
-      "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
-      "hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
-      "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
-    },
   },
   -- LANGUAGE-SPECIFIC-PLUGINS
   {
@@ -313,5 +300,8 @@ return {
   },
   {
     "Wansmer/sibling-swap.nvim",
+  },
+  {
+    "Kurama622/llm.nvim",
   },
 }

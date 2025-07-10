@@ -36,7 +36,7 @@ o.splitbelow = true
 o.splitright = true
 o.timeoutlen = 400
 o.undofile = true
-
+o.swapfile = false
 -- interval for writing swap file to disk, also used by gitsigns
 o.updatetime = 250
 
@@ -60,13 +60,6 @@ vim.env.PATH = table.concat({ vim.fn.stdpath "data", "mason", "bin" }, sep) .. d
 
 o.cursorlineopt = "both" -- to enable cursorline!
 o.spelllang = "programming,en,ru"
-local current_hour = tonumber(tostring(vim.fn.strftime "%H"))
-
-if current_hour >= 20 or current_hour <= 7 then
-  o.background = "dark"
-else
-  o.background = "light"
-end
 
 -- vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 vim.api.nvim_create_autocmd("BufWinEnter", {

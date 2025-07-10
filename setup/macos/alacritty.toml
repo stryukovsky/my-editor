@@ -1,7 +1,7 @@
 [window]
 
 decorations = "None"
-opacity = 0.8
+opacity = 1
 startup_mode = "Maximized"
 option_as_alt = "Both"
 decorations_theme_variant = "Light" # "Dark"
@@ -10,15 +10,15 @@ decorations_theme_variant = "Light" # "Dark"
 size = 12.0
 
 [font.bold]
-family = "0xProto Nerd Font"
+family = "AdwaitaMono Nerd Font"
 style = "Bold"
 
 [font.italic]
-family = "0xProto Nerd Font"
+family = "AdwaitaMono Nerd Font"
 style = "Italic"
 
 [font.normal]
-family = "0xProto Nerd Font"
+family = "AdwaitaMono Nerd Font"
 style = "Regular"
 
 [terminal]

@@ -6,8 +6,9 @@ local kulala = require "kulala"
 local kulala_ui = require "kulala.ui"
 local oil = require "oil"
 local gitsigns_async = require "gitsigns.async"
-local gitsigns_blame = require "gitsigns.blame"
-local avante = require "avante"
+local gitsigns_blame = require "gitsigns.actions.blame"
+local llm_state = require "configs.llm_compat"
+-- local avante = require "avante"
 local diffview_actions = require "diffview.actions"
 
 local ui_components_modes = { "n", "t", "v", "i" }
@@ -22,12 +23,12 @@ local telescope_components = {
     desc = "UI telescope marks",
   },
   {
-    modes = {"n"},
+    modes = { "n" },
     shortcut = "<leader><leader>",
     command = function()
-      vim.cmd "Telescope grapple tags"
+      vim.cmd "Telescope find_files"
     end,
-    desc = "UI telescope marks",
+    desc = "UI telescope files",
   },
   {
     modes = ui_components_modes,
@@ -89,13 +90,6 @@ local telescope_components = {
 
 map("n", "<leader>ga", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", { desc = "Actions: spelling" })
 
--- map(
---   "n",
---   "<leader><leader>",
---   "<cmd>Telescope buffers only_cwd=true theme=get_cursor previewer=false sort_lastused=true sort_mru=true<cr>",
---   { desc = "UI telescope buffers" }
--- )
-
 local last_opened_telescope = ""
 local function close_telescope()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -142,6 +136,20 @@ map(ui_components_modes, "<A-y>", function()
   end
   kulala_state_is_opened = not kulala_state_is_opened
 end, { desc = "UI kulala toggle" })
+
+map(ui_components_modes, "<A-q>", function()
+  if llm_state.is_open() then
+    vim.cmd "LLMSessionToggle"
+    vim.api.nvim_command "stopinsert"
+  else
+    dialog_component_callback_close()
+    dialog_component_callback_close = function()
+      vim.cmd "LLMSessionToggle"
+      vim.api.nvim_command "stopinsert"
+    end
+    vim.cmd "LLMSessionToggle"
+  end
+end, { desc = "UI LLM toggle view" })
 
 map(ui_components_modes, "<A-Y>", function()
   if kulala_state_is_opened then
@@ -323,10 +331,22 @@ map("n", "<leader>th", function()
   vim.cmd "Telescope colorscheme"
 end, { desc = "Theme" })
 
+local function get_current_file()
+  return file_path
+end
+
 -- neotree
 map(ui_components_modes, "<A-e>", function()
   dapui.close()
-  vim.cmd "Neotree reveal_force_cwd=false left source=filesystem "
+  local current_buf = vim.api.nvim_get_current_buf()
+  local file_path = vim.api.nvim_buf_get_name(current_buf)
+  require("neo-tree.command").execute {
+    action = "focus", -- Focus NeoTree
+    source = "filesystem", -- Default source
+    position = "left", -- Or "right", "float"
+    reveal_file = file_path, -- Auto-highlight the file
+    reveal_force_cwd = true, -- Ensure correct working dir
+  }
 end, { desc = "UI neotree files" })
 
 map(ui_components_modes, "<A-b>", function()
@@ -377,36 +397,6 @@ map(ui_components_modes, "<A-t>", function()
   neotest_summary_opened = not neotest_summary_opened
 end, { desc = "UI Test show summary" })
 
-local avante_state_opened = false
-map(ui_components_modes, "<A-q>", function()
-  if avante_state_opened then
-    avante.close_sidebar()
-  else
-    right_component_callback_close()
-    right_component_callback_close = function()
-      avante_state_opened = false
-      avante.close_sidebar()
-    end
-    avante.open_sidebar()
-  end
-  avante_state_opened = not avante_state_opened
-end, { desc = "UI Avante toggle view" })
-
-map(ui_components_modes, "<A-Q>", function()
-  if avante_state_opened then
-    avante.close_sidebar()
-  else
-    right_component_callback_close()
-    right_component_callback_close = function()
-      avante_state_opened = false
-      avante.close_sidebar()
-    end
-    avante.open_sidebar()
-    vim.cmd "AvanteChatNew"
-  end
-  avante_state_opened = not avante_state_opened
-end, { desc = "UI Avante new chat" })
-
 local neotest_output_opened = false
 map(ui_components_modes, "<A-T>", function()
   if neotest_output_opened then
@@ -442,9 +432,6 @@ end, { desc = "UI trouble diagnostics" })
 -- trouble plugin
 -- "<cmd>Trouble diagnostics toggle focus=true<CR>"
 map(ui_components_modes, "<A-i>", function()
-  if trouble.is_open "diagnostics" then
-    trouble.close "diagnostics"
-  end
   if trouble.is_open "lsp" then
     trouble.close "lsp"
   else
@@ -452,6 +439,7 @@ map(ui_components_modes, "<A-i>", function()
     bottom_component_callback_close = function()
       trouble.close "lsp"
     end
+    trouble.close()
     trouble.open { mode = "lsp", focus = true }
   end
 end, { desc = "UI trouble inspect" })

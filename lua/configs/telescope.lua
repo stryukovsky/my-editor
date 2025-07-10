@@ -27,6 +27,12 @@ require("telescope").setup {
       case_mode = "smart_case", -- or "ignore_case" or "respect_case"
       -- the default case_mode is "smart_case"
     },
+    ["ui-select"] = {
+      require("telescope.themes").get_dropdown {
+        -- even more opts
+        initial_mode = "normal",
+      },
+    },
   },
   pickers = {
     git_branches = {
@@ -35,5 +41,15 @@ require("telescope").setup {
     live_grep = {
       mappings = require "mappings.telescope.live_grep",
     },
+    lsp_references = {
+      mappings = require "mappings.telescope.lsp",
+    },
+    lsp_definitions = {
+      mappings = require "mappings.telescope.lsp",
+    },
+    lsp_type_definitions = {
+      mappings = require "mappings.telescope.lsp",
+    },
   },
 }
+require("telescope").load_extension "ui-select"
