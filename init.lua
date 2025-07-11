@@ -24,3 +24,7 @@ require "options"
 require "configs"
 require "mappings"
 require "theme"
+
+-- at the end of config we auto remap already defined mappings so Russian keyboard is acceptable
+local langmapper = require "langmapper"
+langmapper.automapping { global = true, buffer = true }

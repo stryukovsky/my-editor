@@ -12,12 +12,14 @@ end
 return {
   n = {
     ["<cr>"] = actions.git_switch_branch,
+    ["d"] = diff_fn,
+    ["x"] = actions.git_delete_branch,
+    ["m"] = actions.git_merge_branch,
+    ["r"] = actions.git_rebase_branch,
     ["<C-m>"] = actions.git_merge_branch,
     ["<C-r>"] = actions.git_rebase_branch,
     ["<C-d>"] = diff_fn,
     ["<C-x>"] = actions.git_delete_branch,
-    ["d"] = diff_fn,
-    ["x"] = actions.git_delete_branch,
   },
   i = {
     ["<cr>"] = actions.git_switch_branch,

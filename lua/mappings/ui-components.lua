@@ -88,7 +88,7 @@ local telescope_components = {
   },
 }
 
-map("n", "<leader>ga", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", { desc = "Actions: spelling" })
+map("n", "<leader>sa", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", { desc = "Actions: spelling" })
 
 local last_opened_telescope = ""
 local function close_telescope()
