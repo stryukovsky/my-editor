@@ -36,6 +36,7 @@ require("telescope").setup {
   },
   pickers = {
     git_branches = {
+      initial_mode = "normal",
       mappings = require "mappings.telescope.git_branches",
     },
     live_grep = {
