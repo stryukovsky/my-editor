@@ -1,6 +1,5 @@
 local map = require "mappings.map"
 local telescope_builtin = require "telescope.builtin"
-local trouble = require "trouble"
 local function opts(desc)
   return { desc = "LSP " .. desc }
 end

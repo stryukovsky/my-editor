@@ -211,7 +211,15 @@ end, { desc = "UI diffview file history" })
 local diffViewOpened = false
 map(ui_components_modes, "<A-k>", function()
   if diffViewOpened then
-    vim.cmd "tabc"
+    local result = pcall(function()
+      vim.cmd "tabc"
+    end)
+    if not result then
+      -- additionally invert flag so before this line it is false,
+      diffViewOpened = not diffViewOpened
+      -- after it is true
+      -- at the end of this function, this flag will be inversed again 
+    end
     dialog_component_callback_close = function() end
   else
     dialog_component_callback_close()
