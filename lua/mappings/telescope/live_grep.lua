@@ -1,6 +1,6 @@
 local trouble = require "trouble.sources.telescope"
 local action_state = require "telescope.actions.state"
-
+local actions = require "telescope.actions"
 local function open_with_trouble(bufnr)
   local picker = action_state.get_current_picker(bufnr)
   if not picker then
@@ -12,7 +12,7 @@ local function open_with_trouble(bufnr)
   end
   local count = picker.manager:num_results()
   if count > 1 then
-    -- this stuff disables sorting 
+    -- this stuff disables sorting
     local sort_disabler = 0
 
     ---@diagnostic disable-next-line: missing-fields
@@ -23,7 +23,7 @@ local function open_with_trouble(bufnr)
       sort = function(_)
         -- function returns incrementing index of every item
         -- so basically, it keeps the order of items from telescope
-        -- disabling of sorting helps better navigate from telescope choice 
+        -- disabling of sorting helps better navigate from telescope choice
         -- to current item in trouble.nvim
         sort_disabler = sort_disabler + 1
         return sort_disabler
@@ -34,12 +34,10 @@ local function open_with_trouble(bufnr)
       vim.api.nvim_win_set_cursor(0, { index, 0 })
     end, 200)
   else
-    vim.defer_fn(function()
-      vim.cmd("edit! " .. selection.path)
-    end, 200)
+    actions.select_default(bufnr)
     vim.defer_fn(function()
       vim.api.nvim_win_set_cursor(0, { selection.lnum, selection.col })
-    end, 250)
+    end, 200)
   end
 end
 

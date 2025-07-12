@@ -9,6 +9,14 @@ map("n", "<leader>gPush", function()
   neogit.open { "push", kind = "float" }
 end, { desc = "git: push" })
 
+map("n", "<leader>gmerge", function()
+  neogit.open { "merge", kind = "float" }
+end, { desc = "git: merge" })
+
+map("n", "<leader>gMerge", function()
+  neogit.open { "merge", kind = "float" }
+end, { desc = "git: merge" })
+
 map("n", "<leader>gpush", function()
   neogit.open { "push", kind = "float" }
 end, { desc = "git: push" })
