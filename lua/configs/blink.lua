@@ -20,7 +20,7 @@ require("blink-cmp").setup {
     ["<Down>"] = { "select_next", "fallback" },
     ["<A-Down>"] = { "scroll_documentation_down", "fallback" },
     ["<A-Up>"] = { "scroll_documentation_up", "fallback" },
-    ["<C-space>"] = { "show", "hide" },
+    -- ["<C-space>"] = { "show", "hide" },
     ["<Tab>"] = { "snippet_forward", "select_next", "fallback" },
     ["<S-Tab>"] = { "snippet_backward", "select_prev", "fallback" },
   },

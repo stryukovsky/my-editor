@@ -58,7 +58,7 @@ if is_ollama_installed() then
           api_type = "ollama",
 
           model = model,
-          n_completions = 1,
+          n_completions = 5,
           context_window = 242,
           max_tokens = 4,
 
@@ -98,9 +98,9 @@ if is_ollama_installed() then
           timeout = 10, -- max request time
 
           -- only send the request every x milliseconds, use 0 to disable throttle.
-          throttle = 1000,
+          throttle = 100,
           -- debounce the request in x milliseconds, set to 0 to disable debounce
-          debounce = 400,
+          debounce = 100,
 
           --------------------------------
           ---   just for virtual_text
@@ -110,6 +110,18 @@ if is_ollama_installed() then
               accept = {
                 mode = "i",
                 keys = "<C-s>",
+              },
+              next = {
+                mode = "i",
+                keys = "<C-space>",
+              },
+              prev = {
+                mode = "i",
+                keys = "<C-p>",
+              },
+              toggle = {
+                mode = "n",
+                keys = "<leader>cp",
               },
             },
           },
