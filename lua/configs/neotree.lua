@@ -254,6 +254,9 @@ local config = {
       mappings = {
         ["<l>"] = "toggle_node",
         ["<h>"] = "toggle_node",
+        ["f"] = "filter",
+        ["<A-f>"] = "filter",
+        ["F"] = "filter",
       },
     },
   },

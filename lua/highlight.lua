@@ -33,7 +33,8 @@ local function override_highlights()
   hl(0, "NeoTreeTabSeparatorActive", { bg = background, fg = background })
 
   local current_buffer_bg = vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).bg
-  hl(0, "BufferCurrentMod", { bold = true, background = current_buffer_bg })
+  local current_buffer_fg = vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).fg
+  hl(0, "BufferCurrentMod", { bold = true, background = current_buffer_bg, foreground = current_buffer_fg })
   local alternate_buffer_bg = vim.api.nvim_get_hl(0, { name = "BufferDefaultAlternate" }).bg
   hl(0, "BufferAlternateMod", { bold = true, background = alternate_buffer_bg })
   local inactive_buffer_bg = vim.api.nvim_get_hl(0, { name = "BufferDefaultInactive" }).bg
