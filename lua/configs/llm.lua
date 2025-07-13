@@ -59,7 +59,7 @@ if is_ollama_installed() then
 
           model = model,
           n_completions = 5,
-          context_window = 242,
+          context_window = 250,
           max_tokens = 4,
 
           -- A mapping of filetype to true or false, to enable completion.
