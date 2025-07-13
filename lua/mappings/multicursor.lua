@@ -3,19 +3,19 @@ local mc = require "multicursor-nvim"
 
 -- multi cursor
 -- Add or skip cursor above/below the main cursor.
-map({ "n", "x" }, "<S-A-Up>", function()
+map({ "n", "x" }, "<C-A-K>", function()
   mc.lineAddCursor(-1)
 end, { desc = "Multicursor: add on prev line" })
 
-map({ "n", "x" }, "<S-A-Down>", function()
+map({ "n", "x" }, "<C-A-J>", function()
   mc.lineAddCursor(1)
 end, { desc = "Multicursor: add on next line" })
 
 -- Add or skip adding a new cursor by matching word/selection
-map({ "n", "x" }, "<S-A-Right>", function()
+map({ "n", "x" }, "<C-A-L>", function()
   mc.matchAddCursor(1)
 end, { desc = "Multicursor: add next match" })
-map({ "n", "x" }, "<S-A-Left>", function()
+map({ "n", "x" }, "<C-A-H>", function()
   mc.matchAddCursor(-1)
 end, { desc = "Multicursor: add prev match" })
 
@@ -40,6 +40,8 @@ mc.addKeymapLayer(function(layerSet)
   -- Delete the main cursor.
   layerSet({ "n", "x" }, "<leader>x", mc.deleteCursor)
   layerSet({ "n", "x" }, "<A-x>", mc.deleteCursor)
+  layerSet({ "n", "x" }, "<C-A-X>", mc.deleteCursor)
+  layerSet({ "n", "x" }, "<C-A-x>", mc.deleteCursor)
 
   -- Enable and clear cursors using escape.
   layerSet("n", "<esc>", function()

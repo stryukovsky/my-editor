@@ -34,7 +34,7 @@ require("neotest").setup {
       clear_target = "T",
       debug = "d",
       debug_marked = "D",
-      expand = { "<Left>", "<Right>", "<2-LeftMouse>" },
+      expand = { "h", "l", "<2-LeftMouse>" },
       expand_all = "W",
       help = "?",
       jumpto = { "<CR>", "i", "j" },

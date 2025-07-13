@@ -293,12 +293,12 @@ require("diffview").setup {
         end,
         { desc = "Close diffview " },
       },
-      { "n", "<Left>", diffview_actions.close_fold, { desc = "Collapse fold" } },
-      { "n", "<Right>", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
+      { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
+      { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
     },
     file_history_panel = {
-      { "n", "<Left>", diffview_actions.close_fold, { desc = "Collapse fold" } },
-      { "n", "<Right>", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
+      { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
+      { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
       {
         "n",
         "o",
@@ -313,8 +313,8 @@ require("diffview").setup {
       },
     },
     file_panel = {
-      { "n", "<Left>", diffview_actions.close_fold, { desc = "Collapse fold" } },
-      { "n", "<Right>", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
+      { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
+      { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
       {
         "n",
         "o",

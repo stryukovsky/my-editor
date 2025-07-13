@@ -22,23 +22,25 @@ map("n", "<A-v>", function()
 end, { desc = "Navigation toggle virtual diagnostics" })
 
 -- tabs navigation
-map("n", "<A-Left>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
-map("n", "<A-Right>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
+map("n", "<A-,>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
+map("n", "<A-<>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
+map("n", "<A->>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
+map("n", "<A-.>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
 map("n", "<leader>x", "<CMD>BufferClose<CR>", { desc = "Navigation close buffer" })
 map("n", "<leader>X", "<CMD>BufferCloseAllButCurrent<CR>", { desc = "Navigation close other buffers" })
 
-map("n", "<leader><Left>", "<CMD>BufferMovePrevious<CR>", { desc = "Navigation move buffer left" })
-map("n", "<leader><Right>", "<CMD>BufferMoveNext<CR>", { desc = "Navigation move buffer right" })
+map("n", "<leader>,", "<CMD>BufferMovePrevious<CR>", { desc = "Navigation move buffer left" })
+map("n", "<leader>.", "<CMD>BufferMoveNext<CR>", { desc = "Navigation move buffer right" })
 map("n", "<leader>pin", "<CMD>BufferPin<CR>", { desc = "Navigation pin buffer" })
 -- navigate in jumps
 map("n", "<A-[>", "<cmd>pop<cr>", { desc = "Navigation jump prev" })
 map("n", "<A-]>", "<cmd>tag<cr>", { desc = "Navigation jump next" })
 
 -- navigate in code
-map({ "n", "v" }, "<A-Up>", function()
+map({ "n", "v" }, "<C-u>", function()
   neoscroll.scroll(-0.2, { move_cursor = true, duration = 120 })
 end)
-map({ "n", "v" }, "<A-Down>", function()
+map({ "n", "v" }, "<C-d>", function()
   neoscroll.scroll(0.2, { move_cursor = true, duration = 120 })
 end)
 
@@ -52,12 +54,12 @@ map("n", "<leader>fm", function()
 end, { desc = "File format file" })
 
 -- block of code moving
-map("n", "<S-Left>", "<Plug>GoNSMLeft", {})
-map("n", "<S-Down>", "<Plug>GoNSMDown", {})
-map("n", "<S-Up>", "<Plug>GoNSMUp", {})
-map("n", "<S-Right>", "<Plug>GoNSMRight", {})
+map("n", "<C-H>", "<Plug>GoNSMLeft", {})
+map("n", "<C-J>", "<Plug>GoNSMDown", {})
+map("n", "<C-K>", "<Plug>GoNSMUp", {})
+map("n", "<C-L>", "<Plug>GoNSMRight", {})
 
-map("x", "<S-Left>", "<Plug>GoVSMLeft", {})
-map("x", "<S-Down>", "<Plug>GoVSMDown", {})
-map("x", "<S-Up>", "<Plug>GoVSMUp", {})
-map("x", "<S-Right>", "<Plug>GoVSMRight", {})
+map("x", "<C-H>", "<Plug>GoVSMLeft", {})
+map("x", "<C-J>", "<Plug>GoVSMDown", {})
+map("x", "<C-K>", "<Plug>GoVSMUp", {})
+map("x", "<C-L>", "<Plug>GoVSMRight", {})
