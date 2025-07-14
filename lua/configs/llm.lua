@@ -1,4 +1,4 @@
-local llm = require "llm"
+local llm = require "minuet"
 
 local function is_ollama_installed()
   return pcall(function()
@@ -8,43 +8,48 @@ end
 
 if is_ollama_installed() then
   llm.setup {
-    api_token = nil, -- cf Install paragraph
-    model = "codellama:7b", -- the model ID, behavior depends on backend
-    backend = "ollama", -- backend ID, "huggingface" | "ollama" | "openai" | "tgi"
-    url = "http://localhost:11434",
-    -- parameters that are added to the request body, values are arbitrary, you can set any field:value pair here it will be passed as is to the backend
-    request_body = {
-      parameters = {
-        max_new_tokens = 20,
-        temperature = 0.2,
-        top_p = 0.95,
+    provider = "openai_fim_compatible",
+    n_completions = 1, -- recommend for local model for resource saving
+    -- I recommend beginning with a small context window size and incrementally
+    -- expanding it, depending on your local computing power. A context window
+    -- of 512, serves as an good starting point to estimate your computing
+    -- power. Once you have a reliable estimate of your local computing power,
+    -- you should adjust the context window to a larger value.
+    context_window = 256,
+    throttle = 1000, -- only send the request every x milliseconds, use 0 to disable throttle.
+    -- debounce the request in x milliseconds, set to 0 to disable debounce
+    debounce = 400,
+    provider_options = {
+      openai_fim_compatible = {
+        -- For Windows users, TERM may not be present in environment variables.
+        -- Consider using APPDATA instead.
+        api_key = function()
+          return "sk-xxxx"
+        end,
+        name = "Ollama",
+        end_point = "http://localhost:11434/v1/completions",
+        model = "qwen2.5-coder:7b",
+        optional = {
+          max_tokens = 56,
+          top_p = 0.9,
+        },
       },
     },
-    -- set this if the model supports fill in the middle
-
-    tokens_to_clear = { "<EOT>" },
-    fim = {
-      enabled = false,
-      prefix = "<PRE> ",
-      middle = " <MID>",
-      suffix = " <SUF>",
+    notify = "debug",
+    virtualtext = {
+      auto_trigger_ft = { "lua", "go" },
+      keymap = {
+        -- accept whole completion
+        accept = "<C-s>",
+        -- accept one line
+        accept_line = "<A-a>",
+        -- accept n lines (prompts for number)
+        -- e.g. "A-z 2 CR" will accept 2 lines
+        accept_n_lines = "<A-z>",
+        -- Cycle to next completion item, or manually invoke completion
+        next = "<C-space>",
+        dismiss = "<A-e>",
+      },
     },
-    debounce_ms = 150,
-    accept_keymap = "<C-s>",
-    dismiss_keymap = "<C-space>",
-    tls_skip_verify_insecure = false,
-    -- llm-ls configuration, cf llm-ls section
-    lsp = {
-      bin_path = vim.api.nvim_call_function("stdpath", { "data" }) .. "/mason/bin/llm-ls",
-      -- host = nil,
-      -- port = nil,
-      -- cmd_env = nil, -- or { LLM_LOG_LEVEL = "DEBUG" } to set the log level of llm-ls
-      -- version = "0.5.3",
-    },
-    tokenizer = nil, -- cf Tokenizer paragraph
-    context_window = 1024, -- max number of tokens for the context window
-    enable_suggestions_on_startup = true,
-    enable_suggestions_on_files = "*", -- pattern matching syntax to enable suggestions on specific files, either a string or a list of strings
-    disable_url_path_completion = false, -- cf Backend
   }
 end

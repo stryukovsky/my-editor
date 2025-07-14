@@ -210,7 +210,7 @@ return {
   },
   -- AI Stuff
   {
-    "huggingface/llm.nvim",
+    "milanglacier/minuet-ai.nvim",
   },
   -- LANGUAGE-SPECIFIC-PLUGINS
   {
