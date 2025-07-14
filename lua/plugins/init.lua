@@ -208,6 +208,10 @@ return {
   {
     "numToStr/Comment.nvim",
   },
+  -- AI Stuff
+  {
+    "huggingface/llm.nvim",
+  },
   -- LANGUAGE-SPECIFIC-PLUGINS
   {
     "leoluz/nvim-dap-go",
@@ -300,8 +304,5 @@ return {
   },
   {
     "Wansmer/sibling-swap.nvim",
-  },
-  {
-    "Kurama622/llm.nvim",
   },
 }

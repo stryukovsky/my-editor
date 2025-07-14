@@ -1,5 +1,5 @@
 local lsp_with_default_conf =
-  { "html", "cssls", "ts_ls", "lua_ls", "sqls", "jsonls", "bashls", "solidity_ls", "pyright", "gopls", "clangd" }
+  { "html", "cssls", "ts_ls", "lua_ls", "sqls", "jsonls", "bashls", "solidity_ls", "pyright", "gopls", "clangd" , "llm-ls"}
 
 vim.lsp.config("solidity_ls", {
   cmd = { "vscode-solidity-server", "--stdio" },
