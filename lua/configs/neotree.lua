@@ -3,6 +3,7 @@
 local filesystem = require "neo-tree.sources.filesystem"
 local renderer = require "neo-tree.ui.renderer"
 local telescope = require "telescope.builtin"
+local cmds = require "neo-tree.sources.filesystem.commands"
 local function open_single_child_dir_recursively(state)
   local node = state.tree:get_node()
   if node.type == "directory" then
@@ -22,6 +23,10 @@ local function open_single_child_dir_recursively(state)
     elseif node:has_children() then
       renderer.focus_node(state, node:get_child_ids()[1])
     end
+  else
+    -- if file, open it
+    cmds.open(state)
+    -- cmds.clear_filter(state)
   end
 end
 
