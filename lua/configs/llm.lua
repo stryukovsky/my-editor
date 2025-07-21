@@ -40,7 +40,7 @@ if is_ollama_installed() then
       auto_trigger_ft = { "lua", "go", "js", "ts", "javascript", "typescript", "java", "scala", "solidity", "sol", "py", "python", "rs", "rust" },
       keymap = {
         -- accept whole completion
-        accept = "<C-S>",
+        accept = "<C-A-s>",
         -- accept one line
         accept_line = "<C-s>",
         -- accept n lines (prompts for number)
