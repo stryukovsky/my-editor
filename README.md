@@ -37,6 +37,9 @@ Firstly make sure system is up-to-date:
 sudo dnf upgrade
 ```
 
+Enable [rpm fusion](https://docs.fedoraproject.org/en-US/quick-docs/rpmfusion-setup/) packages.  
+
+
 Execute every line separately!!!  
 
 ```sh
