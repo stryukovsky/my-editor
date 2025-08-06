@@ -112,6 +112,8 @@ If failure:
 wg-quick up  ~/Documents/vpn.conf
 ```
 
+Or `sudo nmcli connection import type wireguard file vpn.conf`
+
 Repeat again interactions with UI.  
 
 ## Fedora root password set

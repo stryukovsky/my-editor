@@ -7,6 +7,7 @@ local options = {
     javascript = { "prettier" },
     go = { "goimports" },
     rust = { "rustfmt" },
+    solidity = { "solhint" },
   },
 
   -- format_on_save = {
