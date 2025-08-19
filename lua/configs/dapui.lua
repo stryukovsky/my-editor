@@ -17,7 +17,9 @@ require("dapui").setup {
   element_mappings = {},
   expand_lines = true,
   floating = {
-    border = "single",
+    max_width = 140,
+    max_height = 80,
+    border = "rounded",
     mappings = {
       close = { "q", "<Esc>" },
     },

@@ -2,7 +2,7 @@ local map = require "mappings.map"
 
 -- gitsigns
 map("n", "<leader>gr", "<cmd>Gitsigns reset_hunk<cr>", { desc = "git hunk reset" })
-map("n", "<leader>gp", "<cmd>Gitsigns preview_hunk_inline<cr>", { desc = "git hunk preview" })
+map("n", "<leader>gh", "<cmd>Gitsigns preview_hunk_inline<cr>", { desc = "git hunk preview" })
 
 map("n", "<leader>gs", "<cmd>Gitsigns stage_buffer<cr>", { desc = "git stage buffer" })
 map("n", "<leader>gR", "<cmd>Gitsigns reset_buffer<cr>", { desc = "git reset buffer" })

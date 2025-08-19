@@ -22,7 +22,7 @@ Install font from `fonts/` directory of this repo to your system.
 Execute every line separately!!!  
 
 ```sh
-sudo bash setup/macos/setup.sh 
+bash setup/macos/setup.sh 
 bash setup/commons.sh
 cp setup/macos/alacritty.toml ~/.alacritty.toml
 cp setup/tmux.conf ~/.tmux.conf
@@ -52,12 +52,14 @@ cp setup/tmux.conf ~/.tmux.conf
 cp setup/fedora/zsh.sh ~/.zshrc
 ```
 
+Install plugins in tmux (`<prefix>I`).  
+
 **Note**: read all stuff related to fedora below. Especially drivers and root password
 
 ## Setup mason plugins
 After installation of basics, open neovim and run command
 ```
-MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter json-lsp lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server solidity solidity-ls vscode-solidity-server pyright goimports prettier clangd
+MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter json-lsp lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server pyright goimports prettier clangd nomicfoundation-solidity-language-server
 ```
 
 # Other Fedora stuff

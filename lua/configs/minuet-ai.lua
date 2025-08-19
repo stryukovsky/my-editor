@@ -9,7 +9,6 @@ end
 if is_ollama_installed() then
   llm.setup {
     provider = "openai_fim_compatible",
-    n_completions = 1, -- recommend for local model for resource saving
     -- I recommend beginning with a small context window size and incrementally
     -- expanding it, depending on your local computing power. A context window
     -- of 512, serves as an good starting point to estimate your computing
@@ -36,6 +35,7 @@ if is_ollama_installed() then
       },
     },
     notify = "warn", -- debug or verbose if needed
+    n_completions = 3,
     virtualtext = {
       auto_trigger_ft = { "lua", "go", "js", "ts", "javascript", "typescript", "java", "scala", "solidity", "sol", "py", "python", "rs", "rust" },
       keymap = {
@@ -47,8 +47,8 @@ if is_ollama_installed() then
         -- e.g. "A-z 2 CR" will accept 2 lines
         -- accept_n_lines = "<A-z>",
         -- Cycle to next completion item, or manually invoke completion
-        -- next = "<C-space>",
-        dismiss = "<C-space>",
+        next = "<C-space>",
+        -- dismiss = "<C-space>",
       },
     },
   }

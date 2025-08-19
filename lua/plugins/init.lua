@@ -27,6 +27,7 @@ return {
   {
     "onsails/lspkind.nvim",
   },
+  {"echasnovski/mini.diff"},
   {
     "nvim-tree/nvim-web-devicons",
   },
@@ -212,6 +213,9 @@ return {
   {
     "milanglacier/minuet-ai.nvim",
   },
+  {
+    "olimorris/codecompanion.nvim",
+  },
   -- LANGUAGE-SPECIFIC-PLUGINS
   {
     "leoluz/nvim-dap-go",
@@ -254,7 +258,7 @@ return {
     opts = {
       file_types = { "markdown", "Avante" },
     },
-    ft = { "markdown", "Avante" },
+    ft = { "markdown", "codecompanion" },
     lazy = true,
   },
   {

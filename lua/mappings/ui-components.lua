@@ -7,8 +7,6 @@ local kulala_ui = require "kulala.ui"
 local oil = require "oil"
 local gitsigns_async = require "gitsigns.async"
 local gitsigns_blame = require "gitsigns.actions.blame"
-local llm_state = require "configs.llm_compat"
--- local avante = require "avante"
 local diffview_actions = require "diffview.actions"
 
 local ui_components_modes = { "n", "t", "v", "i" }
@@ -156,20 +154,6 @@ map(ui_components_modes, "<A-y>", function()
   end
   kulala_state_is_opened = not kulala_state_is_opened
 end, { desc = "UI kulala toggle" })
-
-map(ui_components_modes, "<A-q>", function()
-  if llm_state.is_open() then
-    vim.cmd "LLMSessionToggle"
-    vim.api.nvim_command "stopinsert"
-  else
-    dialog_component_callback_close()
-    dialog_component_callback_close = function()
-      vim.cmd "LLMSessionToggle"
-      vim.api.nvim_command "stopinsert"
-    end
-    vim.cmd "LLMSessionToggle"
-  end
-end, { desc = "UI LLM toggle view" })
 
 map(ui_components_modes, "<A-Y>", function()
   if kulala_state_is_opened then

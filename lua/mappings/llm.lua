@@ -1,4 +1,6 @@
--- local map = require "mappings.map"
+local map = require "mappings.map"
+
+map({"x", "v", "n"}, "<leader>aa", "<cmd>CodeCompanionActions<cr>", {desc = "AI actions"})
 --
 -- local function explain()
 --   vim.cmd "LLMSelectedTextHandler explain"
@@ -25,3 +27,5 @@
 -- map("v", "<leader>tra", translate, { desc = "LLM Translate" })
 -- map("v", "<leader>test", test, { desc = "LLM Test" })
 -- map("v", "<leader>doc", docs, { desc = "LLM Doc" })
+
+
