@@ -4,6 +4,12 @@ require("codecompanion").setup {
     chat = {
       adapter = "ollama",
       model = "qwen2.5-coder:14b",
+      keymaps = {
+        close = {
+          modes = { n = "<C-c>", i = "<C-c>" },
+          opts = {},
+        },
+      },
     },
     inline = {
       adapter = "ollama",
@@ -12,11 +18,13 @@ require("codecompanion").setup {
         accept_change = {
           modes = { n = "ga" },
           description = "Accept the suggested change",
+          callback = function() end,
         },
         reject_change = {
           modes = { n = "gr" },
           opts = { nowait = true },
           description = "Reject the suggested change",
+          callback = function() end,
         },
       },
     },
