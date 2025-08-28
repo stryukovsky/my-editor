@@ -1,4 +1,9 @@
 require("codecompanion").setup {
+  display = {
+    diff = {
+      enabled = false,
+    }
+  },
   strategies = {
     -- Change the default chat adapter
     chat = {
@@ -16,12 +21,12 @@ require("codecompanion").setup {
       model = "qwen2.5-coder:7b",
       keymaps = {
         accept_change = {
-          modes = { n = "ga" },
+          modes = { n = "<leader>as" },
           description = "Accept the suggested change",
           callback = function() end,
         },
         reject_change = {
-          modes = { n = "gr" },
+          modes = { n = "<leader>ar" },
           opts = { nowait = true },
           description = "Reject the suggested change",
           callback = function() end,
