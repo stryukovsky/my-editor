@@ -158,9 +158,6 @@ return {
   {
     "sindrets/diffview.nvim",
   },
-  -- {
-  --   "olimorris/codecompanion.nvim",
-  -- },
   {
     "nvim-neotest/neotest",
     dependencies = {

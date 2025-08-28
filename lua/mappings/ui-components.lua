@@ -202,7 +202,7 @@ map(ui_components_modes, "<A-k>", function()
       -- additionally invert flag so before this line it is false,
       diffViewOpened = not diffViewOpened
       -- after it is true
-      -- at the end of this function, this flag will be inversed again 
+      -- at the end of this function, this flag will be inversed again
     end
     dialog_component_callback_close = function() end
   else
@@ -280,7 +280,16 @@ require("diffview").setup {
       { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
       { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
     },
+    diff2 = {
+
+      { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+    },
+    diff3 = {
+
+      { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+    },
     file_history_panel = {
+      { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
       { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
       {
@@ -297,6 +306,7 @@ require("diffview").setup {
       },
     },
     file_panel = {
+      { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
       { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
       {
