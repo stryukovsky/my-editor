@@ -19,7 +19,10 @@ local unset = vim.keymap.del
 -- unset("n", "<leader>ch")
 -- unset("n", "<leader>n")
 local map = require "mappings.map"
-map("n", "<Esc>", "<cmd>noh<CR>", { desc = "general clear highlights" })
+map("n", "<Esc>", function()
+  vim.cmd "noh"
+  vim.snippet.stop()
+end, { desc = "general clear highlights" })
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "general copy whole file" })
 require "mappings.lspconfig"
 require "mappings.dap"
