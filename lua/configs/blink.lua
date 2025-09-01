@@ -42,7 +42,7 @@ require("blink-cmp").setup {
   -- when the Rust fuzzy matcher is not available, by using `implementation = "prefer_rust"`
   --
   -- See the fuzzy documentation for more information
-  fuzzy = { implementation = "prefer_rust_with_warning" },
+  fuzzy = { implementation = "lua" },
 
   completion = {
     documentation = { auto_show = true, window = { border = "single" } },
