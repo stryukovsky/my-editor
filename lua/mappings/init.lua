@@ -40,6 +40,5 @@ require "mappings.text-case"
 require "mappings.refactoring-setup"
 require "mappings.neogit-setup"
 require "mappings.fidget"
-require "mappings.grapple"
 require "mappings.llm"
 -- unset("n", "<leader>")
