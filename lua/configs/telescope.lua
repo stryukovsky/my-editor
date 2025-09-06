@@ -13,6 +13,11 @@ require("telescope").setup {
       width = 0.87,
       height = 0.80,
     },
+    path_display = {
+      filename_first = {
+        reverse_directories = false,
+      },
+    },
     mappings = require "mappings.telescope.defaults",
   },
   extensions_list = { "themes", "terms", "undo" },
