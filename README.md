@@ -66,6 +66,8 @@ MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter json-lsp lu
 
 Disable secure boot for nvidia
 
+Note: [RPM Fusion](https://rpmfusion.org/Howto)
+
 ## Gnome look
 
 Install plugins
