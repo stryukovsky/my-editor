@@ -64,6 +64,8 @@ MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter json-lsp lu
 
 # Other Fedora stuff
 
+Disable secure boot for nvidia
+
 ## Gnome look
 
 Install plugins
