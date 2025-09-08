@@ -27,7 +27,7 @@ return {
   {
     "onsails/lspkind.nvim",
   },
-  {"echasnovski/mini.diff"},
+  { "echasnovski/mini.diff" },
   {
     "nvim-tree/nvim-web-devicons",
   },
@@ -64,6 +64,15 @@ return {
     -- build = 'nix run .#build-plugin',
 
     opts_extend = { "sources.default" },
+  },
+  {
+    "saghen/blink.compat",
+    -- use v2.* for blink.cmp v1.*
+    version = "2.*",
+    -- lazy.nvim will automatically load the plugin when it's required by blink.cmp
+    lazy = true,
+    -- make sure to set opts so that lazy.nvim calls blink.compat's setup
+    opts = {},
   },
   {
     "stevearc/conform.nvim",
@@ -226,6 +235,8 @@ return {
     "scalameta/nvim-metals",
     dependencies = {
       "nvim-lua/plenary.nvim",
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/nvim-cmp",
     },
     ft = { "scala", "sbt" },
     config = require "configs.scalametals",
