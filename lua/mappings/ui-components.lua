@@ -8,6 +8,7 @@ local oil = require "oil"
 local gitsigns_async = require "gitsigns.async"
 local gitsigns_blame = require "gitsigns.actions.blame"
 local diffview_actions = require "diffview.actions"
+local neotree_command = require "neo-tree.command"
 
 local ui_components_modes = { "n", "t", "v", "i" }
 
@@ -353,32 +354,42 @@ map("n", "<leader>th", function()
   vim.cmd "Telescope colorscheme"
 end, { desc = "Theme" })
 
-local function get_current_file()
-  return file_path
+-- neotree
+local function workaround_neotree_focus(source, opts)
+  dapui.close()
+  local focus_command = vim.tbl_extend("error", {
+    action = "focus", -- Focus NeoTree
+    source = source,
+    position = "left", -- Or "left", "float"
+  }, opts)
+  local reveal_command = vim.tbl_extend("error", {
+    action = "reveal", -- Focus NeoTree
+    source = source,
+    position = "left", -- Or "left", "float"
+  }, opts)
+  neotree_command.execute(focus_command)
+  vim.defer_fn(function ()
+    neotree_command.execute(reveal_command)
+    neotree_command.execute(focus_command)
+  end, 50)
 end
 
--- neotree
 map(ui_components_modes, "<A-e>", function()
   dapui.close()
   local current_buf = vim.api.nvim_get_current_buf()
   local file_path = vim.api.nvim_buf_get_name(current_buf)
-  require("neo-tree.command").execute {
-    action = "focus", -- Focus NeoTree
-    source = "filesystem", -- Default source
-    position = "left", -- Or "right", "float"
+  workaround_neotree_focus("filesystem", {
     reveal_file = file_path, -- Auto-highlight the file
     reveal_force_cwd = true, -- Ensure correct working dir
-  }
+  })
 end, { desc = "UI neotree files" })
 
 map(ui_components_modes, "<A-b>", function()
-  dapui.close()
-  vim.cmd "Neotree focus left source=buffers"
+  workaround_neotree_focus("buffers", {})
 end, { desc = "UI neotree buffers" })
 
 map(ui_components_modes, "<A-l>", function()
-  dapui.close()
-  vim.cmd "Neotree focus left source=document_symbols"
+  workaround_neotree_focus("document_symbols", {})
 end, { desc = "UI neotree structure" })
 
 local bottom_component_callback_close = function() end
