@@ -371,7 +371,7 @@ local function workaround_neotree_focus(source, opts)
   vim.defer_fn(function ()
     neotree_command.execute(reveal_command)
     neotree_command.execute(focus_command)
-  end, 50)
+  end, 100)
 end
 
 map(ui_components_modes, "<A-e>", function()
