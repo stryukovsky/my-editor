@@ -53,7 +53,7 @@ end)
 map("n", "<leader>fm", function()
   require("conform").format({ lsp_fallback = true, async = true }, function(err, did_edit)
     if did_edit then
-      vim.cmd "w"
+      vim.cmd "silent!w"
     end
   end)
 end, { desc = "File format file" })
