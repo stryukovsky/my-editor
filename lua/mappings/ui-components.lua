@@ -451,6 +451,12 @@ map(ui_components_modes, "<A-p>", function()
   if trouble.is_open "lsp" then
     trouble.close "lsp"
   end
+  if trouble.is_open "telescope" then
+    trouble.close "telescope"
+  end
+  if trouble.is_open "telescope_files" then
+    trouble.close "telescope_files"
+  end
   if trouble.is_open "diagnostics" then
     trouble.close "diagnostics"
   else
@@ -465,6 +471,15 @@ end, { desc = "UI trouble diagnostics" })
 -- trouble plugin
 -- "<cmd>Trouble diagnostics toggle focus=true<CR>"
 map(ui_components_modes, "<A-i>", function()
+  if trouble.is_open "diagnostics" then
+    trouble.close "diagnostics"
+  end
+  if trouble.is_open "telescope" then
+    trouble.close "telescope"
+  end
+  if trouble.is_open "telescope_files" then
+    trouble.close "telescope_files"
+  end
   if trouble.is_open "lsp" then
     trouble.close "lsp"
   else

@@ -1,6 +1,7 @@
 local trouble = require "trouble.sources.telescope"
 local action_state = require "telescope.actions.state"
 local actions = require "telescope.actions"
+local trouble_main = require "trouble"
 local function open_with_trouble(bufnr)
   local picker = action_state.get_current_picker(bufnr)
   if not picker then
@@ -12,9 +13,20 @@ local function open_with_trouble(bufnr)
   end
   local count = picker.manager:num_results()
   if count > 1 then
+    if trouble_main.is_open "lsp" then
+      trouble_main.close "lsp"
+    end
+    if trouble_main.is_open "diagnostics" then
+      trouble_main.close "diagnostics"
+    end
+    if trouble_main.is_open "telescope" then
+      trouble_main.close "telescope"
+    end
+    if trouble_main.is_open "telescope_files" then
+      trouble_main.close "telescope_files"
+    end
     -- this stuff disables sorting
     local sort_disabler = 0
-
     ---@diagnostic disable-next-line: missing-fields
     trouble.open(bufnr, {
       focus = true,

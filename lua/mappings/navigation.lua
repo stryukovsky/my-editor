@@ -19,6 +19,11 @@ end, { desc = "Navigation toggle relative numbering" })
 map("n", "<A-v>", function()
   vim.g.enabled_virtual_lines = not vim.g.enabled_virtual_lines
   vim.diagnostic.config { virtual_lines = vim.g.enabled_virtual_lines }
+  if vim.g.enabled_virtual_lines then
+    vim.print "Virtual lines enabled"
+  else
+    vim.print "Virtual lines disabled"
+  end
 end, { desc = "Navigation toggle virtual diagnostics" })
 
 -- tabs navigation
