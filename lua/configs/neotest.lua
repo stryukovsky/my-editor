@@ -37,7 +37,7 @@ require("neotest").setup {
       expand = { "h", "l", "<2-LeftMouse>" },
       expand_all = "W",
       help = "?",
-      jumpto = { "<CR>", "i", "j" },
+      jumpto = { "<CR>", "i", },
       mark = "m",
       next_failed = "J",
       output = "o",
