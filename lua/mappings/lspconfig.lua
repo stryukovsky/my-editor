@@ -8,6 +8,10 @@ map("n", "<leader>lr", function()
   telescope_builtin.lsp_references { bufnr = 0 }
 end, opts "references (usages)")
 
+map("n", "<leader>li", function()
+  telescope_builtin.lsp_implementations { bufnr = 0 }
+end, opts "implementations")
+
 map("n", "<leader>ltd", function()
   telescope_builtin.lsp_type_definitions { bufnr = 0 }
 end, opts "type definitions")
