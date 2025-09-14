@@ -175,7 +175,7 @@ return {
       "antoinemadec/FixCursorHold.nvim",
       "nvim-treesitter/nvim-treesitter",
 
-      "nvim-neotest/neotest-go",
+      { "fredrikaverpil/neotest-golang", version = "*" }, -- Installation
       "nvim-neotest/neotest-python",
       "nvim-neotest/neotest-jest",
       "stevanmilic/neotest-scala",

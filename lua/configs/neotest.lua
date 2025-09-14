@@ -1,7 +1,7 @@
 ---@diagnostic disable-next-line: missing-fields
 require("neotest").setup {
   adapters = {
-    require "neotest-go",
+    require "neotest-golang",
     require "rustaceanvim.neotest",
     require "neotest-python",
     require "neotest-scala" {
@@ -37,7 +37,7 @@ require("neotest").setup {
       expand = { "h", "l", "<2-LeftMouse>" },
       expand_all = "W",
       help = "?",
-      jumpto = { "<CR>", "i", },
+      jumpto = { "<CR>", "i" },
       mark = "m",
       next_failed = "J",
       output = "o",
@@ -50,6 +50,20 @@ require("neotest").setup {
       watch = "w",
     },
     open = "botright vsplit | vertical resize 50",
+  },
+  ---@diagnostic disable-next-line: missing-fields
+  floating = {
+    border = "single",
+  },
+  output = {
+    enabled = true,
+    open_on_run = true,
+    auto_close = true,
+    enter = true,
+  },
+  output_panel = {
+    enabled = true,
+    open = "botright split | resize 15",
   },
   watch = {
     enabled = true,
