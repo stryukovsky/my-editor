@@ -100,6 +100,38 @@ local config = {
         vim.print("Unknown platform " .. sysname)
       end
     end,
+    ["open_parent_folder"] = function(state)
+      local node = state.tree:get_node()
+      local path = node:get_id()
+
+      -- Get the parent directory path
+      local parent_path
+      if node.type == "directory" then
+        -- If it's a directory, get its parent
+        parent_path = vim.fn.fnamemodify(path, ":h")
+      else
+        -- If it's a file, get the directory it's in
+        parent_path = vim.fn.fnamemodify(path, ":h")
+      end
+
+      -- Ensure we don't go above root
+      if parent_path == path then
+        vim.notify("Already at root directory", vim.log.levels.WARN)
+        return
+      end
+
+      -- Open parent directory in default application
+      local sysname = vim.loop.os_uname().sysname
+      if sysname == "Darwin" then
+        vim.fn.jobstart({ "open", parent_path }, { detach = true })
+      elseif sysname == "Linux" then
+        vim.fn.jobstart({ "xdg-open", parent_path }, { detach = true })
+      elseif sysname == "Windows_NT" then
+        vim.fn.jobstart({ "explorer", parent_path }, { detach = true })
+      else
+        vim.notify("Unknown platform: " .. sysname, vim.log.levels.ERROR)
+      end
+    end,
     ["go_deep"] = open_single_child_dir_recursively,
     ["go_shallow"] = function(state)
       local node = state.tree:get_node()
@@ -212,6 +244,7 @@ local config = {
     window = {
       mappings = {
         ["o"] = "system_open",
+        ["O"] = "open_parent_folder",
         ["F"] = "fuzzy_finder",
         ["<A-f>"] = "fuzzy_finder",
         ["f"] = "telescope_grep",
