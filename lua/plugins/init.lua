@@ -57,6 +57,15 @@ return {
     opts_extend = { "sources.default" },
   },
   {
+    "saghen/blink.compat",
+    -- use v2.* for blink.cmp v1.*
+    version = "2.*",
+    -- lazy.nvim will automatically load the plugin when it's required by blink.cmp
+    lazy = true,
+    -- make sure to set opts so that lazy.nvim calls blink.compat's setup
+    opts = {},
+  },
+  {
     "stevearc/conform.nvim",
     -- event = 'BufWritePre', -- uncomment for format on save
     opts = require "configs.conform",
@@ -157,7 +166,7 @@ return {
       "antoinemadec/FixCursorHold.nvim",
       "nvim-treesitter/nvim-treesitter",
 
-      "nvim-neotest/neotest-go",
+      { "fredrikaverpil/neotest-golang", version = "*" }, -- Installation
       "nvim-neotest/neotest-python",
       "nvim-neotest/neotest-jest",
       "stevanmilic/neotest-scala",
@@ -217,6 +226,8 @@ return {
     "scalameta/nvim-metals",
     dependencies = {
       "nvim-lua/plenary.nvim",
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/nvim-cmp",
     },
     ft = { "scala", "sbt" },
     config = require "configs.scalametals",

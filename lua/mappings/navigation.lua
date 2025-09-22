@@ -19,6 +19,11 @@ end, { desc = "Navigation toggle relative numbering" })
 map("n", "<A-v>", function()
   vim.g.enabled_virtual_lines = not vim.g.enabled_virtual_lines
   vim.diagnostic.config { virtual_lines = vim.g.enabled_virtual_lines }
+  if vim.g.enabled_virtual_lines then
+    vim.print "Virtual lines enabled"
+  else
+    vim.print "Virtual lines disabled"
+  end
 end, { desc = "Navigation toggle virtual diagnostics" })
 
 -- tabs navigation
@@ -46,11 +51,7 @@ end)
 
 -- format file, linter etc
 map("n", "<leader>fm", function()
-  require("conform").format({ lsp_fallback = true, async = true }, function(err, did_edit)
-    if did_edit then
-      vim.cmd "w"
-    end
-  end)
+  require("conform").format({ lsp_fallback = true, async = true }, function(err, did_edit) end)
 end, { desc = "File format file" })
 
 -- block of code moving

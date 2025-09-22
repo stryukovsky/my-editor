@@ -18,6 +18,11 @@ local unset = vim.keymap.del
 -- unset("i", "<C-b>")
 -- unset("n", "<leader>ch")
 -- unset("n", "<leader>n")
+unset("i", "<Tab>")
+unset("s", "<Tab>")
+unset("i", "<S-Tab>")
+unset("s", "<S-Tab>")
+
 local map = require "mappings.map"
 map("n", "<Esc>", function()
   vim.cmd "noh"
@@ -40,6 +45,6 @@ require "mappings.text-case"
 require "mappings.refactoring-setup"
 require "mappings.neogit-setup"
 require "mappings.fidget"
-require "mappings.grapple"
 require "mappings.llm"
+require("mappings.snippet")
 -- unset("n", "<leader>")
