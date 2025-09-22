@@ -62,6 +62,12 @@ After installation of basics, open neovim and run command
 MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter json-lsp lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server pyright goimports prettier clangd nomicfoundation-solidity-language-server
 ```
 
+Install TS parsers:  
+
+```
+TSInstall all
+```
+
 Install kulala-ls:  
 
 ```
