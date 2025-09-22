@@ -62,10 +62,15 @@ After installation of basics, open neovim and run command
 MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter json-lsp lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server pyright goimports prettier clangd nomicfoundation-solidity-language-server
 ```
 
+Install kulala-ls:  
+
+```
+npm install -g @mistweaverco/kulala-ls
+```
+
 # Other Fedora stuff
 
-Disable secure boot for nvidia
-
+Note: NVIDIA may not work until secure boot is not configured properly.  
 Note: [RPM Fusion](https://rpmfusion.org/Howto)
 
 ## Gnome look
