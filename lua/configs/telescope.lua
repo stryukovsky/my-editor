@@ -14,6 +14,21 @@ require("telescope").setup {
       height = 0.80,
     },
     mappings = require "mappings.telescope.defaults",
+    vimgrep_arguments = {
+      "grep",
+      "--extended-regexp",
+      "--color=never",
+      "--with-filename",
+      "--line-number",
+      "-b", -- grep doesn't support a `--column` option :(
+      "--ignore-case",
+      "--recursive",
+      "--no-messages",
+      "--exclude-dir=*cache*",
+      "--exclude-dir=*.git",
+      "--exclude=.*",
+      "--binary-files=without-match",
+    },
   },
   extensions_list = { "themes", "terms", "undo" },
   extensions = {
