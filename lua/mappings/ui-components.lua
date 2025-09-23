@@ -368,7 +368,7 @@ local function workaround_neotree_focus(source, opts)
     position = "left", -- Or "left", "float"
   }, opts)
   neotree_command.execute(focus_command)
-  vim.defer_fn(function ()
+  vim.defer_fn(function()
     neotree_command.execute(reveal_command)
     neotree_command.execute(focus_command)
   end, 100)
@@ -382,7 +382,7 @@ map(ui_components_modes, "<A-e>", function()
     reveal_file = file_path, -- Auto-highlight the file
     reveal_force_cwd = true, -- Ensure correct working dir
   })
-end, { desc = "UI neotree files" })
+end, { desc = "UI neotree files", silent = true })
 
 map(ui_components_modes, "<A-b>", function()
   workaround_neotree_focus("buffers", {})
@@ -506,3 +506,5 @@ map("n", "<A-B>", function()
     git_blame_bufnr = 0
   end
 end, { desc = "UI git blame buffer" })
+
+map("n", "<leader>di", "<cmd>NoiceDismiss<cr>", {desc = "UI dismiss notifications"})
