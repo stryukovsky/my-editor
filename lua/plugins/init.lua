@@ -309,4 +309,8 @@ return {
   {
     "Wansmer/sibling-swap.nvim",
   },
+  {
+    "fei6409/log-highlight.nvim",
+    opts = {},
+  },
 }

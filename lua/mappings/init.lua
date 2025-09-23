@@ -46,5 +46,6 @@ require "mappings.refactoring-setup"
 require "mappings.neogit-setup"
 require "mappings.fidget"
 require "mappings.llm"
-require("mappings.snippet")
+require "mappings.snippet"
+require "mappings.logviewer"
 -- unset("n", "<leader>")
