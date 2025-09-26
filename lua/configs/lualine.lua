@@ -73,6 +73,7 @@ require("lualine").setup {
 
     lualine_x = { "lsp_status", "filetype" },
     lualine_y = {
+      "grapple",
     },
     lualine_z = { "location", "selectioncount" },
   },
