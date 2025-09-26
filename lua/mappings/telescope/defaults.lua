@@ -9,6 +9,12 @@ local function focus_preview(prompt_bufnr)
     vim.keymap.set("n", "<Tab>", function()
       vim.cmd(string.format("noautocmd lua vim.api.nvim_set_current_win(%s)", prompt_win))
     end, { buffer = bufnr })
+
+    vim.keymap.set({"n", "i", "v", "x"}, "<A-w>", function() end, { buffer = bufnr })
+    vim.keymap.set({"n", "i", "v", "x"}, "<A-a>", function() end, { buffer = bufnr })
+    vim.keymap.set({"n", "i", "v", "x"}, "<A-s>", function() end, { buffer = bufnr })
+    vim.keymap.set({"n", "i", "v", "x"}, "<A-d>", function() end, { buffer = bufnr })
+
     vim.cmd(string.format("noautocmd lua vim.api.nvim_set_current_win(%s)", winid))
   end
 end
@@ -32,6 +38,7 @@ return {
     ["<A-s>"] = dummy,
     ["<A-d>"] = dummy,
     ["<A-w>"] = dummy,
+    ["<Tab>"] = focus_preview,
     ["<A-q>"] = dummy,
   },
   i = {
@@ -43,7 +50,6 @@ return {
     ["<C-j>"] = actions.results_scrolling_down,
     -- ["<Up>"] = actions.results_scrolling_up,
     ["<C-k>"] = actions.results_scrolling_up,
-    ["<Tab>"] = focus_preview,
     ["<A-t>"] = open_with_trouble,
     ["<A-a>"] = dummy,
     ["<A-s>"] = dummy,
