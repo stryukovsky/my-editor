@@ -48,4 +48,5 @@ require "mappings.fidget"
 require "mappings.llm"
 require "mappings.snippet"
 require "mappings.logviewer"
+require "mappings.whichkey"
 -- unset("n", "<leader>")
