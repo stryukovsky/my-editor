@@ -224,18 +224,21 @@ end, { desc = "UI diffview open merge tool" })
 local function open_file_from_diffview()
   diffViewOpened = false
   fileHistoryOpened = false
-  diffview_actions.goto_file_tab()
-  local opened_file = vim.fn.expand "%"
-  -- file is opened in new tab
-  -- so we need to close tab with opened file and also tab with diffview
-  vim.cmd "2tabc"
-  vim.cmd("edit " .. opened_file)
+  dialog_component_callback_close = function() end
+  diffview_actions.goto_file_edit()
+  -- legacy way to do the same stuff
+  -- local opened_file = vim.fn.expand "%"
+  -- -- file is opened in new tab
+  -- -- so we need to close tab with opened file and also tab with diffview
+  -- vim.cmd "2tabc"
+  -- vim.cmd("edit " .. opened_file)
 end
 
 require("diffview").setup {
   view = {
     merge_tool = {
-      layout = "diff3_mixed",
+      -- layout = "diff3_mixed",
+      layout = "diff1_plain",
       disable_diagnostics = true,
       winbar_info = true,
     },
@@ -280,6 +283,10 @@ require("diffview").setup {
       },
       { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
       { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
+    },
+    diff1 = {
+
+      { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
     },
     diff2 = {
 
@@ -507,4 +514,4 @@ map("n", "<A-B>", function()
   end
 end, { desc = "UI git blame buffer" })
 
-map("n", "<leader>di", "<cmd>NoiceDismiss<cr>", {desc = "UI dismiss notifications"})
+map("n", "<leader>di", "<cmd>NoiceDismiss<cr>", { desc = "UI dismiss notifications" })
