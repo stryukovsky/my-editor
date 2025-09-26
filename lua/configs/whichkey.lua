@@ -25,9 +25,14 @@ return {
     -- example to exclude mappings without a description
     return mapping.desc and mapping.desc ~= "" and not ContainsNonAscii(mapping.lhs)
   end,
+  delay = 0,
   keys = {
     scroll_down = "<Down>", -- binding to scroll down inside the popup
     scroll_up = "<Up>", -- binding to scroll up inside the popup
+  },
+  triggers = {
+    { "<leader>", mode = { "n", "v" } },
+    { "<auto>", mode = "nixsotc" },
   },
   sort = { "alphanum", "group", "local", "order", "mod" },
   ---@type number|fun(node: wk.Node):boolean?
