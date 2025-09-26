@@ -191,7 +191,7 @@ map(ui_components_modes, "<A-h>", function()
     end
   end
   fileHistoryOpened = not fileHistoryOpened
-end, { desc = "UI diffview file history" })
+end, { desc = "UI diffview file history", silent = true })
 
 local diffViewOpened = false
 map(ui_components_modes, "<A-k>", function()
@@ -219,7 +219,7 @@ map(ui_components_modes, "<A-k>", function()
     end)
   end
   diffViewOpened = not diffViewOpened
-end, { desc = "UI diffview open merge tool" })
+end, { desc = "UI diffview open merge tool", silent = true })
 
 local function open_file_from_diffview()
   diffViewOpened = false
@@ -269,17 +269,31 @@ require("diffview").setup {
         "n",
         "<A-k>",
         function()
+          if diffViewOpened then
+            diffViewOpened = false
+          elseif fileHistoryOpened then
+            fileHistoryOpened = false
+          else
+            vim.print "WARNING: Bad state of diffview toggling ui-components"
+          end
           vim.cmd "tabc"
         end,
-        { desc = "Close diffview " },
+        { desc = "Close diffview " , silent = true},
       },
       {
         "n",
         "<A-h>",
         function()
+          if diffViewOpened then
+            diffViewOpened = false
+          elseif fileHistoryOpened then
+            fileHistoryOpened = false
+          else
+            vim.print "WARNING: Bad state of diffview toggling ui-components"
+          end
           vim.cmd "tabc"
         end,
-        { desc = "Close diffview " },
+        { desc = "Close diffview ", silent = true },
       },
       { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
       { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
