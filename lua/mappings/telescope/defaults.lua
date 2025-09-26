@@ -10,6 +10,10 @@ local function focus_preview(prompt_bufnr)
       vim.cmd(string.format("noautocmd lua vim.api.nvim_set_current_win(%s)", prompt_win))
     end, { buffer = bufnr })
 
+    vim.keymap.set("n", "<Esc>", function()
+      vim.cmd(string.format("noautocmd lua vim.api.nvim_set_current_win(%s)", prompt_win))
+    end, { buffer = bufnr })
+
     vim.keymap.set({"n", "i", "v", "x"}, "<A-w>", function() end, { buffer = bufnr })
     vim.keymap.set({"n", "i", "v", "x"}, "<A-a>", function() end, { buffer = bufnr })
     vim.keymap.set({"n", "i", "v", "x"}, "<A-s>", function() end, { buffer = bufnr })
