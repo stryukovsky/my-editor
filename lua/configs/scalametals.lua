@@ -33,6 +33,12 @@ local function create_config()
     excludedPackages = { "akka.actor.typed.javadsl", "com.github.swagger.akka.javadsl" },
   }
   if server_props and success then
+    local coursier_creds = vim.fn.getenv "COURSIER_CREDENTIALS"
+    if coursier_creds then
+      table.insert(server_props, "-Dcoursier.credentials")
+      table.insert(server_props, coursier_creds)
+    end
+    vim.print(server_props)
     metals_config.settings.serverProperties = server_props
   end
   metals_config.init_options.statusBarProvider = "off"
