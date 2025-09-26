@@ -1,5 +1,16 @@
 ---@diagnostic disable: missing-fields
 require("noice").setup {
+  cmdline = {
+    format = {
+      -- input = false, -- lua = false, -- to disable a format, set to `false`
+      input = { opts = {
+        position = {
+          row = "20%",
+          col = "50%",
+        },
+      } },
+    },
+  },
   lsp = {
     override = {
       -- override the default lsp markdown formatter with Noice
