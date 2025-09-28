@@ -17,7 +17,7 @@ function ContainsNonAscii(str)
   return false
 end
 
-return {
+require("which-key").setup {
   ---@type false | "classic" | "modern" | "helix"
   preset = "modern",
   ---@param mapping wk.Mapping
@@ -36,5 +36,5 @@ return {
   },
   sort = { "alphanum", "group", "local", "order", "mod" },
   ---@type number|fun(node: wk.Node):boolean?
-  expand = 10, -- expand groups when <= n mappings
+  expand = 3, -- expand groups when <= n mappings
 }

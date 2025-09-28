@@ -34,6 +34,8 @@ require "configs.blink"
 require "configs.minuet-ai"
 require "configs.codecompanion"
 require "configs.grapple"
+require "configs.whichkey"
+require "configs.whichkeyreload"
 
 require "configs.debuggers"
 -- at the end, so all highlight rules can be applied
