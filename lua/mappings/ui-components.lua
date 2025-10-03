@@ -9,8 +9,9 @@ local gitsigns_async = require "gitsigns.async"
 local gitsigns_blame = require "gitsigns.actions.blame"
 local diffview_actions = require "diffview.actions"
 local neotree_command = require "neo-tree.command"
+local spectre = require("spectre")
 
-local ui_components_modes = { "n", "t", "v", "i" }
+local ui_components_modes = { "n", }
 
 local telescope_components = {
   {
@@ -265,6 +266,8 @@ require("diffview").setup {
   keymaps = {
     view = {
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       {
         "n",
         "<A-k>",
@@ -301,17 +304,25 @@ require("diffview").setup {
     diff1 = {
 
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
     },
     diff2 = {
 
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
     },
     diff3 = {
 
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
     },
     file_history_panel = {
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
       { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
       {
@@ -329,6 +340,8 @@ require("diffview").setup {
     },
     file_panel = {
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
       { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
       {
@@ -434,6 +447,22 @@ map(ui_components_modes, "<A-r>", function()
   end
   dapui_state_is_opened = not dapui_state_is_opened
 end, { desc = "UI debug close view" })
+
+-- spectre
+local spectre_opened = false
+map(ui_components_modes, "<A-q>", function()
+  if spectre_opened then
+    spectre.close()
+  else
+    right_component_callback_close()
+    right_component_callback_close = function()
+      spectre_opened = false
+      spectre.close()
+    end
+    spectre.open()
+  end
+  spectre_opened = not spectre_opened
+end, { desc = "UI Spectre toggle" })
 
 -- neotest
 local neotest_summary_opened = false

@@ -4,6 +4,8 @@ local filesystem = require "neo-tree.sources.filesystem"
 local renderer = require "neo-tree.ui.renderer"
 local telescope = require "telescope.builtin"
 local cmds = require "neo-tree.sources.filesystem.commands"
+local spectre = require "spectre"
+
 local function open_single_child_dir_recursively(state)
   local node = state.tree:get_node()
   if node.type == "directory" then
@@ -99,6 +101,11 @@ local config = {
       else
         vim.print("Unknown platform " .. sysname)
       end
+    end,
+    ["replace_in_directory"] = function(state)
+      local node = state.tree:get_node()
+      local path = node:get_id()
+      spectre.open { search_paths = { path }, search = "", replace = "", is_close = true, cwd = vim.fn.getcwd()}
     end,
     ["open_parent_folder"] = function(state)
       local node = state.tree:get_node()
@@ -208,6 +215,8 @@ local config = {
       },
       ["h"] = "go_shallow",
       ["l"] = "go_deep",
+      ["RR"] = "replace_in_directory",
+      ["Rr"] = "refresh",
       ["<cr>"] = { "open", config = { expand_nested_files = true } }, -- expand nested file takes precedence
       ["<esc>"] = "cancel", -- close preview or floating neo-tree window
       ["P"] = {
@@ -233,7 +242,6 @@ local config = {
       ["C"] = "close_all_subnodes",
       ["w"] = "close_all_nodes",
       ["W"] = "expand_all_subnodes",
-      ["R"] = "refresh",
       -- ["q"] = "close_window",
       ["?"] = "show_help",
       ["<"] = "prev_source",

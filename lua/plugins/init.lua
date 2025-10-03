@@ -31,18 +31,6 @@ return {
   {
     "nvim-tree/nvim-web-devicons",
   },
-  -- {
-  --   "hrsh7th/nvim-cmp",
-  --   event = "InsertEnter",
-  --   dependencies = {
-  --     "hrsh7th/cmp-nvim-lsp",
-  --     "hrsh7th/cmp-buffer",
-  --     "hrsh7th/cmp-path",
-  --     "hrsh7th/cmp-nvim-lsp-signature-help",
-  --     "L3MON4D3/LuaSnip",
-  --     "saadparwaiz1/cmp_luasnip",
-  --   },
-  -- },
   {
     "saghen/blink.cmp",
     -- optional: provides snippets for the snippet source
@@ -71,6 +59,7 @@ return {
     -- event = 'BufWritePre', -- uncomment for format on save
     opts = require "configs.conform",
   },
+  { "nvim-pack/nvim-spectre" },
   {
     "mason-org/mason.nvim",
     opts = {},

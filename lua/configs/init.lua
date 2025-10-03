@@ -36,6 +36,7 @@ require "configs.codecompanion"
 require "configs.grapple"
 require "configs.whichkey"
 require "configs.whichkeyreload"
+require "configs.spectre"
 
 require "configs.debuggers"
 -- at the end, so all highlight rules can be applied
