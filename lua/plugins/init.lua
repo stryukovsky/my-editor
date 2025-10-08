@@ -125,9 +125,8 @@ return {
   { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
   {
     "nvim-treesitter/nvim-treesitter",
-    opts = {
-      ensure_installed = require "configs.treesitter",
-    },
+    branch = "main",
+    build = ":TSUpdate",
   },
   {
     "stevearc/oil.nvim",
