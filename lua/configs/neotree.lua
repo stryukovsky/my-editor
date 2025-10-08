@@ -84,7 +84,7 @@ local config = {
     -- of the top visible node when scrolled down.
     sources = {
       { source = "filesystem" },
-      { source = "buffers" },
+      { source = "git_status" },
       { source = "document_symbols" },
     },
   },
@@ -105,7 +105,7 @@ local config = {
     ["replace_in_directory"] = function(state)
       local node = state.tree:get_node()
       local path = node:get_id()
-      spectre.open { search_paths = { path }, search = "", replace = "", is_close = true, cwd = vim.fn.getcwd()}
+      spectre.open { search_paths = { path }, search = "", replace = "", is_close = true, cwd = vim.fn.getcwd() }
     end,
     ["open_parent_folder"] = function(state)
       local node = state.tree:get_node()
@@ -300,6 +300,15 @@ local config = {
         ["f"] = "filter",
         ["<A-f>"] = "filter",
         ["F"] = "filter",
+      },
+    },
+  },
+  git_status = {
+    window = {
+      mappings = {
+        ["s"] = "git_add_file",
+        ["u"] = "git_unstage_file",
+        ["r"] = "git_revert_file",
       },
     },
   },

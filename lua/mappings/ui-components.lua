@@ -195,7 +195,7 @@ map(ui_components_modes, "<A-h>", function()
 end, { desc = "UI diffview file history", silent = true })
 
 local diffViewOpened = false
-map(ui_components_modes, "<A-k>", function()
+map(ui_components_modes, "<A-K>", function()
   if diffViewOpened then
     local result = pcall(function()
       vim.cmd "tabc"
@@ -270,7 +270,7 @@ require("diffview").setup {
       { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       {
         "n",
-        "<A-k>",
+        "<A-K>",
         function()
           if diffViewOpened then
             diffViewOpened = false
@@ -306,18 +306,21 @@ require("diffview").setup {
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
     },
     diff2 = {
 
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
     },
     diff3 = {
 
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
     },
     file_history_panel = {
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
@@ -418,12 +421,12 @@ map(ui_components_modes, "<A-e>", function()
   })
 end, { desc = "UI neotree files", silent = true })
 
-map(ui_components_modes, "<A-b>", function()
-  workaround_neotree_focus("buffers", {})
-end, { desc = "UI neotree buffers" })
-
 map(ui_components_modes, "<A-l>", function()
   workaround_neotree_focus("document_symbols", {})
+end, { desc = "UI neotree structure" })
+
+map(ui_components_modes, "<A-k>", function()
+  workaround_neotree_focus("git_status", {})
 end, { desc = "UI neotree structure" })
 
 local bottom_component_callback_close = function() end
@@ -543,7 +546,7 @@ map(ui_components_modes, "<A-i>", function()
 end, { desc = "UI trouble inspect" })
 
 local git_blame_bufnr = 0
-map("n", "<A-B>", function()
+map("n", "<A-b>", function()
   if git_blame_bufnr == 0 then
     if vim.api.nvim_get_option_value("buftype", { buf = vim.fn.bufnr() }) == "" then
       gitsigns_async.create(0, function()
