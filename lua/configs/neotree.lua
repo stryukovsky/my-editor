@@ -209,10 +209,7 @@ local config = {
     },
     group_empty_dirs = true, -- when true, empty folders will be grouped together
     mappings = {
-      ["<space>"] = {
-        "noop",
-        nowait = false, -- disable `nowait` if you have existing combos starting with this char that you want to use
-      },
+      ["<space>"] = "noop",
       ["h"] = "go_shallow",
       ["l"] = "go_deep",
       ["RR"] = "replace_in_directory",
