@@ -347,6 +347,7 @@ require("diffview").setup {
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
       { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
       {
