@@ -63,13 +63,13 @@ local config = {
   sources = {
     "filesystem",
     "git_status",
-    "buffers",
     "document_symbols",
   },
   default_source = "filesystem", -- you can choose a specific source `last` here which indicates the last used source
   enable_diagnostics = false,
   enable_cursor_hijack = true, -- If enabled neotree will keep the cursor on the first letter of the filename when moving in the tree.
   hide_root_node = false, -- Hide the root node.
+
   retain_hidden_root_indent = false, -- IF the root node is hidden, keep the indentation anyhow.
   use_libuv_file_watcher = true,
   -- This is needed if you use expanders because they render in the indent.
@@ -210,7 +210,7 @@ local config = {
     group_empty_dirs = true, -- when true, empty folders will be grouped together
     mappings = {
       ["<space>"] = {
-        "toggle_node",
+        "noop",
         nowait = false, -- disable `nowait` if you have existing combos starting with this char that you want to use
       },
       ["h"] = "go_shallow",
