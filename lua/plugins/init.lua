@@ -256,14 +256,6 @@ return {
     ft = { "markdown" },
   },
   {
-    "rachartier/tiny-code-action.nvim",
-    dependencies = {
-      { "nvim-lua/plenary.nvim" },
-      { "nvim-telescope/telescope.nvim" },
-    },
-    event = "LspAttach",
-  },
-  {
     "mistweaverco/kulala.nvim",
     keys = {},
     ft = { "http", "rest" },

@@ -32,7 +32,7 @@ require("material").setup {
     -- "hop",
     "illuminate",
     -- "indent-blankline",
-    "lspsaga",
+    -- "lspsaga",
     -- "mini",
     "neo-tree",
     "neogit",

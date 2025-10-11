@@ -7,7 +7,6 @@ require("log-highlight").setup {}
 require "configs.barbar"
 require "configs.treesitter"
 require "configs.kulala"
-require "configs.tiny-code-action"
 require "configs.oil"
 require "configs.gomove"
 require "configs.dapui"
