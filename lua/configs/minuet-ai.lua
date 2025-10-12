@@ -27,7 +27,7 @@ if is_ollama_installed() then
         end,
         name = "Ollama",
         end_point = "http://localhost:11434/v1/completions",
-        model = "qwen2.5-coder:7b",
+        model = "deepseek-coder-v2:lite",
         optional = {
           max_tokens = 56,
           top_p = 0.9,

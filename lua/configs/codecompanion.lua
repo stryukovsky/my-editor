@@ -16,7 +16,7 @@ require("codecompanion").setup {
       },
     },
     inline = {
-      adapter = "myadaptermini",
+      adapter = "myadapter",
       keymaps = {
         accept_change = {
           modes = { n = "<leader>as" },
@@ -61,29 +61,6 @@ require("codecompanion").setup {
         })
       end,
     },
-    myadaptermini = function()
-      return require("codecompanion.adapters").extend("ollama", {
-        name = "myadaptermini", -- Give this adapter a different name to differentiate it from the default ollama adapter
-        opts = {
-          vision = true,
-          stream = false,
-        },
-        schema = {
-          model = {
-            default = "deepseek-coder-v2:lite",
-          },
-          num_ctx = {
-            default = 16384,
-          },
-          think = {
-            default = false,
-          },
-          keep_alive = {
-            default = "30m",
-          },
-        },
-      })
-    end,
   },
   opts = {
     log_level = "DEBUG", -- or "TRACE"
