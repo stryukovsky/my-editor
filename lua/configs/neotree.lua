@@ -312,6 +312,7 @@ local config = {
         ["s"] = "git_add_file",
         ["u"] = "git_unstage_file",
         ["r"] = "git_revert_file",
+        ["gg"] = "noop",
       },
     },
   },
