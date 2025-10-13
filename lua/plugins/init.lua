@@ -27,6 +27,10 @@ return {
   {
     "onsails/lspkind.nvim",
   },
+  {
+    "Wansmer/treesj",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+  },
   { "echasnovski/mini.diff" },
   {
     "nvim-tree/nvim-web-devicons",
@@ -282,4 +286,5 @@ return {
     "fei6409/log-highlight.nvim",
     opts = {},
   },
+  { "mawkler/modicator.nvim" },
 }

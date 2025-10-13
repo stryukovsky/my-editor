@@ -27,6 +27,7 @@
   "material.nvim": { "branch": "main", "commit": "249289d9e75fa9ca054e6c6b98f56820e9719300" },
   "mini.diff": { "branch": "main", "commit": "a2df2a9a485328c20252b7cadb11feb717020e45" },
   "minuet-ai.nvim": { "branch": "main", "commit": "e994d0ee275232ee375898e532a2e66213120912" },
+  "modicator.nvim": { "branch": "main", "commit": "45b64561e109cd04de551b081fb947b4f856009e" },
   "multicursor.nvim": { "branch": "1.0", "commit": "0c6ceae228bf209e8b8717df9de500770c4e7022" },
   "neo-tree.nvim": { "branch": "v3.x", "commit": "4c60a198e3f92098778a32a1c76d2bd7ba46a3b5" },
   "neogit": { "branch": "master", "commit": "90dcfa7b2bd5f3f35d1a7afe24dde9e2bc482cd4" },
@@ -64,6 +65,7 @@
   "telescope.nvim": { "branch": "master", "commit": "b4da76be54691e854d3e0e02c36b0245f945c2c7" },
   "text-case.nvim": { "branch": "main", "commit": "e898cfd46fa6cde0e83abb624a16e67d2ffc6457" },
   "todo-comments.nvim": { "branch": "main", "commit": "19d461ddd543e938eb22505fb03fa878800270b6" },
+  "treesj": { "branch": "main", "commit": "4770492244ccecdc9b01e0e81fa8f2f6b4a23841" },
   "trouble.nvim": { "branch": "main", "commit": "c098362fe603d3922095e7db595961e020bdf2d0" },
   "vim-illuminate": { "branch": "master", "commit": "0d1e93684da00ab7c057410fecfc24f434698898" },
   "which-key.nvim": { "branch": "main", "commit": "b4177e3eaf15fe5eb8357ebac2286d488be1ed00" }

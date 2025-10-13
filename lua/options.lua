@@ -22,6 +22,7 @@ o.ignorecase = true
 o.smartcase = true
 o.mouse = "a"
 
+o.statuscolumn = "%s%4l"
 -- Numbers
 o.number = true
 o.numberwidth = 2
@@ -39,7 +40,7 @@ o.swapfile = false
 -- interval for writing swap file to disk, also used by gitsigns
 o.updatetime = 250
 
-opt.foldlevel = 20
+opt.foldlevel = 99
 -- go to previous/next line with h,l,left arrow and right arrow
 -- when cursor reaches end/beginning of line
 opt.whichwrap:append "<>[]hl"
