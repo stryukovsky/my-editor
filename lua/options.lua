@@ -22,11 +22,11 @@ o.ignorecase = true
 o.smartcase = true
 o.mouse = "a"
 
-o.statuscolumn = "%s%4l"
+o.statuscolumn = "%s%4l│"
 -- Numbers
 o.number = true
 o.numberwidth = 2
-o.ruler = false
+o.ruler = true
 
 -- disable nvim intro
 opt.shortmess:append "sI"

@@ -58,6 +58,23 @@ local function override_highlights()
   hl(0, "SpellRare", {})
   hl(0, "SpellCap", {})
   hl(0, "SpellLocal", {})
+
+  local palette = {
+    insert = vim.api.nvim_get_hl(0, { name = "lualine_a_insert" }),
+    -- foreground = "White",
+    normal = vim.api.nvim_get_hl(0, { name = "lualine_a_normal" }),
+    replace = vim.api.nvim_get_hl(0, { name = "lualine_a_replace" }),
+    visual = vim.api.nvim_get_hl(0, { name = "lualine_a_visual" }),
+  }
+  require("line-number-change-mode").setup {
+    mode = {
+      i = palette.insert,
+      n = palette.normal,
+      R = palette.replace,
+      v = palette.visual,
+      V = palette.visual,
+    },
+  }
 end
 
 vim.api.nvim_create_autocmd({ "ColorScheme", "UIEnter" }, {

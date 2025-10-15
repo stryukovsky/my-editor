@@ -286,5 +286,5 @@ return {
     "fei6409/log-highlight.nvim",
     opts = {},
   },
-  { "mawkler/modicator.nvim" },
+  { "sethen/line-number-change-mode.nvim" },
 }
