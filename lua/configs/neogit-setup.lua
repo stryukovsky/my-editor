@@ -18,7 +18,7 @@ neogit.setup {
   -- The time after which an output console is shown for slow running commands
   console_timeout = 10000,
   -- Automatically show console if a command takes more than console_timeout milliseconds
-  auto_show_console = true,
+  auto_show_console = false,
   -- Automatically close the console if the process exits with a 0 (success) status
   auto_close_console = true,
   commit_editor = {
