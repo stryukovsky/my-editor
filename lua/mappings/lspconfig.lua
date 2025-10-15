@@ -32,21 +32,14 @@ map("n", "<leader>rn", function()
   vim.lsp.buf.rename()
 end, opts "renamer")
 
-map("n", "<leader>pp", function()
-  local path = vim.fn.input "Provide path to python executable of project: "
+map("n", "<leader>ps", function()
+  -- local path = vim.fn.input "Provide path to python executable of project: "
+  local path = "python"
   vim.fn.system(path .. " -m pip install pydebug debugpy")
   vim.cmd("LspPyrightSetPythonPath " .. path)
   require("dap-python").setup(path)
-  vim.print "Python venv setup completed"
-end, opts "Set python path")
-
-map("n", "<leader>pv", function()
-  local path = ".venv/bin/python"
-  vim.fn.system(path .. " -m pip install pydebug debugpy")
-  vim.cmd("LspPyrightSetPythonPath " .. path)
-  require("dap-python").setup(path)
-  vim.print "Python venv setup completed"
-end, opts "Set python to ./venv/bin/python")
+  vim.print "Python env setup completed"
+end, opts "Python: setup")
 
 map("n", "K", function()
   vim.lsp.buf.signature_help()

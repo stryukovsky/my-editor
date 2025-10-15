@@ -221,6 +221,11 @@ return {
   },
   {
     "mfussenegger/nvim-dap-python",
+    ft = "python",
+    dependencies = "mfussenegger/nvim-dap",
+    config = function(_, _)
+      require("dap-python").setup "python"
+    end,
   },
   -- SMALL functionalities
   {
