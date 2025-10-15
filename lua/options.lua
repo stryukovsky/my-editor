@@ -22,7 +22,7 @@ o.ignorecase = true
 o.smartcase = true
 o.mouse = "a"
 
-o.statuscolumn = "%s%4l│"
+o.statuscolumn = "%s%2l"
 -- Numbers
 o.number = true
 o.numberwidth = 2
