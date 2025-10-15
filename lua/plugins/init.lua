@@ -31,7 +31,6 @@ return {
     "Wansmer/treesj",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
   },
-  { "echasnovski/mini.diff" },
   {
     "nvim-tree/nvim-web-devicons",
   },
