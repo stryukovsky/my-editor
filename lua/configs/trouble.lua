@@ -1,5 +1,15 @@
 local trouble = require "trouble"
 
+local function toggle_severity(view)
+  local f = view:get_filter "severity"
+  local severity = ((f and f.filter.severity or 0) + 1) % 5
+  view:filter({ severity = severity }, {
+    id = "severity",
+    template = "{hl:Title}Filter:{hl} {severity}",
+    del = severity == 0,
+  })
+end
+
 ---@diagnostic disable-next-line: missing-fields
 trouble.setup {
   warn_no_results = false, -- show a warning when there are no results
@@ -52,15 +62,11 @@ trouble.setup {
       desc = "Toggle Current Buffer Filter",
     },
     s = { -- example of a custom action that toggles the severity
-      action = function(view)
-        local f = view:get_filter "severity"
-        local severity = ((f and f.filter.severity or 0) + 1) % 5
-        view:filter({ severity = severity }, {
-          id = "severity",
-          template = "{hl:Title}Filter:{hl} {severity}",
-          del = severity == 0,
-        })
-      end,
+      action = toggle_severity,
+      desc = "Toggle Severity Filter",
+    },
+    f = { -- example of a custom action that toggles the severity
+      action = toggle_severity,
       desc = "Toggle Severity Filter",
     },
   },

@@ -4,6 +4,8 @@ local filesystem = require "neo-tree.sources.filesystem"
 local renderer = require "neo-tree.ui.renderer"
 local telescope = require "telescope.builtin"
 local cmds = require "neo-tree.sources.filesystem.commands"
+local spectre = require "spectre"
+
 local function open_single_child_dir_recursively(state)
   local node = state.tree:get_node()
   if node.type == "directory" then
@@ -61,13 +63,13 @@ local config = {
   sources = {
     "filesystem",
     "git_status",
-    "buffers",
     "document_symbols",
   },
   default_source = "filesystem", -- you can choose a specific source `last` here which indicates the last used source
   enable_diagnostics = false,
   enable_cursor_hijack = true, -- If enabled neotree will keep the cursor on the first letter of the filename when moving in the tree.
   hide_root_node = false, -- Hide the root node.
+
   retain_hidden_root_indent = false, -- IF the root node is hidden, keep the indentation anyhow.
   use_libuv_file_watcher = true,
   -- This is needed if you use expanders because they render in the indent.
@@ -82,7 +84,7 @@ local config = {
     -- of the top visible node when scrolled down.
     sources = {
       { source = "filesystem" },
-      { source = "buffers" },
+      { source = "git_status" },
       { source = "document_symbols" },
     },
   },
@@ -99,6 +101,11 @@ local config = {
       else
         vim.print("Unknown platform " .. sysname)
       end
+    end,
+    ["replace_in_directory"] = function(state)
+      local node = state.tree:get_node()
+      local path = node:get_id()
+      spectre.open { search_paths = { path }, search = "", replace = "", is_close = true, cwd = vim.fn.getcwd() }
     end,
     ["open_parent_folder"] = function(state)
       local node = state.tree:get_node()
@@ -202,12 +209,11 @@ local config = {
     },
     group_empty_dirs = true, -- when true, empty folders will be grouped together
     mappings = {
-      ["<space>"] = {
-        "toggle_node",
-        nowait = false, -- disable `nowait` if you have existing combos starting with this char that you want to use
-      },
+      ["<space>"] = "noop",
       ["h"] = "go_shallow",
       ["l"] = "go_deep",
+      ["RR"] = "replace_in_directory",
+      ["Rr"] = "refresh",
       ["<cr>"] = { "open", config = { expand_nested_files = true } }, -- expand nested file takes precedence
       ["<esc>"] = "cancel", -- close preview or floating neo-tree window
       ["P"] = {
@@ -229,11 +235,10 @@ local config = {
       -- ["s"] = "vsplit_with_window_picker",
       ["t"] = "noop",
       -- ["<cr>"] = "open_drop",
-      -- ["t"] = "open_tab_drop",
+      ["z"] = "noop",
       ["C"] = "close_all_subnodes",
       ["w"] = "close_all_nodes",
       ["W"] = "expand_all_subnodes",
-      ["R"] = "refresh",
       -- ["q"] = "close_window",
       ["?"] = "show_help",
       ["<"] = "prev_source",
@@ -245,9 +250,12 @@ local config = {
       mappings = {
         ["o"] = "system_open",
         ["O"] = "open_parent_folder",
-        ["F"] = "fuzzy_finder",
-        ["<A-f>"] = "fuzzy_finder",
-        ["f"] = "telescope_grep",
+        ["F"] = "telescope_grep",
+        ["<A-F>"] = "telescope_grep",
+        ["<A-f>"] = "filter_on_submit",
+        ["f"] = "filter_on_submit",
+        ["<C-x>"] = "clear_filter",
+        ["<C-c>"] = "clear_filter",
         ["s"] = "git_add_file",
         ["u"] = "git_unstage_file",
         ["a"] = {
@@ -289,9 +297,22 @@ local config = {
       mappings = {
         ["<l>"] = "toggle_node",
         ["<h>"] = "toggle_node",
-        ["f"] = "filter",
-        ["<A-f>"] = "filter",
-        ["F"] = "filter",
+        ["f"] = "filter_on_submit",
+        ["<A-f>"] = "filter_on_submit",
+        ["F"] = "filter_on_submit",
+        ["<A-F>"] = "filter_on_submit",
+        ["<C-x>"] = "clear_filter",
+        ["<C-c>"] = "clear_filter",
+      },
+    },
+  },
+  git_status = {
+    window = {
+      mappings = {
+        ["s"] = "git_add_file",
+        ["u"] = "git_unstage_file",
+        ["r"] = "git_revert_file",
+        ["gg"] = "noop",
       },
     },
   },

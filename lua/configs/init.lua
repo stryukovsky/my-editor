@@ -4,14 +4,14 @@ require("Comment").setup()
 require("todo-comments").setup()
 require("log-highlight").setup {}
 --
+--
 require "configs.barbar"
+require "configs.treesitter"
 require "configs.kulala"
-require "configs.tiny-code-action"
 require "configs.oil"
 require "configs.gomove"
 require "configs.dapui"
 require "configs.gitsigns"
-require "configs.diffview"
 require "configs.neotest"
 require "configs.trouble"
 require "configs.lualine"
@@ -33,6 +33,11 @@ require "configs.noice"
 require "configs.blink"
 require "configs.minuet-ai"
 require "configs.codecompanion"
+require "configs.grapple"
+require "configs.whichkey"
+require "configs.whichkeyreload"
+require "configs.spectre"
+require "configs.treesj"
 
 require "configs.debuggers"
 -- at the end, so all highlight rules can be applied

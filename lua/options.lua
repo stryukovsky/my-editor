@@ -1,7 +1,6 @@
 local opt = vim.opt
 local o = vim.o
 local g = vim.g
-
 -------------------------------------- options ------------------------------------------
 o.laststatus = 3
 o.showmode = false
@@ -34,10 +33,11 @@ o.ignorecase = true
 o.smartcase = true
 o.mouse = "a"
 
+o.statuscolumn = "%s%2l"
 -- Numbers
 o.number = true
 o.numberwidth = 2
-o.ruler = false
+o.ruler = true
 
 -- disable nvim intro
 opt.shortmess:append "sI"
@@ -51,6 +51,7 @@ o.swapfile = false
 -- interval for writing swap file to disk, also used by gitsigns
 o.updatetime = 250
 
+opt.foldlevel = 99
 -- go to previous/next line with h,l,left arrow and right arrow
 -- when cursor reaches end/beginning of line
 opt.whichwrap:append "<>[]hl"
@@ -77,6 +78,22 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
   callback = function()
     o.spell = true
     vim.o.spelloptions = "camel,noplainbuffer"
+  end,
+})
+
+vim.api.nvim_create_autocmd({ "FileType" }, {
+  callback = function()
+    -- check if treesitter has parser
+    -- if require("nvim-treesitter.parsers").has_parser() then
+    -- use treesitter folding
+    vim.opt.foldmethod = "expr"
+    vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+    vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+    vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+    -- else
+    --   -- use alternative foldmethod
+    --   vim.opt.foldmethod = "syntax"
+    -- end
   end,
 })
 

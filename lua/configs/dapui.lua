@@ -44,6 +44,9 @@ require("dapui").setup {
         {
           id = "breakpoints",
           size = 0.25,
+          mappings = {
+            open = { "<CR>", "o" },
+          },
         },
         -- {
         --   id = "watches",
@@ -71,8 +74,8 @@ require("dapui").setup {
   },
   mappings = {
     edit = "e",
-    expand = { "<CR>", "<2-LeftMouse>", "l", "h" },
-    open = {"<CR>", "o"},
+    expand = { "<2-LeftMouse>", "l", "h" },
+    open = { "<CR>", "o" },
     remove = "d",
     repl = "r",
     toggle = "<leader>t",

@@ -28,20 +28,12 @@ return {
     "onsails/lspkind.nvim",
   },
   {
+    "Wansmer/treesj",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+  },
+  {
     "nvim-tree/nvim-web-devicons",
   },
-  -- {
-  --   "hrsh7th/nvim-cmp",
-  --   event = "InsertEnter",
-  --   dependencies = {
-  --     "hrsh7th/cmp-nvim-lsp",
-  --     "hrsh7th/cmp-buffer",
-  --     "hrsh7th/cmp-path",
-  --     "hrsh7th/cmp-nvim-lsp-signature-help",
-  --     "L3MON4D3/LuaSnip",
-  --     "saadparwaiz1/cmp_luasnip",
-  --   },
-  -- },
   {
     "saghen/blink.cmp",
     -- optional: provides snippets for the snippet source
@@ -70,6 +62,7 @@ return {
     -- event = 'BufWritePre', -- uncomment for format on save
     opts = require "configs.conform",
   },
+  { "nvim-pack/nvim-spectre" },
   {
     "mason-org/mason.nvim",
     opts = {},
@@ -93,17 +86,6 @@ return {
   },
   {
     "folke/which-key.nvim",
-    event = "VeryLazy",
-    opts = require "configs.whichkey",
-    keys = {
-      {
-        "<leader>?",
-        function()
-          require("which-key").show { global = true }
-        end,
-        desc = "Buffer Local Keymaps (which-key)",
-      },
-    },
   },
   {
     "romgrk/barbar.nvim",
@@ -146,9 +128,8 @@ return {
   { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
   {
     "nvim-treesitter/nvim-treesitter",
-    opts = {
-      ensure_installed = require "configs.treesitter",
-    },
+    branch = "main",
+    build = ":TSUpdate",
   },
   {
     "stevearc/oil.nvim",
@@ -239,6 +220,11 @@ return {
   },
   {
     "mfussenegger/nvim-dap-python",
+    ft = "python",
+    dependencies = "mfussenegger/nvim-dap",
+    config = function(_, _)
+      require("dap-python").setup "python"
+    end,
   },
   -- SMALL functionalities
   {
@@ -274,14 +260,6 @@ return {
     ft = { "markdown" },
   },
   {
-    "rachartier/tiny-code-action.nvim",
-    dependencies = {
-      { "nvim-lua/plenary.nvim" },
-      { "nvim-telescope/telescope.nvim" },
-    },
-    event = "LspAttach",
-  },
-  {
     "mistweaverco/kulala.nvim",
     keys = {},
     ft = { "http", "rest" },
@@ -308,4 +286,5 @@ return {
     "fei6409/log-highlight.nvim",
     opts = {},
   },
+  { "sethen/line-number-change-mode.nvim" },
 }

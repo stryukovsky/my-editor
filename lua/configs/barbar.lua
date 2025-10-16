@@ -41,7 +41,7 @@ require("barbar").setup {
     -- Supports all the base icon options.
     modified = { button = "" },
     pinned = { button = "", filename = false },
-    current = { button = "" },
+    current = { button = "" },
     inactive = { button = "" },
   },
 }

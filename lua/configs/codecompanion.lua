@@ -2,13 +2,12 @@ require("codecompanion").setup {
   display = {
     diff = {
       enabled = false,
-    }
+    },
   },
   strategies = {
     -- Change the default chat adapter
     chat = {
-      adapter = "ollama",
-      model = "qwen2.5-coder:14b",
+      adapter = "myadapter",
       keymaps = {
         close = {
           modes = { n = "<C-c>", i = "<C-c>" },
@@ -17,8 +16,7 @@ require("codecompanion").setup {
       },
     },
     inline = {
-      adapter = "ollama",
-      model = "qwen2.5-coder:7b",
+      adapter = "myadapter",
       keymaps = {
         accept_change = {
           modes = { n = "<leader>as" },
@@ -34,8 +32,34 @@ require("codecompanion").setup {
       },
     },
     cmd = {
-      adapter = "ollama",
-      model = "qwen2.5-coder:7b",
+      adapter = "myadapter",
+    },
+  },
+  adapters = {
+    http = {
+      myadapter = function()
+        return require("codecompanion.adapters").extend("ollama", {
+          name = "myadapter", -- Give this adapter a different name to differentiate it from the default ollama adapter
+          opts = {
+            vision = true,
+            stream = true,
+          },
+          schema = {
+            model = {
+              default = "qwen2.5-coder:14b",
+            },
+            num_ctx = {
+              default = 16384,
+            },
+            think = {
+              default = false,
+            },
+            keep_alive = {
+              default = "30m",
+            },
+          },
+        })
+      end,
     },
   },
   opts = {

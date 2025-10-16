@@ -9,15 +9,16 @@ local gitsigns_async = require "gitsigns.async"
 local gitsigns_blame = require "gitsigns.actions.blame"
 local diffview_actions = require "diffview.actions"
 local neotree_command = require "neo-tree.command"
+local spectre = require("spectre")
 
-local ui_components_modes = { "n", "t", "v", "i" }
+local ui_components_modes = { "n", }
 
 local telescope_components = {
   {
     modes = ui_components_modes,
     shortcut = "<A-m>",
     command = function()
-      vim.cmd "Telescope marks"
+      vim.cmd "Telescope grapple tags"
     end,
     desc = "UI telescope marks",
   },
@@ -191,10 +192,10 @@ map(ui_components_modes, "<A-h>", function()
     end
   end
   fileHistoryOpened = not fileHistoryOpened
-end, { desc = "UI diffview file history" })
+end, { desc = "UI diffview file history", silent = true })
 
 local diffViewOpened = false
-map(ui_components_modes, "<A-k>", function()
+map(ui_components_modes, "<A-K>", function()
   if diffViewOpened then
     local result = pcall(function()
       vim.cmd "tabc"
@@ -219,23 +220,26 @@ map(ui_components_modes, "<A-k>", function()
     end)
   end
   diffViewOpened = not diffViewOpened
-end, { desc = "UI diffview open merge tool" })
+end, { desc = "UI diffview open merge tool", silent = true })
 
 local function open_file_from_diffview()
   diffViewOpened = false
   fileHistoryOpened = false
-  diffview_actions.goto_file_tab()
-  local opened_file = vim.fn.expand "%"
-  -- file is opened in new tab
-  -- so we need to close tab with opened file and also tab with diffview
-  vim.cmd "2tabc"
-  vim.cmd("edit " .. opened_file)
+  dialog_component_callback_close = function() end
+  diffview_actions.goto_file_edit()
+  -- legacy way to do the same stuff
+  -- local opened_file = vim.fn.expand "%"
+  -- -- file is opened in new tab
+  -- -- so we need to close tab with opened file and also tab with diffview
+  -- vim.cmd "2tabc"
+  -- vim.cmd("edit " .. opened_file)
 end
 
 require("diffview").setup {
   view = {
     merge_tool = {
-      layout = "diff3_mixed",
+      -- layout = "diff3_mixed",
+      layout = "diff1_plain",
       disable_diagnostics = true,
       winbar_info = true,
     },
@@ -262,35 +266,68 @@ require("diffview").setup {
   keymaps = {
     view = {
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       {
         "n",
-        "<A-k>",
+        "<A-K>",
         function()
+          if diffViewOpened then
+            diffViewOpened = false
+          elseif fileHistoryOpened then
+            fileHistoryOpened = false
+          else
+            vim.print "WARNING: Bad state of diffview toggling ui-components"
+          end
           vim.cmd "tabc"
         end,
-        { desc = "Close diffview " },
+        { desc = "Close diffview " , silent = true},
       },
       {
         "n",
         "<A-h>",
         function()
+          if diffViewOpened then
+            diffViewOpened = false
+          elseif fileHistoryOpened then
+            fileHistoryOpened = false
+          else
+            vim.print "WARNING: Bad state of diffview toggling ui-components"
+          end
           vim.cmd "tabc"
         end,
-        { desc = "Close diffview " },
+        { desc = "Close diffview ", silent = true },
       },
       { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
       { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
     },
+    diff1 = {
+
+      { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+    },
     diff2 = {
 
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
     },
     diff3 = {
 
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
     },
     file_history_panel = {
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
       { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
       {
@@ -308,6 +345,9 @@ require("diffview").setup {
     },
     file_panel = {
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
+      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
       { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
       {
@@ -384,12 +424,12 @@ map(ui_components_modes, "<A-e>", function()
   })
 end, { desc = "UI neotree files", silent = true })
 
-map(ui_components_modes, "<A-b>", function()
-  workaround_neotree_focus("buffers", {})
-end, { desc = "UI neotree buffers" })
-
 map(ui_components_modes, "<A-l>", function()
   workaround_neotree_focus("document_symbols", {})
+end, { desc = "UI neotree structure" })
+
+map(ui_components_modes, "<A-k>", function()
+  workaround_neotree_focus("git_status", {})
 end, { desc = "UI neotree structure" })
 
 local bottom_component_callback_close = function() end
@@ -413,6 +453,22 @@ map(ui_components_modes, "<A-r>", function()
   end
   dapui_state_is_opened = not dapui_state_is_opened
 end, { desc = "UI debug close view" })
+
+-- spectre
+local spectre_opened = false
+map(ui_components_modes, "<A-q>", function()
+  if spectre_opened then
+    spectre.close()
+  else
+    right_component_callback_close()
+    right_component_callback_close = function()
+      spectre_opened = false
+      spectre.close()
+    end
+    spectre.open()
+  end
+  spectre_opened = not spectre_opened
+end, { desc = "UI Spectre toggle" })
 
 -- neotest
 local neotest_summary_opened = false
@@ -493,7 +549,7 @@ map(ui_components_modes, "<A-i>", function()
 end, { desc = "UI trouble inspect" })
 
 local git_blame_bufnr = 0
-map("n", "<A-B>", function()
+map("n", "<A-b>", function()
   if git_blame_bufnr == 0 then
     if vim.api.nvim_get_option_value("buftype", { buf = vim.fn.bufnr() }) == "" then
       gitsigns_async.create(0, function()
@@ -507,4 +563,4 @@ map("n", "<A-B>", function()
   end
 end, { desc = "UI git blame buffer" })
 
-map("n", "<leader>di", "<cmd>NoiceDismiss<cr>", {desc = "UI dismiss notifications"})
+map("n", "<leader>di", "<cmd>NoiceDismiss<cr>", { desc = "UI dismiss notifications" })

@@ -1,3 +1,23 @@
+local source_icons = {
+  minuet = "󱗻",
+  orgmode = "",
+  otter = "󰼁",
+  nvim_lsp = "",
+  lsp = "",
+  buffer = "",
+  luasnip = "",
+  snippets = "",
+  path = "",
+  git = "",
+  tags = "",
+  cmdline = "󰘳",
+  latex_symbols = "",
+  cmp_nvim_r = "󰟔",
+  codeium = "󰩂",
+  -- FALLBACK
+  fallback = "󰜚",
+}
+
 ---@module 'blink.cmp'
 ---@type blink.cmp.Config
 require("blink-cmp").setup {
@@ -13,6 +33,7 @@ require("blink-cmp").setup {
   -- C-k: Toggle signature help (if signature.enabled = true)
   --
   -- See :h blink-cmp-config-keymap for defining your own keymap
+
   keymap = {
     preset = "none",
     ["<cr>"] = { "accept", "fallback" },
@@ -22,18 +43,30 @@ require("blink-cmp").setup {
     ["<A-Up>"] = { "scroll_documentation_up", "fallback" },
     ["<C-j>"] = { "select_next", "fallback" },
     ["<C-k>"] = { "select_prev", "fallback" },
+    ["<C-g>"] = require("minuet").make_blink_map(),
   },
 
   appearance = {
-    -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
-    -- Adjusts spacing to ensure icons are aligned
+    use_nvim_cmp_as_default = true,
     nerd_font_variant = "mono",
+    kind_icons = source_icons,
   },
 
   -- Default list of enabled providers defined so that you can extend it
   -- elsewhere in your config, without redefining it, due to `opts_extend`
   sources = {
-    default = { "lsp", "path", "snippets", "buffer" },
+    default = { "lsp", "path", "snippets", "buffer", },
+    providers = {
+      minuet = {
+        name = "minuet",
+        module = "minuet.blink",
+        async = true,
+        -- Should match minuet.config.request_timeout * 1000,
+        -- since minuet.config.request_timeout is in seconds
+        timeout_ms = 3000,
+        score_offset = 50, -- Gives minuet higher priority among suggestions
+      },
+    },
   },
 
   -- (Default) Rust fuzzy matcher for typo resistance and significantly better performance
@@ -45,11 +78,26 @@ require("blink-cmp").setup {
 
   completion = {
     documentation = { auto_show = true, window = { border = "single" } },
+    trigger = { prefetch_on_insert = false },
     menu = {
       border = "single",
       draw = {
+        columns = {
+          { "label", "label_description", gap = 1 },
+          { "kind_icon", "kind", gap = 1 },
+          { "source_icon" },
+        },
         components = {
+          source_icon = {
+            -- don't truncate source_icon
+            ellipsis = false,
+            text = function(ctx)
+              return source_icons[ctx.source_name:lower()] or source_icons.fallback
+            end,
+            highlight = "BlinkCmpSource",
+          },
           kind_icon = {
+            ellipsis = false,
             text = function(ctx)
               local icon = ctx.kind_icon
               if vim.tbl_contains({ "Path" }, ctx.source_name) then

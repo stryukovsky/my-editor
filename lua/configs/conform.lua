@@ -6,7 +6,7 @@ local options = {
     json = { "prettier" },
     typescript = { "prettier" },
     javascript = { "prettier" },
-    go = { "goimports" },
+    go = { "gofmt" },
     rust = { "rustfmt" },
     solidity = { "solhint" },
   },

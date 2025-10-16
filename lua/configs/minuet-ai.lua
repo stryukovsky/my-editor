@@ -27,7 +27,7 @@ if is_ollama_installed() then
         end,
         name = "Ollama",
         end_point = "http://localhost:11434/v1/completions",
-        model = "qwen2.5-coder:7b",
+        model = "deepseek-coder-v2:lite",
         optional = {
           max_tokens = 56,
           top_p = 0.9,
@@ -36,20 +36,20 @@ if is_ollama_installed() then
     },
     notify = "warn", -- debug or verbose if needed
     n_completions = 3,
-    virtualtext = {
-      auto_trigger_ft = { "lua", "go", "js", "ts", "javascript", "typescript", "java", "scala", "solidity", "sol", "py", "python", "rs", "rust" },
-      keymap = {
-        -- accept whole completion
-        accept = "<C-A-s>",
-        -- accept one line
-        accept_line = "<C-s>",
-        -- accept n lines (prompts for number)
-        -- e.g. "A-z 2 CR" will accept 2 lines
-        -- accept_n_lines = "<A-z>",
-        -- Cycle to next completion item, or manually invoke completion
-        next = "<C-space>",
-        -- dismiss = "<C-space>",
-      },
-    },
+    -- virtualtext = {
+    --   auto_trigger_ft = { "lua", "go", "js", "ts", "javascript", "typescript", "java", "scala", "solidity", "sol", "py", "python", "rs", "rust" },
+    --   keymap = {
+    --     -- accept whole completion
+    --     accept = "<C-A-s>",
+    --     -- accept one line
+    --     accept_line = "<C-s>",
+    --     -- accept n lines (prompts for number)
+    --     -- e.g. "A-z 2 CR" will accept 2 lines
+    --     -- accept_n_lines = "<A-z>",
+    --     -- Cycle to next completion item, or manually invoke completion
+    --     next = "<C-space>",
+    --     -- dismiss = "<C-space>",
+    --   },
+    -- },
   }
 end
