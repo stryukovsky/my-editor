@@ -26,6 +26,7 @@ bash setup/macos/setup.sh
 bash setup/commons.sh
 cp setup/macos/alacritty.toml ~/.alacritty.toml
 cp setup/tmux.conf ~/.tmux.conf
+cp setup/tmux/my-theme.sh ~/.tmux/plugins/tmux-powerline/themes/
 cp setup/macos/zsh.sh ~/.zshrc
 ```
 
