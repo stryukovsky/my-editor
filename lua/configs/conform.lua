@@ -8,7 +8,7 @@ local options = {
     javascript = { "prettier" },
     go = { "gofmt" },
     rust = { "rustfmt" },
-    solidity = { "solhint" },
+    python = { "black" },
   },
 }
 
