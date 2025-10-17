@@ -38,7 +38,6 @@ local function create_config()
       table.insert(server_props, "-Dcoursier.credentials")
       table.insert(server_props, coursier_creds)
     end
-    vim.print(server_props)
     metals_config.settings.serverProperties = server_props
   end
   metals_config.init_options.statusBarProvider = "off"
