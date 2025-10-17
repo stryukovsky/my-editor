@@ -16,15 +16,29 @@ map("n", "<A-1>", function()
   end
 end, { desc = "Navigation toggle relative numbering" })
 
+local virtual_lines_diagnostic_counter = 4
+
 map("n", "<A-v>", function()
-  vim.g.enabled_virtual_lines = not vim.g.enabled_virtual_lines
-  vim.diagnostic.config { virtual_lines = vim.g.enabled_virtual_lines }
-  if vim.g.enabled_virtual_lines then
-    vim.print "Virtual lines enabled"
-  else
+  virtual_lines_diagnostic_counter = virtual_lines_diagnostic_counter - 1
+  if virtual_lines_diagnostic_counter == 0 then
+    vim.g.enabled_virtual_lines = false
+    virtual_lines_diagnostic_counter = 5
+    vim.diagnostic.config {
+      virtual_lines = false,
+    }
     vim.print "Virtual lines disabled"
+    return
   end
-end, { desc = "Navigation toggle virtual diagnostics" })
+  vim.diagnostic.config {
+    virtual_lines = {
+      severity = {
+        min = vim.diagnostic.severity[virtual_lines_diagnostic_counter],
+      },
+    },
+  }
+
+  vim.print("Virtual lines enabled: " .. vim.diagnostic.severity[virtual_lines_diagnostic_counter])
+end, { desc = "Navigation filter virtual diagnostics" })
 
 -- tabs navigation
 map("n", "<A-,>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
