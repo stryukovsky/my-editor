@@ -6,7 +6,7 @@ local options = {
     json = { "prettier" },
     typescript = { "prettier" },
     javascript = { "prettier" },
-    go = { "gofmt" },
+    go = { "gofumpt" },
     rust = { "rustfmt" },
     python = { "black" },
   },
