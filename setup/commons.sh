@@ -17,9 +17,8 @@ rustup component add rustfmt
 curl -s "https://get.sdkman.io" | bash
 
 curl -L https://foundry.paradigm.xyz | bash
-git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
-
-curl -L https://foundry.paradigm.xyz | bash
 foundryup
+
+git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
 
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
