@@ -18,7 +18,8 @@ curl -s "https://get.sdkman.io" | bash
 
 curl -L https://foundry.paradigm.xyz | bash
 git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
-mkdir -p $HOME/.config/tmux-powerline/themes
-cp setup/tmux/my-theme.sh $HOME/.tmux/tmux-powerline/themes/my-theme.sh
+
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
 
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
