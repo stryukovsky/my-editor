@@ -301,8 +301,6 @@ local config = {
         ["<A-f>"] = "filter_on_submit",
         ["F"] = "filter_on_submit",
         ["<A-F>"] = "filter_on_submit",
-        ["<C-x>"] = "clear_filter",
-        ["<C-c>"] = "clear_filter",
       },
     },
   },
