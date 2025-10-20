@@ -252,8 +252,8 @@ local config = {
         ["O"] = "open_parent_folder",
         ["F"] = "telescope_grep",
         ["<A-F>"] = "telescope_grep",
-        ["<A-f>"] = "filter_on_submit",
-        ["f"] = "filter_on_submit",
+        ["<A-f>"] = "telescope_find",
+        ["f"] = "telescope_find",
         ["<C-x>"] = "clear_filter",
         ["<C-c>"] = "clear_filter",
         ["s"] = "git_add_file",
@@ -282,7 +282,7 @@ local config = {
       visible = false, -- when true, they will just be displayed differently than normal items
       force_visible_in_empty_folder = false, -- when true, hidden files will be shown if the root folder is otherwise empty
       show_hidden_count = false, -- when true, the number of hidden items in each folder will be shown as the last entry
-      hide_dotfiles = false,
+      hide_dotfiles = true,
       hide_gitignored = false,
       hide_by_name = {
         ".DS_Store",
@@ -297,10 +297,10 @@ local config = {
       mappings = {
         ["<l>"] = "toggle_node",
         ["<h>"] = "toggle_node",
-        ["f"] = "filter_on_submit",
-        ["<A-f>"] = "filter_on_submit",
-        ["F"] = "filter_on_submit",
-        ["<A-F>"] = "filter_on_submit",
+        ["f"] = "noop",
+        ["<A-f>"] = "noop",
+        ["F"] = "noop",
+        ["<A-F>"] = "noop",
       },
     },
   },
@@ -311,6 +311,10 @@ local config = {
         ["u"] = "git_unstage_file",
         ["r"] = "git_revert_file",
         ["gg"] = "noop",
+        ["f"] = "noop",
+        ["<A-f>"] = "noop",
+        ["F"] = "noop",
+        ["<A-F>"] = "noop",
       },
     },
   },
