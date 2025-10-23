@@ -150,12 +150,24 @@ local config = {
     end,
     ["telescope_find"] = function(state)
       local node = state.tree:get_node()
-      local path = node:get_id()
+      local path
+      if node.type == "directory" then
+        path = node:get_id()
+      else
+        -- If it's a file, get the directory it's in
+        path = vim.fn.fnamemodify(path, ":h")
+      end
       telescope.find_files(getTelescopeOpts(state, path))
     end,
     ["telescope_grep"] = function(state)
       local node = state.tree:get_node()
-      local path = node:get_id()
+      local path
+      if node.type == "directory" then
+        path = node:get_id()
+      else
+        -- If it's a file, get the directory it's in
+        path = vim.fn.fnamemodify(path, ":h")
+      end
       telescope.live_grep(getTelescopeOpts(state, path))
     end,
     ["copy_path"] = function(state)
