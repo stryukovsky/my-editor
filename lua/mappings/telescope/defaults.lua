@@ -27,8 +27,8 @@ local actions = require "telescope.actions"
 local open_with_trouble = require("trouble.sources.telescope").open
 return {
   n = {
-    -- ["<Esc>"] = function() end,
-    -- ["q"] = actions.close,
+    ["<Esc>"] = actions.close,
+    ["q"] = actions.close,
     -- ["<Left>"] = actions.results_scrolling_left,
     ["<C-h>"] = actions.results_scrolling_left,
     -- ["<Right>"] = actions.results_scrolling_right,
@@ -46,6 +46,7 @@ return {
     ["<A-q>"] = dummy,
   },
   i = {
+    ["<C-c>"] = actions.close,
     -- ["<Left>"] = actions.results_scrolling_left,
     ["<C-h>"] = actions.results_scrolling_left,
     -- ["<Right>"] = actions.results_scrolling_right,
