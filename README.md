@@ -30,12 +30,12 @@ cp setup/tmux/my-theme.sh ~/.tmux/plugins/tmux-powerline/themes/
 cp setup/macos/zsh.sh ~/.zshrc
 ```
 
-### Fedora:  
+### Fedora / Asahi Fedora linux:  
 
 Firstly make sure system is up-to-date:  
 
 ```
-sudo dnf upgrade
+sudo dnf upgrade -y
 ```
 
 Enable [rpm fusion](https://docs.fedoraproject.org/en-US/quick-docs/rpmfusion-setup/) packages.  
@@ -50,10 +50,13 @@ bash setup/commons.sh
 bash setup/fedora/gnome.sh
 cp setup/fedora/alacritty.toml ~/.alacritty.toml
 cp setup/tmux.conf ~/.tmux.conf
+cp setup/tmux/my-theme.sh ~/.tmux/plugins/tmux-powerline/themes/
 cp setup/fedora/zsh.sh ~/.zshrc
 ```
 
 Install plugins in tmux (`<prefix>I`).  
+
+For asahi linux also install `light` package
 
 **Note**: read all stuff related to fedora below. Especially drivers and root password
 
