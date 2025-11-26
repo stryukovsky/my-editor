@@ -8,12 +8,13 @@ require("oil").setup {
   view_options = {
     show_hidden = true,
   },
+  skip_confirm_for_simple_edits = true,
   float = {
     -- Padding around the floating window
-    padding = 0,
+    padding = 2,
     -- max_width and max_height can be integers or a float between 0 and 1 (e.g. 0.4 for 40%)
     max_width = 0.99,
-    max_height = 0.99,
+    max_height = 0.7,
     border = "rounded",
   },
   preview_win = {
