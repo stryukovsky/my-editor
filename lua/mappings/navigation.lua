@@ -57,10 +57,10 @@ map("n", "<A-]>", "<cmd>tag<cr>", { desc = "Navigation jump next" })
 
 -- navigate in code
 map({ "n", "v" }, "<C-u>", function()
-  neoscroll.scroll(-0.2, { move_cursor = true, duration = 120 })
+  neoscroll.scroll(-0.4, { move_cursor = true, duration = 120 })
 end)
 map({ "n", "v" }, "<C-d>", function()
-  neoscroll.scroll(0.2, { move_cursor = true, duration = 120 })
+  neoscroll.scroll(0.4, { move_cursor = true, duration = 120 })
 end)
 
 -- format file, linter etc
