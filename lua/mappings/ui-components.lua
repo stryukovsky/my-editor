@@ -119,7 +119,6 @@ local function close_telescope()
       return true
     end
   end
-  return false
 end
 
 local dialog_component_callback_close = function() end
@@ -366,20 +365,20 @@ require("diffview").setup {
   },
 }
 
-local oilOpened = false
 map("n", "<A-o>", function()
-  if oilOpened then
+  if vim.g.state_oil_opened then
     oil.close()
     dialog_component_callback_close = function() end
   else
     dialog_component_callback_close()
     dialog_component_callback_close = function()
-      oilOpened = false
+      vim.g.state_oil_opened = false
       oil.close()
     end
-    oil.open_float(nil, { preview = { vertical = true } })
+    vim.cmd "Neotree close"
+    oil.open(nil, { preview = { vertical = true } })
   end
-  oilOpened = not oilOpened
+  vim.g.state_oil_opened = not vim.g.state_oil_opened
 end, { desc = "UI oil toggle float browser" })
 
 -- windows focus move

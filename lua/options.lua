@@ -40,6 +40,8 @@ end
 -- disable nvim intro
 opt.shortmess:append "sI"
 
+vim.g.state_oil_opened = false
+
 o.signcolumn = "yes"
 o.splitbelow = true
 o.splitright = true

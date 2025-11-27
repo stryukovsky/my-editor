@@ -9,24 +9,20 @@ require("oil").setup {
     show_hidden = true,
   },
   skip_confirm_for_simple_edits = true,
-  float = {
-    -- Padding around the floating window
-    padding = 2,
-    -- max_width and max_height can be integers or a float between 0 and 1 (e.g. 0.4 for 40%)
-    max_width = 0.99,
-    max_height = 0.7,
-    border = "rounded",
-  },
   preview_win = {
-    disable_preview = function(_)
-      return true
-    end,
+    -- disable_preview = function(_)
+    --   return true
+    -- end,
     -- Window-local options to use for preview window buffers
     win_options = {},
   },
   keymaps = {
     ["g?"] = { "actions.show_help", mode = "n" },
-    ["<CR>"] = "actions.select",
+    ["<CR>"] = function ()
+      require("oil").select({}, function ()
+         vim.g.state_oil_opened = false
+      end)
+    end,
     -- ["<A-s>"] = { "actions.select", opts = { vertical = true } },
     -- ["<A-h>"] = { "actions.select", opts = { horizontal = true } },
     -- ["<A-t>"] = { "actions.select", opts = { tab = true } },
