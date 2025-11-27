@@ -119,6 +119,7 @@ local function close_telescope()
       return true
     end
   end
+  return false
 end
 
 local dialog_component_callback_close = function() end
@@ -362,7 +363,7 @@ require("diffview").setup {
         { desc = "Go to file" },
       },
     },
-  },
+  }
 }
 
 map("n", "<A-o>", function()
