@@ -43,7 +43,6 @@ require("blink-cmp").setup {
     ["<A-Up>"] = { "scroll_documentation_up", "fallback" },
     ["<C-j>"] = { "select_next", "fallback" },
     ["<C-k>"] = { "select_prev", "fallback" },
-    ["<C-g>"] = require("minuet").make_blink_map(),
   },
 
   appearance = {
@@ -56,17 +55,6 @@ require("blink-cmp").setup {
   -- elsewhere in your config, without redefining it, due to `opts_extend`
   sources = {
     default = { "lsp", "path", "snippets", "buffer", },
-    providers = {
-      minuet = {
-        name = "minuet",
-        module = "minuet.blink",
-        async = true,
-        -- Should match minuet.config.request_timeout * 1000,
-        -- since minuet.config.request_timeout is in seconds
-        timeout_ms = 3000,
-        score_offset = 50, -- Gives minuet higher priority among suggestions
-      },
-    },
   },
 
   -- (Default) Rust fuzzy matcher for typo resistance and significantly better performance
