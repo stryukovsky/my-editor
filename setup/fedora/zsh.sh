@@ -45,6 +45,10 @@ export NVM_DIR="$HOME/.nvm"
 
 export PATH="$PATH:$HOME/Tools/" # Coursier binary is stored here
 export PATH="$PATH:$HOME/.local/share/coursier/bin/" # Coursier binary is stored here
+export GOPATH="$HOME/go"
+export GOBIN="$GOPATH/bin/"
+export PATH="$PATH:$GOPATH:$GOBIN"
+export PATH="$PATH:$HOME/.foundry/bin"
 
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"

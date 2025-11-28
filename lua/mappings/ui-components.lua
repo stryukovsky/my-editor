@@ -9,9 +9,9 @@ local gitsigns_async = require "gitsigns.async"
 local gitsigns_blame = require "gitsigns.actions.blame"
 local diffview_actions = require "diffview.actions"
 local neotree_command = require "neo-tree.command"
-local spectre = require("spectre")
+local spectre = require "spectre"
 
-local ui_components_modes = { "n", }
+local ui_components_modes = { "n" }
 
 local telescope_components = {
   {
@@ -282,7 +282,7 @@ require("diffview").setup {
           end
           vim.cmd "tabc"
         end,
-        { desc = "Close diffview " , silent = true},
+        { desc = "Close diffview ", silent = true },
       },
       {
         "n",
@@ -363,23 +363,23 @@ require("diffview").setup {
         { desc = "Go to file" },
       },
     },
-  },
+  }
 }
 
-local oilOpened = false
 map("n", "<A-o>", function()
-  if oilOpened then
+  if vim.g.state_oil_opened then
     oil.close()
     dialog_component_callback_close = function() end
   else
     dialog_component_callback_close()
     dialog_component_callback_close = function()
-      oilOpened = false
+      vim.g.state_oil_opened = false
       oil.close()
     end
-    oil.open_float(nil, { preview = { vertical = true } })
+    vim.cmd "Neotree close"
+    oil.open(nil, { preview = { vertical = true } })
   end
-  oilOpened = not oilOpened
+  vim.g.state_oil_opened = not vim.g.state_oil_opened
 end, { desc = "UI oil toggle float browser" })
 
 -- windows focus move
@@ -396,22 +396,24 @@ end, { desc = "Theme" })
 
 -- neotree
 local function workaround_neotree_focus(source, opts)
-  dapui.close()
-  local focus_command = vim.tbl_extend("error", {
-    action = "focus", -- Focus NeoTree
-    source = source,
-    position = "left", -- Or "left", "float"
-  }, opts)
-  local reveal_command = vim.tbl_extend("error", {
-    action = "reveal", -- Focus NeoTree
-    source = source,
-    position = "left", -- Or "left", "float"
-  }, opts)
-  neotree_command.execute(focus_command)
-  vim.defer_fn(function()
-    neotree_command.execute(reveal_command)
+  pcall(function()
+    dapui.close()
+    local focus_command = vim.tbl_extend("error", {
+      action = "focus", -- Focus NeoTree
+      source = source,
+      position = "left", -- Or "left", "float"
+    }, opts)
+    local reveal_command = vim.tbl_extend("error", {
+      action = "reveal", -- Focus NeoTree
+      source = source,
+      position = "left", -- Or "left", "float"
+    }, opts)
     neotree_command.execute(focus_command)
-  end, 100)
+    vim.defer_fn(function()
+      neotree_command.execute(reveal_command)
+      neotree_command.execute(focus_command)
+    end, 100)
+  end)
 end
 
 map(ui_components_modes, "<A-e>", function()
