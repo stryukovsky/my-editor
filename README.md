@@ -28,6 +28,7 @@ cp setup/macos/alacritty.toml ~/.alacritty.toml
 cp setup/tmux.conf ~/.tmux.conf
 cp setup/tmux/my-theme.sh ~/.tmux/plugins/tmux-powerline/themes/
 cp setup/macos/zsh.sh ~/.zshrc
+bash setup/finalize.sh
 ```
 
 ### Fedora / Asahi Fedora linux:  
@@ -52,6 +53,7 @@ cp setup/fedora/alacritty.toml ~/.alacritty.toml
 cp setup/tmux.conf ~/.tmux.conf
 cp setup/tmux/my-theme.sh ~/.tmux/plugins/tmux-powerline/themes/
 cp setup/fedora/zsh.sh ~/.zshrc
+bash setup/finalize.sh
 ```
 
 Install plugins in tmux (`<prefix>I`).  
