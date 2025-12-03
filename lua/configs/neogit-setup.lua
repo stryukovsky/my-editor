@@ -108,4 +108,5 @@ neogit.setup {
       ["<m-r>"] = "ResetMessage",
     },
   },
+
 }
