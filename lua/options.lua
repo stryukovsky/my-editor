@@ -51,7 +51,7 @@ o.swapfile = false
 -- interval for writing swap file to disk, also used by gitsigns
 o.updatetime = 250
 
-opt.foldlevel = 99
+opt.foldlevel = 9900
 -- go to previous/next line with h,l,left arrow and right arrow
 -- when cursor reaches end/beginning of line
 opt.whichwrap:append "<>[]hl"

@@ -62,7 +62,6 @@ local config = {
   -- The name used here must be the same name you would use in a require() call.
   sources = {
     "filesystem",
-    "git_status",
     "document_symbols",
   },
   default_source = "filesystem", -- you can choose a specific source `last` here which indicates the last used source
@@ -308,20 +307,6 @@ local config = {
       mappings = {
         ["<l>"] = "toggle_node",
         ["<h>"] = "toggle_node",
-        ["f"] = "noop",
-        ["<A-f>"] = "noop",
-        ["F"] = "noop",
-        ["<A-F>"] = "noop",
-      },
-    },
-  },
-  git_status = {
-    window = {
-      mappings = {
-        ["s"] = "git_add_file",
-        ["u"] = "git_unstage_file",
-        ["r"] = "git_revert_file",
-        ["gg"] = "noop",
         ["f"] = "noop",
         ["<A-f>"] = "noop",
         ["F"] = "noop",

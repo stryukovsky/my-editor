@@ -91,6 +91,11 @@ neogit.setup {
     snacks = false,
   },
   mappings = {
+    status = {
+      ["<Esc>"] = "Close",
+      ["l"] = "Toggle",
+      ["h"] = "Toggle",
+    },
     commit_editor = {
       ["q"] = "Close",
       ["<Esc>"] = "Close",

@@ -23,6 +23,14 @@ local telescope_components = {
     desc = "UI telescope marks",
   },
   {
+    modes = ui_components_modes,
+    shortcut = "<A-k>",
+    command = function()
+      vim.cmd "Neogit"
+    end,
+    desc = "UI Neogit status",
+  },
+  {
     modes = { "n" },
     shortcut = "<leader><leader>",
     command = function()
@@ -428,10 +436,6 @@ end, { desc = "UI neotree files", silent = true })
 
 map(ui_components_modes, "<A-l>", function()
   workaround_neotree_focus("document_symbols", {})
-end, { desc = "UI neotree structure" })
-
-map(ui_components_modes, "<A-k>", function()
-  workaround_neotree_focus("git_status", {})
 end, { desc = "UI neotree structure" })
 
 local bottom_component_callback_close = function() end
