@@ -32,6 +32,7 @@ vim.fn.stdpath = function(what)
   end
 end
 
+
 -- Create directories if they don't exist
 local dirs = {
   config_dir .. '/data',
