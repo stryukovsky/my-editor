@@ -2,7 +2,7 @@ local neogit = require "neogit"
 
 neogit.setup {
   graph_style = "unicode",
-  kind = "floating",
+  kind = "split",
   -- Floating window style
   floating = {
     relative = "editor",
@@ -37,7 +37,7 @@ neogit.setup {
     kind = "floating",
   },
   commit_view = {
-    kind = "floating",
+    kind = "split",
     verify_commit = vim.fn.executable "gpg" == 1, -- Can be set to true or false, otherwise we try to find the binary
   },
   disable_hint = true, -- only for status view
