@@ -22,7 +22,7 @@ neogit.setup {
   -- Automatically close the console if the process exits with a 0 (success) status
   auto_close_console = true,
   commit_editor = {
-    kind = "floating",
+    kind = "split",
     show_staged_diff = true,
     -- Accepted values:
     -- "split" to show the staged diff below the commit editor
