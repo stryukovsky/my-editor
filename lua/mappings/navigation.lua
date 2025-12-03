@@ -1,5 +1,4 @@
 local map = require "mappings.map"
-local neoscroll = require "neoscroll"
 
 -- toggle numbering
 local is_relative = false
@@ -54,14 +53,6 @@ map("n", "<leader>pin", "<CMD>BufferPin<CR>", { desc = "Navigation pin buffer" }
 -- navigate in jumps
 map("n", "<A-[>", "<cmd>pop<cr>", { desc = "Navigation jump prev" })
 map("n", "<A-]>", "<cmd>tag<cr>", { desc = "Navigation jump next" })
-
--- navigate in code
-map({ "n", "v" }, "<C-u>", function()
-  neoscroll.scroll(-0.4, { move_cursor = true, duration = 120 })
-end)
-map({ "n", "v" }, "<C-d>", function()
-  neoscroll.scroll(0.4, { move_cursor = true, duration = 120 })
-end)
 
 -- format file, linter etc
 map("n", "<leader>fm", function()

@@ -1,9 +1,5 @@
 local map = require "mappings.map"
-local dapui = require "dapui"
-local neotest = require "neotest"
 local trouble = require "trouble"
-local kulala = require "kulala"
-local kulala_ui = require "kulala.ui"
 local oil = require "oil"
 local gitsigns_async = require "gitsigns.async"
 local gitsigns_blame = require "gitsigns.actions.blame"
@@ -76,7 +72,7 @@ local telescope_components = {
   },
   {
     modes = ui_components_modes,
-    shortcut = "<A-f>",
+    shortcut = "<leader>fc",
     command = function()
       vim.cmd "Telescope current_buffer_fuzzy_find"
     end,
@@ -84,7 +80,7 @@ local telescope_components = {
   },
   {
     modes = ui_components_modes,
-    shortcut = "<A-F>",
+    shortcut = "<A-f>",
     command = function()
       vim.cmd "Telescope live_grep"
     end,
@@ -141,35 +137,6 @@ for _, value in ipairs(telescope_components) do
     end
   end, { desc = value.desc })
 end
-
-local kulala_state_is_opened = false
-map(ui_components_modes, "<A-y>", function()
-  if kulala_state_is_opened then
-    kulala_ui.close_kulala_buffer()
-  else
-    dialog_component_callback_close()
-    kulala.open()
-    dialog_component_callback_close = function()
-      kulala_state_is_opened = false
-      kulala_ui.close_kulala_buffer()
-    end
-  end
-  kulala_state_is_opened = not kulala_state_is_opened
-end, { desc = "UI kulala toggle" })
-
-map(ui_components_modes, "<A-Y>", function()
-  if kulala_state_is_opened then
-    kulala_ui.close_kulala_buffer()
-  else
-    dialog_component_callback_close()
-    kulala_ui.open() -- this is key difference - it runs query on cursor
-    dialog_component_callback_close = function()
-      kulala_state_is_opened = false
-      kulala_ui.close_kulala_buffer()
-    end
-  end
-  kulala_state_is_opened = not kulala_state_is_opened
-end, { desc = "UI kulala toggle with sending request" })
 
 local fileHistoryOpened = false
 map(ui_components_modes, "<A-h>", function()
@@ -397,7 +364,6 @@ end, { desc = "Theme" })
 -- neotree
 local function workaround_neotree_focus(source, opts)
   pcall(function()
-    dapui.close()
     local focus_command = vim.tbl_extend("error", {
       action = "focus", -- Focus NeoTree
       source = source,
@@ -417,7 +383,6 @@ local function workaround_neotree_focus(source, opts)
 end
 
 map(ui_components_modes, "<A-e>", function()
-  dapui.close()
   local current_buf = vim.api.nvim_get_current_buf()
   local file_path = vim.api.nvim_buf_get_name(current_buf)
   workaround_neotree_focus("filesystem", {
@@ -436,25 +401,6 @@ end, { desc = "UI neotree structure" })
 
 local bottom_component_callback_close = function() end
 local right_component_callback_close = function() end
-
-local dapui_state_is_opened = false
--- toggle dapui
-map(ui_components_modes, "<A-r>", function()
-  if dapui_state_is_opened then
-    dapui.close()
-    vim.cmd "Neotree reveal left source=filesystem"
-  else
-    vim.cmd "Neotree close"
-    trouble.close()
-    bottom_component_callback_close()
-    dapui.open()
-    bottom_component_callback_close = function()
-      dapui_state_is_opened = false
-      dapui.close()
-    end
-  end
-  dapui_state_is_opened = not dapui_state_is_opened
-end, { desc = "UI debug close view" })
 
 -- spectre
 local spectre_opened = false

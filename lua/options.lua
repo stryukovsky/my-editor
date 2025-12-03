@@ -6,6 +6,17 @@ o.laststatus = 3
 o.showmode = false
 
 o.clipboard = "unnamedplus"
+vim.g.clipboard = {
+  name = "gpaste",
+  copy = {
+    ["+"] = { "gpaste-client" },
+    ["*"] = { "gpaste-client" },
+  },
+  paste = {
+    ["+"] = { "gpaste-client", "--use-index", "get", "0" },
+    ["*"] = { "gpaste-client", "--use-index", "get", "0" },
+  },
+}
 o.cursorline = true
 o.cursorlineopt = "number"
 

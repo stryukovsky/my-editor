@@ -25,9 +25,6 @@ return {
     "saadparwaiz1/cmp_luasnip",
   },
   {
-    "onsails/lspkind.nvim",
-  },
-  {
     "Wansmer/treesj",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
   },
@@ -40,7 +37,7 @@ return {
     dependencies = { "rafamadriz/friendly-snippets" },
 
     -- use a release tag to download pre-built binaries
-    version = "1.*",
+    -- version = "1.*",
     -- AND/OR build from source, requires nightly: https://rust-lang.github.io/rustup/concepts/channels.html#working-with-nightly-rust
     -- build = 'cargo build --release',
     -- If you use nix, you can build from source using latest nightly rust with:
@@ -74,17 +71,6 @@ return {
     "marko-cerovac/material.nvim",
   },
   {
-    "j-hui/fidget.nvim",
-  },
-  {
-    "ThePrimeagen/refactoring.nvim",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-treesitter/nvim-treesitter",
-    },
-    lazy = false,
-  },
-  {
     "folke/which-key.nvim",
   },
   {
@@ -102,20 +88,7 @@ return {
     lazy = false, -- neo-tree will lazily load itself
   },
   {
-    "neovim/nvim-lspconfig",
-  },
-  {
-    "mfussenegger/nvim-dap",
-  },
-  {
     "lewis6991/gitsigns.nvim",
-  },
-  {
-    "rcarriga/nvim-dap-ui",
-    dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" },
-  },
-  {
-    "theHamsta/nvim-dap-virtual-text",
   },
   {
     "nvim-telescope/telescope.nvim",
@@ -125,7 +98,6 @@ return {
       "debugloop/telescope-undo.nvim",
     },
   },
-  { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
   {
     "nvim-treesitter/nvim-treesitter",
     branch = "main",
@@ -187,50 +159,7 @@ return {
   {
     "numToStr/Comment.nvim",
   },
-  -- AI Stuff
-  {
-    "milanglacier/minuet-ai.nvim",
-  },
-  {
-    "olimorris/codecompanion.nvim",
-  },
-  -- LANGUAGE-SPECIFIC-PLUGINS
-  {
-    "leoluz/nvim-dap-go",
-    ft = "go",
-    dependencies = "mfussenegger/nvim-dap",
-    config = function(_, opts)
-      require("dap-go").setup(opts)
-    end,
-  },
-  {
-    "scalameta/nvim-metals",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "hrsh7th/cmp-nvim-lsp",
-      "hrsh7th/nvim-cmp",
-    },
-    ft = { "scala", "sbt" },
-    config = require "configs.scalametals",
-  },
-  {
-    "mrcjkb/rustaceanvim",
-    version = "^5", -- Recommended
-    lazy = false, -- This plugin is already lazy
-  },
-  {
-    "mfussenegger/nvim-dap-python",
-    ft = "python",
-    dependencies = "mfussenegger/nvim-dap",
-    config = function(_, _)
-      require("dap-python").setup "python"
-    end,
-  },
   -- SMALL functionalities
-  {
-    "karb94/neoscroll.nvim",
-    opts = {},
-  },
   {
     "booperlv/nvim-gomove",
   },
@@ -255,19 +184,6 @@ return {
     config = function()
       require("textcase").setup {}
     end,
-  },
-  {
-    "iamcco/markdown-preview.nvim",
-    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-    build = "cd app && yarn install",
-    init = require "configs.markdown-preview",
-    ft = { "markdown" },
-  },
-  {
-    "mistweaverco/kulala.nvim",
-    keys = {},
-    ft = { "http", "rest" },
-    opts = {},
   },
   {
     "RRethy/vim-illuminate",

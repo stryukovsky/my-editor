@@ -29,23 +29,15 @@ map("n", "<Esc>", function()
   vim.snippet.stop()
 end, { desc = "general clear highlights" })
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "general copy whole file" })
-require "mappings.lspconfig"
-require "mappings.dap"
 require "mappings.ui-components"
 require "mappings.search"
 require "mappings.gitsigns"
 require "mappings.multicursor"
 require "mappings.navigation"
-require "mappings.tine-code-action"
 require "mappings.ui-components"
 require "mappings.substitute"
-require "mappings.markdownpreview"
-require "mappings.neotest"
 require "mappings.text-case"
-require "mappings.refactoring-setup"
 require "mappings.neogit-setup"
-require "mappings.fidget"
-require "mappings.llm"
 require "mappings.snippet"
 require "mappings.logviewer"
 require "mappings.grapple"

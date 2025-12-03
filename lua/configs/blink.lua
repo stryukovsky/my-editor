@@ -43,7 +43,6 @@ require("blink-cmp").setup {
     ["<A-Up>"] = { "scroll_documentation_up", "fallback" },
     ["<C-j>"] = { "select_next", "fallback" },
     ["<C-k>"] = { "select_prev", "fallback" },
-    ["<C-g>"] = require("minuet").make_blink_map(),
   },
 
   appearance = {
@@ -56,17 +55,6 @@ require("blink-cmp").setup {
   -- elsewhere in your config, without redefining it, due to `opts_extend`
   sources = {
     default = { "lsp", "path", "snippets", "buffer", },
-    providers = {
-      minuet = {
-        name = "minuet",
-        module = "minuet.blink",
-        async = true,
-        -- Should match minuet.config.request_timeout * 1000,
-        -- since minuet.config.request_timeout is in seconds
-        timeout_ms = 3000,
-        score_offset = 50, -- Gives minuet higher priority among suggestions
-      },
-    },
   },
 
   -- (Default) Rust fuzzy matcher for typo resistance and significantly better performance
@@ -74,7 +62,7 @@ require("blink-cmp").setup {
   -- when the Rust fuzzy matcher is not available, by using `implementation = "prefer_rust"`
   --
   -- See the fuzzy documentation for more information
-  fuzzy = { implementation = "prefer_rust_with_warning" },
+  fuzzy = { implementation = "lua" },
 
   completion = {
     documentation = { auto_show = true, window = { border = "single" } },
@@ -105,10 +93,6 @@ require("blink-cmp").setup {
                 if dev_icon then
                   icon = dev_icon
                 end
-              else
-                icon = require("lspkind").symbolic(ctx.kind, {
-                  mode = "symbol",
-                })
               end
 
               return icon .. ctx.icon_gap

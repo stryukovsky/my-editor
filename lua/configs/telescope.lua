@@ -19,6 +19,15 @@ require("telescope").setup {
       },
     },
     mappings = require "mappings.telescope.defaults",
+    vimgrep_arguments = {
+      vim.fn.stdpath "config" .. "/rg",
+      "--color=never",
+      "--no-heading",
+      "--with-filename",
+      "--line-number",
+      "--column",
+      "--smart-case",
+    },
   },
   extensions_list = { "themes", "terms", "undo" },
   extensions = {
