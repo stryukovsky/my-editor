@@ -40,6 +40,7 @@ neogit.setup {
     kind = "floating",
     verify_commit = vim.fn.executable "gpg" == 1, -- Can be set to true or false, otherwise we try to find the binary
   },
+  disable_hint = true, -- only for status view
   log_view = {
     kind = "floating",
   },
@@ -95,6 +96,7 @@ neogit.setup {
       ["<Esc>"] = "Close",
       ["l"] = "Toggle",
       ["h"] = "Toggle",
+      ["c"] = "Close",
     },
     commit_editor = {
       ["q"] = "Close",
