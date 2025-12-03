@@ -40,3 +40,7 @@ end, { desc = "git: pull" })
 map("n", "<leader>gb", function()
   neogit.open { "branch", kind = "float" }
 end, { desc = "git: branch" })
+
+map("n", "<leader>gg", function()
+  neogit.open {}
+end, { desc = "git: status" })

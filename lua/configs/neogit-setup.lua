@@ -14,8 +14,8 @@ neogit.setup {
   -- Disable line numbers
   disable_line_numbers = true,
   -- Disable relative line numbers
-  disable_relative_line_numbers = true,
   -- The time after which an output console is shown for slow running commands
+  disable_relative_line_numbers = true,
   console_timeout = 10000,
   -- Automatically show console if a command takes more than console_timeout milliseconds
   auto_show_console = false,

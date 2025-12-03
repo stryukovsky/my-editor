@@ -23,14 +23,6 @@ local telescope_components = {
     desc = "UI telescope marks",
   },
   {
-    modes = ui_components_modes,
-    shortcut = "<A-k>",
-    command = function()
-      vim.cmd "Neogit"
-    end,
-    desc = "UI Neogit status",
-  },
-  {
     modes = { "n" },
     shortcut = "<leader><leader>",
     command = function()
