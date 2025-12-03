@@ -1,1 +1,7 @@
 .DS_Store
+state
+data
+cache
+nvim
+runtime
+treesitter
