@@ -9,6 +9,15 @@ local options = {
     go = { "gofumpt" },
     rust = { "rustfmt" },
     python = { "black" },
+    solidity = { "prettier_for_solidity" },
+  },
+  formatters = {
+    prettier_for_solidity = {
+      command = "npx",
+
+      args = { "prettier", "--write", "--plugin=prettier-plugin-solidity", "$FILENAME" },
+      stdin = false,
+    },
   },
 }
 
