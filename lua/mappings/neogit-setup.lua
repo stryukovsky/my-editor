@@ -2,7 +2,7 @@ local neogit = require "neogit"
 local map = require "mappings.map"
 
 map("n", "<leader>gc", function()
-  neogit.open { "commit", kind = "float" }
+  neogit.open { "commit", kind = "split" }
 end, { desc = "git: commit" })
 
 map("n", "<leader>gPush", function()
@@ -40,3 +40,7 @@ end, { desc = "git: pull" })
 map("n", "<leader>gb", function()
   neogit.open { "branch", kind = "float" }
 end, { desc = "git: branch" })
+
+map("n", "<leader>gg", function()
+  neogit.open {}
+end, { desc = "git: status" })

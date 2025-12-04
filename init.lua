@@ -15,8 +15,10 @@ vim.opt.runtimepath:prepend(config_dir .. '/runtime')
 vim.opt.packpath:prepend(config_dir .. '/runtime')
 
 -- Set data directory within config
+--
 vim.fn.setenv('XDG_DATA_HOME', config_dir)
 vim.g.netrw_home = config_dir .. '/data'
+
 
 -- Override stdpath function to redirect data paths
 local original_stdpath = vim.fn.stdpath
@@ -31,6 +33,7 @@ vim.fn.stdpath = function(what)
     return original_stdpath(what)
   end
 end
+
 
 -- Create directories if they don't exist
 local dirs = {

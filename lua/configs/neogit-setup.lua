@@ -2,7 +2,7 @@ local neogit = require "neogit"
 
 neogit.setup {
   graph_style = "unicode",
-  kind = "floating",
+  kind = "split",
   -- Floating window style
   floating = {
     relative = "editor",
@@ -14,15 +14,15 @@ neogit.setup {
   -- Disable line numbers
   disable_line_numbers = true,
   -- Disable relative line numbers
-  disable_relative_line_numbers = true,
   -- The time after which an output console is shown for slow running commands
+  disable_relative_line_numbers = true,
   console_timeout = 10000,
   -- Automatically show console if a command takes more than console_timeout milliseconds
   auto_show_console = false,
   -- Automatically close the console if the process exits with a 0 (success) status
   auto_close_console = true,
   commit_editor = {
-    kind = "floating",
+    kind = "split",
     show_staged_diff = true,
     -- Accepted values:
     -- "split" to show the staged diff below the commit editor
@@ -37,9 +37,10 @@ neogit.setup {
     kind = "floating",
   },
   commit_view = {
-    kind = "floating",
+    kind = "split",
     verify_commit = vim.fn.executable "gpg" == 1, -- Can be set to true or false, otherwise we try to find the binary
   },
+  disable_hint = true, -- only for status view
   log_view = {
     kind = "floating",
   },
@@ -91,6 +92,12 @@ neogit.setup {
     snacks = false,
   },
   mappings = {
+    status = {
+      ["<Esc>"] = "Close",
+      ["l"] = "Toggle",
+      ["h"] = "Toggle",
+      ["c"] = "Close",
+    },
     commit_editor = {
       ["q"] = "Close",
       ["<Esc>"] = "Close",
@@ -101,4 +108,5 @@ neogit.setup {
       ["<m-r>"] = "ResetMessage",
     },
   },
+
 }

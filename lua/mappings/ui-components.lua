@@ -395,10 +395,6 @@ map(ui_components_modes, "<A-l>", function()
   workaround_neotree_focus("document_symbols", {})
 end, { desc = "UI neotree structure" })
 
-map(ui_components_modes, "<A-k>", function()
-  workaround_neotree_focus("git_status", {})
-end, { desc = "UI neotree structure" })
-
 local bottom_component_callback_close = function() end
 local right_component_callback_close = function() end
 
