@@ -94,8 +94,8 @@ neogit.setup {
   mappings = {
     status = {
       ["<Esc>"] = "Close",
-      ["l"] = "Toggle",
       ["h"] = "Toggle",
+      ["l"] = "Toggle",
       ["c"] = "Close",
     },
     commit_editor = {
