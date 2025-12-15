@@ -3,8 +3,7 @@ require("multicursor-nvim").setup()
 require("Comment").setup()
 require("todo-comments").setup()
 require("log-highlight").setup {}
---
---
+
 require "configs.barbar"
 require "configs.treesitter"
 require "configs.kulala"

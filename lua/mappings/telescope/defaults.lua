@@ -1,3 +1,5 @@
+local wrap_telescope_action = require("mappings.telescope_action_wrapper")
+
 local function focus_preview(prompt_bufnr)
   local action_state = require "telescope.actions.state"
   local picker = action_state.get_current_picker(prompt_bufnr)
@@ -29,15 +31,11 @@ return {
   n = {
     ["<Esc>"] = actions.close,
     ["q"] = actions.close,
-    -- ["<Left>"] = actions.results_scrolling_left,
     ["<C-h>"] = actions.results_scrolling_left,
-    -- ["<Right>"] = actions.results_scrolling_right,
     ["<C-l>"] = actions.results_scrolling_right,
-    -- ["<Down>"] = actions.results_scrolling_down,
     ["<C-j>"] = actions.results_scrolling_down,
-    -- ["<Up>"] = actions.results_scrolling_up,
     ["<C-k>"] = actions.results_scrolling_up,
-    ["<A-t>"] = open_with_trouble,
+    ["<A-t>"] = wrap_telescope_action(open_with_trouble),
     ["<A-a>"] = dummy,
     ["<A-s>"] = dummy,
     ["<A-d>"] = dummy,
@@ -47,15 +45,11 @@ return {
   },
   i = {
     ["<C-c>"] = actions.close,
-    -- ["<Left>"] = actions.results_scrolling_left,
     ["<C-h>"] = actions.results_scrolling_left,
-    -- ["<Right>"] = actions.results_scrolling_right,
     ["<C-l>"] = actions.results_scrolling_right,
-    -- ["<Down>"] = actions.results_scrolling_down,
     ["<C-j>"] = actions.results_scrolling_down,
-    -- ["<Up>"] = actions.results_scrolling_up,
     ["<C-k>"] = actions.results_scrolling_up,
-    ["<A-t>"] = open_with_trouble,
+    ["<A-t>"] = wrap_telescope_action(open_with_trouble),
     ["<A-a>"] = dummy,
     ["<A-s>"] = dummy,
     ["<A-d>"] = dummy,

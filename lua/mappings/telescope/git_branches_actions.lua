@@ -1,6 +1,6 @@
 local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
-
+local wrap_telescope_action = require("mappings.telescope_action_wrapper")
 local diff_fn = function() -- show diffview comparing the selected branch with the current branch
   -- Open in diffview
   local entry = action_state.get_selected_entry()
@@ -10,9 +10,9 @@ local diff_fn = function() -- show diffview comparing the selected branch with t
 end
 
 return {
-  ["<cr>"] = actions.git_switch_branch,
-  ["d"] = diff_fn,
-  ["x"] = actions.git_delete_branch,
-  ["m"] = actions.git_merge_branch,
-  ["r"] = actions.git_rebase_branch,
+  ["<cr>"] = wrap_telescope_action(actions.git_switch_branch),
+  ["d"] = wrap_telescope_action(diff_fn),
+  ["x"] = wrap_telescope_action(actions.git_delete_branch),
+  ["m"] = wrap_telescope_action(actions.git_merge_branch),
+  ["r"] = wrap_telescope_action(actions.git_rebase_branch),
 }

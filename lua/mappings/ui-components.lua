@@ -10,6 +10,7 @@ local gitsigns_blame = require "gitsigns.actions.blame"
 local diffview_actions = require "diffview.actions"
 local neotree_command = require "neo-tree.command"
 local spectre = require "spectre"
+local close_telescope = require "mappings.close_telescope"
 
 local ui_components_modes = { "n" }
 
@@ -110,33 +111,22 @@ local telescope_components = {
 
 map("n", "<leader>sa", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", { desc = "Actions: spelling" })
 
-local last_opened_telescope = ""
-local function close_telescope()
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    if vim.api.nvim_get_option_value("filetype", { buf = buf }) == "TelescopePrompt" then
-      vim.api.nvim_win_close(win, true)
-      return true
-    end
-  end
-  return false
-end
-
+vim.g.last_opened_telescope = ""
 local dialog_component_callback_close = function() end
 for _, value in ipairs(telescope_components) do
   map(value.modes, value.shortcut, function()
     if close_telescope() then
-      if last_opened_telescope ~= value.desc then
+      if vim.g.last_opened_telescope ~= value.desc then
         value.command()
-        last_opened_telescope = value.desc
+        vim.g.last_opened_telescope = value.desc
       end
     else
       dialog_component_callback_close()
       value.command()
-      last_opened_telescope = value.desc
+      vim.g.last_opened_telescope = value.desc
       dialog_component_callback_close = function()
         close_telescope()
-        last_opened_telescope = value.desc
+        vim.g.last_opened_telescope = value.desc
       end
     end
   end, { desc = value.desc })

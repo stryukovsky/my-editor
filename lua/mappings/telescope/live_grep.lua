@@ -2,6 +2,7 @@ local trouble = require "trouble.sources.telescope"
 local action_state = require "telescope.actions.state"
 local actions = require "telescope.actions"
 local trouble_main = require "trouble"
+local wrap_telescope_action = require("mappings.telescope_action_wrapper")
 local function open_with_trouble(bufnr)
   local picker = action_state.get_current_picker(bufnr)
   if not picker then
@@ -55,9 +56,9 @@ end
 
 return {
   n = {
-    ["<cr>"] = open_with_trouble,
+    ["<cr>"] = wrap_telescope_action(open_with_trouble),
   },
   i = {
-    ["<cr>"] = open_with_trouble,
+    ["<cr>"] = wrap_telescope_action(open_with_trouble),
   },
 }
