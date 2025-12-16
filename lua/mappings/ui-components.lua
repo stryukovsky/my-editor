@@ -44,26 +44,6 @@ local telescope_components = {
     shortcut = "<A-g>",
     command = function()
       vim.cmd "Telescope git_branches"
-      local keymap = require "mappings.telescope.git_branches_actions"
-      local descriptions = {
-        ["<cr>"] = "Switch to branch",
-        d = "Diff current branch with selected one",
-        x = "delete branch locally",
-        m = "merge branch into current one",
-        r = "rebase current branch onto selected one",
-      }
-
-      local lines = {}
-      for key, _ in pairs(keymap) do
-        local desc = descriptions[key] or "Unknown action"
-        table.insert(lines, string.format("%s: %s", key, desc))
-      end
-
-      -- Sort the lines for consistent output (optional)
-      table.sort(lines)
-
-      local description = "Normal mode actions: \n" .. table.concat(lines, "\n")
-      vim.print(description)
     end,
     desc = "UI telescope git branches",
   },
@@ -245,7 +225,7 @@ local function workaround_neotree_focus(source, opts)
   pcall(function()
     dapui.close()
     local focus_command = vim.tbl_extend("error", {
-      action = "focus", -- Focus NeoTree
+      action = "focus",  -- Focus NeoTree
       source = source,
       position = "left", -- Or "left", "float"
     }, opts)

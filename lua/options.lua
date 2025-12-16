@@ -8,7 +8,7 @@ o.showmode = false
 o.clipboard = "unnamedplus"
 o.cursorline = true
 o.cursorlineopt = "number"
-
+o.winborder = 'rounded'
 -- Indenting
 o.expandtab = true
 o.shiftwidth = 2
@@ -116,7 +116,7 @@ local ru_shift = [[ËЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТ�
 vim.opt.langmap = vim.fn.join({
   -- | `to` should be first     | `from` should be second
   escape(ru_shift)
-    .. ";"
-    .. escape(en_shift),
+  .. ";"
+  .. escape(en_shift),
   escape(ru) .. ";" .. escape(en),
 }, ",")
