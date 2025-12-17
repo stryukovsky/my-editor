@@ -14,11 +14,6 @@ return {
   {
     "nvimdev/dashboard-nvim",
     event = "VimEnter",
-    config = function()
-      require("dashboard").setup {
-        -- config
-      }
-    end,
     dependencies = { { "nvim-tree/nvim-web-devicons" } },
   },
   {
@@ -128,7 +123,6 @@ return {
   { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
   {
     "nvim-treesitter/nvim-treesitter",
-    branch = "main",
     build = ":TSUpdate",
   },
   {

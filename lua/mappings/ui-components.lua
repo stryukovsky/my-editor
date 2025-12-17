@@ -11,6 +11,7 @@ local gitsigns_blame = require "gitsigns.actions.blame"
 local neotree_command = require "neo-tree.command"
 local spectre = require "spectre"
 local close_telescope = require "mappings.close_telescope"
+local is_normal_buffer = require "utils.is_normal_buffer"
 
 local ui_components_modes = { "n" }
 
@@ -225,7 +226,7 @@ local function workaround_neotree_focus(source, opts)
   pcall(function()
     dapui.close()
     local focus_command = vim.tbl_extend("error", {
-      action = "focus",  -- Focus NeoTree
+      action = "focus", -- Focus NeoTree
       source = source,
       position = "left", -- Or "left", "float"
     }, opts)
@@ -256,7 +257,7 @@ map(ui_components_modes, "<A-l>", function()
   workaround_neotree_focus("document_symbols", {})
 end, { desc = "UI neotree structure" })
 
-local bottom_component_callback_close = function() end
+_G.bottom_component_callback_close = function() end
 local right_component_callback_close = function() end
 
 local dapui_state_is_opened = false
@@ -268,9 +269,9 @@ map(ui_components_modes, "<A-r>", function()
   else
     vim.cmd "Neotree close"
     trouble.close()
-    bottom_component_callback_close()
+    _G.bottom_component_callback_close()
     dapui.open()
-    bottom_component_callback_close = function()
+    _G.bottom_component_callback_close = function()
       dapui_state_is_opened = false
       dapui.close()
     end
@@ -279,19 +280,21 @@ map(ui_components_modes, "<A-r>", function()
 end, { desc = "UI debug close view" })
 
 -- spectre
-local spectre_opened = false
+vim.g.spectre_opened = false
 map(ui_components_modes, "<A-q>", function()
-  if spectre_opened then
+  if vim.g.spectre_opened then
     spectre.close()
   else
-    right_component_callback_close()
-    right_component_callback_close = function()
-      spectre_opened = false
-      spectre.close()
+    if is_normal_buffer() then
+      right_component_callback_close()
+      right_component_callback_close = function()
+        vim.g.spectre_opened = false
+        spectre.close()
+      end
+      spectre.open()
     end
-    spectre.open()
   end
-  spectre_opened = not spectre_opened
+  vim.g.spectre_opened = not vim.g.spectre_opened
 end, { desc = "UI Spectre toggle" })
 
 -- neotest
@@ -315,8 +318,8 @@ map(ui_components_modes, "<A-T>", function()
   if neotest_output_opened then
     neotest.output_panel.close()
   else
-    bottom_component_callback_close()
-    bottom_component_callback_close = function()
+    _G.bottom_component_callback_close()
+    _G.bottom_component_callback_close = function()
       neotest_output_opened = false
       neotest.output_panel.close()
     end
@@ -340,8 +343,8 @@ map(ui_components_modes, "<A-p>", function()
   if trouble.is_open "diagnostics" then
     trouble.close "diagnostics"
   else
-    bottom_component_callback_close()
-    bottom_component_callback_close = function()
+    _G.bottom_component_callback_close()
+    _G.bottom_component_callback_close = function()
       trouble.close "diagnostics"
     end
     trouble.open { mode = "diagnostics", focus = true }
@@ -363,8 +366,8 @@ map(ui_components_modes, "<A-i>", function()
   if trouble.is_open "lsp" then
     trouble.close "lsp"
   else
-    bottom_component_callback_close()
-    bottom_component_callback_close = function()
+    _G.bottom_component_callback_close()
+    _G.bottom_component_callback_close = function()
       trouble.close "lsp"
     end
     trouble.close()
@@ -375,7 +378,7 @@ end, { desc = "UI trouble inspect" })
 local git_blame_bufnr = 0
 map("n", "<A-b>", function()
   if git_blame_bufnr == 0 then
-    if vim.api.nvim_get_option_value("buftype", { buf = vim.fn.bufnr() }) == "" then
+    if is_normal_buffer() then
       gitsigns_async.create(0, function()
         gitsigns_blame.blame()
         git_blame_bufnr = vim.fn.bufnr()
@@ -386,5 +389,3 @@ map("n", "<A-b>", function()
     git_blame_bufnr = 0
   end
 end, { desc = "UI git blame buffer" })
-
-map("n", "<leader>di", "<cmd>NoiceDismiss<cr>", { desc = "UI dismiss notifications" })

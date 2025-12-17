@@ -4,6 +4,8 @@ require("dashboard").setup {
     week_header = {
       enable = true,
     },
+    project = { enable = false },
+    mru = { enable = false },
     shortcut = {
       {
         desc = "Update",
