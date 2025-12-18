@@ -1,5 +1,5 @@
 local lsp_with_default_conf =
-  { "html", "cssls", "ts_ls", "lua_ls", "sqls", "bashls", "basedpyright", "gopls", "clangd", "solidity_ls" }
+  { "html", "cssls", "ts_ls", "lua_ls", "sqls", "bashls", "basedpyright", "gopls", "clangd", "solidity_ls", "texlab"}
 
 -- vim.lsp.config("*", {})
 for _, lsp_name in ipairs(lsp_with_default_conf) do

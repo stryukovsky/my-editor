@@ -1,5 +1,4 @@
 ---@diagnostic disable: param-type-mismatch, unused-local, missing-fields, redundant-parameter
----
 local filesystem = require "neo-tree.sources.filesystem"
 local renderer = require "neo-tree.ui.renderer"
 local telescope = require "telescope.builtin"
@@ -225,7 +224,7 @@ local config = {
     },
     group_empty_dirs = true, -- when true, empty folders will be grouped together
     mappings = {
-      ["<space>"] = function(state, selected_nodes, ...) end, -- why not  'noop' - basically i need to prohibit whichkey to appear here, noop does a fallback
+      -- ["<space>"] = function(state, selected_nodes, ...) end, -- why not  'noop' - basically i need to prohibit whichkey to appear here, noop does a fallback
       ["h"] = "go_shallow",
       ["l"] = "go_deep",
       ["<A-q>"] = function() end,
@@ -316,6 +315,7 @@ local config = {
         ["<C-r>"] = function() end,
         ["f"] = "noop",
         ["<A-f>"] = "noop",
+        ["<C-r>"] = "noop", -- for unknown reasons, this lines removes warning from neotree
         ["F"] = "noop",
         ["<A-F>"] = "noop",
       },
