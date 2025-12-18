@@ -63,7 +63,7 @@ require("codecompanion").setup {
           },
           schema = {
             model = {
-              default = "qwen3:0.6b",
+              default = "qwen2.5-coder:14b",
             },
             num_ctx = {
               default = 16384,
