@@ -260,10 +260,10 @@ end, { desc = "UI neotree structure" })
 _G.bottom_component_callback_close = function() end
 local right_component_callback_close = function() end
 
-local dapui_state_is_opened = false
+vim.g.dapui_state_is_opened = false
 -- toggle dapui
 map(ui_components_modes, "<A-r>", function()
-  if dapui_state_is_opened then
+  if vim.g.dapui_state_is_opened then
     dapui.close()
     vim.cmd "Neotree reveal left source=filesystem"
   else
@@ -272,11 +272,11 @@ map(ui_components_modes, "<A-r>", function()
     _G.bottom_component_callback_close()
     dapui.open()
     _G.bottom_component_callback_close = function()
-      dapui_state_is_opened = false
+      vim.g.dapui_state_is_opened = false
       dapui.close()
     end
   end
-  dapui_state_is_opened = not dapui_state_is_opened
+  vim.g.dapui_state_is_opened = not vim.g.dapui_state_is_opened
 end, { desc = "UI debug close view" })
 
 -- spectre

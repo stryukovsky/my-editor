@@ -46,12 +46,16 @@ dap.listeners.before.attach.dapui_config = function()
   vim.cmd "Neotree close"
   trouble.close()
   dapui.open()
+  _G.bottom_component_callback_close()
+  vim.g.dapui_state_is_opened = true
 end
 
 dap.listeners.before.launch.dapui_config = function()
   vim.cmd "Neotree close"
-    trouble.close()
+  trouble.close()
   dapui.open()
+  _G.bottom_component_callback_close()
+  vim.g.dapui_state_is_opened = true
 end
 
 -- debug evaluation
