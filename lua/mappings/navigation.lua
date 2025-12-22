@@ -1,5 +1,4 @@
 local map = require "mappings.map"
-local neoscroll = require "neoscroll"
 local is_normal_buffer = require "utils.is_normal_buffer"
 
 -- toggle numbering
