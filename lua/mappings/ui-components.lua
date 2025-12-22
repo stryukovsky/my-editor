@@ -1,11 +1,13 @@
+---@diagnostic disable: duplicate-set-field
 local map = require "mappings.map"
 local trouble = require "trouble"
 local oil = require "oil"
 local gitsigns_async = require "gitsigns.async"
 local gitsigns_blame = require "gitsigns.actions.blame"
-local diffview_actions = require "diffview.actions"
 local neotree_command = require "neo-tree.command"
 local spectre = require "spectre"
+local close_telescope = require "mappings.close_telescope"
+local is_normal_buffer = require "utils.is_normal_buffer"
 
 local ui_components_modes = { "n" }
 
@@ -39,26 +41,6 @@ local telescope_components = {
     shortcut = "<A-g>",
     command = function()
       vim.cmd "Telescope git_branches"
-      local keymap = require "mappings.telescope.git_branches_actions"
-      local descriptions = {
-        ["<cr>"] = "Switch to branch",
-        d = "Diff current branch with selected one",
-        x = "delete branch locally",
-        m = "merge branch into current one",
-        r = "rebase current branch onto selected one",
-      }
-
-      local lines = {}
-      for key, _ in pairs(keymap) do
-        local desc = descriptions[key] or "Unknown action"
-        table.insert(lines, string.format("%s: %s", key, desc))
-      end
-
-      -- Sort the lines for consistent output (optional)
-      table.sort(lines)
-
-      local description = "Normal mode actions: \n" .. table.concat(lines, "\n")
-      vim.print(description)
     end,
     desc = "UI telescope git branches",
   },
@@ -106,78 +88,96 @@ local telescope_components = {
 
 map("n", "<leader>sa", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", { desc = "Actions: spelling" })
 
-local last_opened_telescope = ""
-local function close_telescope()
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    if vim.api.nvim_get_option_value("filetype", { buf = buf }) == "TelescopePrompt" then
-      vim.api.nvim_win_close(win, true)
-      return true
-    end
-  end
-  return false
-end
-
-local dialog_component_callback_close = function() end
+vim.g.last_opened_telescope = ""
+_G.dialog_component_callback_close = function() end
 for _, value in ipairs(telescope_components) do
   map(value.modes, value.shortcut, function()
     if close_telescope() then
-      if last_opened_telescope ~= value.desc then
+      if vim.g.last_opened_telescope ~= value.desc then
         value.command()
-        last_opened_telescope = value.desc
+        vim.g.last_opened_telescope = value.desc
       end
     else
-      dialog_component_callback_close()
+      _G.dialog_component_callback_close()
       value.command()
-      last_opened_telescope = value.desc
-      dialog_component_callback_close = function()
+      vim.g.last_opened_telescope = value.desc
+      _G.dialog_component_callback_close = function()
         close_telescope()
-        last_opened_telescope = value.desc
+        vim.g.last_opened_telescope = value.desc
       end
     end
   end, { desc = value.desc })
 end
 
-local fileHistoryOpened = false
+local kulala_state_is_opened = false
+map(ui_components_modes, "<A-y>", function()
+  if kulala_state_is_opened then
+    kulala_ui.close_kulala_buffer()
+  else
+    _G.dialog_component_callback_close()
+    kulala.open()
+    _G.dialog_component_callback_close = function()
+      kulala_state_is_opened = false
+      kulala_ui.close_kulala_buffer()
+    end
+  end
+  kulala_state_is_opened = not kulala_state_is_opened
+end, { desc = "UI kulala toggle" })
+
+map(ui_components_modes, "<A-Y>", function()
+  if kulala_state_is_opened then
+    kulala_ui.close_kulala_buffer()
+  else
+    _G.dialog_component_callback_close()
+    kulala_ui.open() -- this is key difference - it runs query on cursor
+    _G.dialog_component_callback_close = function()
+      kulala_state_is_opened = false
+      kulala_ui.close_kulala_buffer()
+    end
+  end
+  kulala_state_is_opened = not kulala_state_is_opened
+end, { desc = "UI kulala toggle with sending request" })
+
+vim.g.fileHistoryOpened = false
 map(ui_components_modes, "<A-h>", function()
   -- if vim.g.neotree_compat_idle then
   --   return
   -- end
-  if fileHistoryOpened then
+  if vim.g.fileHistoryOpened then
     pcall(function()
       vim.cmd "tabc"
     end)
-    dialog_component_callback_close = function() end
+    _G.dialog_component_callback_close = function() end
   else
-    dialog_component_callback_close()
+    _G.dialog_component_callback_close()
     pcall(function()
       vim.cmd "DiffviewFileHistory"
     end)
-    dialog_component_callback_close = function()
-      fileHistoryOpened = false
+    _G.dialog_component_callback_close = function()
+      vim.g.fileHistoryOpened = false
       vim.cmd "tabc"
     end
   end
-  fileHistoryOpened = not fileHistoryOpened
+  vim.g.fileHistoryOpened = not vim.g.fileHistoryOpened
 end, { desc = "UI diffview file history", silent = true })
 
-local diffViewOpened = false
-map(ui_components_modes, "<A-K>", function()
-  if diffViewOpened then
+vim.g.diffViewOpened = false
+map(ui_components_modes, "<A-k>", function()
+  if vim.g.diffViewOpened then
     local result = pcall(function()
       vim.cmd "tabc"
     end)
     if not result then
       -- additionally invert flag so before this line it is false,
-      diffViewOpened = not diffViewOpened
+      vim.g.diffViewOpened = not vim.g.diffViewOpened
       -- after it is true
       -- at the end of this function, this flag will be inversed again
     end
-    dialog_component_callback_close = function() end
+    _G.dialog_component_callback_close = function() end
   else
-    dialog_component_callback_close()
-    dialog_component_callback_close = function()
-      diffViewOpened = false
+    _G.dialog_component_callback_close()
+    _G.dialog_component_callback_close = function()
+      vim.g.diffViewOpened = false
       pcall(function()
         vim.cmd "tabc"
       end)
@@ -186,160 +186,16 @@ map(ui_components_modes, "<A-K>", function()
       vim.cmd "DiffviewOpen"
     end)
   end
-  diffViewOpened = not diffViewOpened
+  vim.g.diffViewOpened = not vim.g.diffViewOpened
 end, { desc = "UI diffview open merge tool", silent = true })
-
-local function open_file_from_diffview()
-  diffViewOpened = false
-  fileHistoryOpened = false
-  dialog_component_callback_close = function() end
-  diffview_actions.goto_file_edit()
-  -- legacy way to do the same stuff
-  -- local opened_file = vim.fn.expand "%"
-  -- -- file is opened in new tab
-  -- -- so we need to close tab with opened file and also tab with diffview
-  -- vim.cmd "2tabc"
-  -- vim.cmd("edit " .. opened_file)
-end
-
-require("diffview").setup {
-  view = {
-    merge_tool = {
-      -- layout = "diff3_mixed",
-      layout = "diff1_plain",
-      disable_diagnostics = true,
-      winbar_info = true,
-    },
-  },
-  file_history_panel = {
-    log_options = {
-      git = {
-        single_file = {
-          diff_merges = "first-parent",
-          follow = true,
-        },
-        multi_file = {
-          diff_merges = "first-parent",
-        },
-      },
-    },
-    win_config = {
-      position = "bottom",
-      height = 16,
-      win_opts = {},
-    },
-  },
-
-  keymaps = {
-    view = {
-      { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      {
-        "n",
-        "<A-K>",
-        function()
-          if diffViewOpened then
-            diffViewOpened = false
-          elseif fileHistoryOpened then
-            fileHistoryOpened = false
-          else
-            vim.print "WARNING: Bad state of diffview toggling ui-components"
-          end
-          vim.cmd "tabc"
-        end,
-        { desc = "Close diffview ", silent = true },
-      },
-      {
-        "n",
-        "<A-h>",
-        function()
-          if diffViewOpened then
-            diffViewOpened = false
-          elseif fileHistoryOpened then
-            fileHistoryOpened = false
-          else
-            vim.print "WARNING: Bad state of diffview toggling ui-components"
-          end
-          vim.cmd "tabc"
-        end,
-        { desc = "Close diffview ", silent = true },
-      },
-      { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
-      { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
-    },
-    diff1 = {
-
-      { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-    },
-    diff2 = {
-
-      { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-    },
-    diff3 = {
-
-      { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-    },
-    file_history_panel = {
-      { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
-      { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
-      {
-        "n",
-        "o",
-        open_file_from_diffview,
-        { desc = "Go to file" },
-      },
-      {
-        "n",
-        "O",
-        open_file_from_diffview,
-        { desc = "Go to file" },
-      },
-    },
-    file_panel = {
-      { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
-      { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
-      {
-        "n",
-        "o",
-        open_file_from_diffview,
-        { desc = "Go to file" },
-      },
-      {
-        "n",
-        "O",
-        open_file_from_diffview,
-        { desc = "Go to file" },
-      },
-    },
-  }
-}
 
 map("n", "<A-o>", function()
   if vim.g.state_oil_opened then
     oil.close()
-    dialog_component_callback_close = function() end
+    _G.dialog_component_callback_close = function() end
   else
-    dialog_component_callback_close()
-    dialog_component_callback_close = function()
+    _G.dialog_component_callback_close()
+    _G.dialog_component_callback_close = function()
       vim.g.state_oil_opened = false
       oil.close()
     end
@@ -395,23 +251,44 @@ map(ui_components_modes, "<A-l>", function()
   workaround_neotree_focus("document_symbols", {})
 end, { desc = "UI neotree structure" })
 
-local bottom_component_callback_close = function() end
+_G.bottom_component_callback_close = function() end
 local right_component_callback_close = function() end
 
+vim.g.dapui_state_is_opened = false
+-- toggle dapui
+map(ui_components_modes, "<A-r>", function()
+  if vim.g.dapui_state_is_opened then
+    dapui.close()
+    vim.cmd "Neotree reveal left source=filesystem"
+  else
+    vim.cmd "Neotree close"
+    trouble.close()
+    _G.bottom_component_callback_close()
+    dapui.open()
+    _G.bottom_component_callback_close = function()
+      vim.g.dapui_state_is_opened = false
+      dapui.close()
+    end
+  end
+  vim.g.dapui_state_is_opened = not vim.g.dapui_state_is_opened
+end, { desc = "UI debug close view" })
+
 -- spectre
-local spectre_opened = false
+vim.g.spectre_opened = false
 map(ui_components_modes, "<A-q>", function()
-  if spectre_opened then
+  if vim.g.spectre_opened then
     spectre.close()
   else
-    right_component_callback_close()
-    right_component_callback_close = function()
-      spectre_opened = false
-      spectre.close()
+    if is_normal_buffer() then
+      right_component_callback_close()
+      right_component_callback_close = function()
+        vim.g.spectre_opened = false
+        spectre.close()
+      end
+      spectre.open()
     end
-    spectre.open()
   end
-  spectre_opened = not spectre_opened
+  vim.g.spectre_opened = not vim.g.spectre_opened
 end, { desc = "UI Spectre toggle" })
 
 -- neotest
@@ -435,8 +312,8 @@ map(ui_components_modes, "<A-T>", function()
   if neotest_output_opened then
     neotest.output_panel.close()
   else
-    bottom_component_callback_close()
-    bottom_component_callback_close = function()
+    _G.bottom_component_callback_close()
+    _G.bottom_component_callback_close = function()
       neotest_output_opened = false
       neotest.output_panel.close()
     end
@@ -460,8 +337,8 @@ map(ui_components_modes, "<A-p>", function()
   if trouble.is_open "diagnostics" then
     trouble.close "diagnostics"
   else
-    bottom_component_callback_close()
-    bottom_component_callback_close = function()
+    _G.bottom_component_callback_close()
+    _G.bottom_component_callback_close = function()
       trouble.close "diagnostics"
     end
     trouble.open { mode = "diagnostics", focus = true }
@@ -483,8 +360,8 @@ map(ui_components_modes, "<A-i>", function()
   if trouble.is_open "lsp" then
     trouble.close "lsp"
   else
-    bottom_component_callback_close()
-    bottom_component_callback_close = function()
+    _G.bottom_component_callback_close()
+    _G.bottom_component_callback_close = function()
       trouble.close "lsp"
     end
     trouble.close()
@@ -495,7 +372,7 @@ end, { desc = "UI trouble inspect" })
 local git_blame_bufnr = 0
 map("n", "<A-b>", function()
   if git_blame_bufnr == 0 then
-    if vim.api.nvim_get_option_value("buftype", { buf = vim.fn.bufnr() }) == "" then
+    if is_normal_buffer() then
       gitsigns_async.create(0, function()
         gitsigns_blame.blame()
         git_blame_bufnr = vim.fn.bufnr()
@@ -506,5 +383,3 @@ map("n", "<A-b>", function()
     git_blame_bufnr = 0
   end
 end, { desc = "UI git blame buffer" })
-
-map("n", "<leader>di", "<cmd>NoiceDismiss<cr>", { desc = "UI dismiss notifications" })

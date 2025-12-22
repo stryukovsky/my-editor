@@ -1,5 +1,4 @@
 ---@diagnostic disable: param-type-mismatch, unused-local, missing-fields, redundant-parameter
----
 local filesystem = require "neo-tree.sources.filesystem"
 local renderer = require "neo-tree.ui.renderer"
 local telescope = require "telescope.builtin"
@@ -103,8 +102,13 @@ local config = {
     end,
     ["replace_in_directory"] = function(state)
       local node = state.tree:get_node()
-      local path = node:get_id()
-      spectre.open { search_paths = { path }, search = "", replace = "", is_close = true, cwd = vim.fn.getcwd() }
+      local abs_path = node:get_id()
+      local from_cwd_path = vim.fn.fnamemodify(abs_path, ":.")
+      if vim.g.spectre_opened then
+        spectre.close()
+      end
+      vim.g.spectre_opened = true
+      spectre.open { path = from_cwd_path }
     end,
     ["open_parent_folder"] = function(state)
       local node = state.tree:get_node()
@@ -220,9 +224,10 @@ local config = {
     },
     group_empty_dirs = true, -- when true, empty folders will be grouped together
     mappings = {
-      ["<space>"] = function(state, selected_nodes, ...) end, -- why not  'noop' - basically i need to prohibit whichkey to appear here, noop does a fallback
+      -- ["<space>"] = function(state, selected_nodes, ...) end, -- why not  'noop' - basically i need to prohibit whichkey to appear here, noop does a fallback
       ["h"] = "go_shallow",
       ["l"] = "go_deep",
+      ["<A-q>"] = function() end,
       ["<cr>"] = { "open", config = { expand_nested_files = true } }, -- expand nested file takes precedence
       ["<esc>"] = "cancel", -- close preview or floating neo-tree window
       ["P"] = {
@@ -307,8 +312,10 @@ local config = {
       mappings = {
         ["<l>"] = "toggle_node",
         ["<h>"] = "toggle_node",
+        ["<C-r>"] = function() end,
         ["f"] = "noop",
         ["<A-f>"] = "noop",
+        ["<C-r>"] = "noop", -- for unknown reasons, this lines removes warning from neotree
         ["F"] = "noop",
         ["<A-F>"] = "noop",
       },

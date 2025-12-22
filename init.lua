@@ -1,3 +1,4 @@
+---@diagnostic disable: duplicate-set-field
 vim.g.mapleader = " "
 -- End of init.lua script.
 vim.g.loaded_netrw = 1

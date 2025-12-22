@@ -1,10 +1,32 @@
+vim.api.nvim_create_autocmd("User", {
+  pattern = "TelescopePreviewerLoaded",
+  callback = function()
+    vim.wo.wrap = true
+    -- Optional: set linebreak for cleaner word wrapping
+    vim.wo.linebreak = true
+  end,
+})
+local make_entry = require "telescope.make_entry"
+
+local function entry_for_filesearch(entry)
+  local original_entry = make_entry.gen_from_vimgrep {}(entry)
+
+  -- Override the display function to exclude the match text
+  original_entry.display = function(display_entry)
+    local display_string = string.format("%s:%d:%d", display_entry.filename, display_entry.lnum, display_entry.col)
+    -- You can also add icons or colors here if desired
+    return display_string
+  end
+
+  return original_entry
+end
+
 require("telescope").setup {
   -- the rest of your telescope config goes here
   defaults = {
-    --     prompt_prefix = "   ",
-    --     selection_caret = "",
-    --     entry_prefix = "",
+    prompt_prefix = "   ",
     sorting_strategy = "ascending",
+
     layout_config = {
       horizontal = {
         prompt_position = "top",
@@ -50,20 +72,33 @@ require("telescope").setup {
   },
   pickers = {
     git_branches = {
+      wrap_results = true,
       initial_mode = "normal",
       mappings = require "mappings.telescope.git_branches",
     },
     live_grep = {
+      wrap_results = true,
       mappings = require "mappings.telescope.live_grep",
+      entry_maker = entry_for_filesearch,
     },
     lsp_references = {
+      wrap_results = true,
+      initial_mode = "normal",
       mappings = require "mappings.telescope.lsp",
     },
     lsp_definitions = {
+      wrap_results = true,
+      initial_mode = "normal",
       mappings = require "mappings.telescope.lsp",
     },
     lsp_type_definitions = {
+      wrap_results = true,
+      initial_mode = "normal",
       mappings = require "mappings.telescope.lsp",
+    },
+    git_commits = {
+      wrap_results = true,
+      initial_mode = "normal",
     },
   },
 }

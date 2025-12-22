@@ -1,12 +1,29 @@
+local function read_file(file_path)
+  local f = io.open(file_path, "r")
+  if f then
+    local content = f:read "*all"
+    f:close()
+    return content
+  end
+  return ""
+end
+
+local chat_system_prompt = read_file(vim.fn.stdpath "config" .. "/ai/systemprompts/chat.txt")
+
 require("codecompanion").setup {
   display = {
     diff = {
       enabled = false,
     },
   },
-  strategies = {
+  interactions = {
     -- Change the default chat adapter
     chat = {
+      opts = {
+        system_prompt = function()
+          return chat_system_prompt
+        end,
+      },
       adapter = "myadapter",
       keymaps = {
         close = {
