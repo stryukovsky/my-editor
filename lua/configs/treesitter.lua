@@ -1,72 +1,74 @@
 ---@diagnostic disable-next-line: missing-fields
-require("nvim-treesitter").setup {
+local treesitter = require "nvim-treesitter"
+treesitter.setup {
   auto_install = true,
   install_dir = vim.fn.stdpath "data" .. "/treesitter",
-  ensure_installed = {
-    -- ===== General-Purpose & Systems Programming =====
-    "c", -- C language
-    "cpp", -- C++
-    "rust", -- Rust
-    "zig", -- Zig
+}
 
-    -- ===== JVM Ecosystem (as requested) =====
-    "java",
-    "kotlin",
-    "scala",
-    "clojure", -- JVM functional language
+treesitter.install {
+  -- ===== General-Purpose & Systems Programming =====
+  "c", -- C language
+  "cpp", -- C++
+  "rust", -- Rust
+  "zig", -- Zig
 
-    -- ===== Web & Scripting =====
-    "javascript",
-    "typescript", -- TypeScript
-    "tsx", -- TypeScript + JSX (React)
-    "html",
-    "css",
-    "scss", -- SCSS/Sass
+  -- ===== JVM Ecosystem (as requested) =====
+  "java",
+  "kotlin",
+  "scala",
+  "clojure", -- JVM functional language
 
-    -- ===== Backend & General =====
-    "python",
-    "go",
-    "lua",
-    "bash",
-    "vim",
+  -- ===== Web & Scripting =====
+  "javascript",
+  "typescript", -- TypeScript
+  "tsx", -- TypeScript + JSX (React)
+  "html",
+  "css",
+  "scss", -- SCSS/Sass
 
-    -- ===== Functional & Multi-paradigm =====
-    "haskell", -- Haskell
-    "ocaml", -- OCaml
-    "fsharp", -- F#
-    "elixir", -- Elixir
+  -- ===== Backend & General =====
+  "python",
+  "go",
+  "lua",
+  "bash",
+  "vim",
 
-    -- ===== Configuration & Data Formats =====
-    "json",
-    "yaml",
-    "toml",
-    "xml",
-    "ini", -- .ini files
-    "nix", -- Nix expressions
+  -- ===== Functional & Multi-paradigm =====
+  "haskell", -- Haskell
+  "ocaml", -- OCaml
+  "fsharp", -- F#
+  "elixir", -- Elixir
 
-    -- ===== Documentation & Markup =====
-    "markdown",
-    "markdown_inline",
-    "latex", -- LaTeX
-    "rst", -- reStructuredText
+  -- ===== Configuration & Data Formats =====
+  "json",
+  "yaml",
+  "toml",
+  "xml",
+  "ini", -- .ini files
+  "nix", -- Nix expressions
 
-    -- ===== Build & Infrastructure =====
-    "dockerfile",
-    "cmake", -- CMakeLists.txt
-    "make", -- Makefiles
+  -- ===== Documentation & Markup =====
+  "markdown",
+  "markdown_inline",
+  "latex", -- LaTeX
+  "rst", -- reStructuredText
 
-    -- ===== Version Control & Dev Tools =====
-    "gitignore",
-    "gitattributes",
-    "gitcommit", -- Commit messages
-    "git_rebase", -- Rebase files
+  -- ===== Build & Infrastructure =====
+  "dockerfile",
+  "cmake", -- CMakeLists.txt
+  "make", -- Makefiles
 
-    -- ===== Query & Specialized =====
-    "sql", -- SQL
-    "regex", -- Regular expressions
-    "comment", -- For comment-based features
+  -- ===== Version Control & Dev Tools =====
+  "gitignore",
+  "gitattributes",
+  "gitcommit", -- Commit messages
+  "git_rebase", -- Rebase files
 
-    -- ===== Misc =====
-    "kulala_http",
-  },
+  -- ===== Query & Specialized =====
+  "sql", -- SQL
+  "regex", -- Regular expressions
+  "comment", -- For comment-based features
+
+  -- ===== Misc =====
+  "kulala_http",
 }
