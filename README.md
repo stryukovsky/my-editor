@@ -65,13 +65,7 @@ For asahi linux also install `light` package
 ## Setup mason plugins
 After installation of basics, open neovim and run command
 ```
-MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server basedpyright goimports prettier clangd nomicfoundation-solidity-language-server black gofumpt vscode-solidity-server
-```
-
-Install TS parsers:  
-
-```
-TSInstall all
+MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server basedpyright goimports prettier clangd black gofumpt vscode-solidity-server texlab
 ```
 
 Install kulala-ls:  
