@@ -6,30 +6,10 @@ Clone this repository:
 git clone https://github.com/stryukovsky/my-editor ~/.config/nvim/
 ```
 
-
 In `~/.config/nvim/` you need to run setup scripts:  
 
-# Ready instructions on platforms
-
-## Basics
+## Start 
 Install basics with script on every platform  
-
-### MacOS:  
-Install alacritty:  
-https://alacritty.org/  
-Install font from `fonts/` directory of this repo to your system.   
-
-Execute every line separately!!!  
-
-```sh
-bash setup/macos/setup.sh 
-bash setup/commons.sh
-cp setup/macos/alacritty.toml ~/.alacritty.toml
-cp setup/tmux.conf ~/.tmux.conf
-cp setup/tmux/my-theme.sh ~/.tmux/plugins/tmux-powerline/themes/
-cp setup/macos/zsh.sh ~/.zshrc
-bash setup/finalize.sh
-```
 
 ### Fedora / Asahi Fedora linux:  
 
@@ -51,18 +31,20 @@ bash setup/commons.sh
 bash setup/fedora/gnome.sh
 cp setup/fedora/alacritty.toml ~/.alacritty.toml
 cp setup/tmux.conf ~/.tmux.conf
-cp setup/tmux/my-theme.sh ~/.tmux/plugins/tmux-powerline/themes/
 cp setup/fedora/zsh.sh ~/.zshrc
 bash setup/finalize.sh
 ```
 
 Install plugins in tmux (`<prefix>I`).  
+Then copy theme for tmux-powerline.  
 
-For asahi linux also install `light` package
+```sh
+cp setup/tmux/my-theme.sh ~/.tmux/plugins/tmux-powerline/themes/
+```
 
 **Note**: read all stuff related to fedora below. Especially drivers and root password
 
-## Setup mason plugins
+# Neovim preparations
 After installation of basics, open neovim and run command
 ```
 MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server basedpyright goimports prettier clangd black gofumpt vscode-solidity-server texlab
@@ -143,32 +125,13 @@ sudo passwd root
 
 And then reboot  
 
-# Manual Installation (instead of usage of ready basics setup instructions)
-
 ## Links 
 
 https://github.com/neovim/neovim   
 https://alacritty.org/  
 https://github.com/tmux/tmux  
-
-NOTE: make sure you installed copy-paste buffer adapter for your desktop environment on Linux systems.  
-
-### gcc, g++ and make
-
 https://gcc.gnu.org/
-
-### ripgrep
-
 https://github.com/BurntSushi/ripgrep
-
-### bpytop
-
 https://github.com/aristocratos/bpytop  
-
-### golang 
-
 https://go.dev/
-
-### pyenv build dependencies
-
-https://github.com/pyenv/pyenv/wiki#suggested-build-environment
+https://github.com/pyenv/pyenv
