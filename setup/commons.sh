@@ -2,6 +2,8 @@ NODE_VERSION=22
 NVM_VERSION=0.40.2
 
 curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/v$NVM_VERSION/install.sh" | bash
+git config --global user.name "Dmitry Stryukovsky"
+git config --global user.email "strukovsky1@gmail.com"
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
