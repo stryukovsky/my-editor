@@ -1,6 +1,7 @@
 ---@diagnostic disable: duplicate-set-field
 local diffview_actions = require "diffview.actions"
 local function open_file_from_diffview()
+  vim.print("LOL")
   vim.g.diffViewOpened = false
   vim.g.fileHistoryOpened = false
   _G.dialog_component_callback_close = function() end
@@ -45,10 +46,9 @@ require("diffview").setup {
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       {
         "n",
-        "<A-K>",
+        "<A-k>",
         function()
           if vim.g.diffViewOpened then
             vim.g.diffViewOpened = false
@@ -84,27 +84,23 @@ require("diffview").setup {
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
     },
     diff2 = {
 
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
     },
     diff3 = {
 
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
     },
     file_history_panel = {
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
       { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
       {
@@ -124,7 +120,6 @@ require("diffview").setup {
       { "n", "<A-e>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-l>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "<A-b>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
-      { "n", "<A-k>", diffview_actions.focus_files, { desc = "UI Focus Files" } },
       { "n", "h", diffview_actions.close_fold, { desc = "Collapse fold" } },
       { "n", "l", diffview_actions.select_entry, { desc = "Open the diff for the selected entry" } },
       {
