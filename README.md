@@ -28,7 +28,6 @@ Execute every line separately!!!
 sudo bash setup/fedora/setup.sh 
 bash setup/fedora/pyenv.sh
 bash setup/commons.sh
-bash setup/fedora/gnome.sh
 cp setup/fedora/alacritty.toml ~/.alacritty.toml
 cp setup/tmux.conf ~/.tmux.conf
 cp setup/fedora/zsh.sh ~/.zshrc
@@ -69,6 +68,12 @@ Install plugins
 - https://extensions.gnome.org/extension/7065/tiling-shell/
 - https://extensions.gnome.org/extension/1460/vitals/
 - https://extensions.gnome.org/extension/307/dash-to-dock/
+
+After installed, configure it:  
+
+```sh 
+bash setup/fedora/gnome.sh
+```
 
 Install orchis theme
 
