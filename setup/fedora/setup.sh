@@ -6,7 +6,9 @@ sudo dnf install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-releas
 sudo dnf swap ffmpeg-free ffmpeg --allowerasing -y
 
 dnf install flatpak -y
-flatpak install it.mijorus.gearlever -y
+flatpak install flathub it.mijorus.gearlever -y
+flatpak install flathub md.obsidian.Obsidian -y
+flatpak install flathub org.telegram.desktop -y
 
 sudo chown -R $USER /usr/local/lib/
 sudo chown -R $USER /usr/local/bin/
