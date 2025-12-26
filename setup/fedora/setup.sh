@@ -11,10 +11,6 @@ flatpak install it.mijorus.gearlever -y
 sudo chown -R $USER /usr/local/lib/
 sudo chown -R $USER /usr/local/bin/
 
-mkdir -p $HOME/Tools/
-curl -fL "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz" | gzip -d > $HOME/Tools/cs
-chmod 700 $HOME/Tools/cs
-
 sudo mkdir -p /usr/local/share/fonts/
 sudo cp -r fonts/*  /usr/local/share/fonts/
 
