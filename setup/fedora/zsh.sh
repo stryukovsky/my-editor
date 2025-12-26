@@ -56,3 +56,7 @@ export SDKMAN_DIR="$HOME/.sdkman"
 # Set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
 export FZF_DEFAULT_OPTS='--height 40% --tmux center,40% --layout reverse --border top'
+
+alias top="bpytop"
+alias ff="ranger"
+alias mc="ranger"
