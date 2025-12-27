@@ -39,5 +39,5 @@ local config = {
   expand = 3, -- expand groups when <= n mappings
 }
 
-require("which-key").setup(config)
-return config
+local wk = require "which-key"
+wk.setup(config)

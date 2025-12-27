@@ -95,7 +95,10 @@ neogit.setup {
       ["<Esc>"] = "Close",
       ["h"] = "Toggle",
       ["l"] = "Toggle",
+      ["<cr>"] = "GoToFile",
+      ["o"] = "GoToFile",
     },
+
     commit_editor = {
       ["q"] = "Close",
       ["<Esc>"] = "Close",
@@ -106,5 +109,4 @@ neogit.setup {
       ["<m-r>"] = "ResetMessage",
     },
   },
-
 }

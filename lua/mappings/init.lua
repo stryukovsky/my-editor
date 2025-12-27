@@ -18,18 +18,22 @@ local unset = vim.keymap.del
 -- unset("i", "<C-b>")
 -- unset("n", "<leader>ch")
 -- unset("n", "<leader>n")
+
+local map = require "mappings.map"
 unset("i", "<Tab>")
 unset("s", "<Tab>")
 unset("i", "<S-Tab>")
 unset("s", "<S-Tab>")
 
-local map = require "mappings.map"
+local opts = { noremap = true, silent = true }
+map('n', 'q:', '<nop>', opts)
+map("n", "qq", '<nop>', opts)
+
 map("n", "<Esc>", function()
   vim.cmd "noh"
   vim.snippet.stop()
 end, { desc = "general clear highlights" })
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "general copy whole file" })
-map("n", "qq", function() end)
 require "mappings.lspconfig"
 require "mappings.dap"
 require "mappings.ui-components"
