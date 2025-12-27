@@ -9,6 +9,7 @@ dnf install flatpak -y
 flatpak install flathub it.mijorus.gearlever -y
 flatpak install flathub md.obsidian.Obsidian -y
 flatpak install flathub org.telegram.desktop -y
+flatpak install flathub io.dbeaver.DBeaverCommunity -y
 
 sudo chown -R $USER /usr/local/lib/
 sudo chown -R $USER /usr/local/bin/

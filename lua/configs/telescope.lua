@@ -2,7 +2,6 @@ vim.api.nvim_create_autocmd("User", {
   pattern = "TelescopePreviewerLoaded",
   callback = function()
     vim.wo.wrap = true
-    -- Optional: set linebreak for cleaner word wrapping
     vim.wo.linebreak = true
   end,
 })
