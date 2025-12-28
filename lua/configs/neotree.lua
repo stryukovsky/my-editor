@@ -227,6 +227,7 @@ local config = {
       -- ["<space>"] = function(state, selected_nodes, ...) end, -- why not  'noop' - basically i need to prohibit whichkey to appear here, noop does a fallback
       ["h"] = "go_shallow",
       ["l"] = "go_deep",
+      ["/"] = function() end,
       ["<A-q>"] = function() end,
       ["<cr>"] = { "open", config = { expand_nested_files = true } }, -- expand nested file takes precedence
       ["<esc>"] = "cancel", -- close preview or floating neo-tree window
