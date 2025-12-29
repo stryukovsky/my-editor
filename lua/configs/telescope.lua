@@ -31,7 +31,7 @@ require("telescope").setup {
         prompt_position = "top",
         preview_width = 0.55,
       },
-      width = 0.87,
+      width = 0.95,
       height = 0.80,
     },
     path_display = {
