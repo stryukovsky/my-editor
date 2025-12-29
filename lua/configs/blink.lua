@@ -21,19 +21,6 @@ local source_icons = {
 ---@module 'blink.cmp'
 ---@type blink.cmp.Config
 require("blink-cmp").setup {
-  -- 'default' (recommended) for mappings similar to built-in completions (C-y to accept)
-  -- 'super-tab' for mappings similar to vscode (tab to accept)
-  -- 'enter' for enter to accept
-  -- 'none' for no mappings
-  --
-  -- All presets have the following mappings:
-  -- C-space: Open menu or open docs if already open
-  -- C-n/C-p or Up/Down: Select next/previous item
-  -- C-e: Hide menu
-  -- C-k: Toggle signature help (if signature.enabled = true)
-  --
-  -- See :h blink-cmp-config-keymap for defining your own keymap
-
   keymap = {
     preset = "none",
     ["<cr>"] = { "accept", "fallback" },
@@ -52,10 +39,20 @@ require("blink-cmp").setup {
     kind_icons = source_icons,
   },
 
-  -- Default list of enabled providers defined so that you can extend it
-  -- elsewhere in your config, without redefining it, due to `opts_extend`
+  cmdline = {
+    keymap = {
+      ["<cr>"] = { "accept", "fallback" },
+      ["<Up>"] = { "select_prev", "fallback" },
+      ["<Down>"] = { "select_next", "fallback" },
+      ["<A-Down>"] = { "scroll_documentation_down", "fallback" },
+      ["<A-Up>"] = { "scroll_documentation_up", "fallback" },
+      ["<C-j>"] = { "select_next", "fallback" },
+      ["<C-k>"] = { "select_prev", "fallback" },
+      ["<Tab>"] = { "show" },
+    },
+  },
   sources = {
-    default = { "lsp", "path", "snippets", "buffer", },
+    default = { "lsp", "path", "snippets", "buffer" },
     providers = {
       minuet = {
         name = "minuet",

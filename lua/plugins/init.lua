@@ -178,6 +178,7 @@ return {
     "olimorris/codecompanion.nvim",
   },
   -- LANGUAGE-SPECIFIC-PLUGINS
+  { "mfussenegger/nvim-jdtls" },
   {
     "leoluz/nvim-dap-go",
     ft = "go",
