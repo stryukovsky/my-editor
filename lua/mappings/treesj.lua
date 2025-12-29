@@ -1,9 +1,9 @@
 local map = require "mappings.map"
 local treesj = require "treesj"
 map("n", "<leader>ss", function()
-  treesj.toggle()
-end, { desc = "SJ: Toggle split/join" })
+  treesj.split { recursive = true }
+end, { desc = "SJ: split" })
 
-map("n", "<leader>sS", function()
-  treesj.toggle { split = { recursive = true } }
-end, { desc = "SJ: Toggle split/join recursively" })
+map("n", "<leader>sj", function()
+  treesj.join()
+end, { desc = "SJ: join" })

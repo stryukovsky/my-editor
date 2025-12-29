@@ -65,15 +65,14 @@ end)
 
 -- format file, linter etc
 map("n", "<leader>fm", function()
-  require("conform").format({ lsp_fallback = true, async = true }, function(err, did_edit)
+  require("conform").format({ lsp_fallback = true, async = true }, function(err, _did_edit)
     if err then
       vim.print(err)
-    end
-    vim.defer_fn(function()
-      if did_edit then
+    else
+      vim.defer_fn(function()
         vim.cmd "silent! w"
-      end
-    end, 100)
+      end, 100)
+    end
   end)
 end, { desc = "File format file" })
 

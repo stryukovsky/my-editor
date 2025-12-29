@@ -76,6 +76,11 @@ require("telescope").setup {
       initial_mode = "normal",
       mappings = require "mappings.telescope.lsp",
     },
+    lsp_implementations = {
+      wrap_results = true,
+      initial_mode = "normal",
+      mappings = require "mappings.telescope.lsp",
+    },
     lsp_definitions = {
       wrap_results = true,
       initial_mode = "normal",
