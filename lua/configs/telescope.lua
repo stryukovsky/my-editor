@@ -95,6 +95,9 @@ require("telescope").setup {
       wrap_results = true,
       initial_mode = "normal",
     },
+    find_files = {
+      hidden = true,
+    },
   },
 }
 require("telescope").load_extension "ui-select"
