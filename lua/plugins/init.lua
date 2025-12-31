@@ -170,6 +170,7 @@ return {
   {
     "numToStr/Comment.nvim",
   },
+  { "gbprod/yanky.nvim" },
   -- AI Stuff
   {
     "milanglacier/minuet-ai.nvim",

@@ -19,16 +19,13 @@ local unset = vim.keymap.del
 -- unset("n", "<leader>ch")
 -- unset("n", "<leader>n")
 
-local map = require "mappings.map"
 unset("i", "<Tab>")
 unset("s", "<Tab>")
 unset("i", "<S-Tab>")
 unset("s", "<S-Tab>")
 
-local opts = { noremap = true, silent = true }
-map('n', 'q:', '<nop>', opts)
-map("n", "qq", '<nop>', opts)
 
+local map = require "mappings.map"
 map("n", "<Esc>", function()
   vim.cmd "noh"
   vim.snippet.stop()
@@ -55,3 +52,4 @@ require "mappings.snippet"
 require "mappings.logviewer"
 require "mappings.grapple"
 require "mappings.treesj"
+require "mappings.disable_macros"

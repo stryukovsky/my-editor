@@ -41,7 +41,7 @@ require("telescope").setup {
     },
     mappings = require "mappings.telescope.defaults",
   },
-  extensions_list = { "themes", "terms", "undo" },
+  extensions_list = { "themes", "terms", "undo", "yank_history" },
   extensions = {
     undo = {
       mappings = require "mappings.telescope.undo",
@@ -52,6 +52,9 @@ require("telescope").setup {
       override_file_sorter = true, -- override the file sorter
       case_mode = "smart_case", -- or "ignore_case" or "respect_case"
       -- the default case_mode is "smart_case"
+    },
+    yank_history = {
+      initial_mode = "normal",
     },
     ["ui-select"] = {
       require("telescope.themes").get_dropdown {
@@ -102,3 +105,4 @@ require("telescope").setup {
 }
 require("telescope").load_extension "ui-select"
 require("telescope").load_extension "grapple"
+require("telescope").load_extension "yank_history"
