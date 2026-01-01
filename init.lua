@@ -3,7 +3,6 @@ vim.g.mapleader = " "
 vim.opt.termguicolors = true
 
 local config_dir = vim.fn.stdpath "config"
-local state_dir = vim.fn.stdpath "state"
 
 vim.fn.setenv("XDG_DATA_HOME", config_dir)
 vim.g.netrw_home = config_dir .. "/data"
@@ -53,9 +52,7 @@ require("mason").setup {
   install_root_dir = config_dir .. "/data/mason",
 }
 
-vim.opt.shadafile = state_dir .. "/shada/main.shada"
 vim.opt.undofile = true
-vim.opt.undodir = state_dir .. "/undo"
 
 require "options"
 require "configs"
