@@ -101,6 +101,10 @@ require("telescope").setup {
     find_files = {
       hidden = true,
     },
+    -- yank history ignores this config, so it is moved to mapping which triggers telescope window to open
+    -- yank_history = {
+    --   initial_mode = "normal",
+    -- },
   },
 }
 require("telescope").load_extension "ui-select"
