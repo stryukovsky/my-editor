@@ -37,6 +37,7 @@ require "configs.spectre"
 require "configs.treesj"
 require "configs.diffview"
 require "configs.debuggers"
+require "configs.flash"
 -- at the end, so all highlight rules can be applied
 require "configs.material-theme"
 require "highlight"

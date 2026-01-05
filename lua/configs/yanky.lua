@@ -10,7 +10,7 @@ yanky.setup {
   picker = {
     telescope = {
       mappings = {
-        default = mapping.put "p",
+        default = mapping.put "P",
         i = {
           ["<c-g>"] = mapping.put "p",
           ["<c-k>"] = mapping.put "P",

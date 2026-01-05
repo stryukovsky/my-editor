@@ -1,6 +1,10 @@
 return {
   -- CORE PLUGINS
   {
+    "folke/flash.nvim",
+    event = "VeryLazy",
+  },
+  {
     "NeogitOrg/neogit",
     dependencies = {
       "nvim-lua/plenary.nvim", -- required
