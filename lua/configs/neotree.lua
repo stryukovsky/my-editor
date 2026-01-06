@@ -146,18 +146,15 @@ local config = {
     ["go_shallow"] = function(state)
       local node = state.tree:get_node()
       if node.type == "directory" and node:is_expanded() then
-        filesystem.toggle_directory(state, node)
+        filesystem.toggle_directory(state, node, node:get_id())
       else
         renderer.focus_node(state, node:get_parent_id())
       end
     end,
     ["telescope_find"] = function(state)
       local node = state.tree:get_node()
-      local path
-      if node.type == "directory" then
-        path = node:get_id()
-      else
-        -- If it's a file, get the directory it's in
+      local path = node:get_id()
+      if node.type ~= "directory" then
         path = vim.fn.fnamemodify(path, ":h")
       end
       telescope.find_files(getTelescopeOpts(state, path))
