@@ -18,6 +18,12 @@ local source_icons = {
   fallback = "󰜚",
 }
 
+local is_ollama_installed = require "utils.is_ollama_installed"
+local sources = { "lsp", "path", "snippets", "buffer", "minuet" }
+if not is_ollama_installed() then
+   sources = { "lsp", "path", "snippets", "buffer" }
+end
+
 ---@module 'blink.cmp'
 ---@type blink.cmp.Config
 require("blink-cmp").setup {
@@ -52,7 +58,7 @@ require("blink-cmp").setup {
     },
   },
   sources = {
-    default = { "lsp", "path", "snippets", "buffer", "minuet" },
+    default = sources,
     providers = {
       minuet = {
         name = "minuet",

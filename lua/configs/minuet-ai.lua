@@ -1,10 +1,5 @@
 local llm = require "minuet"
-
-local function is_ollama_installed()
-  return pcall(function()
-    vim.system({ "ollama" }):wait()
-  end)
-end
+local is_ollama_installed = require("utils.is_ollama_installed")
 
 if is_ollama_installed() then
   llm.setup {
