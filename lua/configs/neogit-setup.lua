@@ -93,8 +93,7 @@ neogit.setup {
   mappings = {
     status = {
       ["<Esc>"] = "Close",
-      ["h"] = "Toggle",
-      ["l"] = "Toggle",
+      ["<Tab>"] = function() end,
       ["<cr>"] = "GoToFile",
       ["o"] = "GoToFile",
     },
