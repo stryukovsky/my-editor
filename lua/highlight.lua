@@ -55,6 +55,8 @@ local function override_highlights()
 
   hl(0, "CodeCompanionInlineDiffHint", { bg = background, fg = foreground_active })
 
+  hl(0, "FlashLabelOverriden", {bg = background, fg = foreground_active})
+
   hl(0, "SpellRare", {})
   hl(0, "SpellCap", {})
   hl(0, "SpellLocal", {})

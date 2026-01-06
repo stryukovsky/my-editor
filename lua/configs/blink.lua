@@ -66,7 +66,7 @@ require("blink-cmp").setup {
         async = true,
         -- Should match minuet.config.request_timeout * 1000,
         -- since minuet.config.request_timeout is in seconds
-        timeout_ms = 3000,
+        timeout_ms = 19000,
         score_offset = 50, -- Gives minuet higher priority among suggestions
       },
     },
@@ -81,7 +81,7 @@ require("blink-cmp").setup {
 
   completion = {
     documentation = { auto_show = true, window = { border = "single" } },
-    trigger = { prefetch_on_insert = false },
+    trigger = { prefetch_on_insert = true },
     menu = {
       border = "single",
       draw = {
