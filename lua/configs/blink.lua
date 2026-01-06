@@ -52,7 +52,7 @@ require("blink-cmp").setup {
     },
   },
   sources = {
-    default = { "lsp", "path", "snippets", "buffer" },
+    default = { "lsp", "path", "snippets", "buffer", "minuet" },
     providers = {
       minuet = {
         name = "minuet",

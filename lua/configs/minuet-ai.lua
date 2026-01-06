@@ -36,20 +36,8 @@ if is_ollama_installed() then
     },
     notify = "warn", -- debug or verbose if needed
     n_completions = 3,
-    -- virtualtext = {
-    --   auto_trigger_ft = { "lua", "go", "js", "ts", "javascript", "typescript", "java", "scala", "solidity", "sol", "py", "python", "rs", "rust" },
-    --   keymap = {
-    --     -- accept whole completion
-    --     accept = "<C-A-s>",
-    --     -- accept one line
-    --     accept_line = "<C-s>",
-    --     -- accept n lines (prompts for number)
-    --     -- e.g. "A-z 2 CR" will accept 2 lines
-    --     -- accept_n_lines = "<A-z>",
-    --     -- Cycle to next completion item, or manually invoke completion
-    --     next = "<C-space>",
-    --     -- dismiss = "<C-space>",
-    --   },
-    -- },
+    blink = {
+      enable_auto_complete = true,
+    },
   }
 end

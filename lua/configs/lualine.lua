@@ -71,7 +71,13 @@ require("lualine").setup {
       },
     },
 
-    lualine_x = { "lsp_status", "filetype" },
+    lualine_x = {
+      {
+        require "minuet.lualine",
+      },
+      "lsp_status",
+      "filetype",
+    },
     lualine_y = {
       {
         function()
