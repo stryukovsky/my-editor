@@ -1,7 +1,7 @@
 local flash = require "flash"
 local map = require "mappings.map"
 
-map("n", "f", function()
+map({"v","n", "x"}, "f", function()
   flash.jump()
 end, { desc = "Flash to symbol" })
 

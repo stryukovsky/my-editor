@@ -9,12 +9,12 @@ if is_ollama_installed() then
     -- of 512, serves as an good starting point to estimate your computing
     -- power. Once you have a reliable estimate of your local computing power,
     -- you should adjust the context window to a larger value.
-    context_window = 1024,
-    throttle = 1000, -- only send the request every x milliseconds, use 0 to disable throttle.
+    context_window = 512,
+    throttle = 400, -- only send the request every x milliseconds, use 0 to disable throttle.
     -- debounce the request in x milliseconds, set to 0 to disable debounce
 
     request_timeout = 19,
-    debounce = 1000,
+    debounce = 500,
     provider_options = {
       openai_fim_compatible = {
         -- For Windows users, TERM may not be present in environment variables.
@@ -24,7 +24,7 @@ if is_ollama_installed() then
         end,
         name = "Ollama",
         end_point = "http://localhost:11434/v1/completions",
-        model = "codestral:22b",
+        model = "codegemma:2b",
         optional = {
           max_tokens = 56,
           top_p = 0.9,
@@ -32,7 +32,7 @@ if is_ollama_installed() then
       },
     },
     notify = "warn", -- debug or verbose if needed
-    n_completions = 3,
+    n_completions = 1,
     blink = {
       enable_auto_complete = true,
     },
