@@ -295,7 +295,7 @@ local config = {
       visible = false, -- when true, they will just be displayed differently than normal items
       force_visible_in_empty_folder = false, -- when true, hidden files will be shown if the root folder is otherwise empty
       show_hidden_count = false, -- when true, the number of hidden items in each folder will be shown as the last entry
-      hide_dotfiles = true,
+      hide_dotfiles = false,
       hide_gitignored = false,
       hide_by_name = {
         ".DS_Store",
@@ -310,10 +310,9 @@ local config = {
       mappings = {
         ["<l>"] = "toggle_node",
         ["<h>"] = "toggle_node",
-        ["<C-r>"] = function() end,
         ["f"] = "noop",
         ["<A-f>"] = "noop",
-        ["<C-r>"] = "noop", -- for unknown reasons, this lines removes warning from neotree
+        ["<C-r>"] = function() end,
         ["F"] = "noop",
         ["<A-F>"] = "noop",
       },

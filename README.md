@@ -46,7 +46,7 @@ cp setup/tmux/my-theme.sh ~/.tmux/plugins/tmux-powerline/themes/
 # Neovim preparations
 After installation of basics, open neovim and run command
 ```
-MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server basedpyright goimports prettier clangd black gofumpt vscode-solidity-server texlab
+MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server basedpyright goimports prettier clangd black gofumpt vscode-solidity-server texlab jdtls xmlformatter
 ```
 
 Install kulala-ls:  

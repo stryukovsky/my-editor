@@ -9,6 +9,7 @@ local options = {
     go = { "gofumpt" },
     rust = { "rustfmt" },
     python = { "black" },
+    xml = { "xmlformatter" },
     solidity = { "prettier_for_solidity" },
   },
   formatters = {

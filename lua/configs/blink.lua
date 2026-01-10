@@ -19,9 +19,9 @@ local source_icons = {
 }
 
 local is_ollama_installed = require "utils.is_ollama_installed"
-local sources = { "lsp", "path", "snippets", "buffer", "minuet" }
+local sources = { "lsp", "path", "snippets", "buffer" }
 if not is_ollama_installed() then
-   sources = { "lsp", "path", "snippets", "buffer" }
+  sources = { "lsp", "path", "snippets", "buffer" }
 end
 
 ---@module 'blink.cmp'
@@ -67,7 +67,7 @@ require("blink-cmp").setup {
         -- Should match minuet.config.request_timeout * 1000,
         -- since minuet.config.request_timeout is in seconds
         timeout_ms = 19000,
-        score_offset = 50, -- Gives minuet higher priority among suggestions
+        score_offset = -50, -- Gives minuet lower priority among suggestions
       },
     },
   },
