@@ -1,5 +1,4 @@
 return {
-  -- CORE PLUGINS
   {
     "folke/flash.nvim",
     event = "VeryLazy",
@@ -63,17 +62,10 @@ return {
   },
   { "nvim-pack/nvim-spectre" },
   {
-    "mason-org/mason.nvim",
-    opts = {},
-  },
-  {
     "nvim-lualine/lualine.nvim",
   },
   {
     "marko-cerovac/material.nvim",
-  },
-  {
-    "j-hui/fidget.nvim",
   },
   {
     "ThePrimeagen/refactoring.nvim",
@@ -100,22 +92,11 @@ return {
     },
     lazy = false, -- neo-tree will lazily load itself
   },
-  {
-    "neovim/nvim-lspconfig",
-  },
-  {
-    "mfussenegger/nvim-dap",
-  },
+
   {
     "lewis6991/gitsigns.nvim",
   },
-  {
-    "rcarriga/nvim-dap-ui",
-    dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" },
-  },
-  {
-    "theHamsta/nvim-dap-virtual-text",
-  },
+
   {
     "nvim-telescope/telescope.nvim",
     -- tag = "0.1.8",
@@ -137,20 +118,6 @@ return {
   },
   {
     "sindrets/diffview.nvim",
-  },
-  {
-    "nvim-neotest/neotest",
-    dependencies = {
-      "nvim-neotest/nvim-nio",
-      "nvim-lua/plenary.nvim",
-      "antoinemadec/FixCursorHold.nvim",
-      "nvim-treesitter/nvim-treesitter",
-
-      { "fredrikaverpil/neotest-golang", version = "*" }, -- Installation
-      "nvim-neotest/neotest-python",
-      "nvim-neotest/neotest-jest",
-      "stevanmilic/neotest-scala",
-    },
   },
   {
     "folke/trouble.nvim",
@@ -175,66 +142,6 @@ return {
     "numToStr/Comment.nvim",
   },
   { "gbprod/yanky.nvim" },
-  -- AI Stuff
-  {
-    "milanglacier/minuet-ai.nvim",
-  },
-  {
-    "olimorris/codecompanion.nvim",
-  },
-  -- LANGUAGE-SPECIFIC-PLUGINS
-  { "mfussenegger/nvim-jdtls" },
-  {
-    "leoluz/nvim-dap-go",
-    ft = "go",
-    dependencies = "mfussenegger/nvim-dap",
-    config = function(_, opts)
-      require("dap-go").setup(opts)
-    end,
-  },
-  {
-    "scalameta/nvim-metals",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "hrsh7th/cmp-nvim-lsp",
-      "hrsh7th/nvim-cmp",
-    },
-    ft = { "scala", "sbt" },
-    config = require "configs.scalametals",
-  },
-  {
-    "mrcjkb/rustaceanvim",
-    version = "^5", -- Recommended
-    lazy = false, -- This plugin is already lazy
-  },
-  {
-    "mfussenegger/nvim-dap-python",
-    ft = "python",
-    dependencies = "mfussenegger/nvim-dap",
-    config = function(_, _)
-      require("dap-python").setup "python"
-    end,
-  },
-  -- SMALL functionalities
-  {
-    "karb94/neoscroll.nvim",
-    opts = {},
-  },
-  {
-    "booperlv/nvim-gomove",
-  },
-  {
-    "MeanderingProgrammer/render-markdown.nvim",
-    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
-    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
-    ---@module 'render-markdown'
-    ---@type render.md.UserConfig
-    opts = {
-      file_types = { "markdown", "Avante" },
-    },
-    ft = { "markdown", "codecompanion" },
-    lazy = true,
-  },
   {
     "jake-stewart/multicursor.nvim",
     branch = "1.0",
@@ -246,38 +153,13 @@ return {
     end,
   },
   {
-    "iamcco/markdown-preview.nvim",
-    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-    build = "cd app && yarn install",
-    init = require "configs.markdown-preview",
-    ft = { "markdown" },
-  },
-  {
-    "mistweaverco/kulala.nvim",
-    keys = {},
-    ft = { "http", "rest" },
-    opts = {},
-  },
-  {
-    "RRethy/vim-illuminate",
-  },
-  {
-    "cbochs/grapple.nvim",
-    dependencies = {
-      { "nvim-tree/nvim-web-devicons", lazy = true },
+    "MeanderingProgrammer/render-markdown.nvim",
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
+    opts = {
+      file_types = { "markdown", "Avante" },
     },
+    ft = { "markdown", "codecompanion" },
+    lazy = true,
   },
-  {
-    "Wansmer/langmapper.nvim",
-    lazy = false,
-    priority = 1, -- High priority is needed if you will use `autoremap()`
-  },
-  {
-    "Wansmer/sibling-swap.nvim",
-  },
-  {
-    "fei6409/log-highlight.nvim",
-    opts = {},
-  },
-  { "sethen/line-number-change-mode.nvim" },
 }
