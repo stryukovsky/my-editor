@@ -1,4 +1,5 @@
 local trouble = require "trouble"
+local is_ollama_installed = require "utils.is_ollama_installed"
 local symbols = trouble.statusline {
   mode = "lsp_document_symbols",
   groups = {},
@@ -12,6 +13,16 @@ local symbols = trouble.statusline {
 
 local function to_hex_color(color)
   return "#" .. string.format("%x", color)
+end
+
+local function minuet()
+  if is_ollama_installed() then
+    return {
+      require "minuet.lualine",
+    }
+  else
+    return {}
+  end
 end
 
 local function get_lualine_theme()
@@ -72,9 +83,7 @@ require("lualine").setup {
     },
 
     lualine_x = {
-      {
-        require "minuet.lualine",
-      },
+      minuet(),
       "lsp_status",
       "filetype",
     },
