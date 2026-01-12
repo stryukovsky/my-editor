@@ -16,10 +16,16 @@ local function to_hex_color(color)
 end
 
 local function minuet()
-  if is_ollama_installed() then
+  if not is_ollama_installed() then
+    return {}
+  end
+  local success, config = pcall(function()
     return {
       require "minuet.lualine",
     }
+  end)
+  if success then
+    return config
   else
     return {}
   end
