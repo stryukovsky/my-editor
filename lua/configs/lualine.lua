@@ -15,19 +15,20 @@ local function to_hex_color(color)
   return "#" .. string.format("%x", color)
 end
 
-local function minuet()
+local defaults_for_x_component = { "lsp_status", "filetype" }
+local function lualine_x_component()
   if not is_ollama_installed() then
-    return {}
+    return defaults_for_x_component
   end
   local success, config = pcall(function()
-    return {
+    return vim.list_extend({
       require "minuet.lualine",
-    }
+    }, defaults_for_x_component)
   end)
   if success then
     return config
   else
-    return {}
+    return defaults_for_x_component
   end
 end
 
@@ -89,7 +90,7 @@ require("lualine").setup {
     },
 
     lualine_x = {
-      minuet(),
+      lualine_x_component(),
       "lsp_status",
       "filetype",
     },
