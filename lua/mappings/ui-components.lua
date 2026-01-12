@@ -54,7 +54,7 @@ local telescope_components = {
   },
   {
     modes = ui_components_modes,
-    shortcut = "<leader>fc",
+    shortcut = "<A-f>",
     command = function()
       vim.cmd "Telescope current_buffer_fuzzy_find"
     end,
@@ -62,7 +62,7 @@ local telescope_components = {
   },
   {
     modes = ui_components_modes,
-    shortcut = "<A-f>",
+    shortcut = "<A-F>",
     command = function()
       vim.cmd "Telescope live_grep"
     end,
