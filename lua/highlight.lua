@@ -55,11 +55,21 @@ local function override_highlights()
 
   hl(0, "CodeCompanionInlineDiffHint", { bg = background, fg = foreground_active })
 
-  hl(0, "FlashLabelOverriden", {bg = background, fg = foreground_active})
+  hl(0, "FlashLabelOverriden", { bg = background, fg = foreground_active })
 
   hl(0, "SpellRare", {})
   hl(0, "SpellCap", {})
   hl(0, "SpellLocal", {})
+
+  hl(0, "NeogitDiffContext", { bg = background })
+  -- move to default cursor
+  local neogit_cursor_bg = vim.api.nvim_get_hl(0, { name = "NeogitCursor" }).bg
+  local neogit_cursor_fg = vim.api.nvim_get_hl(0, { name = "NeogitCursor" }).fg
+  hl(0, "NeogitHunkHeaderCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
+  hl(0, "NeogitDiffContextCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
+  hl(0, "NeogitDiffAddCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
+  hl(0, "NeogitDiffDeleteCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
+  hl(0, "NeogitDiffHeaderCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
 
   local palette = {
     insert = vim.api.nvim_get_hl(0, { name = "lualine_a_insert" }),
