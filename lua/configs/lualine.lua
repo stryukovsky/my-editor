@@ -89,11 +89,7 @@ require("lualine").setup {
       },
     },
 
-    lualine_x = {
-      lualine_x_component(),
-      "lsp_status",
-      "filetype",
-    },
+    lualine_x = lualine_x_component(),
     lualine_y = {
       {
         function()

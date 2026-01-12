@@ -45,12 +45,12 @@ local function open_with_trouble(bufnr)
     local index = 2 + picker:get_selection_row() -- This gives you the 1-based index
     vim.defer_fn(function()
       vim.api.nvim_win_set_cursor(0, { index, 0 })
-    end, 200)
+    end, 400)
   else
     actions.select_default(bufnr)
     vim.defer_fn(function()
       vim.api.nvim_win_set_cursor(0, { selection.lnum, selection.col })
-    end, 200)
+    end, 400)
   end
 end
 
