@@ -23,7 +23,6 @@
   "multicursor.nvim": { "branch": "1.0", "commit": "993c6eda70077c5619388900dcffefff73b40c96" },
   "neo-tree.nvim": { "branch": "v3.x", "commit": "f3df514fff2bdd4318127c40470984137f87b62e" },
   "neogit": { "branch": "master", "commit": "d8bf9102692250193b855acd9025a826f1af2729" },
-  "neoscroll.nvim": { "branch": "master", "commit": "c8d29979cb0cb3a2437a8e0ae683fd82f340d3b8" },
   "nui.nvim": { "branch": "main", "commit": "de740991c12411b663994b2860f1a4fd0937c130" },
   "nvim-gomove": { "branch": "main", "commit": "2b44ae7ac0804f4e3959228122f7c85bef1964e3" },
   "nvim-spectre": { "branch": "master", "commit": "72f56f7585903cd7bf92c665351aa585e150af0f" },
