@@ -1,3 +1,4 @@
+---@diagnostic disable: duplicate-set-field
 local map = require "mappings.map"
 
 local dap = require "dap"
@@ -45,17 +46,27 @@ end, { desc = "debug toggle breakpoint" })
 dap.listeners.before.attach.dapui_config = function()
   vim.cmd "Neotree close"
   trouble.close()
-  dapui.open()
   _G.bottom_component_callback_close()
+  dapui.open()
   vim.g.dapui_state_is_opened = true
+  _G.bottom_component_callback_close = function()
+    vim.g.dapui_state_is_opened = false
+    dapui.close()
+  end
+  _G.dapui_callback_close = _G.bottom_component_callback_close
 end
 
 dap.listeners.before.launch.dapui_config = function()
   vim.cmd "Neotree close"
   trouble.close()
-  dapui.open()
   _G.bottom_component_callback_close()
+  dapui.open()
   vim.g.dapui_state_is_opened = true
+  _G.bottom_component_callback_close = function()
+    vim.g.dapui_state_is_opened = false
+    dapui.close()
+  end
+  _G.dapui_callback_close = _G.bottom_component_callback_close
 end
 
 -- debug evaluation

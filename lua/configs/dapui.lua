@@ -1,3 +1,11 @@
+vim.api.nvim_create_autocmd("WinEnter", {
+  pattern = { "\\[dap-repl-*\\]", "DAP Console*" },
+  callback = function()
+    vim.wo.wrap = true
+    vim.wo.breakindent = true -- Recommended for better readability
+  end,
+})
+
 require("dapui").setup {
   controls = {
     element = "breakpoints",

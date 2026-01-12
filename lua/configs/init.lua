@@ -4,6 +4,7 @@ require("Comment").setup()
 require("todo-comments").setup()
 require("log-highlight").setup {}
 
+require "configs.yanky"
 require "configs.barbar"
 require "configs.treesitter"
 require "configs.oil"
@@ -23,8 +24,9 @@ require "configs.siblingswap"
 require "configs.blink"
 require "configs.grapple"
 require "configs.whichkey"
-require "configs.whichkeyreload"
 require "configs.spectre"
 require "configs.treesj"
-
+require "configs.diffview"
+require "configs.debuggers"
+require "configs.flash"
 require "highlight"

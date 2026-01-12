@@ -1,6 +1,10 @@
 return {
   -- CORE PLUGINS
   {
+    "folke/flash.nvim",
+    event = "VeryLazy",
+  },
+  {
     "NeogitOrg/neogit",
     dependencies = {
       "nvim-lua/plenary.nvim", -- required
@@ -92,6 +96,7 @@ return {
   },
   {
     "nvim-treesitter/nvim-treesitter",
+    lazy = false,
     build = ":TSUpdate",
   },
   {
@@ -123,6 +128,47 @@ return {
   }, -- lazy.nvim
   {
     "numToStr/Comment.nvim",
+  },
+  { "gbprod/yanky.nvim" },
+  -- AI Stuff
+  {
+    "milanglacier/minuet-ai.nvim",
+  },
+  {
+    "olimorris/codecompanion.nvim",
+  },
+  -- LANGUAGE-SPECIFIC-PLUGINS
+  { "mfussenegger/nvim-jdtls" },
+  {
+    "leoluz/nvim-dap-go",
+    ft = "go",
+    dependencies = "mfussenegger/nvim-dap",
+    config = function(_, opts)
+      require("dap-go").setup(opts)
+    end,
+  },
+  {
+    "scalameta/nvim-metals",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/nvim-cmp",
+    },
+    ft = { "scala", "sbt" },
+    config = require "configs.scalametals",
+  },
+  {
+    "mrcjkb/rustaceanvim",
+    version = "^5", -- Recommended
+    lazy = false, -- This plugin is already lazy
+  },
+  {
+    "mfussenegger/nvim-dap-python",
+    ft = "python",
+    dependencies = "mfussenegger/nvim-dap",
+    config = function(_, _)
+      require("dap-python").setup "python"
+    end,
   },
   -- SMALL functionalities
   {

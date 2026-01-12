@@ -1,10 +1,5 @@
 local llm = require "minuet"
-
-local function is_ollama_installed()
-  return pcall(function()
-    vim.system({ "ollama" }):wait()
-  end)
-end
+local is_ollama_installed = require("utils.is_ollama_installed")
 
 if is_ollama_installed() then
   llm.setup {
@@ -14,10 +9,12 @@ if is_ollama_installed() then
     -- of 512, serves as an good starting point to estimate your computing
     -- power. Once you have a reliable estimate of your local computing power,
     -- you should adjust the context window to a larger value.
-    context_window = 256,
-    throttle = 1000, -- only send the request every x milliseconds, use 0 to disable throttle.
+    context_window = 512,
+    throttle = 400, -- only send the request every x milliseconds, use 0 to disable throttle.
     -- debounce the request in x milliseconds, set to 0 to disable debounce
-    debounce = 400,
+
+    request_timeout = 19,
+    debounce = 500,
     provider_options = {
       openai_fim_compatible = {
         -- For Windows users, TERM may not be present in environment variables.
@@ -27,7 +24,7 @@ if is_ollama_installed() then
         end,
         name = "Ollama",
         end_point = "http://localhost:11434/v1/completions",
-        model = "deepseek-coder-v2:lite",
+        model = "codegemma:2b",
         optional = {
           max_tokens = 56,
           top_p = 0.9,
@@ -35,21 +32,9 @@ if is_ollama_installed() then
       },
     },
     notify = "warn", -- debug or verbose if needed
-    n_completions = 3,
-    -- virtualtext = {
-    --   auto_trigger_ft = { "lua", "go", "js", "ts", "javascript", "typescript", "java", "scala", "solidity", "sol", "py", "python", "rs", "rust" },
-    --   keymap = {
-    --     -- accept whole completion
-    --     accept = "<C-A-s>",
-    --     -- accept one line
-    --     accept_line = "<C-s>",
-    --     -- accept n lines (prompts for number)
-    --     -- e.g. "A-z 2 CR" will accept 2 lines
-    --     -- accept_n_lines = "<A-z>",
-    --     -- Cycle to next completion item, or manually invoke completion
-    --     next = "<C-space>",
-    --     -- dismiss = "<C-space>",
-    --   },
-    -- },
+    n_completions = 1,
+    blink = {
+      enable_auto_complete = true,
+    },
   }
 end

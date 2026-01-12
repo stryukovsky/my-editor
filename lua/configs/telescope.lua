@@ -2,7 +2,6 @@ vim.api.nvim_create_autocmd("User", {
   pattern = "TelescopePreviewerLoaded",
   callback = function()
     vim.wo.wrap = true
-    -- Optional: set linebreak for cleaner word wrapping
     vim.wo.linebreak = true
   end,
 })
@@ -32,7 +31,7 @@ require("telescope").setup {
         prompt_position = "top",
         preview_width = 0.55,
       },
-      width = 0.87,
+      width = 0.95,
       height = 0.80,
     },
     path_display = {
@@ -51,7 +50,7 @@ require("telescope").setup {
       "--smart-case",
     },
   },
-  extensions_list = { "themes", "terms", "undo" },
+  extensions_list = { "themes", "terms", "undo", "yank_history" },
   extensions = {
     undo = {
       mappings = require "mappings.telescope.undo",
@@ -62,6 +61,9 @@ require("telescope").setup {
       override_file_sorter = true, -- override the file sorter
       case_mode = "smart_case", -- or "ignore_case" or "respect_case"
       -- the default case_mode is "smart_case"
+    },
+    yank_history = {
+      initial_mode = "normal",
     },
     ["ui-select"] = {
       require("telescope.themes").get_dropdown {
@@ -86,6 +88,11 @@ require("telescope").setup {
       initial_mode = "normal",
       mappings = require "mappings.telescope.lsp",
     },
+    lsp_implementations = {
+      wrap_results = true,
+      initial_mode = "normal",
+      mappings = require "mappings.telescope.lsp",
+    },
     lsp_definitions = {
       wrap_results = true,
       initial_mode = "normal",
@@ -100,7 +107,15 @@ require("telescope").setup {
       wrap_results = true,
       initial_mode = "normal",
     },
+    find_files = {
+      hidden = true,
+    },
+    -- yank history ignores this config, so it is moved to mapping which triggers telescope window to open
+    -- yank_history = {
+    --   initial_mode = "normal",
+    -- },
   },
 }
 require("telescope").load_extension "ui-select"
 require("telescope").load_extension "grapple"
+require("telescope").load_extension "yank_history"

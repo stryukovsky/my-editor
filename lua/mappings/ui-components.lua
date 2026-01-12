@@ -241,6 +241,7 @@ end
 map(ui_components_modes, "<A-e>", function()
   local current_buf = vim.api.nvim_get_current_buf()
   local file_path = vim.api.nvim_buf_get_name(current_buf)
+  _G.dapui_callback_close()
   workaround_neotree_focus("filesystem", {
     reveal_file = file_path, -- Auto-highlight the file
     reveal_force_cwd = true, -- Ensure correct working dir
@@ -252,6 +253,9 @@ map(ui_components_modes, "<A-l>", function()
 end, { desc = "UI neotree structure" })
 
 _G.bottom_component_callback_close = function() end
+--
+-- special case for neotree only
+_G.dapui_callback_close = function() end
 local right_component_callback_close = function() end
 
 vim.g.dapui_state_is_opened = false
@@ -269,6 +273,7 @@ map(ui_components_modes, "<A-r>", function()
       vim.g.dapui_state_is_opened = false
       dapui.close()
     end
+    _G.dapui_callback_close = _G.bottom_component_callback_close
   end
   vim.g.dapui_state_is_opened = not vim.g.dapui_state_is_opened
 end, { desc = "UI debug close view" })

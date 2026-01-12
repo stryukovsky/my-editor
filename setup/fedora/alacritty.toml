@@ -1,10 +1,7 @@
 [window]
-
 decorations = "None"
 opacity = 1
 startup_mode = "Maximized"
-
-decorations_theme_variant = "Light" # "Dark"
 
 [font]
 size = 10.5
@@ -23,3 +20,24 @@ style = "Regular"
 
 [terminal]
 shell = { program = "/bin/bash", args = ["-c", "tmux a || tmux"] }
+
+[keyboard]
+bindings = [
+  # Move word-wise with Alt + Left/Right (Standard Meta+b / Meta+f)
+  { key = "Left",  mods = "Alt",     chars = "\u001bb" },
+  { key = "Right", mods = "Alt",     chars = "\u001bf" },
+
+  # Move word-wise with Ctrl + Left/Right
+  { key = "Left",  mods = "Control", chars = "\u001b[1;5D" },
+  { key = "Right", mods = "Control", chars = "\u001b[1;5C" },
+
+  # Delete word-wise with Alt + Backspace
+  { key = "Back",  mods = "Alt",     chars = "\u001b\u007f" },
+  { key = "Back",  mods = "Control",     chars = "\u001b\u007f" },
+
+  # Delete word AFTER cursor with Alt + Delete (Forward Delete Word)
+  { key = "Delete", mods = "Alt",     chars = "\u001bd" },
+  
+  # Optional: Delete word AFTER cursor with Ctrl + Delete
+  { key = "Delete", mods = "Control", chars = "\u001bd" }
+]

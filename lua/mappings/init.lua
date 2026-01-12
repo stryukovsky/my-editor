@@ -1,23 +1,5 @@
 local unset = vim.keymap.del
 
--- unset nvchad shortcuts
--- unset({ "n" }, "<leader>h")
--- unset({ "n" }, "<leader>v")
--- unset({ "n" }, "<C-s>")
--- unset({ "n" }, "<leader>x")
--- unset({ "n" }, "<A-v>")
--- unset({ "n" }, "<C-w>")
--- unset({ "n" }, "<leader>wK")
--- unset({ "n" }, "<leader>wk")
--- unset({ "n", "v" }, "<leader>/")
--- unset({ "n", "t" }, "<A-h>")
--- unset("i", "<C-h>")
--- unset("i", "<C-j>")
--- unset("i", "<C-k>")
--- unset("i", "<C-l>")
--- unset("i", "<C-b>")
--- unset("n", "<leader>ch")
--- unset("n", "<leader>n")
 unset("i", "<Tab>")
 unset("s", "<Tab>")
 unset("i", "<S-Tab>")
@@ -30,6 +12,10 @@ map("n", "<Esc>", function()
 end, { desc = "general clear highlights" })
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "general copy whole file" })
 map("n", "qq", function() end)
+vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
+vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+require "mappings.lspconfig"
+require "mappings.dap"
 require "mappings.ui-components"
 require "mappings.search"
 require "mappings.gitsigns"
@@ -43,3 +29,6 @@ require "mappings.snippet"
 require "mappings.logviewer"
 require "mappings.grapple"
 require "mappings.treesj"
+require "mappings.disable_macros"
+require "mappings.yanky"
+require "mappings.flash"

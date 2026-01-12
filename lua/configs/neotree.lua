@@ -146,18 +146,15 @@ local config = {
     ["go_shallow"] = function(state)
       local node = state.tree:get_node()
       if node.type == "directory" and node:is_expanded() then
-        filesystem.toggle_directory(state, node)
+        filesystem.toggle_directory(state, node, node:get_id())
       else
         renderer.focus_node(state, node:get_parent_id())
       end
     end,
     ["telescope_find"] = function(state)
       local node = state.tree:get_node()
-      local path
-      if node.type == "directory" then
-        path = node:get_id()
-      else
-        -- If it's a file, get the directory it's in
+      local path = node:get_id()
+      if node.type ~= "directory" then
         path = vim.fn.fnamemodify(path, ":h")
       end
       telescope.find_files(getTelescopeOpts(state, path))
@@ -227,6 +224,7 @@ local config = {
       -- ["<space>"] = function(state, selected_nodes, ...) end, -- why not  'noop' - basically i need to prohibit whichkey to appear here, noop does a fallback
       ["h"] = "go_shallow",
       ["l"] = "go_deep",
+      ["/"] = function() end,
       ["<A-q>"] = function() end,
       ["<cr>"] = { "open", config = { expand_nested_files = true } }, -- expand nested file takes precedence
       ["<esc>"] = "cancel", -- close preview or floating neo-tree window
@@ -297,7 +295,7 @@ local config = {
       visible = false, -- when true, they will just be displayed differently than normal items
       force_visible_in_empty_folder = false, -- when true, hidden files will be shown if the root folder is otherwise empty
       show_hidden_count = false, -- when true, the number of hidden items in each folder will be shown as the last entry
-      hide_dotfiles = true,
+      hide_dotfiles = false,
       hide_gitignored = false,
       hide_by_name = {
         ".DS_Store",
@@ -312,10 +310,9 @@ local config = {
       mappings = {
         ["<l>"] = "toggle_node",
         ["<h>"] = "toggle_node",
-        ["<C-r>"] = function() end,
         ["f"] = "noop",
         ["<A-f>"] = "noop",
-        ["<C-r>"] = "noop", -- for unknown reasons, this lines removes warning from neotree
+        ["<C-r>"] = function() end,
         ["F"] = "noop",
         ["<A-F>"] = "noop",
       },
