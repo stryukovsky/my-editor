@@ -48,10 +48,6 @@ require("lazy").setup({
   lockfile = config_dir .. "/lazy-lock.json",
 })
 
-require("mason").setup {
-  install_root_dir = config_dir .. "/data/mason",
-}
-
 vim.opt.undofile = true
 
 require "options"
