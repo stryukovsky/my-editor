@@ -57,9 +57,6 @@ require("blink-cmp").setup {
     },
   },
   sources = {
-<<<<<<< HEAD
-    default = { "lsp", "path", "snippets", "buffer", },
-=======
     default = sources,
     providers = {
       minuet = {
@@ -72,7 +69,6 @@ require("blink-cmp").setup {
         score_offset = -50, -- Gives minuet lower priority among suggestions
       },
     },
->>>>>>> main
   },
 
   -- (Default) Rust fuzzy matcher for typo resistance and significantly better performance
