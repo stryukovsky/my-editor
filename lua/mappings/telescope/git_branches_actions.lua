@@ -1,18 +1,9 @@
 local actions = require "telescope.actions"
-local action_state = require "telescope.actions.state"
-local wrap_telescope_action = require("mappings.telescope_action_wrapper")
-local diff_fn = function() -- show diffview comparing the selected branch with the current branch
-  -- Open in diffview
-  local entry = action_state.get_selected_entry()
-  -- close Telescope window properly prior to switching windows
-  actions.close(vim.api.nvim_get_current_buf())
-  vim.cmd(("DiffviewOpen %s.."):format(entry.value))
-end
+local wrap_telescope_action = require "mappings.telescope_action_wrapper"
 
 local help = function()
   local descriptions = {
     ["<cr>"] = "Switch to branch",
-    d = "Diff current branch with selected one",
     x = "delete branch locally",
     m = "merge branch into current one",
     r = "rebase current branch onto selected one",
@@ -28,13 +19,12 @@ local help = function()
   -- Sort the lines for consistent output (optional)
   table.sort(lines)
   local msg = table.concat(lines, "\n")
-  vim.cmd('redraw')
+  vim.cmd "redraw"
   vim.print(msg)
 end
 
 local keymap = {
   ["<cr>"] = wrap_telescope_action(actions.git_switch_branch),
-  ["d"] = wrap_telescope_action(diff_fn),
   ["x"] = wrap_telescope_action(actions.git_delete_branch),
   ["m"] = wrap_telescope_action(actions.git_merge_branch),
   ["r"] = wrap_telescope_action(actions.git_rebase_branch),
@@ -61,7 +51,6 @@ help = function()
   table.sort(lines)
   local shortcuts = lines
 
-
   local buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, shortcuts)
   vim.bo[buf].modifiable = false
@@ -70,18 +59,18 @@ help = function()
   local height = #shortcuts
 
   local win = vim.api.nvim_open_win(buf, true, {
-    relative = 'editor',
+    relative = "editor",
     width = width,
     height = height,
     col = (vim.o.columns - width) / 2,
     row = (vim.o.lines - height) / 2,
-    style = 'minimal',
-    border = 'rounded',
+    style = "minimal",
+    border = "rounded",
   })
 
-  vim.keymap.set('n', 'q', '<cmd>close<cr>', { buffer = buf, silent = true })
-  vim.keymap.set('n', '<Esc>', '<cmd>close<cr>', { buffer = buf, silent = true })
-  vim.keymap.set('n', '?', '<cmd>close<cr>', { buffer = buf, silent = true })
+  vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = buf, silent = true })
+  vim.keymap.set("n", "<Esc>", "<cmd>close<cr>", { buffer = buf, silent = true })
+  vim.keymap.set("n", "?", "<cmd>close<cr>", { buffer = buf, silent = true })
 end
 
 return keymap

@@ -1,7 +1,6 @@
 ---@diagnostic disable: duplicate-set-field
 local diffview_actions = require "diffview.actions"
 local function open_file_from_diffview()
-  vim.print("LOL")
   vim.g.diffViewOpened = false
   vim.g.fileHistoryOpened = false
   _G.dialog_component_callback_close = function() end
