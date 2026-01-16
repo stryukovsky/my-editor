@@ -159,4 +159,5 @@ return {
     lazy = true,
   },
   { "stryukovsky/git-conflict.nvim", branch = "main" },
+  { "HiPhish/rainbow-delimiters.nvim" },
 }
