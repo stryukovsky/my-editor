@@ -43,7 +43,7 @@ end, { desc = "git: branch" })
 
 map("n", "<leader>gl", function()
   -- neogit.open { "log",  }
-  neogit.action("log", "log_all_branches", { kind = "split" })()
+  neogit.action("log", "log_all_branches", { kind = "split", "--graph", "--decorate", "--topo-order", "--max-count=256" })()
 end, { desc = "git: log" })
 
 map("n", "<leader>gg", function()
