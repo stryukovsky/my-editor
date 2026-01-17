@@ -49,3 +49,5 @@ end, { desc = "git: log" })
 map("n", "<leader>gg", function()
   neogit.open {}
 end, { desc = "git: status" })
+
+map("n", "<leader>gx", "<cmd>GitConflictListQf<cr>", { desc = "git: conflicts" })

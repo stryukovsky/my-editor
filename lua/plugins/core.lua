@@ -22,9 +22,6 @@ return {
     "saadparwaiz1/cmp_luasnip",
   },
   {
-    "onsails/lspkind.nvim",
-  },
-  {
     "Wansmer/treesj",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
   },

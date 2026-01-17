@@ -101,21 +101,6 @@ require("blink-cmp").setup {
           },
           kind_icon = {
             ellipsis = false,
-            text = function(ctx)
-              local icon = ctx.kind_icon
-              if vim.tbl_contains({ "Path" }, ctx.source_name) then
-                local dev_icon, _ = require("nvim-web-devicons").get_icon(ctx.label)
-                if dev_icon then
-                  icon = dev_icon
-                end
-              else
-                icon = require("lspkind").symbolic(ctx.kind, {
-                  mode = "symbol",
-                })
-              end
-
-              return icon .. ctx.icon_gap
-            end,
 
             -- Optionally, use the highlight groups from nvim-web-devicons
             -- You can also add the same function for `kind.highlight` if you want to
