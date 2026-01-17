@@ -59,6 +59,10 @@ vim.api.nvim_create_autocmd({ "ColorScheme" }, {
 require("lualine").setup {
   options = {
     theme = get_lualine_theme(),
+    globalstatus = true,
+    disabled_filetypes = {
+      statusline = { "NeogitStatus" }, -- Prevents extra lines in the Neogit buffer
+    },
   },
   sections = {
     lualine_a = { "mode" },
