@@ -4,6 +4,7 @@ import subprocess
 import urllib.parse
 from pathlib import Path
 
+
 class fzf_files(Command):
     """
     `:fzf_mark` refer from `:fzf_select`  (But Just in `Current directory and Not Recursion`)
@@ -292,3 +293,55 @@ class clear_all_selections(Command):
         self.fm.copy_buffer = set()
         self.fm.thisdir.mark_all(False)
         self.fm.ui.redraw_main_column()
+
+
+class open_in_nautilus(Command):
+    """
+    :open_in_nautilus
+
+    Open selected items in GNOME Files (Nautilus):
+      - Directories are opened directly.
+      - Files are selected in their parent folder.
+    """
+
+    def execute(self):
+        from ranger.ext.get_executables import get_executables
+
+        if "nautilus" not in get_executables():
+            self.fm.notify("Nautilus not found!", bad=True)
+            return
+
+        selected = [f.path for f in self.fm.thistab.get_selection()]
+        if not selected:
+            selected = [self.fm.thisfile.path]
+
+        dirs = []
+        files = []
+
+        for path in selected:
+            p = Path(path)
+            if p.is_dir():
+                dirs.append(str(p))
+            else:
+                # Only add file if it exists (avoid broken selections)
+                if p.exists():
+                    files.append(str(p))
+
+        args = ["nautilus"]
+
+        # Add directories to open directly
+        if dirs:
+            args.extend(dirs)
+
+        # Add files to select
+        if files:
+            args.append("--select")
+            args.extend(files)
+
+        if len(args) > 1:  # Avoid running "nautilus" with no args unless intended
+            subprocess.Popen(
+                args,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                preexec_fn=os.setpgrp,
+            )
