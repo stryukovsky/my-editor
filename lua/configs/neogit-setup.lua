@@ -41,7 +41,7 @@ neogit.setup {
     verify_commit = vim.fn.executable "gpg" == 1, -- Can be set to true or false, otherwise we try to find the binary
   },
   log_view = {
-    kind = "floating",
+    kind = "split",
   },
   rebase_editor = {
     kind = "floating",
@@ -94,7 +94,6 @@ neogit.setup {
     status = {
       ["<Esc>"] = "Close",
       ["<Tab>"] = function() end,
-      ["<cr>"] = "GoToFile",
       ["o"] = "GoToFile",
     },
 
