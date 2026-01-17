@@ -29,7 +29,7 @@ sudo bash setup/fedora/setup.sh
 bash setup/fedora/pyenv.sh
 bash setup/commons.sh
 cp setup/fedora/alacritty.toml ~/.alacritty.toml
-cp setup/tmux.conf ~/.tmux.conf
+cp setup/tmux/tmux.conf ~/.tmux.conf
 cp setup/fedora/zsh.sh ~/.zshrc
 cp -r setup/ranger ~/.config/
 bash setup/finalize.sh
