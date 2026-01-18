@@ -6,7 +6,9 @@ require("material").setup {
     strings = {
       italic = true,
     },
-    keywords = {},
+    keywords = {
+      italic = true,
+    },
     functions = {
       bold = true,
     },
@@ -26,7 +28,7 @@ require("material").setup {
     -- "dashboard",
     -- "eyeliner",
     "fidget",
-    -- "flash",
+    "flash",
     "gitsigns",
     -- "harpoon",
     -- "hop",
@@ -63,4 +65,3 @@ require("material").setup {
   },
   lualine_style = "stealth", -- Lualine style ( can be 'stealth' or 'default' )
 }
-
