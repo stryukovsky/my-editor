@@ -227,23 +227,20 @@ class extract_archive(Command):
 
 class open_in_tmux_window(Command):
     def execute(self):
-        # Get selected files
         selected = self.fm.thistab.get_selection()
         if len(selected) != 1:
-            self.fm.notify("Select exactly one directory", bad=True)
+            self.fm.notify("Select exactly one item", bad=True)
             return
 
-        f = selected[0]
-        if not f.is_directory:
-            self.fm.notify("Selected item is not a directory", bad=True)
-            return
-
-        target_dir = f.path
-
-        # Check if we're inside tmux
         if not os.environ.get("TMUX"):
             self.fm.notify("Not running inside tmux", bad=True)
             return
+
+        f = selected[0]
+        if f.is_directory:
+            target_dir = f.path
+        else:
+            target_dir = os.path.dirname(f.path)
 
         try:
             subprocess.Popen(["tmux", "new-window", "-c", target_dir])
