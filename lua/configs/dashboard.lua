@@ -1,5 +1,6 @@
 require("dashboard").setup {
   theme = "hyper",
+  hide = { statusline = false },
   config = {
     week_header = {
       enable = true,
