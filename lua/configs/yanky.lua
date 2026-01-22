@@ -7,6 +7,9 @@ yanky.setup {
     history_length = 100,
     storage = "memory",
   },
+  preserve_cursor_position = {
+    enabled = true,
+  },
   picker = {
     telescope = {
       mappings = {
@@ -25,10 +28,9 @@ yanky.setup {
         },
       },
     },
-    highlight = {
-      on_put = true,
-      on_yank = true,
-      timer = 50,
-    },
+  },
+  highlight = {
+    on_put = false,
+    on_yank = false,
   },
 }
