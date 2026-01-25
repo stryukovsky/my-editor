@@ -4,6 +4,7 @@ local renderer = require "neo-tree.ui.renderer"
 local telescope = require "telescope.builtin"
 local cmds = require "neo-tree.sources.filesystem.commands"
 local spectre = require "spectre"
+local system_file_explorer = require "utils.system_file_explorer"
 
 local function open_single_child_dir_recursively(state)
   local node = state.tree:get_node()
@@ -113,34 +114,7 @@ local config = {
     ["open_parent_folder"] = function(state)
       local node = state.tree:get_node()
       local path = node:get_id()
-
-      -- Get the parent directory path
-      local parent_path
-      if node.type == "directory" then
-        -- If it's a directory, get its parent
-        parent_path = vim.fn.fnamemodify(path, ":h")
-      else
-        -- If it's a file, get the directory it's in
-        parent_path = vim.fn.fnamemodify(path, ":h")
-      end
-
-      -- Ensure we don't go above root
-      if parent_path == path then
-        vim.notify("Already at root directory", vim.log.levels.WARN)
-        return
-      end
-
-      -- Open parent directory in default application
-      local sysname = vim.loop.os_uname().sysname
-      if sysname == "Darwin" then
-        vim.fn.jobstart({ "open", parent_path }, { detach = true })
-      elseif sysname == "Linux" then
-        vim.fn.jobstart({ "xdg-open", parent_path }, { detach = true })
-      elseif sysname == "Windows_NT" then
-        vim.fn.jobstart({ "explorer", parent_path }, { detach = true })
-      else
-        vim.notify("Unknown platform: " .. sysname, vim.log.levels.ERROR)
-      end
+      system_file_explorer(path)
     end,
     ["go_deep"] = open_single_child_dir_recursively,
     ["go_shallow"] = function(state)
@@ -161,18 +135,13 @@ local config = {
     end,
     ["telescope_grep"] = function(state)
       local node = state.tree:get_node()
-      local path
-      if node.type == "directory" then
-        path = node:get_id()
-      else
-        -- If it's a file, get the directory it's in
+      local path = node:get_id()
+      if node.type ~= "directory" then
         path = vim.fn.fnamemodify(path, ":h")
       end
       telescope.live_grep(getTelescopeOpts(state, path))
     end,
     ["copy_path"] = function(state)
-      -- NeoTree is based on [NuiTree](https://github.com/MunifTanjim/nui.nvim/tree/main/lua/nui/tree)
-      -- The node is based on [NuiNode](https://github.com/MunifTanjim/nui.nvim/tree/main/lua/nui/tree#nuitreenode)
       local node = state.tree:get_node()
       local filepath = node:get_id()
       local filename = node.name

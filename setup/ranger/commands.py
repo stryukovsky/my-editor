@@ -326,13 +326,12 @@ class open_in_nautilus(Command):
 
         args = ["nautilus"]
 
-        # Add directories to open directly
+        args.append("--select")
+
         if dirs:
             args.extend(dirs)
 
-        # Add files to select
         if files:
-            args.append("--select")
             args.extend(files)
 
         if len(args) > 1:  # Avoid running "nautilus" with no args unless intended
