@@ -157,4 +157,7 @@ return {
   },
   { "stryukovsky/git-conflict.nvim", branch = "main" },
   { "stryukovsky/rainbow-delimiters.nvim" },
+  {
+    "chentoast/marks.nvim",
+  },
 }

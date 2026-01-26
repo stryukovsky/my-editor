@@ -1,9 +1,5 @@
 return {
   {
-    "karb94/neoscroll.nvim",
-    opts = {},
-  },
-  {
     "booperlv/nvim-gomove",
   },
   {

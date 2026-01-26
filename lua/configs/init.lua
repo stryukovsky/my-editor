@@ -5,6 +5,7 @@ require("todo-comments").setup()
 require("log-highlight").setup {}
 
 require "configs.yanky"
+require "configs.marks"
 require "configs.barbar"
 require "configs.treesitter"
 require "configs.kulala"
