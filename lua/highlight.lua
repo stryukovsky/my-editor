@@ -71,6 +71,9 @@ local function override_highlights()
   hl(0, "NeogitDiffDeleteCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
   hl(0, "NeogitDiffHeaderCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
 
+  local comment_fg = vim.api.nvim_get_hl(0, { name = "Comment" }).fg
+  hl(0, "GitSignsCurrentLineBlame", { fg = comment_fg, italic = true })
+
   local palette = {
     insert = vim.api.nvim_get_hl(0, { name = "lualine_a_insert" }),
     -- foreground = "White",

@@ -337,15 +337,5 @@ end, { desc = "UI trouble inspect" })
 
 local git_blame_bufnr = 0
 map("n", "<A-b>", function()
-  if git_blame_bufnr == 0 then
-    if is_normal_buffer() then
-      gitsigns_async.create(0, function()
-        gitsigns_blame.blame()
-        git_blame_bufnr = vim.fn.bufnr()
-      end)()
-    end
-  else
-    vim.cmd(tostring(git_blame_bufnr) .. "bw")
-    git_blame_bufnr = 0
-  end
+  vim.cmd "Gitsigns toggle_current_line_blame"
 end, { desc = "UI git blame buffer" })
