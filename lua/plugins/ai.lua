@@ -5,4 +5,7 @@ return {
   {
     "olimorris/codecompanion.nvim",
   },
+  {
+    "stryukovsky/aidviser.nvim",
+  },
 }
