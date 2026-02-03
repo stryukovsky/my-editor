@@ -1,10 +1,14 @@
 ---@diagnostic disable: param-type-mismatch, unused-local, missing-fields, redundant-parameter
 local filesystem = require "neo-tree.sources.filesystem"
+local clear_selections = require "utils.clear_selections"
 local renderer = require "neo-tree.ui.renderer"
 local telescope = require "telescope.builtin"
 local cmds = require "neo-tree.sources.filesystem.commands"
+local commands = require "neo-tree.sources.common.commands"
 local spectre = require "spectre"
 local system_file_explorer = require "utils.system_file_explorer"
+local neotree_utils = require "neo-tree.utils"
+local fs = require "neo-tree.sources.filesystem"
 
 local function open_single_child_dir_recursively(state)
   local node = state.tree:get_node()
@@ -190,13 +194,17 @@ local config = {
     },
     group_empty_dirs = true, -- when true, empty folders will be grouped together
     mappings = {
-      -- ["<space>"] = function(state, selected_nodes, ...) end, -- why not  'noop' - basically i need to prohibit whichkey to appear here, noop does a fallback
+      ["<space>"] = "noop",
       ["h"] = "go_shallow",
       ["l"] = "go_deep",
-      ["/"] = function() end,
+      ["/"] = "noop",
       ["<A-q>"] = function() end,
       ["<cr>"] = { "open", config = { expand_nested_files = true } }, -- expand nested file takes precedence
-      ["<esc>"] = "cancel", -- close preview or floating neo-tree window
+      -- ["<esc>"] = "cancel", -- close preview or floating neo-tree window
+      ["<esc>"] = function(state)
+        commands.cancel(state)
+        clear_selections()
+      end, -- close preview or floating neo-tree window
       ["P"] = {
         "toggle_preview",
         config = {
@@ -230,6 +238,7 @@ local config = {
     window = {
       mappings = {
         ["o"] = "system_open",
+        ["<leader>rr"] = "refresh",
         ["O"] = "open_parent_folder",
         ["F"] = "telescope_grep",
         ["R"] = "replace_in_directory",
@@ -240,14 +249,17 @@ local config = {
         ["<C-c>"] = "clear_filter",
         ["s"] = "git_add_file",
         ["u"] = "git_unstage_file",
-        ["a"] = {
-          "add",
-          -- some commands may take optional config options, see `:h neo-tree-mappings` for details
-          config = {
-            show_path = "relative", -- "none", "relative", "absolute"
-            follow_current_file = true,
-          },
-        },
+        ["a"] = function(state)
+          -- after creation of even nested item it will be focused
+          -- WARN: probably in future issues with compatibility
+          commands.add(
+            state,
+            neotree_utils.wrap(function(arg_state, arg_node_or_path)
+              fs.show_new_children(arg_state, arg_node_or_path)
+              fs.navigate(arg_state, nil, arg_node_or_path)
+            end, state)
+          )
+        end,
         ["c"] = "copy_to_clipboard", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
         ["d"] = "delete",
         ["A"] = "add_directory", -- also accepts the config.show_path and config.insert_as options.

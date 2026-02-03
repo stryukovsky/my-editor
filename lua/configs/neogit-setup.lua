@@ -95,6 +95,8 @@ neogit.setup {
       ["<Esc>"] = "Close",
       ["<Tab>"] = function() end,
       ["o"] = "GoToFile",
+      ["[g"] = "GoToPreviousHunkHeader",
+      ["]g"] = "GoToNextHunkHeader",
     },
 
     commit_editor = {

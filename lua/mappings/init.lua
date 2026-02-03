@@ -1,3 +1,4 @@
+local clear_selections = require "utils.clear_selections"
 local unset = vim.keymap.del
 
 unset("i", "<Tab>")
@@ -6,10 +7,7 @@ unset("i", "<S-Tab>")
 unset("s", "<S-Tab>")
 
 local map = require "mappings.map"
-map("n", "<Esc>", function()
-  vim.cmd "noh"
-  vim.snippet.stop()
-end, { desc = "general clear highlights" })
+map("n", "<Esc>", clear_selections, { desc = "general clear highlights" })
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "general copy whole file" })
 vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
