@@ -6,10 +6,10 @@ map("v", "/", function()
   vim.fn.feedkeys("/\\%V", "n")
 end, { desc = "Search in visual selection" })
 
-map("n", "<leader>rr", function()
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(":%s///g<Left><Left>", true, false, true), "n", false)
-  vim.cmd "nohlsearch"
-end, { desc = "Substitute in entire file" })
+-- map("n", "<leader>rr", function()
+--   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(":%s///g<Left><Left>", true, false, true), "n", false)
+--   vim.cmd "nohlsearch"
+-- end, { desc = "Substitute in entire file" })
 
 map("n", "<leader>ri", function()
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("gv:s///g<Left><Left>", true, false, true), "n", false)
