@@ -1,0 +1,48 @@
+# Window settings
+window-decoration = false
+window-inherit-working-directory = true
+window-inherit-font-size = true
+
+# Startup
+fullscreen = true
+
+# Font settings
+font-family = AdwaitaMono Nerd Font
+font-size = 10.5
+font-style = Regular
+font-style-bold = Bold
+font-style-italic = Italic
+
+# Background opacity
+background-opacity = 1
+
+# Shell
+shell-integration = zsh
+
+# Clipboard
+clipboard-read = allow
+clipboard-write = allow
+copy-on-select = false
+
+# Keybindings
+# Move word-wise with Alt + Left/Right
+keybind = alt+left=text:\x1bb
+keybind = alt+right=text:\x1bf
+
+# Move word-wise with Ctrl + Left/Right
+keybind = ctrl+left=text:\x1b[1;5D
+keybind = ctrl+right=text:\x1b[1;5C
+
+# Delete word-wise with Alt + Backspace
+keybind = alt+backspace=text:\x1b\x7f
+keybind = ctrl+backspace=text:\x1b\x7f
+
+# Delete word AFTER cursor with Alt + Delete
+keybind = alt+delete=text:\x1bd
+keybind = ctrl+delete=text:\x1bd
+keybind = ctrl+t=new_tab
+
+keybind = ctrl+q=previous_tab
+keybind = ctrl+e=next_tab
+keybind = ctrl+n=new_window
+keybind = ctrl+w=close_tab

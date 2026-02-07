@@ -335,7 +335,7 @@ map(ui_components_modes, "<A-i>", function()
   end
 end, { desc = "UI trouble inspect" })
 
-local git_blame_bufnr = 0
 map("n", "<A-b>", function()
   vim.cmd "Gitsigns toggle_current_line_blame"
+  vim.notify("Toggled current-line blame", vim.diagnostic.severity.INFO, { timeout = 3000 })
 end, { desc = "UI git blame buffer" })

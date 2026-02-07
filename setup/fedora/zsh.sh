@@ -60,3 +60,35 @@ export FZF_DEFAULT_OPTS='--height 40% --tmux center,40% --layout reverse --borde
 alias top="bpytop"
 alias ff="ranger"
 alias mc="ranger"
+
+function vllm() {
+    # Set the path to the virtual environment and the launch script
+    VLLM_DIR="$HOME/.config/nvim/ai/vllm"
+    LAUNCH_SCRIPT="$VLLM_DIR/launch.sh"
+
+    # Check if the virtual environment directory exists
+    if [ ! -d "$VLLM_DIR" ]; then
+        echo "Error: Virtual environment directory not found at $VLLM_DIR" >&2
+        return 1
+    fi
+
+    # Check if the activation script exists
+    if [ ! -f "$VLLM_DIR/.venv/bin/activate" ]; then
+        echo "Error: Virtual environment activation script not found" >&2
+        return 1
+    fi
+
+    # Check if the launch script exists
+    if [ ! -f "$LAUNCH_SCRIPT" ]; then
+        echo "Error: Launch script not found at $LAUNCH_SCRIPT" >&2
+        return 1
+    fi
+
+    # Activate the virtual environment
+    source "$VLLM_DIR/bin/activate"
+    echo "Activated venv: $VLLM_DIR"
+
+    # Execute the launch script
+    echo "Executing launch script: $LAUNCH_SCRIPT"
+    bash "$LAUNCH_SCRIPT"
+}
