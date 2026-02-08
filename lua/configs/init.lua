@@ -11,7 +11,6 @@ require "configs.treesitter"
 require "configs.kulala"
 require "configs.oil"
 require "configs.gomove"
-require "configs.dapui"
 require "configs.gitsigns"
 require "configs.neotest"
 require "configs.trouble"
@@ -49,19 +48,14 @@ vim.api.nvim_create_autocmd("TextYankPost", {
   desc = "Highlight when yanking (copying) text",
   group = vim.api.nvim_create_augroup("highlight-yank", {} --[[ { clear = true } ]]),
   callback = function()
-    local mc = require "multicursor-nvim"
-    mc.action(function(ctx)
-      local cursors = ctx:getCursors()
-      -- only if one cursor (i.e. no multicursor)
-      -- there will be highlight on yank
-      if #cursors == 1 then
-        vim.highlight.on_yank {
-          higroup = "IncSearch",
-          timeout = 600,
-        }
-      end
-    end)
-
-    -- Clear highlights after 1 second
+    local ok, mc = pcall(require, "multicursor-nvim")
+    if ok and mc.hasCursors() then
+      -- Skip highlight when multicursor is active
+      return
+    end
+    vim.highlight.on_yank {
+      higroup = "IncSearch",
+      timeout = 600,
+    }
   end,
 })

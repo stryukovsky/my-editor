@@ -1,13 +1,10 @@
 ---@diagnostic disable: duplicate-set-field
 local map = require "mappings.map"
-local dapui = require "dapui"
 local neotest = require "neotest"
 local trouble = require "trouble"
 local kulala = require "kulala"
 local kulala_ui = require "kulala.ui"
 local oil = require "oil"
-local gitsigns_async = require "gitsigns.async"
-local gitsigns_blame = require "gitsigns.actions.blame"
 local neotree_command = require "neo-tree.command"
 local spectre = require "spectre"
 local close_telescope = require "mappings.close_telescope"
@@ -179,7 +176,6 @@ end, { desc = "Theme" })
 -- neotree
 local function workaround_neotree_focus(source, opts)
   pcall(function()
-    dapui.close()
     local focus_command = vim.tbl_extend("error", {
       action = "focus", -- Focus NeoTree
       source = source,
@@ -199,10 +195,8 @@ local function workaround_neotree_focus(source, opts)
 end
 
 map(ui_components_modes, "<A-e>", function()
-  dapui.close()
   local current_buf = vim.api.nvim_get_current_buf()
   local file_path = vim.api.nvim_buf_get_name(current_buf)
-  _G.dapui_callback_close()
   workaround_neotree_focus("filesystem", {
     reveal_file = file_path, -- Auto-highlight the file
     reveal_force_cwd = true, -- Ensure correct working dir
@@ -216,28 +210,7 @@ end, { desc = "UI neotree structure" })
 _G.bottom_component_callback_close = function() end
 --
 -- special case for neotree only
-_G.dapui_callback_close = function() end
 local right_component_callback_close = function() end
-
-vim.g.dapui_state_is_opened = false
--- toggle dapui
-map(ui_components_modes, "<A-r>", function()
-  if vim.g.dapui_state_is_opened then
-    dapui.close()
-    vim.cmd "Neotree reveal left source=filesystem"
-  else
-    vim.cmd "Neotree close"
-    trouble.close()
-    _G.bottom_component_callback_close()
-    dapui.open()
-    _G.bottom_component_callback_close = function()
-      vim.g.dapui_state_is_opened = false
-      dapui.close()
-    end
-    _G.dapui_callback_close = _G.bottom_component_callback_close
-  end
-  vim.g.dapui_state_is_opened = not vim.g.dapui_state_is_opened
-end, { desc = "UI debug close view" })
 
 -- spectre
 vim.g.spectre_opened = false

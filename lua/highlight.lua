@@ -61,6 +61,7 @@ local function override_highlights()
   hl(0, "SpellCap", {})
   hl(0, "SpellLocal", {})
 
+  hl(0, "Cursor", { bg = foreground_active })
   hl(0, "NeogitDiffContext", { bg = background })
   -- move to default cursor
   local neogit_cursor_bg = vim.api.nvim_get_hl(0, { name = "NeogitCursor" }).bg
