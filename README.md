@@ -29,7 +29,6 @@ sudo bash setup/fedora/setup.sh
 bash setup/fedora/pyenv.sh
 bash setup/commons.sh
 cp setup/fedora/zsh.sh ~/.zshrc
-cp setup/fedora/zsh.sh ~/.zshrc
 mkdir -p ~/.config/ghostty/
 cp setup/fedora/ghostty ~/.config/ghostty/config
 cp -r setup/ranger ~/.config/
