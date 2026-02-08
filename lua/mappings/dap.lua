@@ -1,6 +1,6 @@
 ---@diagnostic disable: duplicate-set-field
 local map = require "mappings.map"
-
+local widgets = require "dap.ui.widgets"
 local dap = require "dap"
 -- local trouble = require "trouble"
 
@@ -65,7 +65,6 @@ local function widgets_mappings(toggling_mapping)
   end)
 end
 
-local widgets = require "dap.ui.widgets"
 local widgets_common_title_part = " 'a' to see commands  '<CR>' to expand items  'q' to exit"
 map("n", "<leader>dv", function()
   widgets.centered_float(widgets.scopes, { title = "  Variables " .. widgets_common_title_part })
@@ -112,3 +111,8 @@ map({ "n", "v" }, "<A-X>", function()
   end)
   widgets_mappings { "<leader>dei", "<A-X>" }
 end, { desc = "debug evaluate input" })
+
+map({ "n", "v" }, "<leader>db", function()
+  dap.list_breakpoints()
+  vim.cmd "Trouble qflist open focus=true"
+end, { desc = "debug list breakpoints" })
