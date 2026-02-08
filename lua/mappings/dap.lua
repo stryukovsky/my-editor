@@ -2,6 +2,7 @@
 local map = require "mappings.map"
 local widgets = require "dap.ui.widgets"
 local dap = require "dap"
+local debug_output = require("configs.debug_output")
 -- local trouble = require "trouble"
 
 -- debugger
@@ -81,6 +82,10 @@ map("n", "<leader>df", function()
   widgets.centered_float(widgets.frames, { title = "  Frames " .. widgets_common_title_part })
   widgets_mappings "<leader>df"
 end, { desc = "debug frames" })
+
+map("n", "<leader>dl", function()
+  debug_output()
+end, { desc = "debug show process log" })
 
 map("n", "<leader>dt", function()
   widgets.centered_float(widgets.threads, { title = "  Threads " .. widgets_common_title_part })
