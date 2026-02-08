@@ -61,22 +61,26 @@ dap.listeners.after.event_initialized["store_metadata"] = function(session)
   }
 end
 
+local function session_terminated(session)
+  if session_metadata[session.id] then
+    session_metadata[session.id].active = false
+    session_metadata[session.id].ended_at = os.date "%Y-%m-%d %H:%M:%S"
+    if active_output_buffers[session.id] then
+      for buf, _ in pairs(active_output_buffers[session.id]) do
+        if vim.api.nvim_buf_is_valid(buf) then
+          vim.schedule(function()
+            vim.bo[buf].modifiable = true
+          end)
+        end
+      end
+    end
+  end
+end
+
 -- Mark session as ended
-dap.listeners.before.event_terminated["mark_ended"] = function(session)
-  if session_metadata[session.id] then
-    session_metadata[session.id].active = false
-    session_metadata[session.id].ended_at = os.date "%Y-%m-%d %H:%M:%S"
-  end
-end
+dap.listeners.before.event_terminated["mark_ended"] = session_terminated
+dap.listeners.before.event_exited["mark_ended"] = session_terminated
 
-dap.listeners.before.event_exited["mark_ended"] = function(session)
-  if session_metadata[session.id] then
-    session_metadata[session.id].active = false
-    session_metadata[session.id].ended_at = os.date "%Y-%m-%d %H:%M:%S"
-  end
-end
-
--- Function to display output in a buffer
 local function show_session_output(session_id)
   local outputs = session_outputs[session_id]
   if not outputs or #outputs == 0 then
@@ -88,7 +92,7 @@ local function show_session_output(session_id)
   local buf = vim.api.nvim_create_buf(false, true)
   vim.bo[buf].buftype = "nofile"
   vim.bo[buf].bufhidden = "wipe"
-  vim.bo[buf].filetype = "dap-output"
+  vim.bo[buf].filetype = "log"
 
   -- Add session info header
   local header = {}
