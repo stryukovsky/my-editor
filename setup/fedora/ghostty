@@ -1,10 +1,11 @@
 # Window settings
-window-decoration = false
 window-inherit-working-directory = true
 window-inherit-font-size = true
 
 # Startup
-fullscreen = true
+window-decoration = true
+window-save-state = always
+maximize = true
 
 # Font settings
 font-family = AdwaitaMono Nerd Font
@@ -46,3 +47,8 @@ keybind = ctrl+q=previous_tab
 keybind = ctrl+e=next_tab
 keybind = ctrl+n=new_window
 keybind = ctrl+w=close_tab
+
+cursor-style = block
+# cursor-style-blink = false
+shell-integration-features = no-cursor
+cursor-invert-fg-bg = true
