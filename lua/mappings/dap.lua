@@ -7,8 +7,8 @@ local debug_output = require("configs.debug_output")
 
 -- debugger
 map("n", "<leader>dd", function()
-  dap.continue()
-end, { desc = "debug continue" })
+  vim.cmd.DapNew()
+end, { desc = "debug start" })
 
 map("n", "<A-n>", function()
   dap.continue()
@@ -119,5 +119,5 @@ end, { desc = "debug evaluate input" })
 
 map({ "n", "v" }, "<leader>db", function()
   dap.list_breakpoints()
-  vim.cmd "Trouble qflist open focus=true"
+  vim.cmd.Trouble("qflist","open", "focus=true")
 end, { desc = "debug list breakpoints" })
