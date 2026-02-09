@@ -53,15 +53,7 @@ require("material").setup {
     "which-key",
   },
   custom_highlights = {
-    -- TabLine = function(colors, _)
-    --   return {
-    --     fg = colors.main.gray,
-    --     italic = true,
-    --   }
-    -- end,
-    -- TabLineSel = function(_, highlights)
-    --   return vim.tbl_extend("force", highlights.main_highlights.editor()["TabLineSel"], { bold = true })
-    -- end,
+    Visual = { reverse = true, underline = true },
   },
   lualine_style = "stealth", -- Lualine style ( can be 'stealth' or 'default' )
 }
