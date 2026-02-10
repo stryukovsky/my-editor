@@ -231,6 +231,8 @@ local function show_telescope_picker()
         end,
       },
       sorter = conf.generic_sorter {},
+
+      mappings = require "mappings.telescope.defaults",
       attach_mappings = function(prompt_bufnr, _)
         actions.select_default:replace(function()
           local selection = action_state.get_selected_entry()
@@ -252,6 +254,7 @@ local function show_telescope_picker()
           end
           show_session_output(session_id)
         end)
+        return true
       end,
     })
     :find()
