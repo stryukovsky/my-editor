@@ -1,88 +1,14 @@
--- Store output per session
+-- DAP Output Manager Module
+-- Manages debug session outputs with live updates and session tracking
+
+local M = {}
+
+-- Private state
 local session_outputs = {}
 local session_metadata = {}
-local active_output_buffers = {} -- Track buffers showing output
-local dap = require "dap"
+local active_output_buffers = {}
 
-dap.defaults.fallback.on_output = function(session, event)
-  -- Get or create session output storage
-  local session_id = session.id
-  if not session_outputs[session_id] then
-    session_outputs[session_id] = {}
-  end
-
-  -- Split output by newlines and append each line
-  local lines = vim.split(event.output, "\n", { plain = true })
-  for _, line in ipairs(lines) do
-    table.insert(session_outputs[session_id], line)
-  end
-
-  -- Update all buffers showing this session's output
-  if active_output_buffers[session_id] then
-    for buf, _ in pairs(active_output_buffers[session_id]) do
-      if vim.api.nvim_buf_is_valid(buf) then
-        vim.schedule(function()
-          -- Make buffer temporarily modifiable
-          vim.bo[buf].modifiable = true
-
-          -- Get current line count and append new lines
-          local current_lines = vim.api.nvim_buf_line_count(buf)
-          vim.api.nvim_buf_set_lines(buf, current_lines, -1, false, lines)
-
-          -- Make buffer read-only again
-          vim.bo[buf].modifiable = false
-
-          -- Auto-scroll to bottom if window is visible
-          for _, win in ipairs(vim.api.nvim_list_wins()) do
-            if vim.api.nvim_win_get_buf(win) == buf then
-              local last_line = vim.api.nvim_buf_line_count(buf)
-              vim.api.nvim_win_set_cursor(win, { last_line, 0 })
-            end
-          end
-        end)
-      else
-        -- Clean up invalid buffer reference
-        active_output_buffers[session_id][buf] = nil
-      end
-    end
-  end
-end
-
--- Capture session metadata when session starts
-dap.listeners.after.event_initialized["store_metadata"] = function(session)
-  local session_id = session.id
-  session_metadata[session_id] = {
-    command = session.config.program or session.config.request or "Unknown",
-    name = session.config.name or "Unnamed",
-    type = session.config.type or "Unknown",
-    started_at = os.date "%Y-%m-%d %H:%M:%S",
-    active = true,
-  }
-end
-
-local function session_terminated(session)
-  if session_metadata[session.id] then
-    session_metadata[session.id].active = false
-    session_metadata[session.id].ended_at = os.date "%Y-%m-%d %H:%M:%S"
-
-    -- Make all buffers for this session modifiable again
-    if active_output_buffers[session.id] then
-      for buf, _ in pairs(active_output_buffers[session.id]) do
-        if vim.api.nvim_buf_is_valid(buf) then
-          vim.schedule(function()
-            vim.bo[buf].modifiable = true
-          end)
-        end
-      end
-    end
-  end
-end
-
--- Mark session as ended
-dap.listeners.before.event_terminated["mark_ended"] = session_terminated
-dap.listeners.before.event_exited["mark_ended"] = session_terminated
-
--- Helper function to find window for a buffer
+-- Private helper functions
 local function find_window_for_buffer(buf)
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     if vim.api.nvim_win_get_buf(win) == buf then
@@ -92,7 +18,6 @@ local function find_window_for_buffer(buf)
   return nil
 end
 
--- Helper function to find buffer for a session
 local function find_buffer_for_session(session_id)
   if not active_output_buffers[session_id] then
     return nil
@@ -180,14 +105,16 @@ local function show_session_output(session_id)
   end)
 end
 
--- Show telescope picker for session selection
-local function show_telescope_picker()
+--- Show telescope picker for session selection and execute action
+--- @param action function Callback function(session_id, meta, dap_session) to execute after selection
+local function show_session_picker(action)
   local has_telescope, pickers = pcall(require, "telescope.pickers")
   if not has_telescope then
     vim.notify("Telescope not available", vim.log.levels.WARN)
     return
   end
 
+  local dap = require "dap"
   local finders = require "telescope.finders"
   local conf = require("telescope.config").values
   local actions = require "telescope.actions"
@@ -240,6 +167,7 @@ local function show_telescope_picker()
 
           local session_id = selection.value.session_id
           local meta = selection.value.meta
+          local dap_session = nil
 
           -- Set as current session if it's active
           if meta.active then
@@ -247,12 +175,17 @@ local function show_telescope_picker()
             for _, sess in pairs(dap.sessions()) do
               if sess.id == session_id then
                 dap.set_session(sess)
+                dap_session = sess
                 vim.notify("Switched to session: " .. meta.name, vim.log.levels.INFO)
                 break
               end
             end
           end
-          show_session_output(session_id)
+
+          -- Execute the provided action
+          if action then
+            action(session_id, meta, dap_session)
+          end
         end)
         return true
       end,
@@ -260,15 +193,98 @@ local function show_telescope_picker()
     :find()
 end
 
--- Main function with simplified buffer tracking
-return function()
+-- Public API
+
+--- Setup DAP output capture and listeners
+function M.setup()
+  local dap = require "dap"
+
+  -- Capture output
+  dap.defaults.fallback.on_output = function(session, event)
+    local session_id = session.id
+    if not session_outputs[session_id] then
+      session_outputs[session_id] = {}
+    end
+
+    -- Split output by newlines and append each line
+    local lines = vim.split(event.output, "\n", { plain = true })
+    for _, line in ipairs(lines) do
+      table.insert(session_outputs[session_id], line)
+    end
+
+    -- Update all buffers showing this session's output
+    if active_output_buffers[session_id] then
+      for buf, _ in pairs(active_output_buffers[session_id]) do
+        if vim.api.nvim_buf_is_valid(buf) then
+          vim.schedule(function()
+            vim.bo[buf].modifiable = true
+            local current_lines = vim.api.nvim_buf_line_count(buf)
+            vim.api.nvim_buf_set_lines(buf, current_lines, -1, false, lines)
+            vim.bo[buf].modifiable = false
+
+            -- Auto-scroll to bottom if window is visible
+            for _, win in ipairs(vim.api.nvim_list_wins()) do
+              if vim.api.nvim_win_get_buf(win) == buf then
+                local last_line = vim.api.nvim_buf_line_count(buf)
+                vim.api.nvim_win_set_cursor(win, { last_line, 0 })
+              end
+            end
+          end)
+        else
+          active_output_buffers[session_id][buf] = nil
+        end
+      end
+    end
+  end
+
+  -- Capture session metadata when session starts
+  dap.listeners.after.event_initialized["store_metadata"] = function(session)
+    local session_id = session.id
+    session_metadata[session_id] = {
+      command = session.config.program or session.config.request or "Unknown",
+      name = session.config.name or "Unnamed",
+      type = session.config.type or "Unknown",
+      started_at = os.date "%Y-%m-%d %H:%M:%S",
+      active = true,
+    }
+  end
+
+  -- Session termination handler
+  local function session_terminated(session)
+    if session_metadata[session.id] then
+      session_metadata[session.id].active = false
+      session_metadata[session.id].ended_at = os.date "%Y-%m-%d %H:%M:%S"
+
+      -- Make all buffers for this session modifiable again
+      if active_output_buffers[session.id] then
+        for buf, _ in pairs(active_output_buffers[session.id]) do
+          if vim.api.nvim_buf_is_valid(buf) then
+            vim.schedule(function()
+              vim.bo[buf].modifiable = true
+            end)
+          end
+        end
+      end
+    end
+  end
+
+  -- Mark session as ended
+  dap.listeners.before.event_terminated["mark_ended"] = session_terminated
+  dap.listeners.before.event_exited["mark_ended"] = session_terminated
+end
+
+--- Show DAP output for current or selected session
+function M.show_output()
+  local dap = require "dap"
   local session = dap.session()
 
   local total_sessions = vim.tbl_count(session_metadata)
 
   -- If more than 1 session ever existed, always show picker
   if total_sessions > 1 then
-    show_telescope_picker()
+    show_session_picker(function(session_id, meta, dap_session)
+      show_session_output(session_id)
+    end)
     return
   end
 
@@ -304,5 +320,39 @@ return function()
   end
 
   -- Show telescope picker
-  show_telescope_picker()
+  show_session_picker(function(session_id, meta, dap_session)
+    show_session_output(session_id)
+  end)
 end
+
+--- Clear all stored session data
+function M.clear()
+  session_outputs = {}
+  session_metadata = {}
+  active_output_buffers = {}
+end
+
+--- Show telescope picker for session selection
+--- @param action function Callback function(session_id, meta, dap_session) to execute after selection
+function M.show_session_picker(action)
+  show_session_picker(action)
+end
+
+--- Get session metadata
+--- @param session_id string|nil Session ID (nil for all sessions)
+--- @return table Session metadata
+function M.get_metadata(session_id)
+  if session_id then
+    return session_metadata[session_id]
+  end
+  return session_metadata
+end
+
+--- Get session output
+--- @param session_id string Session ID
+--- @return table|nil Session output lines
+function M.get_output(session_id)
+  return session_outputs[session_id]
+end
+
+return M
