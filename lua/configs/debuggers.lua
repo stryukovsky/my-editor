@@ -1,5 +1,6 @@
 local dap = require "dap"
 
+dap.defaults.fallback.autostart = 'echo "test"'
 local function inputCommand()
   return vim.fn.input "Command:"
 end
@@ -121,9 +122,14 @@ dap.configurations.python = {
   {
     type = "python",
     request = "launch",
-    name = "run command",
+    name = "Run Command",
     program = "${file}",
-    cwd = "${workspaceFolder}",
     runtimeExecutable = inputCommand,
+  },
+  {
+    type = "python",
+    request = "launch",
+    name = "Run file",
+    program = "${file}",
   },
 }

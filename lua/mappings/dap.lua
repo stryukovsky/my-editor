@@ -2,7 +2,8 @@
 local map = require "mappings.map"
 local widgets = require "dap.ui.widgets"
 local dap = require "dap"
-local debug_output = require("configs.debug_output")
+local debug_output = require "configs.debug_output"
+debug_output.setup()
 -- local trouble = require "trouble"
 
 -- debugger
@@ -15,14 +16,44 @@ map("n", "<A-n>", function()
 end, { desc = "debug continue" })
 
 map("n", "<leader>dp", function()
-  dap.pause()
+  if debug_output.get_active_sessions_count() > 1 then
+    debug_output.show_session_picker(function(_, meta, dap_session)
+      if dap_session then
+        vim.notify("Pausing " .. meta.name)
+        dap.pause()
+        vim.notify("Paused " .. meta.name)
+      end
+    end)
+  else
+    dap.pause()
+  end
 end, { desc = "debug pause" })
 
 map("n", "<leader>dk", function()
-  dap.terminate()
+  if debug_output.get_active_sessions_count() > 1 then
+    debug_output.show_session_picker(function(_, meta, dap_session)
+      if dap_session then
+        vim.notify("Killing " .. meta.name)
+        dap.terminate()
+        vim.notify("Killed " .. meta.name)
+      end
+    end)
+  else
+    dap.terminate()
+  end
 end, { desc = "debug kill" })
 
-map("n", "<leader>dr", function()
+map("n", "<leader>dc", function()
+  if debug_output.get_active_sessions_count() > 1 then
+    debug_output.show_session_picker(function(_, meta, dap_session)
+      if dap_session then
+        vim.notify("Chosen " .. meta.name)
+      end
+    end)
+  end
+end, { desc = "debug choose session" })
+
+map("n", "<leader>drf", function()
   dap.restart_frame()
 end, { desc = "debug restart current frame" })
 
@@ -84,7 +115,7 @@ map("n", "<leader>df", function()
 end, { desc = "debug frames" })
 
 map("n", "<leader>dl", function()
-  debug_output()
+  debug_output.show_output()
 end, { desc = "debug show process log" })
 
 map("n", "<leader>dt", function()
@@ -119,5 +150,5 @@ end, { desc = "debug evaluate input" })
 
 map({ "n", "v" }, "<leader>db", function()
   dap.list_breakpoints()
-  vim.cmd.Trouble("qflist","open", "focus=true")
+  vim.cmd.Trouble("qflist", "open", "focus=true")
 end, { desc = "debug list breakpoints" })

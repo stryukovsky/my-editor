@@ -8,6 +8,22 @@ local session_outputs = {}
 local session_metadata = {}
 local active_output_buffers = {}
 
+local function random_3char()
+  -- Инициализация генератора (лучше делать один раз при запуске конфига)
+  math.randomseed(os.time())
+
+  local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+  local result = {}
+
+  for _ = 1, 3 do
+    local index = math.random(#chars)
+    -- Берем один символ в позиции index
+    result[#result + 1] = chars:sub(index, index)
+  end
+
+  return table.concat(result)
+end
+
 -- Private helper functions
 local function find_window_for_buffer(buf)
   for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -88,8 +104,11 @@ local function show_session_output(session_id)
   vim.cmd "split"
   local win = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_buf(win, buf)
-  vim.api.nvim_buf_set_name(buf, "DAP Output: " .. (meta and meta.name or session_id))
-
+  if not pcall(function()
+    vim.api.nvim_buf_set_name(buf, "DAP Output: " .. (meta and meta.name or session_id))
+  end) then
+    vim.api.nvim_buf_set_name(buf, "DAP Output: " .. (meta and meta.name or session_id) .. " " .. random_3char())
+  end
   -- Add 'q' mapping to close the window
   vim.keymap.set("n", "q", function()
     vim.cmd "close"
@@ -338,6 +357,16 @@ function M.show_session_picker(action)
   show_session_picker(action)
 end
 
+function M.get_active_sessions_count()
+  local count = 0
+  for _, meta in pairs(session_metadata) do
+    if meta.active then
+      count = count + 1
+    end
+  end
+  return count
+end
+
 --- Get session metadata
 --- @param session_id string|nil Session ID (nil for all sessions)
 --- @return table Session metadata
@@ -353,6 +382,40 @@ end
 --- @return table|nil Session output lines
 function M.get_output(session_id)
   return session_outputs[session_id]
+end
+
+--- Get lualine component for current DAP session
+--- @return table Lualine component configuration
+function M.lualine_component()
+  return {
+    function()
+      local dap = require "dap"
+      local session = dap.session()
+
+      if not session then
+        return ""
+      end
+
+      local meta = session_metadata[session.id]
+      if not meta then
+        return "DAP"
+      end
+
+      local active_count = M.get_active_sessions_count()
+      local status_icon = meta.active and "●" or "○"
+      local name = meta.name or "DAP"
+
+      if active_count > 1 then
+        return string.format("%s %s (%d)", status_icon, name, active_count)
+      else
+        return string.format("%s %s", status_icon, name)
+      end
+    end,
+    cond = function()
+      local dap = require "dap"
+      return dap.session() ~= nil
+    end,
+  }
 end
 
 return M
