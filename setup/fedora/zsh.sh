@@ -92,3 +92,5 @@ function vllm() {
     echo "Executing launch script: $LAUNCH_SCRIPT"
     bash "$LAUNCH_SCRIPT"
 }
+
+alias activ="source .venv/bin/activate"
