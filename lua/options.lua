@@ -8,7 +8,7 @@ o.showmode = false
 vim.opt.clipboard = "unnamedplus"
 o.cursorline = true
 o.cursorlineopt = "number"
-o.winborder = 'rounded'
+o.winborder = "rounded"
 -- Indenting
 o.expandtab = true
 o.shiftwidth = 2
@@ -29,9 +29,9 @@ o.numberwidth = 2
 o.ruler = true
 
 -- Get all .add files from the spell directory
-local spell_dir = vim.fn.expand('~/.config/nvim/spell')
+local spell_dir = vim.fn.expand "~/.config/nvim/spell"
 -- local spell_files = vim.fn.glob(spell_dir .. '/*', false, true)
-local spell_files = vim.fn.glob(spell_dir .. '/*.add', false, true)
+local spell_files = vim.fn.glob(spell_dir .. "/*.add", false, true)
 
 if #spell_files > 0 then
   vim.opt.spellfile = spell_files
@@ -56,7 +56,7 @@ opt.foldlevel = 9900
 -- when cursor reaches end/beginning of line
 opt.whichwrap:append "<>[]hl"
 
-o.winborder = 'rounded' 
+o.winborder = "rounded"
 -- disable some default providers
 g.loaded_perl_provider = 0
 g.loaded_ruby_provider = 0
@@ -117,7 +117,7 @@ local ru_shift = [[ËЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТ�
 vim.opt.langmap = vim.fn.join({
   -- | `to` should be first     | `from` should be second
   escape(ru_shift)
-  .. ";"
-  .. escape(en_shift),
+    .. ";"
+    .. escape(en_shift),
   escape(ru) .. ";" .. escape(en),
 }, ",")

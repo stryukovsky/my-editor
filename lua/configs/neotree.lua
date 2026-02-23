@@ -32,6 +32,7 @@ local function open_single_child_dir_recursively(state)
   else
     -- if file, open it
     cmds.open(state)
+    vim.cmd "normal! :q<CR>" -- This will close the current window (the old terminal)
     -- cmds.clear_filter(state)
   end
 end
@@ -60,6 +61,7 @@ end
 
 ---@type neotree.Config.Base
 local config = {
+  open_files_do_not_replace_types = { "Trouble", "qf", "edgy" }, -- when opening files, do not use windows containing these filetypes or buftypes
   -- If a user has a sources list it will replace this one.
   -- Only sources listed here will be loaded.
   -- You can also add an external source by adding it's name to this list.
@@ -199,7 +201,7 @@ local config = {
       ["l"] = "go_deep",
       ["/"] = "noop",
       ["<A-q>"] = function() end,
-      ["<cr>"] = { "open", config = { expand_nested_files = true } }, -- expand nested file takes precedence
+      ["<cr>"] = "go_deep", -- expand nested file takes precedence
       -- ["<esc>"] = "cancel", -- close preview or floating neo-tree window
       ["<esc>"] = function(state)
         commands.cancel(state)

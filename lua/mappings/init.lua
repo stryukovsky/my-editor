@@ -11,6 +11,7 @@ map("n", "<Esc>", clear_selections, { desc = "general clear highlights" })
 map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "general copy whole file" })
 vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+
 require "mappings.lspconfig"
 require "mappings.dap"
 require "mappings.ui-components"
