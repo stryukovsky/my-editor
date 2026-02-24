@@ -412,8 +412,11 @@ function M.lualine_component()
       end
     end,
     cond = function()
-      local dap = require "dap"
-      return dap.session() ~= nil
+      local ok, dap = pcall(require, "dap")
+      if not ok then
+        return false
+      end
+      return vim.tbl_count(dap.sessions()) > 0
     end,
   }
 end
