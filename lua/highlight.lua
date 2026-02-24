@@ -61,6 +61,7 @@ local function override_highlights()
   hl(0, "SpellCap", {})
   hl(0, "SpellLocal", {})
 
+  hl(0, "Cursor", { bg = foreground_active })
   hl(0, "NeogitDiffContext", { bg = background })
   -- move to default cursor
   local neogit_cursor_bg = vim.api.nvim_get_hl(0, { name = "NeogitCursor" }).bg
@@ -70,6 +71,9 @@ local function override_highlights()
   hl(0, "NeogitDiffAddCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
   hl(0, "NeogitDiffDeleteCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
   hl(0, "NeogitDiffHeaderCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
+
+  local comment_fg = vim.api.nvim_get_hl(0, { name = "Comment" }).fg
+  hl(0, "GitSignsCurrentLineBlame", { fg = comment_fg, italic = true })
 
   local palette = {
     insert = vim.api.nvim_get_hl(0, { name = "lualine_a_insert" }),
@@ -96,6 +100,5 @@ vim.api.nvim_create_autocmd({ "ColorScheme", "UIEnter" }, {
 
 vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "ErrorMsg", linehl = "", numhl = "" })
 vim.fn.sign_define("DapBreakpointCondition", { text = "", texthl = "ErrorMsg", linehl = "", numhl = "" })
-vim.fn.sign_define("DapLogPoint", { text = "", texthl = "ErrorMsg", linehl = "", numhl = "" })
 vim.fn.sign_define("DapStopped", { text = "", texthl = "ErrorMsg", linehl = "Substitute", numhl = "Substitute" })
 vim.fn.sign_define("DapBreakpointRejected", { text = "", texthl = "WarningMsg", linehl = "", numhl = "" })

@@ -6,7 +6,9 @@ require("material").setup {
     strings = {
       italic = true,
     },
-    keywords = {},
+    keywords = {
+      italic = true,
+    },
     functions = {
       bold = true,
     },
@@ -26,7 +28,7 @@ require("material").setup {
     -- "dashboard",
     -- "eyeliner",
     "fidget",
-    -- "flash",
+    "flash",
     "gitsigns",
     -- "harpoon",
     -- "hop",
@@ -44,23 +46,14 @@ require("material").setup {
     "nvim-notify",
     -- "nvim-tree",
     "nvim-web-devicons",
-    -- "rainbow-delimiters",
+    "rainbow-delimiters",
     -- "sneak",
     "telescope",
     "trouble",
     "which-key",
   },
   custom_highlights = {
-    -- TabLine = function(colors, _)
-    --   return {
-    --     fg = colors.main.gray,
-    --     italic = true,
-    --   }
-    -- end,
-    -- TabLineSel = function(_, highlights)
-    --   return vim.tbl_extend("force", highlights.main_highlights.editor()["TabLineSel"], { bold = true })
-    -- end,
+    Visual = { reverse = true, underline = true },
   },
   lualine_style = "stealth", -- Lualine style ( can be 'stealth' or 'default' )
 }
-

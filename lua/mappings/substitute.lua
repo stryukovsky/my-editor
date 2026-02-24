@@ -16,10 +16,6 @@ local function get_editable_filepath()
   return nil
 end
 
-map("x", "<leader>ri", function()
-  vim.api.nvim_feedkeys(":s///g", "ni", false)
-end, { noremap = true, desc = "Replace in selection" })
-
 map("n", "<leader>rr", function()
   if vim.g.spectre_opened then
     spectre.close()

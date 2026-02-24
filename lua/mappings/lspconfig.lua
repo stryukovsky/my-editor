@@ -33,7 +33,6 @@ map("n", "<leader>rn", function()
 end, opts "renamer")
 
 map("n", "<leader>ps", function()
-  -- local path = vim.fn.input "Provide path to python executable of project: "
   local path = "python"
   vim.fn.system(path .. " -m pip install pydebug debugpy")
   vim.cmd("LspPyrightSetPythonPath " .. path)

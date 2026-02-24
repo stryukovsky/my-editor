@@ -23,7 +23,7 @@ end
 require("telescope").setup {
   -- the rest of your telescope config goes here
   defaults = {
-    prompt_prefix = "   ",
+    prompt_prefix = "",
     sorting_strategy = "ascending",
 
     layout_config = {

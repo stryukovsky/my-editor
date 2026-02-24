@@ -41,7 +41,7 @@ neogit.setup {
     verify_commit = vim.fn.executable "gpg" == 1, -- Can be set to true or false, otherwise we try to find the binary
   },
   log_view = {
-    kind = "floating",
+    kind = "split",
   },
   rebase_editor = {
     kind = "floating",
@@ -73,7 +73,7 @@ neogit.setup {
     -- The diffview integration enables the diff popup.
     --
     -- Requires you to have `sindrets/diffview.nvim` installed.
-    diffview = true,
+    diffview = false,
 
     -- If enabled, uses fzf-lua for menu selection. If the telescope integration
     -- is also selected then telescope is used instead
@@ -94,8 +94,9 @@ neogit.setup {
     status = {
       ["<Esc>"] = "Close",
       ["<Tab>"] = function() end,
-      ["<cr>"] = "GoToFile",
       ["o"] = "GoToFile",
+      ["[g"] = "GoToPreviousHunkHeader",
+      ["]g"] = "GoToNextHunkHeader",
     },
 
     commit_editor = {

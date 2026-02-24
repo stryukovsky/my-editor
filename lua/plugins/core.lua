@@ -7,7 +7,6 @@ return {
     "NeogitOrg/neogit",
     dependencies = {
       "nvim-lua/plenary.nvim", -- required
-      "sindrets/diffview.nvim", -- optional - Diff integration
 
       -- Only one of these is needed.
       "nvim-telescope/telescope.nvim", -- optional
@@ -113,9 +112,6 @@ return {
     lazy = false,
   },
   {
-    "sindrets/diffview.nvim",
-  },
-  {
     "folke/trouble.nvim",
     cmd = "Trouble",
   },
@@ -157,5 +153,14 @@ return {
     },
     ft = { "markdown", "codecompanion" },
     lazy = true,
+  },
+  { "stryukovsky/git-conflict.nvim", branch = "main" },
+  { "stryukovsky/rainbow-delimiters.nvim" },
+  {
+    "chentoast/marks.nvim",
+  },
+  {
+    "kylechui/nvim-surround",
+    version = "^3.0.0", -- Use for stability; omit to use `main` branch for the latest features
   },
 }

@@ -28,10 +28,12 @@ Execute every line separately!!!
 sudo bash setup/fedora/setup.sh 
 bash setup/fedora/pyenv.sh
 bash setup/commons.sh
-cp setup/fedora/alacritty.toml ~/.alacritty.toml
-cp setup/tmux.conf ~/.tmux.conf
 cp setup/fedora/zsh.sh ~/.zshrc
+mkdir -p ~/.config/ghostty/
+cp setup/fedora/ghostty ~/.config/ghostty/config
+cp -r setup/ranger ~/.config/
 bash setup/finalize.sh
+
 ```
 
 Install plugins in tmux (`<prefix>I`).  
@@ -67,7 +69,7 @@ Install plugins
 - https://extensions.gnome.org/extension/19/user-themes/
 - https://extensions.gnome.org/extension/7065/tiling-shell/
 - https://extensions.gnome.org/extension/1460/vitals/
-- https://extensions.gnome.org/extension/307/dash-to-dock/
+- https://extensions.gnome.org/extension/1160/dash-to-panel/
 
 After installed, configure it:  
 

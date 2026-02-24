@@ -40,7 +40,7 @@ require("barbar").setup {
     -- Configure the icons on the bufferline when modified or pinned.
     -- Supports all the base icon options.
     modified = { button = "" },
-    pinned = { button = "", filename = false },
+    pinned = { button = "", filename = true },
     current = { button = "" },
     inactive = { button = "" },
   },

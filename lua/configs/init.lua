@@ -5,6 +5,7 @@ require("todo-comments").setup()
 require("log-highlight").setup {}
 
 require "configs.yanky"
+require "configs.marks"
 require "configs.barbar"
 require "configs.treesitter"
 require "configs.oil"
@@ -23,9 +24,30 @@ require "configs.langmapper"
 require "configs.siblingswap"
 require "configs.blink"
 require "configs.grapple"
+require "configs.aidviser"
 require "configs.whichkey"
 require "configs.spectre"
 require "configs.treesj"
-require "configs.diffview"
+require "configs.debuggers"
 require "configs.flash"
+require "configs.gitconflict"
+require "configs.surround"
+-- at the end, so all highlight rules can be applied
+require "configs.material-theme"
 require "highlight"
+
+vim.api.nvim_create_autocmd("TextYankPost", {
+  desc = "Highlight when yanking (copying) text",
+  group = vim.api.nvim_create_augroup("highlight-yank", {} --[[ { clear = true } ]]),
+  callback = function()
+    local ok, mc = pcall(require, "multicursor-nvim")
+    if ok and mc.hasCursors() then
+      -- Skip highlight when multicursor is active
+      return
+    end
+    vim.highlight.on_yank {
+      higroup = "IncSearch",
+      timeout = 600,
+    }
+  end,
+})

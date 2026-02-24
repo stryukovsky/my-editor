@@ -1,9 +1,14 @@
 ---@diagnostic disable: param-type-mismatch, unused-local, missing-fields, redundant-parameter
 local filesystem = require "neo-tree.sources.filesystem"
+local clear_selections = require "utils.clear_selections"
 local renderer = require "neo-tree.ui.renderer"
 local telescope = require "telescope.builtin"
 local cmds = require "neo-tree.sources.filesystem.commands"
+local commands = require "neo-tree.sources.common.commands"
 local spectre = require "spectre"
+local system_file_explorer = require "utils.system_file_explorer"
+local neotree_utils = require "neo-tree.utils"
+local fs = require "neo-tree.sources.filesystem"
 
 local function open_single_child_dir_recursively(state)
   local node = state.tree:get_node()
@@ -27,6 +32,7 @@ local function open_single_child_dir_recursively(state)
   else
     -- if file, open it
     cmds.open(state)
+    vim.cmd "normal! :q<CR>" -- This will close the current window (the old terminal)
     -- cmds.clear_filter(state)
   end
 end
@@ -55,6 +61,7 @@ end
 
 ---@type neotree.Config.Base
 local config = {
+  open_files_do_not_replace_types = { "Trouble", "qf", "edgy" }, -- when opening files, do not use windows containing these filetypes or buftypes
   -- If a user has a sources list it will replace this one.
   -- Only sources listed here will be loaded.
   -- You can also add an external source by adding it's name to this list.
@@ -113,34 +120,7 @@ local config = {
     ["open_parent_folder"] = function(state)
       local node = state.tree:get_node()
       local path = node:get_id()
-
-      -- Get the parent directory path
-      local parent_path
-      if node.type == "directory" then
-        -- If it's a directory, get its parent
-        parent_path = vim.fn.fnamemodify(path, ":h")
-      else
-        -- If it's a file, get the directory it's in
-        parent_path = vim.fn.fnamemodify(path, ":h")
-      end
-
-      -- Ensure we don't go above root
-      if parent_path == path then
-        vim.notify("Already at root directory", vim.log.levels.WARN)
-        return
-      end
-
-      -- Open parent directory in default application
-      local sysname = vim.loop.os_uname().sysname
-      if sysname == "Darwin" then
-        vim.fn.jobstart({ "open", parent_path }, { detach = true })
-      elseif sysname == "Linux" then
-        vim.fn.jobstart({ "xdg-open", parent_path }, { detach = true })
-      elseif sysname == "Windows_NT" then
-        vim.fn.jobstart({ "explorer", parent_path }, { detach = true })
-      else
-        vim.notify("Unknown platform: " .. sysname, vim.log.levels.ERROR)
-      end
+      system_file_explorer(path)
     end,
     ["go_deep"] = open_single_child_dir_recursively,
     ["go_shallow"] = function(state)
@@ -161,18 +141,13 @@ local config = {
     end,
     ["telescope_grep"] = function(state)
       local node = state.tree:get_node()
-      local path
-      if node.type == "directory" then
-        path = node:get_id()
-      else
-        -- If it's a file, get the directory it's in
+      local path = node:get_id()
+      if node.type ~= "directory" then
         path = vim.fn.fnamemodify(path, ":h")
       end
       telescope.live_grep(getTelescopeOpts(state, path))
     end,
     ["copy_path"] = function(state)
-      -- NeoTree is based on [NuiTree](https://github.com/MunifTanjim/nui.nvim/tree/main/lua/nui/tree)
-      -- The node is based on [NuiNode](https://github.com/MunifTanjim/nui.nvim/tree/main/lua/nui/tree#nuitreenode)
       local node = state.tree:get_node()
       local filepath = node:get_id()
       local filename = node.name
@@ -221,13 +196,17 @@ local config = {
     },
     group_empty_dirs = true, -- when true, empty folders will be grouped together
     mappings = {
-      -- ["<space>"] = function(state, selected_nodes, ...) end, -- why not  'noop' - basically i need to prohibit whichkey to appear here, noop does a fallback
+      ["<space>"] = "noop",
       ["h"] = "go_shallow",
       ["l"] = "go_deep",
-      ["/"] = function() end,
+      ["/"] = "noop",
       ["<A-q>"] = function() end,
-      ["<cr>"] = { "open", config = { expand_nested_files = true } }, -- expand nested file takes precedence
-      ["<esc>"] = "cancel", -- close preview or floating neo-tree window
+      ["<cr>"] = "go_deep", -- expand nested file takes precedence
+      -- ["<esc>"] = "cancel", -- close preview or floating neo-tree window
+      ["<esc>"] = function(state)
+        commands.cancel(state)
+        clear_selections()
+      end, -- close preview or floating neo-tree window
       ["P"] = {
         "toggle_preview",
         config = {
@@ -261,6 +240,7 @@ local config = {
     window = {
       mappings = {
         ["o"] = "system_open",
+        ["<leader>rr"] = "refresh",
         ["O"] = "open_parent_folder",
         ["F"] = "telescope_grep",
         ["R"] = "replace_in_directory",
@@ -271,14 +251,17 @@ local config = {
         ["<C-c>"] = "clear_filter",
         ["s"] = "git_add_file",
         ["u"] = "git_unstage_file",
-        ["a"] = {
-          "add",
-          -- some commands may take optional config options, see `:h neo-tree-mappings` for details
-          config = {
-            show_path = "relative", -- "none", "relative", "absolute"
-            follow_current_file = true,
-          },
-        },
+        ["a"] = function(state)
+          -- after creation of even nested item it will be focused
+          -- WARN: probably in future issues with compatibility
+          commands.add(
+            state,
+            neotree_utils.wrap(function(arg_state, arg_node_or_path)
+              fs.show_new_children(arg_state, arg_node_or_path)
+              fs.navigate(arg_state, nil, arg_node_or_path)
+            end, state)
+          )
+        end,
         ["c"] = "copy_to_clipboard", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
         ["d"] = "delete",
         ["A"] = "add_directory", -- also accepts the config.show_path and config.insert_as options.

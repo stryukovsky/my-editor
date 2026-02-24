@@ -2,8 +2,6 @@
 local map = require "mappings.map"
 local trouble = require "trouble"
 local oil = require "oil"
-local gitsigns_async = require "gitsigns.async"
-local gitsigns_blame = require "gitsigns.actions.blame"
 local neotree_command = require "neo-tree.command"
 local spectre = require "spectre"
 local close_telescope = require "mappings.close_telescope"
@@ -101,10 +99,11 @@ for _, value in ipairs(telescope_components) do
       _G.dialog_component_callback_close()
       value.command()
       vim.g.last_opened_telescope = value.desc
-      _G.dialog_component_callback_close = function()
-        close_telescope()
-        vim.g.last_opened_telescope = value.desc
-      end
+    end
+    _G.dialog_component_callback_close = function()
+      close_telescope()
+      vim.g.last_opened_telescope = value.desc
+      _G.dialog_component_callback_close = function() end
     end
   end, { desc = value.desc })
 end
@@ -113,12 +112,14 @@ local kulala_state_is_opened = false
 map(ui_components_modes, "<A-y>", function()
   if kulala_state_is_opened then
     kulala_ui.close_kulala_buffer()
+    _G.dialog_component_callback_close = function() end
   else
     _G.dialog_component_callback_close()
     kulala.open()
     _G.dialog_component_callback_close = function()
       kulala_state_is_opened = false
       kulala_ui.close_kulala_buffer()
+      _G.dialog_component_callback_close = function() end
     end
   end
   kulala_state_is_opened = not kulala_state_is_opened
@@ -127,67 +128,18 @@ end, { desc = "UI kulala toggle" })
 map(ui_components_modes, "<A-Y>", function()
   if kulala_state_is_opened then
     kulala_ui.close_kulala_buffer()
+    _G.dialog_component_callback_close = function() end
   else
     _G.dialog_component_callback_close()
     kulala_ui.open() -- this is key difference - it runs query on cursor
     _G.dialog_component_callback_close = function()
       kulala_state_is_opened = false
       kulala_ui.close_kulala_buffer()
+      _G.dialog_component_callback_close = function() end
     end
   end
   kulala_state_is_opened = not kulala_state_is_opened
 end, { desc = "UI kulala toggle with sending request" })
-
-vim.g.fileHistoryOpened = false
-map(ui_components_modes, "<A-h>", function()
-  -- if vim.g.neotree_compat_idle then
-  --   return
-  -- end
-  if vim.g.fileHistoryOpened then
-    pcall(function()
-      vim.cmd "tabc"
-    end)
-    _G.dialog_component_callback_close = function() end
-  else
-    _G.dialog_component_callback_close()
-    pcall(function()
-      vim.cmd "DiffviewFileHistory"
-    end)
-    _G.dialog_component_callback_close = function()
-      vim.g.fileHistoryOpened = false
-      vim.cmd "tabc"
-    end
-  end
-  vim.g.fileHistoryOpened = not vim.g.fileHistoryOpened
-end, { desc = "UI diffview file history", silent = true })
-
-vim.g.diffViewOpened = false
-map(ui_components_modes, "<A-k>", function()
-  if vim.g.diffViewOpened then
-    local result = pcall(function()
-      vim.cmd "tabc"
-    end)
-    if not result then
-      -- additionally invert flag so before this line it is false,
-      vim.g.diffViewOpened = not vim.g.diffViewOpened
-      -- after it is true
-      -- at the end of this function, this flag will be inversed again
-    end
-    _G.dialog_component_callback_close = function() end
-  else
-    _G.dialog_component_callback_close()
-    _G.dialog_component_callback_close = function()
-      vim.g.diffViewOpened = false
-      pcall(function()
-        vim.cmd "tabc"
-      end)
-    end
-    pcall(function()
-      vim.cmd "DiffviewOpen"
-    end)
-  end
-  vim.g.diffViewOpened = not vim.g.diffViewOpened
-end, { desc = "UI diffview open merge tool", silent = true })
 
 map("n", "<A-o>", function()
   if vim.g.state_oil_opened then
@@ -198,6 +150,7 @@ map("n", "<A-o>", function()
     _G.dialog_component_callback_close = function()
       vim.g.state_oil_opened = false
       oil.close()
+      _G.dialog_component_callback_close = function() end
     end
     vim.cmd "Neotree close"
     oil.open(nil, { preview = { vertical = true } })
@@ -241,7 +194,6 @@ end
 map(ui_components_modes, "<A-e>", function()
   local current_buf = vim.api.nvim_get_current_buf()
   local file_path = vim.api.nvim_buf_get_name(current_buf)
-  _G.dapui_callback_close()
   workaround_neotree_focus("filesystem", {
     reveal_file = file_path, -- Auto-highlight the file
     reveal_force_cwd = true, -- Ensure correct working dir
@@ -255,28 +207,7 @@ end, { desc = "UI neotree structure" })
 _G.bottom_component_callback_close = function() end
 --
 -- special case for neotree only
-_G.dapui_callback_close = function() end
 local right_component_callback_close = function() end
-
-vim.g.dapui_state_is_opened = false
--- toggle dapui
-map(ui_components_modes, "<A-r>", function()
-  if vim.g.dapui_state_is_opened then
-    dapui.close()
-    vim.cmd "Neotree reveal left source=filesystem"
-  else
-    vim.cmd "Neotree close"
-    trouble.close()
-    _G.bottom_component_callback_close()
-    dapui.open()
-    _G.bottom_component_callback_close = function()
-      vim.g.dapui_state_is_opened = false
-      dapui.close()
-    end
-    _G.dapui_callback_close = _G.bottom_component_callback_close
-  end
-  vim.g.dapui_state_is_opened = not vim.g.dapui_state_is_opened
-end, { desc = "UI debug close view" })
 
 -- spectre
 vim.g.spectre_opened = false
@@ -374,17 +305,7 @@ map(ui_components_modes, "<A-i>", function()
   end
 end, { desc = "UI trouble inspect" })
 
-local git_blame_bufnr = 0
 map("n", "<A-b>", function()
-  if git_blame_bufnr == 0 then
-    if is_normal_buffer() then
-      gitsigns_async.create(0, function()
-        gitsigns_blame.blame()
-        git_blame_bufnr = vim.fn.bufnr()
-      end)()
-    end
-  else
-    vim.cmd(tostring(git_blame_bufnr) .. "bw")
-    git_blame_bufnr = 0
-  end
+  vim.cmd "Gitsigns toggle_current_line_blame"
+  vim.notify("Toggled current-line blame", vim.diagnostic.severity.INFO, { timeout = 3000 })
 end, { desc = "UI git blame buffer" })
