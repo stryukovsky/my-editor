@@ -74,11 +74,38 @@ vim.env.PATH = table.concat({ vim.fn.stdpath "data", "mason", "bin" }, sep) .. d
 o.cursorlineopt = "both" -- to enable cursorline!
 o.spelllang = "programming,en,ru"
 
--- vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 vim.api.nvim_create_autocmd("BufWinEnter", {
   callback = function()
     o.spell = true
     vim.o.spelloptions = "camel,noplainbuffer"
+
+    local string_groups = table.concat({
+      -- json
+      "jsonString",
+      -- js/ts
+      "jsString", "jsTemplateLiteral", "typescriptString", "typescriptTemplate",
+      -- go
+      "goString", "goRawString",
+      -- rust
+      "rustString",
+      -- scala
+      "scalaString", "scalaMultilineString",
+      -- java
+      "javaString",
+      -- kotlin
+      "kotlinString",
+      -- bash
+      "shString", "shDoubleQuote", "shSingleQuote",
+      -- python
+      "pythonString", "pythonTripleQuotes",
+    }, ",")
+
+    vim.cmd(string.format([[
+      syntax match LuaHexPrefix /0x\x\+/ contains=@NoSpell containedin=%s extend
+      syntax match LuaHexNoPrefix /\v[0-9A-Fa-f]{10,}/ contains=@NoSpell containedin=%s extend
+      highlight default link LuaHexPrefix Number
+      highlight default link LuaHexNoPrefix Number
+    ]], string_groups, string_groups))
   end,
 })
 
