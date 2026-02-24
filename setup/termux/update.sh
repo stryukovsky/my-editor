@@ -11,5 +11,5 @@ git config --global user.email "strukovsky1@gmail.com"
 git config --global user.name "Dmitry Stryukovsky"
 git pull
 git add .
-git commit -m "chore: upd"
+git commit -m "chore: update"
 git push
