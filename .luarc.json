@@ -1,7 +1,6 @@
 {
-    "Lua.workspace.ignoreDir": [
-        ".vscode",
-        ".git",
-        "ai",
-    ]
+  "Lua.workspace.ignoreDir": [".vscode", ".git", "ai"],
+
+  "diagnostics.globals": ["vim"],
+  "workspace.library": ["${3rd}/luv/library"]
 }
