@@ -78,7 +78,7 @@ local ft_string_groups = {
   json = { "jsonString" },
   javascript = { "jsString", "jsTemplateLiteral" },
   typescript = { "typescriptString", "typescriptTemplate" },
-  go = { "goString", "goRawString" },
+  go = { "goString", },
   rust = { "rustString" },
   scala = { "scalaString", "scalaMultilineString" },
   java = { "javaString" },
@@ -104,10 +104,8 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
       [[
       syntax match LuaHexPrefix /0x\x\+/ contains=@NoSpell containedin=%s extend
       syntax match LuaHexNoPrefix /\v[0-9A-Fa-f]{10,}/ contains=@NoSpell containedin=%s extend
-      syntax match LuaBase64 /\v[A-Za-z0-9+/]{10,}(\={1,2})?/ contains=@NoSpell containedin=%s extend
       highlight default link LuaHexPrefix Number
       highlight default link LuaHexNoPrefix Number
-      highlight default link LuaBase64 String
     ]],
       containedin,
       containedin,
