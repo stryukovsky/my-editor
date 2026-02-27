@@ -50,4 +50,13 @@ map("n", "<leader>gg", function()
   neogit.open {}
 end, { desc = "git: status" })
 
+map("n", "<leader>gL", function()
+  local log_path = neogit.get_log_file_path()
+  if vim.fn.filereadable(log_path) == 1 then
+    vim.cmd.edit(log_path)
+  else
+    vim.notify("Log file does not exist: " .. log_path, vim.log.levels.WARN)
+  end
+end, { desc = "git show neogit logs" })
+
 map("n", "<leader>gx", "<cmd>GitConflictListQf<cr>", { desc = "git: conflicts" })
