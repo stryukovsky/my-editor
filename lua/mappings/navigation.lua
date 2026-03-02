@@ -45,7 +45,7 @@ map({"n", "i", "t"}, "<A-<>", "<CMD>BufferPrevious<CR>", { desc = "Navigation pr
 map({"n", "i", "t"}, "<A->>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
 map({"n", "i", "t"}, "<A-.>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
 map("n", "<leader>x", "<CMD>BufferClose!<CR>", { desc = "Navigation close buffer" })
-map("n", "<leader>X", "<CMD>BufferCloseAllButCurrent<CR>", { desc = "Navigation close other buffers" })
+map("n", "<leader>X", "<CMD>silent BufferCloseAllButCurrentOrPinned<CR>", { desc = "Navigation close other buffers" })
 
 map("n", "<leader>,", "<CMD>BufferMovePrevious<CR>", { desc = "Navigation move buffer left" })
 map("n", "<leader>.", "<CMD>BufferMoveNext<CR>", { desc = "Navigation move buffer right" })
