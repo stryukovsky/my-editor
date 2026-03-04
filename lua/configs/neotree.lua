@@ -197,11 +197,8 @@ local config = {
     group_empty_dirs = true, -- when true, empty folders will be grouped together
     mappings = {
       ["<space>"] = "noop",
-      ["h"] = "go_shallow",
-      ["l"] = "go_deep",
       ["/"] = "noop",
       ["<A-q>"] = function() end,
-      ["<cr>"] = "go_deep", -- expand nested file takes precedence
       -- ["<esc>"] = "cancel", -- close preview or floating neo-tree window
       ["<esc>"] = function(state)
         commands.cancel(state)
@@ -239,6 +236,9 @@ local config = {
   filesystem = {
     window = {
       mappings = {
+        ["<cr>"] = "go_deep", -- expand nested file takes precedence
+        ["h"] = "go_shallow",
+        ["l"] = "go_deep",
         ["o"] = "system_open",
         ["<leader>rr"] = "refresh",
         ["O"] = "open_parent_folder",
@@ -298,6 +298,8 @@ local config = {
         ["<C-r>"] = function() end,
         ["F"] = "noop",
         ["<A-F>"] = "noop",
+        ["h"] = "toggle_node",
+        ["l"] = "toggle_node",
       },
     },
   },
