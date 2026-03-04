@@ -40,10 +40,11 @@ map("n", "<A-v>", function()
 end, { desc = "Navigation filter virtual diagnostics" })
 
 -- tabs navigation
-map({"n", "i", "t"}, "<A-,>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
-map({"n", "i", "t"}, "<A-<>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
-map({"n", "i", "t"}, "<A->>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
-map({"n", "i", "t"}, "<A-.>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
+map({ "n" }, "<A-,>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
+map({ "n" }, "<A-<>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
+map({ "n" }, "<A->>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
+map({ "n" }, "<A-.>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
+
 map("n", "<leader>x", "<CMD>BufferClose!<CR>", { desc = "Navigation close buffer" })
 map("n", "<leader>X", "<CMD>silent BufferCloseAllButCurrentOrPinned<CR>", { desc = "Navigation close other buffers" })
 
