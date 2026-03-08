@@ -66,20 +66,15 @@ Note: [RPM Fusion](https://rpmfusion.org/Howto)
 
 Install plugins
 
-- https://extensions.gnome.org/extension/19/user-themes/
 - https://extensions.gnome.org/extension/7065/tiling-shell/
 - https://extensions.gnome.org/extension/1460/vitals/
 - https://extensions.gnome.org/extension/1160/dash-to-panel/
-
+- https://extensions.gnome.org/extension/6994/keyboard-reset/
 After installed, configure it:  
 
 ```sh 
 bash setup/fedora/gnome.sh
 ```
-
-Install orchis theme
-
-https://github.com/vinceliuice/Orchis-theme
 
 ## Cuda NVIDIA & ollama 
 Avante needs llama to be launched: 

@@ -4,6 +4,8 @@ local g = vim.g
 -------------------------------------- options ------------------------------------------
 o.laststatus = 3
 o.showmode = false
+vim.opt.title = true
+vim.opt.titlestring = [[nvim | %{fnamemodify(getcwd(), ":~")}]]
 
 vim.opt.clipboard = "unnamedplus"
 o.cursorline = true
