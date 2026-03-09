@@ -19,7 +19,8 @@ local source_icons = {
 }
 
 local is_ollama_installed = require "utils.is_ollama_installed"
-local sources = { "lsp", "path", "snippets", "buffer" }
+-- local sources = { "lazydev", "lsp", "path", "snippets", "buffer" }
+local sources = {  "lsp", "path", "snippets", "buffer" }
 if not is_ollama_installed() then
   sources = { "lsp", "path", "snippets", "buffer" }
 end
@@ -60,6 +61,14 @@ require("blink-cmp").setup {
   sources = {
     default = sources,
     providers = {
+      -- providers = {
+      --   lazydev = {
+      --     name = "LazyDev",
+      --     module = "lazydev.integrations.blink",
+      --     -- make lazydev completions top priority (see `:h blink.cmp`)
+      --     score_offset = 100,
+      --   },
+      -- },
       minuet = {
         name = "minuet",
         module = "minuet.blink",

@@ -24,7 +24,7 @@ require("codecompanion").setup {
           return chat_system_prompt
         end,
       },
-      adapter = "myadapter",
+      adapter = "myvllm",
       keymaps = {
         close = {
           modes = { n = "<C-c>", i = "<C-c>" },
@@ -33,7 +33,7 @@ require("codecompanion").setup {
       },
     },
     inline = {
-      adapter = "myadapter",
+      adapter = "myvllm",
       keymaps = {
         accept_change = {
           modes = { n = "<leader>as" },
@@ -49,14 +49,27 @@ require("codecompanion").setup {
       },
     },
     cmd = {
-      adapter = "myadapter",
+      adapter = "myvllm",
     },
   },
   adapters = {
     http = {
-      myadapter = function()
+      myvllm = function()
+        return require("codecompanion.adapters").extend("openai", {
+          name = "myvllm", -- Unique name for your adapter
+          -- api_key = "sk-no-key-required", -- vLLM does not require an API key
+
+          url = "http://localhost:18993/v1/chat/completions",
+          schema = {
+            model = {
+              default = "Qwen/Qwen2.5-Coder-7B-Instruct-AWQ", -- Must match your vllm model name
+            },
+          },
+        })
+      end,
+      mylocalollama = function()
         return require("codecompanion.adapters").extend("ollama", {
-          name = "myadapter", -- Give this adapter a different name to differentiate it from the default ollama adapter
+          name = "mylocalollama", -- Give this adapter a different name to differentiate it from the default ollama adapter
           opts = {
             vision = true,
             stream = true,

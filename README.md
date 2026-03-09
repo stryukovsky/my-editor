@@ -53,8 +53,17 @@ MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-languag
 
 Install kulala-ls:  
 
-```
+```sh
 npm install -g @mistweaverco/kulala-ls
+```
+
+Install vllm
+
+```sh
+rm -rf ~/vllm
+mkdir ~/vllm
+cd ~/vllm
+bash ~/.config/nvim/setup/fedora/vllm.sh
 ```
 
 # Other Fedora stuff

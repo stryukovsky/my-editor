@@ -1,4 +1,5 @@
 local map = require "mappings.map"
+local is_normal_buffer = require "utils.is_normal_buffer"
 map("t", "<Esc>", "<C-\\><C-n>", { noremap = true, silent = true })
 map("t", "<A-a>", "<C-\\><C-n><C-w>h", { noremap = true, silent = true })
 map("t", "<A-s>", "<C-\\><C-n><C-w>j", { noremap = true, silent = true })
@@ -60,11 +61,15 @@ local function random_char()
 end
 
 map("n", "<Leader>tn", function()
-  vim.cmd.terminal()
-  vim.cmd.BufferPin()
-  local base = "  Terminal " .. random_char() .. " "
-  local name = unique_name(base)
-  vim.api.nvim_buf_set_name(0, name)
+  if is_normal_buffer() then
+    vim.cmd.terminal()
+    vim.cmd.BufferPin()
+    local base = "  Terminal " .. random_char() .. " "
+    local name = unique_name(base)
+    vim.api.nvim_buf_set_name(0, name)
+  else
+    vim.notify("Cannot start terminal from non-normal buffer", vim.diagnostic.severity.WARN, { timeout = 3000 })
+  end
 end, { desc = "Terminal: new" })
 
 map("n", "<Leader>tr", function()
