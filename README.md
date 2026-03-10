@@ -57,7 +57,7 @@ Install kulala-ls:
 npm install -g @mistweaverco/kulala-ls
 ```
 
-Install vllm
+# Install vllm
 
 ```sh
 rm -rf ~/vllm
