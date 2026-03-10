@@ -1,5 +1,7 @@
 local map = require "mappings.map"
 local is_normal_buffer = require "utils.is_normal_buffer"
+local is_buffer_terminal = require "utils.is_buffer_terminal"
+local is_initial_dashboard = require "utils.is_buffer_initial_dashboard"
 map("t", "<Esc>", "<C-\\><C-n>", { noremap = true, silent = true })
 map("t", "<A-a>", "<C-\\><C-n><C-w>h", { noremap = true, silent = true })
 map("t", "<A-s>", "<C-\\><C-n><C-w>j", { noremap = true, silent = true })
@@ -61,7 +63,7 @@ local function random_char()
 end
 
 map("n", "<Leader>tn", function()
-  if is_normal_buffer() then
+  if is_buffer_terminal() or is_normal_buffer() or is_initial_dashboard() then
     vim.cmd.terminal()
     vim.cmd.BufferPin()
     local base = "  Terminal " .. random_char() .. " "
