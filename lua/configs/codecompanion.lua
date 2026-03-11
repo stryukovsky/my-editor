@@ -16,6 +16,11 @@ require("codecompanion").setup {
       enabled = false,
     },
   },
+  prompt_library = {
+    markdown = {
+      dirs = { vim.fn.stdpath "config" .. "/ai/prompts/" },
+    },
+  },
   interactions = {
     -- Change the default chat adapter
     chat = {
@@ -26,6 +31,12 @@ require("codecompanion").setup {
       },
       adapter = "myvllm",
       keymaps = {
+        yank_code = {
+          modes = { n = "<leader>y" },
+          index = 8,
+          callback = "keymaps.yank_code",
+          description = "[Chat] Yank nearest code",
+        },
         close = {
           modes = { n = "<C-c>", i = "<C-c>" },
           opts = {},
@@ -57,6 +68,7 @@ require("codecompanion").setup {
       myvllm = function()
         return require("codecompanion.adapters").extend("openai", {
           name = "myvllm", -- Unique name for your adapter
+          formatted_name = "VLLM | Use `<leader>y` to yank code",
           -- api_key = "sk-no-key-required", -- vLLM does not require an API key
 
           url = "http://localhost:18993/v1/chat/completions",
