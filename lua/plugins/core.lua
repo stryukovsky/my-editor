@@ -4,7 +4,8 @@ return {
     event = "VeryLazy",
   },
   {
-    "NeogitOrg/neogit",
+    "stryukovsky/neogit",
+    branch = "log-view-fix-open-commit-link",
     dependencies = {
       "nvim-lua/plenary.nvim", -- required
 

@@ -98,6 +98,12 @@ neogit.setup {
       ["[g"] = "GoToPreviousHunkHeader",
       ["]g"] = "GoToNextHunkHeader",
     },
+    commit_view = {
+      ["a"] = "OpenFileInWorktree",
+      ["o"] = "OpenFileInWorktree",
+      ["g"] = "OpenCommitLinkInBrowser",
+      ["<cr>"] = "OpenFileInWorktree",
+    },
 
     commit_editor = {
       ["q"] = "Close",
