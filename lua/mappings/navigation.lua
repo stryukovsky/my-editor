@@ -55,8 +55,7 @@ map("n", "<leader>pin", "<CMD>BufferPin<CR>", { desc = "Navigation pin buffer" }
 map("n", "<A-[>", "<cmd>pop<cr>", { desc = "Navigation jump prev" })
 map("n", "<A-]>", "<cmd>tag<cr>", { desc = "Navigation jump next" })
 
--- format file, linter etc
-map("n", "<leader>fm", function()
+map({ "n", "v" }, "<leader>fm", function()
   require("conform").format({ lsp_fallback = true, async = true }, function(err, _did_edit)
     if err then
       vim.print(err)
