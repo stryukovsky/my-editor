@@ -345,9 +345,9 @@ function M.setup()
   end
 
 
-  -- AI: also maybe subscribe to event of dap when killed 
-  -- (some optimized behaviour especially for daps which emit this kind of events?)
-  -- but timers shall remain, dont remove idea with periodic checks
+  -- Subscribe to additional DAP termination events for optimized behavior
+  -- Especially useful for DAPs which emit these specific events
+  -- Timers remain as a fallback mechanism for robustness
 
   -- Session termination handler
   local function session_terminated(session)
@@ -374,13 +374,14 @@ function M.setup()
   -- Mark session as ended
   dap.listeners.before.event_terminated["mark_ended"] = session_terminated
   dap.listeners.before.event_exited["mark_ended"] = session_terminated
+  -- Additional termination events for robustness
+  dap.listeners.before.disconnect["mark_ended"] = session_terminated
 
   -- Start periodic process checking every 2 seconds
   if not process_check_timer then
     process_check_timer = vim.uv.new_timer()
-
     if process_check_timer == nil then
-      -- AI: give here warning using vim standard tools that timer cannot be created
+      vim.notify("Failed to create process check timer", vim.log.levels.WARN)
     else
       process_check_timer:start(2000, 2000, vim.schedule_wrap(check_all_processes))
     end
@@ -390,7 +391,7 @@ function M.setup()
   if not session_sync_timer then
     session_sync_timer = vim.uv.new_timer()
     if session_sync_timer == nil then
-      -- AI: give here warning using vim standard tools that timer cannot be created
+      vim.notify("Failed to create session sync timer", vim.log.levels.WARN)
     else
       session_sync_timer:start(5000, 5000, vim.schedule_wrap(M.sync_sessions))
     end
