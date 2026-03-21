@@ -10,108 +10,73 @@ M.current_backoff_index = 1
 -- Default interval (10 minutes) in milliseconds
 M.default_interval = 600000
 
+local function notify_user(msg)
+  vim.notify(msg, vim.log.levels.INFO)
+end
+
 -- Check if we're in a git repository
 function M.is_git_repo()
   local result = vim.fn.system "git rev-parse --is-inside-work-tree 2>/dev/null"
   return vim.v.shell_error == 0 and result:match "true" ~= nil
 end
 
--- Get git working directory
-function M.get_git_dir()
-  local result = vim.fn.system "git rev-parse --git-dir 2>/dev/null"
-  if vim.v.shell_error == 0 then
-    -- Remove trailing newlines and whitespace
-    return result:gsub("[\r\n]+$", "")
-  end
-  return nil
-end
-
--- Check if internet is available
-function M.is_internet_available()
-  -- Simple check by pinging a reliable server
-  local result = vim.fn.system "ping -c 1 -W 1 8.8.8.8 >/dev/null 2>&1 && echo 'online' || echo 'offline'"
-  return result:match "online" ~= nil
-end
-
--- Check if git remote is accessible (more reliable than generic ping)
-function M.is_git_remote_accessible()
-  if not M.is_git_repo() then
-    return false
-  end
-
-  -- Try to fetch just one ref to test connectivity
-  local result = vim.fn.system "git ls-remote --heads 2>/dev/null | head -1"
-  return vim.v.shell_error == 0 and #result > 0
-end
-
--- Check if any git operations are in progress
+-- Check if any git operations are in progress using NeoGit's state
 function M.is_git_operation_in_progress()
   if not M.is_git_repo() then
     return true -- Not a git repo, don't fetch
   end
 
-  local git_dir = M.get_git_dir()
-  if not git_dir then
-    return true -- Couldn't determine git dir
+  -- Try to get NeoGit's repository state
+  local success, git = pcall(require, "neogit.lib.git")
+  if not success then
+    return true -- Can't access NeoGit, be safe
   end
 
-  -- Make sure git_dir doesn't have trailing newline
-  git_dir = git_dir:gsub("[\r\n]+$", "")
-
   -- Check for rebase in progress
-  local rebase_merge = vim.fn.system("test -d '" .. git_dir .. "/rebase-merge' && echo 'in_progress' || echo 'not_in_progress'")
-  local rebase_apply = vim.fn.system("test -d '" .. git_dir .. "/rebase-apply' && echo 'in_progress' || echo 'not_in_progress'")
-  if rebase_merge:match "^in_progress" or rebase_apply:match "^in_progress" then
+  if git.repo.state.rebase.head ~= nil then
     return true
   end
 
   -- Check for merge in progress
-  local merge_result = vim.fn.system("test -f '" .. git_dir .. "/MERGE_HEAD' && echo 'in_progress' || echo 'not_in_progress'")
-  if merge_result:match "^in_progress" then
+  if git.repo.state.merge.head ~= nil then
     return true
   end
 
-  -- Check for cherry-pick in progress
-  local cherry_result = vim.fn.system("test -f '" .. git_dir .. "/CHERRY_PICK_HEAD' && echo 'in_progress' || echo 'not_in_progress'")
-  if cherry_result:match "^in_progress" then
-    return true
-  end
-
-  -- Check for revert in progress
-  local revert_result = vim.fn.system("test -f '" .. git_dir .. "/REVERT_HEAD' && echo 'in_progress' || echo 'not_in_progress'")
-  if revert_result:match "^in_progress" then
+  -- Check for cherry-pick or revert in progress
+  if git.repo.state.sequencer.head ~= nil then
     return true
   end
 
   -- Check for bisect in progress
-  local bisect_result = vim.fn.system("test -f '" .. git_dir .. "/BISECT_LOG' && echo 'in_progress' || echo 'not_in_progress'")
-  if bisect_result:match "^in_progress" then
+  if git.repo.state.bisect.finished == false and #git.repo.state.bisect.items > 0 then
     return true
   end
 
   return false
 end
 
--- Perform git fetch
+-- Perform git fetch using NeoGit's fetch functionality
 function M.git_fetch()
   if M.is_git_operation_in_progress() then
-    print "Git operation in progress, skipping fetch"
+    notify_user "Git operation in progress, skipping fetch"
     return false
   end
 
-  -- Check internet connectivity
-  if not M.is_internet_available() then
-    print "No internet connection, skipping fetch"
+  -- Use NeoGit's fetch functionality
+  local success, git = pcall(require, "neogit.lib.git")
+  if not success then
+    notify_user "Failed to load NeoGit library, skipping fetch"
     return false
   end
 
-  -- Perform the fetch (only fetch from default remote to be more efficient)
-  local result = vim.fn.system "git fetch 2>&1"
-  if vim.v.shell_error == 0 then
-    print "Git fetch completed successfully"
+  -- Perform the fetch using NeoGit's fetch function
+  local result = git.fetch.fetch("", "") -- fetch from default remote
+  if result and result:success() then
+    notify_user "Git fetch completed successfully"
     return true
   else
-    print("Git fetch failed: " .. result)
+    local error_msg = result and result.stderr and table.concat(result.stderr, "\n") or "Unknown error"
+    notify_user("Git fetch failed: " .. error_msg)
     return false
   end
 end
@@ -141,12 +106,14 @@ function M.on_timer()
     -- Reset backoff on success
     M.reset_backoff()
     -- Schedule next fetch at default interval
-    M.timer:set(M.default_interval, 0, vim.schedule_wrap(M.on_timer))
+    M.timer:stop()
+    M.timer:start(M.default_interval, 0, vim.schedule_wrap(M.on_timer))
   else
     -- Advance backoff on failure
     M.advance_backoff()
     -- Schedule next attempt at backoff interval
     local interval = M.get_current_backoff_interval()
+    M.timer:stop()
     M.timer:set(interval, 0, vim.schedule_wrap(M.on_timer))
   end
 end
@@ -155,12 +122,12 @@ end
 function M.start()
   -- Don't start if already running
   if M.timer and M.timer:is_active() then
-    print "Periodic git fetch already running"
+    notify_user "Periodic git fetch already running"
     return
   end
 
   -- Create new timer
-  M.timer = vim.loop.new_timer()
+  M.timer = vim.uv.new_timer()
 
   -- Perform initial fetch on startup
   local success = M.git_fetch()
@@ -169,13 +136,13 @@ function M.start()
     M.reset_backoff()
     -- Schedule next fetch at default interval
     M.timer:start(M.default_interval, 0, vim.schedule_wrap(M.on_timer))
-    print "Periodic git fetch started successfully"
+    notify_user "Periodic git fetch started successfully"
   else
     -- If initial fetch fails, start with backoff
     M.advance_backoff()
     local interval = M.get_current_backoff_interval()
     M.timer:start(interval, 0, vim.schedule_wrap(M.on_timer))
-    print "Periodic git fetch started with backoff due to initial failure"
+    notify_user "Periodic git fetch started with backoff due to initial failure"
   end
 end
 
@@ -186,7 +153,7 @@ function M.stop()
     M.timer:close()
     M.timer = nil
     M.reset_backoff()
-    print "Periodic git fetch stopped"
+    notify_user "Periodic git fetch stopped"
   end
 end
 
