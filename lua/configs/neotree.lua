@@ -10,6 +10,24 @@ local system_file_explorer = require "utils.system_file_explorer"
 local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
 
+local open_files_do_not_replace_types = {
+  "Trouble",
+  "qf",
+  "edgy",
+  "NeogitStatus",
+  "NeogitPopup",
+  "NeogitCommitView",
+  "NeogitCommitSelectView",
+  "NeogitLogView",
+  "NeogitDiffView",
+  "NeogitRefsView",
+  "NeogitReflogView",
+  "NeogitStashView",
+  "NeogitConsole",
+  "NeogitGitCommandHistory",
+  "spectre_panel",
+}
+
 local function open_single_child_dir_recursively(state)
   local node = state.tree:get_node()
   if node.type == "directory" then
@@ -62,22 +80,7 @@ end
 ---@type neotree.Config.Base
 local config = {
   -- when opening files, do not use windows containing these filetypes or buftypes
-  open_files_do_not_replace_types = {
-    "Trouble",
-    "qf",
-    "edgy",
-    "NeogitStatus",
-    "NeogitPopup",
-    "NeogitCommitView",
-    "NeogitCommitSelectView",
-    "NeogitLogView",
-    "NeogitDiffView",
-    "NeogitRefsView",
-    "NeogitReflogView",
-    "NeogitStashView",
-    "NeogitConsole",
-    "NeogitGitCommandHistory",
-  },
+  open_files_do_not_replace_types = open_files_do_not_replace_types,
   -- If a user has a sources list it will replace this one.
   -- Only sources listed here will be loaded.
   -- You can also add an external source by adding it's name to this list.
