@@ -72,7 +72,7 @@ function M.git_fetch(callback)
     end
 
     -- Perform the fetch using NeoGit's fetch function
-    local result = git.fetch.fetch("", "") -- fetch from default remote
+    local result = git.cli.fetch.args("", "").call { ignore_error = true, long = true, hidden = true }
     if result and result:success() then
       notify_user "Git fetch completed successfully"
       return true
