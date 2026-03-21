@@ -42,9 +42,12 @@ map("n", "<leader>gb", function()
 end, { desc = "git: branch" })
 
 map("n", "<leader>gl", function()
-  -- neogit.open { "log",  }
-  neogit.action("log", "log_all_branches", { kind = "split", "--graph", "--decorate", "--topo-order", "--max-count=256" })()
-end, { desc = "git: log" })
+  neogit.action("log", "log_current", { kind = "split", "--graph", "--decorate", "--topo-order", "--max-count=256" })()
+end, { desc = "git: current brach log" })
+
+map("n", "<leader>gL", function()
+  neogit.action("log", "log_other", { kind = "split", "--graph", "--decorate", "--topo-order", "--max-count=256" })()
+end, { desc = "git: select branch and log it" })
 
 map("n", "<leader>gg", function()
   neogit.open {}
