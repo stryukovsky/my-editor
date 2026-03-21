@@ -19,8 +19,22 @@ trouble.setup {
       desc = "Search results with file and position",
       source = "telescope",
       title = "{hl:Title}  Search Results{hl} {count} entries found ",
-      format = "{filename} {pos}   {text:ts}",
+      format = "{padded_filename} {padded_pos}   {text:ts}",
     },
+  },
+  formatters = {
+    padded_filename = function(ctx)
+      local filename = vim.fn.fnamemodify(ctx.item.filename, ":p:~:.") -- basename
+      return {
+        text = string.format("%-50s", filename),
+      }
+    end,
+    padded_pos = function(ctx)
+      local pos = string.format("%d:%d", ctx.item.pos[1], ctx.item.pos[2] + 1)
+      return {
+        text = string.format("%-6s", pos),
+      }
+    end,
   },
   keys = {
     ["?"] = "help",
