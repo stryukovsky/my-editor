@@ -138,7 +138,6 @@ function M.start()
       M.reset_backoff()
       -- Schedule next fetch at default interval
       M.timer:start(M.default_interval, 0, vim.schedule_wrap(M.on_timer))
-      notify_user "Periodic git fetch started successfully"
     else
       -- If initial fetch fails, start with backoff
       M.advance_backoff()
