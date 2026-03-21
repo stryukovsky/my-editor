@@ -14,6 +14,14 @@ end
 trouble.setup {
   warn_no_results = false, -- show a warning when there are no results
   open_no_results = false, -- open the trouble window when there are no results
+  modes = {
+    search_results = {
+      desc = "Search results with file and position",
+      source = "telescope",
+      title = "{hl:Title}  Search Results{hl} {count} entries found ",
+      format = "{filename} {pos}   {text:ts}",
+    },
+  },
   keys = {
     ["?"] = "help",
     r = "refresh",
