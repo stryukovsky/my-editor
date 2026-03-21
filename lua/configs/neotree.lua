@@ -61,7 +61,23 @@ end
 
 ---@type neotree.Config.Base
 local config = {
-  open_files_do_not_replace_types = { "Trouble", "qf", "edgy" }, -- when opening files, do not use windows containing these filetypes or buftypes
+  -- when opening files, do not use windows containing these filetypes or buftypes
+  open_files_do_not_replace_types = {
+    "Trouble",
+    "qf",
+    "edgy",
+    "NeogitStatus",
+    "NeogitPopup",
+    "NeogitCommitView",
+    "NeogitCommitSelectView",
+    "NeogitLogView",
+    "NeogitDiffView",
+    "NeogitRefsView",
+    "NeogitReflogView",
+    "NeogitStashView",
+    "NeogitConsole",
+    "NeogitGitCommandHistory",
+  },
   -- If a user has a sources list it will replace this one.
   -- Only sources listed here will be loaded.
   -- You can also add an external source by adding it's name to this list.
