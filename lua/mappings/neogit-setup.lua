@@ -53,13 +53,22 @@ map("n", "<leader>gg", function()
   neogit.open {}
 end, { desc = "git: status" })
 
-map("n", "<leader>gL", function()
-  local log_path = neogit.get_log_file_path()
-  if vim.fn.filereadable(log_path) == 1 then
-    vim.cmd.edit(log_path)
+-- Periodic git fetch controls
+map("n", "<leader>gpf", function()
+  require("configs.periodic-git-fetch").start()
+end, { desc = "git: start periodic fetch" })
+
+map("n", "<leader>gpt", function()
+  require("configs.periodic-git-fetch").stop()
+end, { desc = "git: stop periodic fetch" })
+
+map("n", "<leader>gpm", function()
+  local pgf = require("configs.periodic-git-fetch")
+  if pgf.timer and pgf.timer:is_active() then
+    vim.notify("Periodic fetch active, next in " .. (pgf.get_current_backoff_interval() / 1000) .. "s (backoff index: " .. pgf.current_backoff_index .. ")", vim.log.levels.INFO)
   else
-    vim.notify("Log file does not exist: " .. log_path, vim.log.levels.WARN)
+    vim.notify("Periodic fetch not active", vim.log.levels.INFO)
   end
-end, { desc = "git show neogit logs" })
+end, { desc = "git: show periodic fetch status" })
 
 map("n", "<leader>gx", "<cmd>GitConflictListQf<cr>", { desc = "git: conflicts" })
