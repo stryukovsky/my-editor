@@ -1,3 +1,4 @@
+local async = require "plenary.async"
 local M = {}
 
 -- Timer reference for stopping later
@@ -56,29 +57,31 @@ function M.is_git_operation_in_progress()
 end
 
 -- Perform git fetch using NeoGit's fetch functionality
-function M.git_fetch()
-  if M.is_git_operation_in_progress() then
-    notify_user "Git operation in progress, skipping fetch"
-    return false
-  end
+function M.git_fetch(callback)
+  async.run(function()
+    if M.is_git_operation_in_progress() then
+      notify_user "Git operation in progress, skipping fetch"
+      return false
+    end
 
-  -- Use NeoGit's fetch functionality
-  local success, git = pcall(require, "neogit.lib.git")
-  if not success then
-    notify_user "Failed to load NeoGit library, skipping fetch"
-    return false
-  end
+    -- Use NeoGit's fetch functionality
+    local success, git = pcall(require, "neogit.lib.git")
+    if not success then
+      notify_user "Failed to load NeoGit library, skipping fetch"
+      return false
+    end
 
-  -- Perform the fetch using NeoGit's fetch function
-  local result = git.fetch.fetch("", "") -- fetch from default remote
-  if result and result:success() then
-    notify_user "Git fetch completed successfully"
-    return true
-  else
-    local error_msg = result and result.stderr and table.concat(result.stderr, "\n") or "Unknown error"
-    notify_user("Git fetch failed: " .. error_msg)
-    return false
-  end
+    -- Perform the fetch using NeoGit's fetch function
+    local result = git.fetch.fetch("", "") -- fetch from default remote
+    if result and result:success() then
+      notify_user "Git fetch completed successfully"
+      return true
+    else
+      local error_msg = result and result.stderr and table.concat(result.stderr, "\n") or "Unknown error"
+      notify_user("Git fetch failed: " .. error_msg)
+      return false
+    end
+  end, callback)
 end
 
 -- Get current backoff interval
@@ -100,22 +103,22 @@ end
 
 -- Timer callback function
 function M.on_timer()
-  local success = M.git_fetch()
-
-  if success then
-    -- Reset backoff on success
-    M.reset_backoff()
-    -- Schedule next fetch at default interval
-    M.timer:stop()
-    M.timer:start(M.default_interval, 0, vim.schedule_wrap(M.on_timer))
-  else
-    -- Advance backoff on failure
-    M.advance_backoff()
-    -- Schedule next attempt at backoff interval
-    local interval = M.get_current_backoff_interval()
-    M.timer:stop()
-    M.timer:set(interval, 0, vim.schedule_wrap(M.on_timer))
-  end
+  M.git_fetch(function(success)
+    if success then
+      -- Reset backoff on success
+      M.reset_backoff()
+      -- Schedule next fetch at default interval
+      M.timer:stop()
+      M.timer:start(M.default_interval, 0, vim.schedule_wrap(M.on_timer))
+    else
+      -- Advance backoff on failure
+      M.advance_backoff()
+      -- Schedule next attempt at backoff interval
+      local interval = M.get_current_backoff_interval()
+      M.timer:stop()
+      M.timer:start(interval, 0, vim.schedule_wrap(M.on_timer))
+    end
+  end)
 end
 
 -- Start periodic git fetch
@@ -130,20 +133,20 @@ function M.start()
   M.timer = vim.uv.new_timer()
 
   -- Perform initial fetch on startup
-  local success = M.git_fetch()
-
-  if success then
-    M.reset_backoff()
-    -- Schedule next fetch at default interval
-    M.timer:start(M.default_interval, 0, vim.schedule_wrap(M.on_timer))
-    notify_user "Periodic git fetch started successfully"
-  else
-    -- If initial fetch fails, start with backoff
-    M.advance_backoff()
-    local interval = M.get_current_backoff_interval()
-    M.timer:start(interval, 0, vim.schedule_wrap(M.on_timer))
-    notify_user "Periodic git fetch started with backoff due to initial failure"
-  end
+  M.git_fetch(function(success)
+    if success then
+      M.reset_backoff()
+      -- Schedule next fetch at default interval
+      M.timer:start(M.default_interval, 0, vim.schedule_wrap(M.on_timer))
+      notify_user "Periodic git fetch started successfully"
+    else
+      -- If initial fetch fails, start with backoff
+      M.advance_backoff()
+      local interval = M.get_current_backoff_interval()
+      M.timer:start(interval, 0, vim.schedule_wrap(M.on_timer))
+      notify_user "Periodic git fetch started with backoff due to initial failure"
+    end
+  end)
 end
 
 -- Stop periodic git fetch
@@ -178,4 +181,3 @@ function M.setup()
 end
 
 return M
-
