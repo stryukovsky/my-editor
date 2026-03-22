@@ -11,6 +11,9 @@ M.current_backoff_index = 1
 -- Default interval (10 minutes) in milliseconds
 M.default_interval = 600000
 
+-- Store last successful fetch timestamp
+M.last_fetch_timestamp = nil
+
 local function notify_user(msg)
   vim.notify(msg, vim.log.levels.INFO)
 end
@@ -74,7 +77,8 @@ function M.git_fetch(callback)
     -- Perform the fetch using NeoGit's fetch function
     local result = git.cli.fetch.args("", "").call { ignore_error = true, long = true, hidden = true }
     if result and result:success() then
-      notify_user "Git fetch completed successfully"
+      -- Update last fetch timestamp
+      M.last_fetch_timestamp = os.time()
       return true
     else
       local error_msg = result and result.stderr and table.concat(result.stderr, "\n") or "Unknown error"
@@ -177,6 +181,32 @@ function M.setup()
       M.stop()
     end,
   })
+end
+
+function M.lualine_component()
+  return function()
+    local repo_path = vim.fn.getcwd()
+    local last_fetch = M.last_fetch_timestamp
+
+    if last_fetch then
+      local now = os.time()
+      local diff = now - last_fetch
+      local minutes = math.floor(diff / 60)
+
+      local result = "  fetched "
+
+      if minutes == 0 then
+        result = result .. "now"
+      elseif minutes == 1 then
+        result = result .. "1 min ago"
+      else
+        result = result .. minutes .. " mins ago"
+      end
+      return result
+    else
+      return ""
+    end
+  end
 end
 
 return M
