@@ -14,8 +14,12 @@ M.default_interval = 600000
 -- Store last successful fetch timestamp
 M.last_fetch_timestamp = nil
 
-local function notify_user(msg)
-  vim.notify(msg, vim.log.levels.INFO)
+local log = require("plenary.log").new {
+  plugin = "periodic-git-fetch",
+  level = "debug", -- trace, debug, info, warn, error, fatal
+}
+local function log_print_debug(msg)
+  log.debug(msg)
 end
 
 -- Check if we're in a git repository
@@ -63,14 +67,14 @@ end
 function M.git_fetch(callback)
   async.run(function()
     if M.is_git_operation_in_progress() then
-      notify_user "Git operation in progress, skipping fetch"
+      log_print_debug "Git operation in progress, skipping fetch"
       return false
     end
 
     -- Use NeoGit's fetch functionality
     local success, git = pcall(require, "neogit.lib.git")
     if not success then
-      notify_user "Failed to load NeoGit library, skipping fetch"
+      log_print_debug "Failed to load NeoGit library, skipping fetch"
       return false
     end
 
@@ -82,7 +86,7 @@ function M.git_fetch(callback)
       return true
     else
       local error_msg = result and result.stderr and table.concat(result.stderr, "\n") or "Unknown error"
-      notify_user("Git fetch failed: " .. error_msg)
+      log_print_debug("Git fetch failed: " .. error_msg)
       return false
     end
   end, callback)
@@ -129,7 +133,7 @@ end
 function M.start()
   -- Don't start if already running
   if M.timer and M.timer:is_active() then
-    notify_user "Periodic git fetch already running"
+    log_print_debug "Periodic git fetch already running"
     return
   end
 
@@ -147,7 +151,7 @@ function M.start()
       M.advance_backoff()
       local interval = M.get_current_backoff_interval()
       M.timer:start(interval, 0, vim.schedule_wrap(M.on_timer))
-      notify_user "Periodic git fetch started with backoff due to initial failure"
+      log_print_debug "Periodic git fetch started with backoff due to initial failure"
     end
   end)
 end
@@ -159,7 +163,7 @@ function M.stop()
     M.timer:close()
     M.timer = nil
     M.reset_backoff()
-    notify_user "Periodic git fetch stopped"
+    log_print_debug "Periodic git fetch stopped"
   end
 end
 
@@ -185,27 +189,28 @@ end
 
 function M.lualine_component()
   return function()
-    local repo_path = vim.fn.getcwd()
     local last_fetch = M.last_fetch_timestamp
 
-    if last_fetch then
-      local now = os.time()
-      local diff = now - last_fetch
-      local minutes = math.floor(diff / 60)
-
-      local result = "  fetched "
-
-      if minutes == 0 then
-        result = result .. "now"
-      elseif minutes == 1 then
-        result = result .. "1 min ago"
-      else
-        result = result .. minutes .. " mins ago"
-      end
-      return result
-    else
+    if not last_fetch then
       return ""
     end
+
+    local now = os.time()
+    local diff = now - last_fetch
+    local minutes = math.floor(diff / 60)
+    local hours = math.floor(minutes / 60)
+
+    local result = "  fetched "
+
+    if minutes == 0 then
+      result = result .. "now"
+    elseif hours > 0 then
+      result = result .. hours .. "h ago"
+    else
+      result = result .. minutes .. "m ago"
+    end
+
+    return result
   end
 end
 
