@@ -4,7 +4,9 @@ require("Comment").setup()
 require("todo-comments").setup()
 require("log-highlight").setup {}
 
-require "configs.yanky"
+pcall(function()
+  require "configs.yanky"
+end)
 require "configs.marks"
 require "configs.barbar"
 require "configs.treesitter"
@@ -48,4 +50,3 @@ require "configs.rainbow_delimiters"
 -- at the end, so all highlight rules can be applied
 require "configs.material-theme"
 require "highlight"
-
