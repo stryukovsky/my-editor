@@ -44,6 +44,7 @@ require "configs.debuggers"
 require "configs.flash"
 require "configs.gitconflict"
 require "configs.surround"
+require "configs.rainbow_delimiters"
 -- at the end, so all highlight rules can be applied
 require "configs.material-theme"
 require "highlight"
