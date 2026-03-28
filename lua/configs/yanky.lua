@@ -21,8 +21,7 @@ yanky.setup {
           ["<c-r>"] = mapping.set_register(utils.get_default_register()),
         },
         n = {
-          p = mapping.put "p",
-          P = mapping.put "P",
+          p = mapping.put "P",
           d = mapping.delete(),
           r = mapping.set_register(utils.get_default_register()),
         },
