@@ -19,11 +19,30 @@ local source_icons = {
 }
 
 local is_ollama_installed = require "utils.is_ollama_installed"
+local providers = {
+  minuet = {
+    name = "minuet",
+    module = "minuet.blink",
+    async = true,
+    -- Should match minuet.config.request_timeout * 1000,
+    -- since minuet.config.request_timeout is in seconds
+    timeout_ms = 19000,
+    score_offset = -50, -- Gives minuet lower priority among suggestions
+  },
+}
+
 -- local sources = { "lazydev", "lsp", "path", "snippets", "buffer" }
-local sources = {  "lsp", "path", "snippets", "buffer" }
+local sources = { "lsp", "path", "snippets", "buffer" }
 if not is_ollama_installed() then
   sources = { "lsp", "path", "snippets", "buffer" }
+  providers = {}
 end
+
+local minuet_integration = { function() end }
+
+pcall(function()
+  minuet_integration = require("minuet").make_blink_map()
+end)
 
 ---@module 'blink.cmp'
 ---@type blink.cmp.Config
@@ -37,7 +56,7 @@ require("blink-cmp").setup {
     ["<A-Up>"] = { "scroll_documentation_up", "fallback" },
     ["<C-j>"] = { "select_next", "fallback" },
     ["<C-k>"] = { "select_prev", "fallback" },
-    ["<C-g>"] = require("minuet").make_blink_map(),
+    ["<C-g>"] = minuet_integration,
   },
 
   appearance = {
@@ -60,25 +79,7 @@ require("blink-cmp").setup {
   },
   sources = {
     default = sources,
-    providers = {
-      -- providers = {
-      --   lazydev = {
-      --     name = "LazyDev",
-      --     module = "lazydev.integrations.blink",
-      --     -- make lazydev completions top priority (see `:h blink.cmp`)
-      --     score_offset = 100,
-      --   },
-      -- },
-      minuet = {
-        name = "minuet",
-        module = "minuet.blink",
-        async = true,
-        -- Should match minuet.config.request_timeout * 1000,
-        -- since minuet.config.request_timeout is in seconds
-        timeout_ms = 19000,
-        score_offset = -50, -- Gives minuet lower priority among suggestions
-      },
-    },
+    providers = providers,
   },
 
   -- (Default) Rust fuzzy matcher for typo resistance and significantly better performance

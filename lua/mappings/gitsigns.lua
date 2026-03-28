@@ -5,6 +5,7 @@ map("n", "<leader>gr", "<cmd>Gitsigns reset_hunk<cr>", { desc = "git hunk reset"
 map("n", "<leader>gh", "<cmd>Gitsigns preview_hunk_inline<cr>", { desc = "git hunk preview" })
 
 map("n", "<leader>gs", "<cmd>Gitsigns stage_buffer<cr>", { desc = "git stage buffer" })
+map("n", "<leader>gv", "<cmd>Gitsigns select_hunk<cr>", { desc = "git select buffer" })
 map("n", "<leader>gR", "<cmd>Gitsigns reset_buffer<cr>", { desc = "git reset buffer" })
 -- map("n", "<leader>bl", "<cmd>Gitsigns blame_line<cr>", { desc = "git blame line" })
 
