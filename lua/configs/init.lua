@@ -4,9 +4,12 @@ require("Comment").setup()
 require("todo-comments").setup()
 require("log-highlight").setup {}
 
-pcall(function()
+local termux_version = os.getenv "TERMUX_VERSION"
+
+if not termux_version then
   require "configs.yanky"
-end)
+end
+
 require "configs.marks"
 require "configs.barbar"
 require "configs.treesitter"
