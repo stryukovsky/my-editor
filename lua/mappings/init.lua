@@ -9,7 +9,7 @@ unset("s", "<S-Tab>")
 local map = require "mappings.map"
 map("n", "<Esc>", clear_selections, { desc = "general clear highlights" })
 
-vim.keymap.set("n", "<C-c>", function()
+map("n", "<C-c>", function()
   if vim.bo.modifiable then
     vim.cmd "%y+"
     vim.notify("Copied whole buffer to clipboard", vim.log.levels.INFO)
@@ -18,8 +18,9 @@ vim.keymap.set("n", "<C-c>", function()
   end
 end, { desc = "Copy whole file if buffer is editable" })
 
-vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
-vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+map("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
+map("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+map("n", "p", "P", { desc = "override paste" })
 
 require "mappings.lspconfig"
 require "mappings.dap"
