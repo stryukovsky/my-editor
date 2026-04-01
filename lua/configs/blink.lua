@@ -49,6 +49,7 @@ end)
 require("blink-cmp").setup {
   keymap = {
     preset = "none",
+    ["<C-Space>"] = { "show", "fallback" },
     ["<cr>"] = { "accept", "fallback" },
     ["<Up>"] = { "select_prev", "fallback" },
     ["<Down>"] = { "select_next", "fallback" },
