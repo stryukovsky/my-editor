@@ -61,7 +61,7 @@ treesitter.install {
   -- ===== Version Control & Dev Tools =====
   "gitignore",
   "gitattributes",
-  "gitcommit", -- Commit messages
+  -- "gitcommit", -- Commit messages
   "git_rebase", -- Rebase files
 
   -- ===== Query & Specialized =====
