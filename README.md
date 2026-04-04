@@ -77,7 +77,7 @@ https://github.com/amnezia-vpn/amneziawg-go
 ```sh
 sudo WG_QUICK_USERSPACE_IMPLEMENTATION=amneziawg-go awg-quick up  /full/path/to/config.conf
 ```
-Remove `I2 = `-like empty lines!!!  
+Remove `I2 = `-like lines!!!  
 
 
 ## Gnome look
