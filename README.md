@@ -65,6 +65,21 @@ bash ~/.config/nvim/setup/fedora/vllm.sh
 Note: NVIDIA may not work until secure boot is not configured properly.  
 Note: [RPM Fusion](https://rpmfusion.org/Howto)
 
+## AWG
+
+Setup using awg-quick  
+
+https://github.com/amnezia-vpn/amneziawg-tools
+
+https://github.com/amnezia-vpn/amneziawg-go
+
+
+```sh
+sudo WG_QUICK_USERSPACE_IMPLEMENTATION=amneziawg-go awg-quick up  /full/path/to/config.conf
+```
+Remove `I2 = `-like empty lines!!!  
+
+
 ## Gnome look
 
 Install plugins
