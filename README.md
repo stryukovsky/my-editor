@@ -74,11 +74,11 @@ https://github.com/amnezia-vpn/amneziawg-tools
 https://github.com/amnezia-vpn/amneziawg-go
 
 
+Remove `I2 = `-like lines before copying!!!  
 ```sh
-sudo WG_QUICK_USERSPACE_IMPLEMENTATION=amneziawg-go awg-quick up  /full/path/to/config.conf
+sudo cp /full/path/to/config.conf /etc/amnezia/amneziawg/awg0.conf
+sudo WG_QUICK_USERSPACE_IMPLEMENTATION=amneziawg-go awg-quick up awg0
 ```
-Remove `I2 = `-like lines!!!  
-
 
 ## Gnome look
 
