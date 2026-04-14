@@ -22,6 +22,11 @@ map("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 map("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 map("n", "p", "P", { desc = "override paste" })
 
+local termux_version = os.getenv "TERMUX_VERSION"
+if not termux_version then
+  require "mappings.yanky"
+end
+
 require "mappings.lspconfig"
 require "mappings.dap"
 require "mappings.ui-components"
@@ -43,7 +48,6 @@ require "mappings.logviewer"
 require "mappings.grapple"
 require "mappings.treesj"
 require "mappings.disable_macros"
-require "mappings.yanky"
 require "mappings.flash"
 require "mappings.aidviser"
 require "mappings.substitute"

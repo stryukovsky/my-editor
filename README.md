@@ -13,6 +13,14 @@ Install basics with script on every platform
 
 ### Fedora / Asahi Fedora linux:  
 
+Important stuff with root password  
+
+```sh
+sudo passwd root
+```
+
+And then reboot  
+
 Firstly make sure system is up-to-date:  
 
 ```
@@ -135,17 +143,17 @@ Or `sudo nmcli connection import type wireguard file vpn.conf`
 
 Repeat again interactions with UI.  
 
-## Fedora root password set
+# Android Termux stuff
 
-Important stuff  
+Setup the environment:  
 
-```sh
-sudo passwd root
+```sh 
+
+bash setup/termux/setup.sh
+cp setup/zshrc.sh ~/.zshrc
 ```
 
-And then reboot  
-
-## Links 
+# Links 
 
 https://github.com/neovim/neovim   
 https://alacritty.org/  
@@ -155,3 +163,5 @@ https://github.com/BurntSushi/ripgrep
 https://github.com/aristocratos/bpytop  
 https://go.dev/
 https://github.com/pyenv/pyenv
+
+
