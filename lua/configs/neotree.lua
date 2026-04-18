@@ -114,6 +114,11 @@ local config = {
     },
   },
   commands = {
+    ["open_new_window"] = function(state)
+      local node = state.tree:get_node()
+      local path = node:get_id()
+      vim.fn.jobstart({ "ghostty", "--working-directory=" .. path }, { detach = true })
+    end,
     ["system_open"] = function(state)
       local node = state.tree:get_node()
       local path = node:get_id()
@@ -270,7 +275,7 @@ local config = {
         ["<cr>"] = "go_deep", -- expand nested file takes precedence
         ["h"] = "go_shallow",
         ["l"] = "go_deep",
-        ["oo"] = "system_open",
+        ["oo"] = "open_new_window",
         ["<leader>rr"] = "refresh",
         ["O"] = "open_parent_folder",
         ["F"] = "telescope_grep",
