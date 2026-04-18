@@ -26,6 +26,7 @@ local open_files_do_not_replace_types = {
   "NeogitConsole",
   "NeogitGitCommandHistory",
   "spectre_panel",
+  "nofile",
 }
 
 local function open_single_child_dir_recursively(state)
