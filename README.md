@@ -41,6 +41,7 @@ mkdir -p ~/.config/ghostty/
 cp setup/fedora/ghostty ~/.config/ghostty/config
 cp -r setup/ranger ~/.config/
 bash setup/finalize.sh
+bash setup/ai.sh
 
 ```
 
