@@ -6,6 +6,17 @@ o.laststatus = 3
 o.showmode = false
 vim.opt.title = true
 vim.opt.titlestring = [[nvim | %{fnamemodify(getcwd(), ":~")}]]
+vim.g.clipboard = {
+  name = "OSC 52",
+  copy = {
+    ["+"] = require("vim.ui.clipboard.osc52").copy "+",
+    ["*"] = require("vim.ui.clipboard.osc52").copy "*",
+  },
+  paste = {
+    ["+"] = require("vim.ui.clipboard.osc52").paste "+",
+    ["*"] = require("vim.ui.clipboard.osc52").paste "*",
+  },
+}
 
 vim.opt.clipboard = "unnamedplus"
 o.cursorline = true
@@ -14,7 +25,7 @@ o.winborder = "rounded"
 -- Indenting
 o.expandtab = true
 o.shiftwidth = 4
-opt.tabstop=1
+opt.tabstop = 1
 o.smartindent = true
 o.softtabstop = 1
 
@@ -80,7 +91,7 @@ local ft_string_groups = {
   json = { "jsonString" },
   javascript = { "jsString", "jsTemplateLiteral" },
   typescript = { "typescriptString", "typescriptTemplate" },
-  go = { "goString", },
+  go = { "goString" },
   rust = { "rustString" },
   scala = { "scalaString", "scalaMultilineString" },
   java = { "javaString" },
@@ -150,8 +161,6 @@ local ru_shift = [[ËЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТ�
 
 vim.opt.langmap = vim.fn.join({
   -- | `to` should be first     | `from` should be second
-  escape(ru_shift)
-    .. ";"
-    .. escape(en_shift),
+  escape(ru_shift) .. ";" .. escape(en_shift),
   escape(ru) .. ";" .. escape(en),
 }, ",")

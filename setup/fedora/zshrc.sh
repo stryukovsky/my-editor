@@ -94,3 +94,6 @@ function vllm() {
 }
 
 alias activ="source .venv/bin/activate"
+alias nvim="~/.config/nvim/bin/nvim.appimage"
+alias vim="~/.config/nvim/bin/nvim.appimage"
+

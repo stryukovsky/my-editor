@@ -1,5 +1,13 @@
 # My Editor
 
+## Install neovim itself
+
+https://github.com/neovim/neovim/releases/latest
+
+- Place appimage in `bin/` of this directory  
+- Rename it to `nvim.appimage`
+
+## Start 
 Clone this repository:
 
 ```sh 
@@ -8,7 +16,6 @@ git clone https://github.com/stryukovsky/my-editor ~/.config/nvim/
 
 In `~/.config/nvim/` you need to run setup scripts:  
 
-## Start 
 Install basics with script on every platform  
 
 ### Fedora / Asahi Fedora linux:  
@@ -33,6 +40,7 @@ Enable [rpm fusion](https://docs.fedoraproject.org/en-US/quick-docs/rpmfusion-se
 Execute every line separately!!!  
 
 ```sh
+chmod 700 bin/nvim.appimage
 sudo bash setup/fedora/setup.sh 
 bash setup/fedora/pyenv.sh
 bash setup/commons.sh
