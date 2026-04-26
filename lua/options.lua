@@ -6,19 +6,8 @@ o.laststatus = 3
 o.showmode = false
 vim.opt.title = true
 vim.opt.titlestring = [[nvim | %{fnamemodify(getcwd(), ":~")}]]
-vim.g.clipboard = {
-  name = "OSC 52",
-  copy = {
-    ["+"] = require("vim.ui.clipboard.osc52").copy "+",
-    ["*"] = require("vim.ui.clipboard.osc52").copy "*",
-  },
-  paste = {
-    ["+"] = require("vim.ui.clipboard.osc52").paste "+",
-    ["*"] = require("vim.ui.clipboard.osc52").paste "*",
-  },
-}
-
-vim.opt.clipboard = "unnamedplus"
+vim.g.clipboard = 'osc52'
+vim.o.clipboard = 'unnamedplus'
 o.cursorline = true
 o.cursorlineopt = "number"
 o.winborder = "rounded"
