@@ -2,29 +2,21 @@ local map = require "mappings.map"
 
 local refactoring = require "refactoring"
 map({ "n", "x" }, "<leader>Re", function()
-  return refactoring.refactor "Extract Function"
+  return refactoring.extract_func()
 end, { expr = true, desc = "Extract Function" })
 
 map({ "n", "x" }, "<leader>RI", function()
-  return refactoring.refactor "Inline Function"
+  return refactoring.inline_func()
 end, { expr = true, desc = "Inline Function" })
 
 map({ "n", "x" }, "<leader>Ri", function()
-  return refactoring.refactor "Inline Variable"
+  return refactoring.inline_var()
 end, { expr = true, desc = "Inline Variable" })
 
-map({ "n", "x" }, "<leader>Rbb", function()
-  return refactoring.refactor "Extract Block"
-end, { expr = true, desc = "Extract Block" })
-
-map({ "n", "x" }, "<leader>Rbf", function()
-  return refactoring.refactor "Extract Block To File"
-end, { expr = true, desc = "Extract Block To File" })
-
 map({ "n", "x" }, "<leader>Rv", function()
-  return refactoring.refactor "Extract Variable"
+  return refactoring.extract_var()
 end, { expr = true, desc = "Extract Variable" })
 
 map({ "n", "x" }, "<leader>Rf", function()
-  return refactoring.refactor "Extract Function To File"
+  return refactoring.extract_func_to_file()
 end, { expr = true, desc = "Extract Function To File" })
