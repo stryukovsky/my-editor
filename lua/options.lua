@@ -4,6 +4,8 @@ local g = vim.g
 -------------------------------------- options ------------------------------------------
 o.laststatus = 3
 o.showmode = false
+vim.opt.title = true
+vim.opt.titlestring = [[nvim | %{fnamemodify(getcwd(), ":~")}]]
 
 o.clipboard = "unnamedplus"
 local handle = io.popen "which gpaste-client 2>/dev/null"
@@ -29,17 +31,17 @@ o.cursorlineopt = "number"
 o.winborder = "rounded"
 -- Indenting
 o.expandtab = true
-o.shiftwidth = 2
+o.shiftwidth = 4
+opt.tabstop = 1
 o.smartindent = true
-o.tabstop = 2
-o.softtabstop = 2
+o.softtabstop = 1
+
 g.matchparen_disable_cursor_hl = 1
 g.enabled_virtual_lines = true
 opt.fillchars = { eob = " " }
 o.ignorecase = true
 o.smartcase = true
 o.mouse = "a"
-
 o.statuscolumn = "%s%2l"
 -- Numbers
 o.number = true
@@ -92,11 +94,43 @@ vim.env.PATH = table.concat({ vim.fn.stdpath "data", "mason", "bin" }, sep) .. d
 o.cursorlineopt = "both" -- to enable cursorline!
 o.spelllang = "programming,en,ru"
 
--- vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
+local ft_string_groups = {
+  json = { "jsonString" },
+  javascript = { "jsString", "jsTemplateLiteral" },
+  typescript = { "typescriptString", "typescriptTemplate" },
+  go = { "goString" },
+  rust = { "rustString" },
+  scala = { "scalaString", "scalaMultilineString" },
+  java = { "javaString" },
+  kotlin = { "kotlinString" },
+  sh = { "shString", "shDoubleQuote", "shSingleQuote" },
+  bash = { "shString", "shDoubleQuote", "shSingleQuote" },
+  python = { "pythonString", "pythonTripleQuotes" },
+}
+
 vim.api.nvim_create_autocmd("BufWinEnter", {
   callback = function()
     o.spell = true
     vim.o.spelloptions = "camel,noplainbuffer"
+
+    local groups = ft_string_groups[vim.bo.filetype]
+    if not groups then
+      return
+    end
+
+    local containedin = table.concat(groups, ",")
+
+    vim.cmd(string.format(
+      [[
+      syntax match LuaHexPrefix /0x\x\+/ contains=@NoSpell containedin=%s extend
+      syntax match LuaHexNoPrefix /\v[0-9A-Fa-f]{10,}/ contains=@NoSpell containedin=%s extend
+      highlight default link LuaHexPrefix Number
+      highlight default link LuaHexNoPrefix Number
+    ]],
+      containedin,
+      containedin,
+      containedin
+    ))
   end,
 })
 
@@ -134,8 +168,6 @@ local ru_shift = [[ËЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТ�
 
 vim.opt.langmap = vim.fn.join({
   -- | `to` should be first     | `from` should be second
-  escape(ru_shift)
-    .. ";"
-    .. escape(en_shift),
+  escape(ru_shift) .. ";" .. escape(en_shift),
   escape(ru) .. ";" .. escape(en),
 }, ",")

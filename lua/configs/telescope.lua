@@ -74,6 +74,10 @@ require("telescope").setup {
       mappings = require "mappings.telescope.live_grep",
       entry_maker = entry_for_filesearch,
     },
+    current_buffer_fuzzy_find = {
+      wrap_results = true,
+      mappings = require "mappings.telescope.current_buffer_fuzzy",
+    },
     lsp_references = {
       wrap_results = true,
       initial_mode = "normal",

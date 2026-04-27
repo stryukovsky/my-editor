@@ -7,3 +7,10 @@ runtime
 treesitter
 scalacli
 metals
+jupyter
+opencode
+nautilus
+uv
+gvfs-metadata
+recently-used.xbel
+bin/nvim.appimage

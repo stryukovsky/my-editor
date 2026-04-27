@@ -40,22 +40,23 @@ map("n", "<A-v>", function()
 end, { desc = "Navigation filter virtual diagnostics" })
 
 -- tabs navigation
-map({"n", "i", "t"}, "<A-,>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
-map({"n", "i", "t"}, "<A-<>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
-map({"n", "i", "t"}, "<A->>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
-map({"n", "i", "t"}, "<A-.>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
+map({ "n" }, "<A-,>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
+map({ "n" }, "<A-<>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
+map({ "n" }, "<A->>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
+map({ "n" }, "<A-.>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
+
 map("n", "<leader>x", "<CMD>BufferClose!<CR>", { desc = "Navigation close buffer" })
-map("n", "<leader>X", "<CMD>BufferCloseAllButCurrent<CR>", { desc = "Navigation close other buffers" })
+map("n", "<leader>X", "<CMD>silent BufferCloseAllButCurrentOrPinned<CR>", { desc = "Navigation close other buffers" })
 
 map("n", "<leader>,", "<CMD>BufferMovePrevious<CR>", { desc = "Navigation move buffer left" })
 map("n", "<leader>.", "<CMD>BufferMoveNext<CR>", { desc = "Navigation move buffer right" })
+map("n", "<leader>pb", "<CMD>BufferPick<CR>", { desc = "Pick buffer" })
 map("n", "<leader>pin", "<CMD>BufferPin<CR>", { desc = "Navigation pin buffer" })
 -- navigate in jumps
 map("n", "<A-[>", "<cmd>pop<cr>", { desc = "Navigation jump prev" })
 map("n", "<A-]>", "<cmd>tag<cr>", { desc = "Navigation jump next" })
 
--- format file, linter etc
-map("n", "<leader>fm", function()
+map({ "n", "v" }, "<leader>fm", function()
   require("conform").format({ lsp_fallback = true, async = true }, function(err, _did_edit)
     if err then
       vim.print(err)

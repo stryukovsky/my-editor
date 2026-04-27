@@ -1,0 +1,41 @@
+# ---------------------------------------------------------
+# NETWORK & PROTOCOL
+# ---------------------------------------------------------
+Port 22
+Protocol 2
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+# ---------------------------------------------------------
+# AUTHENTICATION (STRICT MODE)
+# ---------------------------------------------------------
+# 1. Enable Public Key Auth
+PubkeyAuthentication yes
+
+# 2. FORCE Password Auth OFF (The "Never" Requirement)
+PasswordAuthentication no
+PermitEmptyPasswords no
+
+# 3. Disable Challenge/Keyboard Interactive (Prevents password prompts via PAM)
+KbdInteractiveAuthentication no
+ChallengeResponseAuthentication no
+
+# 4. Explicitly require public key method only
+AuthenticationMethods publickey
+
+# 5. Root Login (As Requested)
+PermitRootLogin yes
+
+# ---------------------------------------------------------
+# SECURITY HARDENING (RECOMMENDED)
+# ---------------------------------------------------------
+UsePAM yes
+X11Forwarding no
+PrintMotd no
+AcceptEnv LANG LC_*
+
+# Limit authentication attempts to slow down brute force
+MaxAuthTries 3
+LoginGraceTime 60
+StrictModes yes

@@ -3,9 +3,9 @@ local trouble_integration = require "mappings.telescope.trouble_integration"
 
 return {
   n = {
-    ["<cr>"] = wrap_telescope_action(trouble_integration "global_results"),
+    ["<cr>"] = wrap_telescope_action(trouble_integration "file_results"),
   },
   i = {
-    ["<cr>"] = wrap_telescope_action(trouble_integration "global_results"),
+    ["<cr>"] = wrap_telescope_action(trouble_integration "file_results"),
   },
 }

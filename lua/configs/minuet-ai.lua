@@ -1,7 +1,5 @@
-local llm = require "minuet"
-local is_ollama_installed = require("utils.is_ollama_installed")
-
-if is_ollama_installed() then
+pcall(function()
+  local llm = require "minuet"
   llm.setup {
     provider = "openai_fim_compatible",
     -- I recommend beginning with a small context window size and incrementally
@@ -37,4 +35,4 @@ if is_ollama_installed() then
       enable_auto_complete = true,
     },
   }
-end
+end)

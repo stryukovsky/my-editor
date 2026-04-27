@@ -4,6 +4,7 @@ local options = {
     css = { "prettier" },
     html = { "prettier" },
     json = { "prettier" },
+    scala = { "scalafmt" },
     typescript = { "prettier" },
     javascript = { "prettier" },
     go = { "gofumpt" },

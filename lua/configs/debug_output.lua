@@ -7,11 +7,14 @@ local M = {}
 local session_outputs = {}
 local session_metadata = {}
 local active_output_buffers = {}
+local session_pids = {} -- Track PIDs for each session
+local process_check_timer = nil -- Timer for periodic process checking
+local session_sync_timer = nil -- Timer for session synchronization
+
+-- Initialize random seed once
+math.randomseed(os.time())
 
 local function random_3char()
-  -- Инициализация генератора (лучше делать один раз при запуске конфига)
-  math.randomseed(os.time())
-
   local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
   local result = {}
 
@@ -24,11 +27,47 @@ local function random_3char()
   return table.concat(result)
 end
 
--- Private helper functions
+local function check_process_running(pid)
+  if not pid then
+    return false
+  end
+
+  -- Check if process is still running using system command
+  local command = string.format("kill -0 %d 2>/dev/null && echo 'running' || echo 'stopped'", pid)
+  local handle = io.popen(command)
+  if handle then
+    local result = handle:read "*a"
+    handle:close()
+    return result:match "running" ~= nil
+  end
+  return false
+end
+
+local function check_all_processes()
+  for session_id, pid in pairs(session_pids) do
+    -- If we have metadata for this session and it's marked as active
+    if session_metadata[session_id] and session_metadata[session_id].active then
+      -- Check if the process is actually still running
+      if not check_process_running(pid) then
+        -- Process is not running, mark session as inactive
+        session_metadata[session_id].active = false
+        session_metadata[session_id].ended_at = os.date "%Y-%m-%d %H:%M:%S"
+        -- Don't remove from session_pids yet as we might want to keep this for reference
+      end
+    end
+  end
+end
 local function find_window_for_buffer(buf)
+  if not vim.api.nvim_buf_is_valid(buf) then
+    return nil
+  end
+
   for _, win in ipairs(vim.api.nvim_list_wins()) do
-    if vim.api.nvim_win_get_buf(win) == buf then
-      return win
+    if vim.api.nvim_win_is_valid(win) then
+      local win_buf = vim.api.nvim_win_get_buf(win)
+      if win_buf == buf then
+        return win
+      end
     end
   end
   return nil
@@ -42,6 +81,9 @@ local function find_buffer_for_session(session_id)
   for buf, _ in pairs(active_output_buffers[session_id]) do
     if vim.api.nvim_buf_is_valid(buf) then
       return buf
+    else
+      -- Clean up invalid buffer reference
+      active_output_buffers[session_id][buf] = nil
     end
   end
   return nil
@@ -52,6 +94,17 @@ local function show_session_output(session_id)
   if not outputs or #outputs == 0 then
     vim.notify("No output for this session", vim.log.levels.INFO)
     return
+  end
+
+  -- Check if buffer already exists and is visible
+  local existing_buf = find_buffer_for_session(session_id)
+  if existing_buf then
+    local win = find_window_for_buffer(existing_buf)
+    if win and vim.api.nvim_win_is_valid(win) then
+      -- Focus existing window instead of creating new one
+      vim.api.nvim_set_current_win(win)
+      return
+    end
   end
 
   -- Create buffer
@@ -154,11 +207,27 @@ local function show_session_picker(action)
     return
   end
 
-  -- Sort: active first, then by start time
+  -- Sort: active first, then by start time, with actual process status checking
   table.sort(sessions, function(a, b)
+    -- First check actual process status if we have PID
+    local a_pid = session_pids[a.session_id]
+    local b_pid = session_pids[b.session_id]
+
+    if a_pid and b_pid then
+      -- Check actual process status
+      local a_running = check_process_running(a_pid)
+      local b_running = check_process_running(b_pid)
+
+      if a_running ~= b_running then
+        return a_running
+      end
+    end
+
+    -- Fall back to metadata active status
     if a.meta.active ~= b.meta.active then
       return a.meta.active
     end
+
     return a.meta.started_at > b.meta.started_at
   end)
 
@@ -268,11 +337,26 @@ function M.setup()
     }
   end
 
+  -- Capture process ID when process event is received
+  dap.listeners.after.event_process["store_pid"] = function(session, body)
+    if body.systemProcessId then
+      session_pids[session.id] = body.systemProcessId
+    end
+  end
+
+
+  -- Subscribe to additional DAP termination events for optimized behavior
+  -- Especially useful for DAPs which emit these specific events
+  -- Timers remain as a fallback mechanism for robustness
+
   -- Session termination handler
   local function session_terminated(session)
     if session_metadata[session.id] then
       session_metadata[session.id].active = false
       session_metadata[session.id].ended_at = os.date "%Y-%m-%d %H:%M:%S"
+
+      -- Clean up PID tracking
+      session_pids[session.id] = nil
 
       -- Make all buffers for this session modifiable again
       if active_output_buffers[session.id] then
@@ -290,6 +374,48 @@ function M.setup()
   -- Mark session as ended
   dap.listeners.before.event_terminated["mark_ended"] = session_terminated
   dap.listeners.before.event_exited["mark_ended"] = session_terminated
+  -- Additional termination events for robustness
+  dap.listeners.before.disconnect["mark_ended"] = session_terminated
+
+  -- Start periodic process checking every 2 seconds
+  if not process_check_timer then
+    process_check_timer = vim.uv.new_timer()
+    if process_check_timer == nil then
+      vim.notify("Failed to create process check timer", vim.log.levels.WARN)
+    else
+      process_check_timer:start(2000, 2000, vim.schedule_wrap(check_all_processes))
+    end
+  end
+
+  -- Start periodic session synchronization every 5 seconds
+  if not session_sync_timer then
+    session_sync_timer = vim.uv.new_timer()
+    if session_sync_timer == nil then
+      vim.notify("Failed to create session sync timer", vim.log.levels.WARN)
+    else
+      session_sync_timer:start(5000, 5000, vim.schedule_wrap(M.sync_sessions))
+    end
+  end
+end
+
+function M.sync_sessions()
+  local dap = require "dap"
+  local actual_sessions = dap.sessions()
+
+  -- Create a set of actual session IDs for quick lookup
+  local actual_session_ids = {}
+  for _, session in pairs(actual_sessions) do
+    actual_session_ids[session.id] = true
+  end
+
+  -- Mark sessions as inactive if they no longer exist in DAP
+  for session_id, meta in pairs(session_metadata) do
+    if meta.active and not actual_session_ids[session_id] then
+      meta.active = false
+      meta.ended_at = os.date "%Y-%m-%d %H:%M:%S"
+      session_pids[session_id] = nil
+    end
+  end
 end
 
 --- Show DAP output for current or selected session
@@ -349,6 +475,18 @@ function M.clear()
   session_outputs = {}
   session_metadata = {}
   active_output_buffers = {}
+  session_pids = {}
+
+  -- Stop timers if they exist
+  if process_check_timer then
+    process_check_timer:stop()
+    process_check_timer = nil
+  end
+
+  if session_sync_timer then
+    session_sync_timer:stop()
+    session_sync_timer = nil
+  end
 end
 
 --- Show telescope picker for session selection
@@ -401,9 +539,26 @@ function M.lualine_component()
         return "DAP"
       end
 
-      local active_count = M.get_active_sessions_count()
-      local status_icon = meta.active and "●" or "○"
+      -- Check actual process status if we have PID
+      local status_icon = "○" -- Default to inactive
+      if meta.active then
+        local pid = session_pids[session.id]
+        if pid then
+          -- If we have a PID, check actual process status
+          if check_process_running(pid) then
+            status_icon = "●" -- Actually running
+          else
+            status_icon = "○" -- Process dead but marked as active
+          end
+        else
+          status_icon = "●" -- No PID but marked as active
+        end
+      else
+        status_icon = "○" -- Explicitly marked as inactive
+      end
+
       local name = meta.name or "DAP"
+      local active_count = M.get_active_sessions_count()
 
       if active_count > 1 then
         return string.format("%s %s (%d)", status_icon, name, active_count)
@@ -412,8 +567,11 @@ function M.lualine_component()
       end
     end,
     cond = function()
-      local dap = require "dap"
-      return dap.session() ~= nil
+      local ok, dap = pcall(require, "dap")
+      if not ok then
+        return false
+      end
+      return vim.tbl_count(dap.sessions()) > 0
     end,
   }
 end

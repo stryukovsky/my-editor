@@ -14,6 +14,35 @@ end
 trouble.setup {
   warn_no_results = false, -- show a warning when there are no results
   open_no_results = false, -- open the trouble window when there are no results
+  modes = {
+    global_results = {
+      desc = "Search results with file and position",
+      source = "telescope",
+      title = "{hl:Title} Search Results{hl}    {count} entries found ",
+      format = "{padded_filename} {padded_pos}   {text:ts}",
+    },
+
+    file_results = {
+      desc = "File results with just position",
+      source = "telescope",
+      title = "{hl:Title} Search Results{hl}    {count} entries found ",
+      format = "{padded_pos}   {text:ts}",
+    },
+  },
+  formatters = {
+    padded_filename = function(ctx)
+      local filename = vim.fn.fnamemodify(ctx.item.filename, ":p:~:.") -- basename
+      return {
+        text = string.format("%-50s", filename),
+      }
+    end,
+    padded_pos = function(ctx)
+      local pos = string.format("%d:%d", ctx.item.pos[1], ctx.item.pos[2] + 1)
+      return {
+        text = string.format("%-6s", pos),
+      }
+    end,
+  },
   keys = {
     ["?"] = "help",
     r = "refresh",

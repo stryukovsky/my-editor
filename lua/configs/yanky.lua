@@ -21,8 +21,7 @@ yanky.setup {
           ["<c-r>"] = mapping.set_register(utils.get_default_register()),
         },
         n = {
-          p = mapping.put "p",
-          P = mapping.put "P",
+          p = mapping.put "P",
           d = mapping.delete(),
           r = mapping.set_register(utils.get_default_register()),
         },
@@ -35,3 +34,19 @@ yanky.setup {
     timer = 100
   },
 }
+
+vim.api.nvim_create_autocmd("TextYankPost", {
+  desc = "Highlight when yanking (copying) text",
+  group = vim.api.nvim_create_augroup("highlight-yank", {} --[[ { clear = true } ]]),
+  callback = function()
+    local ok, mc = pcall(require, "multicursor-nvim")
+    if ok and mc.hasCursors() then
+      -- Skip highlight when multicursor is active
+      return
+    end
+    vim.highlight.on_yank {
+      higroup = "IncSearch",
+      timeout = 600,
+    }
+  end,
+})

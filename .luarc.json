@@ -1,7 +1,0 @@
-{
-    "Lua.workspace.ignoreDir": [
-        ".vscode",
-        ".git",
-        "ai",
-    ]
-}

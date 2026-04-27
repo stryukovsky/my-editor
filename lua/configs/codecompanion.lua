@@ -9,11 +9,15 @@ local function read_file(file_path)
 end
 
 local chat_system_prompt = read_file(vim.fn.stdpath "config" .. "/ai/systemprompts/chat.txt")
-
 require("codecompanion").setup {
   display = {
     diff = {
       enabled = false,
+    },
+  },
+  prompt_library = {
+    markdown = {
+      dirs = { vim.fn.stdpath "config" .. "/ai/prompts/" },
     },
   },
   interactions = {
@@ -24,8 +28,14 @@ require("codecompanion").setup {
           return chat_system_prompt
         end,
       },
-      adapter = "myadapter",
+      adapter = "myvllm",
       keymaps = {
+        yank_code = {
+          modes = { n = "<leader>y" },
+          index = 8,
+          callback = "keymaps.yank_code",
+          description = "[Chat] Yank nearest code",
+        },
         close = {
           modes = { n = "<C-c>", i = "<C-c>" },
           opts = {},
@@ -33,7 +43,7 @@ require("codecompanion").setup {
       },
     },
     inline = {
-      adapter = "myadapter",
+      adapter = "myvllm",
       keymaps = {
         accept_change = {
           modes = { n = "<leader>as" },
@@ -49,14 +59,28 @@ require("codecompanion").setup {
       },
     },
     cmd = {
-      adapter = "myadapter",
+      adapter = "myvllm",
     },
   },
   adapters = {
     http = {
-      myadapter = function()
+      myvllm = function()
+        return require("codecompanion.adapters").extend("openai", {
+          name = "myvllm", -- Unique name for your adapter
+          formatted_name = "VLLM | Use `<leader>y` to yank code",
+          -- api_key = "sk-no-key-required", -- vLLM does not require an API key
+
+          url = "http://localhost:18993/v1/chat/completions",
+          schema = {
+            model = {
+              default = "Qwen/Qwen2.5-Coder-7B-Instruct-AWQ", -- Must match your vllm model name
+            },
+          },
+        })
+      end,
+      mylocalollama = function()
         return require("codecompanion.adapters").extend("ollama", {
-          name = "myadapter", -- Give this adapter a different name to differentiate it from the default ollama adapter
+          name = "mylocalollama", -- Give this adapter a different name to differentiate it from the default ollama adapter
           opts = {
             vision = true,
             stream = true,

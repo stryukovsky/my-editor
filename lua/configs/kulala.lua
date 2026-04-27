@@ -4,4 +4,7 @@ require("kulala").setup {
     -- display mode: possible values: "split", "float"
     display_mode = "float",
   },
+  lsp = {
+    enable = false,
+  },
 }

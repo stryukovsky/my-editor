@@ -63,7 +63,7 @@ alias mc="ranger"
 
 function vllm() {
     # Set the path to the virtual environment and the launch script
-    VLLM_DIR="$HOME/.config/nvim/ai/vllm"
+    VLLM_DIR="$HOME/vllm"
     LAUNCH_SCRIPT="$VLLM_DIR/launch.sh"
 
     # Check if the virtual environment directory exists
@@ -94,3 +94,6 @@ function vllm() {
 }
 
 alias activ="source .venv/bin/activate"
+alias nvim="~/.config/nvim/bin/nvim.appimage"
+alias vim="~/.config/nvim/bin/nvim.appimage"
+

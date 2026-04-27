@@ -10,6 +10,25 @@ local system_file_explorer = require "utils.system_file_explorer"
 local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
 
+local open_files_do_not_replace_types = {
+  "Trouble",
+  "qf",
+  "edgy",
+  "NeogitStatus",
+  "NeogitPopup",
+  "NeogitCommitView",
+  "NeogitCommitSelectView",
+  "NeogitLogView",
+  "NeogitDiffView",
+  "NeogitRefsView",
+  "NeogitReflogView",
+  "NeogitStashView",
+  "NeogitConsole",
+  "NeogitGitCommandHistory",
+  "spectre_panel",
+  "nofile",
+}
+
 local function open_single_child_dir_recursively(state)
   local node = state.tree:get_node()
   if node.type == "directory" then
@@ -61,7 +80,8 @@ end
 
 ---@type neotree.Config.Base
 local config = {
-  open_files_do_not_replace_types = { "Trouble", "qf", "edgy" }, -- when opening files, do not use windows containing these filetypes or buftypes
+  -- when opening files, do not use windows containing these filetypes or buftypes
+  open_files_do_not_replace_types = open_files_do_not_replace_types,
   -- If a user has a sources list it will replace this one.
   -- Only sources listed here will be loaded.
   -- You can also add an external source by adding it's name to this list.
@@ -94,6 +114,11 @@ local config = {
     },
   },
   commands = {
+    ["open_new_window"] = function(state)
+      local node = state.tree:get_node()
+      local path = node:get_id()
+      vim.fn.jobstart({ "ghostty", "--working-directory=" .. path }, { detach = true })
+    end,
     ["system_open"] = function(state)
       local node = state.tree:get_node()
       local path = node:get_id()
@@ -147,6 +172,17 @@ local config = {
       end
       telescope.live_grep(getTelescopeOpts(state, path))
     end,
+    ["create_fs_item"] = function(state)
+      -- after creation of even nested item it will be focused
+      -- WARN: probably in future issues with compatibility
+      commands.add(
+        state,
+        neotree_utils.wrap(function(arg_state, arg_node_or_path)
+          fs.show_new_children(arg_state, arg_node_or_path)
+          fs.navigate(arg_state, nil, arg_node_or_path)
+        end, state)
+      )
+    end,
     ["copy_path"] = function(state)
       local node = state.tree:get_node()
       local filepath = node:get_id()
@@ -197,11 +233,8 @@ local config = {
     group_empty_dirs = true, -- when true, empty folders will be grouped together
     mappings = {
       ["<space>"] = "noop",
-      ["h"] = "go_shallow",
-      ["l"] = "go_deep",
       ["/"] = "noop",
       ["<A-q>"] = function() end,
-      ["<cr>"] = "go_deep", -- expand nested file takes precedence
       -- ["<esc>"] = "cancel", -- close preview or floating neo-tree window
       ["<esc>"] = function(state)
         commands.cancel(state)
@@ -239,7 +272,10 @@ local config = {
   filesystem = {
     window = {
       mappings = {
-        ["o"] = "system_open",
+        ["<cr>"] = "go_deep", -- expand nested file takes precedence
+        ["h"] = "go_shallow",
+        ["l"] = "go_deep",
+        ["oo"] = "open_new_window",
         ["<leader>rr"] = "refresh",
         ["O"] = "open_parent_folder",
         ["F"] = "telescope_grep",
@@ -251,17 +287,7 @@ local config = {
         ["<C-c>"] = "clear_filter",
         ["s"] = "git_add_file",
         ["u"] = "git_unstage_file",
-        ["a"] = function(state)
-          -- after creation of even nested item it will be focused
-          -- WARN: probably in future issues with compatibility
-          commands.add(
-            state,
-            neotree_utils.wrap(function(arg_state, arg_node_or_path)
-              fs.show_new_children(arg_state, arg_node_or_path)
-              fs.navigate(arg_state, nil, arg_node_or_path)
-            end, state)
-          )
-        end,
+        ["a"] = "create_fs_item",
         ["c"] = "copy_to_clipboard", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
         ["d"] = "delete",
         ["A"] = "add_directory", -- also accepts the config.show_path and config.insert_as options.
@@ -298,6 +324,8 @@ local config = {
         ["<C-r>"] = function() end,
         ["F"] = "noop",
         ["<A-F>"] = "noop",
+        ["h"] = "toggle_node",
+        ["l"] = "toggle_node",
       },
     },
   },

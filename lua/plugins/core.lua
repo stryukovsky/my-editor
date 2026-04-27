@@ -4,7 +4,8 @@ return {
     event = "VeryLazy",
   },
   {
-    "NeogitOrg/neogit",
+    "stryukovsky/neogit",
+    branch = "log-view-fix-open-commit-link",
     dependencies = {
       "nvim-lua/plenary.nvim", -- required
 
@@ -66,8 +67,7 @@ return {
   {
     "ThePrimeagen/refactoring.nvim",
     dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-treesitter/nvim-treesitter",
+      "lewis6991/async.nvim",
     },
     lazy = false,
   },
@@ -162,5 +162,16 @@ return {
   {
     "kylechui/nvim-surround",
     version = "^3.0.0", -- Use for stability; omit to use `main` branch for the latest features
+  },
+  {
+    "folke/lazydev.nvim",
+    ft = "lua", -- only load on lua files
+    opts = {
+      library = {
+        -- See the configuration section for more details
+        -- Load luvit types when the `vim.uv` word is found
+        { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+      },
+    },
   },
 }

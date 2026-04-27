@@ -1,6 +1,7 @@
 local trouble = require "trouble"
 local is_ollama_installed = require "utils.is_ollama_installed"
 local dap_output = require "configs.debug_output"
+local git_fetch = require "configs.periodic-git-fetch"
 local symbols = trouble.statusline {
   mode = "lsp_document_symbols",
   groups = {},
@@ -15,39 +16,6 @@ local symbols = trouble.statusline {
 local function to_hex_color(color)
   return "#" .. string.format("%x", color)
 end
-
-local dap_component = {
-  provider = function()
-    local dap = require "dap"
-    local session = dap.session()
-
-    -- Safety check: shouldn't happen due to cond, but defensive programming
-    if not session or not session.config then
-      return ""
-    end
-
-    -- Get session name (fallback to ID if name not set)
-    local name = session.config.name or session.id or "unnamed"
-
-    -- Count active sessions
-    local session_count = vim.tbl_count(dap.sessions())
-    local appendix = ""
-
-    if session_count > 1 then
-      appendix = string.format(" [%d sessions]", session_count)
-    end
-
-    return string.format(" %s%s", name, appendix)
-  end,
-  cond = function()
-    local ok, dap = pcall(require, "dap")
-    if not ok then
-      return false
-    end
-    return vim.tbl_count(dap.sessions()) > 0
-  end,
-  color = { fg = "#ff9e64" }, -- Orange debug color (optional)
-}
 
 local defaults_for_x_component = { "lsp_status", "filetype" }
 local function lualine_x_component()
@@ -97,7 +65,7 @@ require("lualine").setup {
   },
   sections = {
     lualine_a = { "mode" },
-    lualine_b = { "branch" },
+    lualine_b = { git_fetch.lualine_component(), "branch" },
     lualine_c = {
       {
         "filename",

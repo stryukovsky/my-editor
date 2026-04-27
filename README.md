@@ -1,5 +1,13 @@
 # My Editor
 
+## Install neovim itself
+
+https://github.com/neovim/neovim/releases/latest
+
+- Place appimage in `bin/` of this directory  
+- Rename it to `nvim.appimage`
+
+## Start 
 Clone this repository:
 
 ```sh 
@@ -8,10 +16,17 @@ git clone https://github.com/stryukovsky/my-editor ~/.config/nvim/
 
 In `~/.config/nvim/` you need to run setup scripts:  
 
-## Start 
 Install basics with script on every platform  
 
 ### Fedora / Asahi Fedora linux:  
+
+Important stuff with root password  
+
+```sh
+sudo passwd root
+```
+
+And then reboot  
 
 Firstly make sure system is up-to-date:  
 
@@ -25,6 +40,7 @@ Enable [rpm fusion](https://docs.fedoraproject.org/en-US/quick-docs/rpmfusion-se
 Execute every line separately!!!  
 
 ```sh
+chmod 700 bin/nvim.appimage
 sudo bash setup/fedora/setup.sh 
 bash setup/fedora/pyenv.sh
 bash setup/commons.sh
@@ -33,6 +49,7 @@ mkdir -p ~/.config/ghostty/
 cp setup/fedora/ghostty ~/.config/ghostty/config
 cp -r setup/ranger ~/.config/
 bash setup/finalize.sh
+bash setup/ai.sh
 
 ```
 
@@ -51,10 +68,23 @@ After installation of basics, open neovim and run command
 MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server basedpyright goimports prettier clangd black gofumpt vscode-solidity-server texlab jdtls xmlformatter
 ```
 
-Install kulala-ls:  
+## Debugger for java 
+
+In `data` directory of neovim clone stuff and build jar
 
 ```
-npm install -g @mistweaverco/kulala-ls
+git clone https://github.com/microsoft/java-debug data/java-debug
+cd data/java-debug
+mvn clean install
+```
+
+# Install vllm
+
+```sh
+rm -rf ~/vllm
+mkdir ~/vllm
+cd ~/vllm
+bash ~/.config/nvim/setup/fedora/vllm.sh
 ```
 
 # Other Fedora stuff
@@ -62,24 +92,34 @@ npm install -g @mistweaverco/kulala-ls
 Note: NVIDIA may not work until secure boot is not configured properly.  
 Note: [RPM Fusion](https://rpmfusion.org/Howto)
 
+## AWG
+
+Setup using awg-quick  
+
+https://github.com/amnezia-vpn/amneziawg-tools
+
+https://github.com/amnezia-vpn/amneziawg-go
+
+
+Remove `I2 = `-like lines before copying!!!  
+```sh
+sudo cp /full/path/to/config.conf /etc/amnezia/amneziawg/awg0.conf
+sudo WG_QUICK_USERSPACE_IMPLEMENTATION=amneziawg-go awg-quick up awg0
+```
+
 ## Gnome look
 
 Install plugins
 
-- https://extensions.gnome.org/extension/19/user-themes/
 - https://extensions.gnome.org/extension/7065/tiling-shell/
 - https://extensions.gnome.org/extension/1460/vitals/
 - https://extensions.gnome.org/extension/1160/dash-to-panel/
-
+- https://extensions.gnome.org/extension/6994/keyboard-reset/
 After installed, configure it:  
 
 ```sh 
 bash setup/fedora/gnome.sh
 ```
-
-Install orchis theme
-
-https://github.com/vinceliuice/Orchis-theme
 
 ## Cuda NVIDIA & ollama 
 Avante needs llama to be launched: 
@@ -122,17 +162,17 @@ Or `sudo nmcli connection import type wireguard file vpn.conf`
 
 Repeat again interactions with UI.  
 
-## Fedora root password set
+# Android Termux stuff
 
-Important stuff  
+Setup the environment:  
 
-```sh
-sudo passwd root
+```sh 
+
+bash setup/termux/setup.sh
+cp setup/zshrc.sh ~/.zshrc
 ```
 
-And then reboot  
-
-## Links 
+# Links 
 
 https://github.com/neovim/neovim   
 https://alacritty.org/  
@@ -142,3 +182,5 @@ https://github.com/BurntSushi/ripgrep
 https://github.com/aristocratos/bpytop  
 https://go.dev/
 https://github.com/pyenv/pyenv
+
+

@@ -225,15 +225,11 @@ class extract_archive(Command):
             self.fm.notify(f"Error: {e}", bad=True)
 
 
-class open_in_tmux_window(Command):
+class open_in_new_window(Command):
     def execute(self):
         selected = self.fm.thistab.get_selection()
         if len(selected) != 1:
             self.fm.notify("Select exactly one item", bad=True)
-            return
-
-        if not os.environ.get("TMUX"):
-            self.fm.notify("Not running inside tmux", bad=True)
             return
 
         f = selected[0]
@@ -243,8 +239,8 @@ class open_in_tmux_window(Command):
             target_dir = os.path.dirname(f.path)
 
         try:
-            subprocess.Popen(["tmux", "new-window", "-c", target_dir])
-            self.fm.notify(f"Opened {target_dir} in new tmux window")
+            subprocess.Popen(["ghostty", "+new-window", f"--working-directory={target_dir}"])
+            self.fm.notify(f"Opened {target_dir} in new window")
         except Exception as e:
             self.fm.notify(f"Failed to open tmux window: {e}", bad=True)
 
