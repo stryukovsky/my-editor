@@ -1,8 +1,7 @@
 ---@diagnostic disable-next-line: missing-fields
 local treesitter = require "nvim-treesitter"
 treesitter.setup {
-  auto_install = true,
-  install_dir = vim.fn.stdpath "data" .. "/treesitter",
+  install_dir = vim.fn.stdpath "data" .. "/tree-sitter",
 }
 
 treesitter.install {
