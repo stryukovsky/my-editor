@@ -1,2 +1,4 @@
-require("fidget").setup({})
-require("telescope").load_extension("fidget")
+pcall(function()
+  require("fidget").setup {}
+  require("telescope").load_extension "fidget"
+end)
