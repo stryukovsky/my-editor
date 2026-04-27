@@ -36,13 +36,16 @@ end
 
 local function get_lualine_theme()
   local bg_color = to_hex_color(vim.api.nvim_get_hl(0, { name = "Normal" }).bg)
-  -- local fg_color = to_hex_color(vim.api.nvim_get_hl(0, { name = "Normal" }).fg)
+  local fg_color = to_hex_color(vim.api.nvim_get_hl(0, { name = "Normal" }).fg)
   local lualine_theme = require "lualine.themes.auto"
   -- lualine_theme.normal.c.bg = bg_color
   -- lualine_theme.normal.b.bg = bg_color
   for k, _ in pairs(lualine_theme) do
     lualine_theme[k].b.bg = bg_color
     lualine_theme[k].c.bg = bg_color
+    lualine_theme[k].b.fg = fg_color
+    lualine_theme[k].c.fg = fg_color
+
   end
   return lualine_theme
 end
