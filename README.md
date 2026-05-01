@@ -42,7 +42,8 @@ Execute every line separately!!!
 ```sh
 chmod 700 bin/nvim.appimage
 sudo bash setup/fedora/setup.sh 
-bash setup/fedora/pyenv.sh
+# pyenv is old stuff
+# bash setup/fedora/pyenv.sh
 bash setup/commons.sh
 cp setup/fedora/zsh.sh ~/.zshrc
 mkdir -p ~/.config/ghostty/
