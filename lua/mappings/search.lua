@@ -1,5 +1,4 @@
 local map = require "mappings.map"
-local telescope = require "telescope"
 local get_visual_selection = require "utils.get_visual_selection"
 
 -- search and replace

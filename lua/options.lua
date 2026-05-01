@@ -6,8 +6,26 @@ o.laststatus = 3
 o.showmode = false
 vim.opt.title = true
 vim.opt.titlestring = [[nvim | %{fnamemodify(getcwd(), ":~")}]]
-vim.g.clipboard = 'osc52'
-vim.o.clipboard = 'unnamedplus'
+
+o.clipboard = "unnamedplus"
+local handle = io.popen "which gpaste-client 2>/dev/null"
+if handle ~= nil then
+  local result = handle:read "*a"
+  handle:close()
+  if result ~= "" then
+    vim.g.clipboard = {
+      name = "gpaste",
+      copy = {
+        ["+"] = { "gpaste-client" },
+        ["*"] = { "gpaste-client" },
+      },
+      paste = {
+        ["+"] = { "gpaste-client", "--use-index", "get", "0" },
+        ["*"] = { "gpaste-client", "--use-index", "get", "0" },
+      },
+    }
+  end
+end
 o.cursorline = true
 o.cursorlineopt = "number"
 o.winborder = "rounded"

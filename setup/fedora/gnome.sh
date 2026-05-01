@@ -6,3 +6,5 @@ gsettings set org.gnome.desktop.interface clock-format '24h'
 gsettings set org.gnome.shell favorite-apps "['com.mitchellh.ghostty.desktop', 'org.mozilla.firefox.desktop', 'org.telegram.desktop.desktop', 'md.obsidian.Obsidian.desktop']"
 
 gsettings set org.gnome.desktop.peripherals.touchpad tap-to-click false
+gsettings set org.gnome.GPaste save-history false
+

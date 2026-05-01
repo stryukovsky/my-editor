@@ -47,6 +47,14 @@ local telescope_components = {
   },
   {
     modes = ui_components_modes,
+    shortcut = "<A-h>",
+    command = function()
+      vim.cmd "Telescope buffers"
+    end,
+    desc = "UI telescope buffers",
+  },
+  {
+    modes = ui_components_modes,
     shortcut = "<A-u>",
     command = function()
       vim.cmd "Telescope undo"
