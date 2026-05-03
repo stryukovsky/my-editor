@@ -7,4 +7,4 @@ gsettings set org.gnome.shell favorite-apps "['com.mitchellh.ghostty.desktop', '
 
 gsettings set org.gnome.desktop.peripherals.touchpad tap-to-click false
 gsettings set org.gnome.GPaste save-history false
-
+gsettings set org.gnome.desktop.interface enable-hot-corners false
