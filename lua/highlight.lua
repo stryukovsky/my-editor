@@ -67,6 +67,7 @@ local function override_highlights()
   local neogit_cursor_bg = vim.api.nvim_get_hl(0, { name = "NeogitCursor" }).bg
   local neogit_cursor_fg = vim.api.nvim_get_hl(0, { name = "NeogitCursor" }).fg
   hl(0, "NeogitHunkHeaderCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
+  hl(0, "NeogitBranchHead", { fg = foreground_active })
   hl(0, "NeogitDiffContextCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
   hl(0, "NeogitDiffAddCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
   hl(0, "NeogitDiffDeleteCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
