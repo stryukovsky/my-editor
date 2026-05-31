@@ -17,6 +17,33 @@ local function get_non_terminal_win()
   return nil
 end
 
+local function get_trouble_win()
+  local trouble_win = nil
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local ft = vim.bo[buf].filetype
+    if ft == "trouble" then
+      trouble_win = win
+      break
+    end
+  end
+  return trouble_win
+end
+
+local function set_cursor_pos_in_trouble_win(index)
+  local trouble_win = get_trouble_win()
+  if trouble_win then
+    vim.api.nvim_set_current_win(trouble_win)
+
+    local line_count = vim.api.nvim_buf_line_count(vim.api.nvim_win_get_buf(trouble_win))
+    local safe_index = math.min(index, line_count)
+    vim.api.nvim_win_set_cursor(trouble_win, { safe_index, 0 })
+    return true
+  else
+    return false
+  end
+end
+
 -- this outer function is kinda builder, depending on mode of trouble items to be shown when telescope window is closed
 return function(mode)
   -- this inner function is default telescope fn with bufnr arg for creating a telescope window
@@ -33,6 +60,7 @@ return function(mode)
     if count > 1 then
       close_trouble()
       local sort_disabler = 0
+
       ---@diagnostic disable-next-line: missing-fields
       trouble.open(bufnr, {
         focus = false,
@@ -43,23 +71,20 @@ return function(mode)
           return sort_disabler
         end,
       })
+
       local index = 2 + picker:get_selection_row()
-      local trouble_win = nil
-      for _, win in ipairs(vim.api.nvim_list_wins()) do
-        local buf = vim.api.nvim_win_get_buf(win)
-        local ft = vim.bo[buf].filetype
-        if ft == "trouble" then
-          trouble_win = win
+      local max_attempts = 5
+      local success = false
+      for i = 1, max_attempts, 1 do
+        if success then
           break
         end
-      end
-      if trouble_win then
         vim.defer_fn(function()
-          vim.api.nvim_set_current_win(trouble_win)
-          local line_count = vim.api.nvim_buf_line_count(vim.api.nvim_win_get_buf(trouble_win))
-          local safe_index = math.min(index, line_count)
-          vim.api.nvim_win_set_cursor(trouble_win, { safe_index, 0 })
-        end, 400)
+          success = set_cursor_pos_in_trouble_win(index)
+        end, 400 * i)
+      end
+      if not success then
+        vim.print "Cannot open trouble in time: seems really big stuff indexed"
       end
     else
       actions.select_default(bufnr)
@@ -80,7 +105,7 @@ return function(mode)
           local safe_col = selection.col or 0
           vim.api.nvim_win_set_cursor(cur_win, { safe_lnum, safe_col })
         end
-      end, 400)
+      end, 800)
     end
   end
 end
