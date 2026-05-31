@@ -35,7 +35,7 @@ return function(mode)
       local sort_disabler = 0
       ---@diagnostic disable-next-line: missing-fields
       trouble.open(bufnr, {
-        focus = true,
+        focus = false,
         mode = mode,
         sorters = {},
         sort = function(_)
@@ -44,25 +44,23 @@ return function(mode)
         end,
       })
       local index = 2 + picker:get_selection_row()
-      vim.defer_fn(function()
-        -- find the trouble window specifically, not just current window
-        local trouble_win = nil
-        for _, win in ipairs(vim.api.nvim_list_wins()) do
-          local buf = vim.api.nvim_win_get_buf(win)
-          local ft = vim.bo[buf].filetype
-          if ft == "trouble" then
-            trouble_win = win
-            break
-          end
+      local trouble_win = nil
+      for _, win in ipairs(vim.api.nvim_list_wins()) do
+        local buf = vim.api.nvim_win_get_buf(win)
+        local ft = vim.bo[buf].filetype
+        if ft == "trouble" then
+          trouble_win = win
+          break
         end
-        local target_win = trouble_win or get_non_terminal_win()
-        if target_win then
-          vim.api.nvim_set_current_win(target_win)
-          local line_count = vim.api.nvim_buf_line_count(vim.api.nvim_win_get_buf(target_win))
+      end
+      if trouble_win then
+        vim.defer_fn(function()
+          vim.api.nvim_set_current_win(trouble_win)
+          local line_count = vim.api.nvim_buf_line_count(vim.api.nvim_win_get_buf(trouble_win))
           local safe_index = math.min(index, line_count)
-          vim.api.nvim_win_set_cursor(target_win, { safe_index, 0 })
-        end
-      end, 400)
+          vim.api.nvim_win_set_cursor(trouble_win, { safe_index, 0 })
+        end, 400)
+      end
     else
       actions.select_default(bufnr)
       vim.defer_fn(function()

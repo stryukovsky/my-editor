@@ -171,3 +171,18 @@ vim.opt.langmap = vim.fn.join({
   escape(ru_shift) .. ";" .. escape(en_shift),
   escape(ru) .. ";" .. escape(en),
 }, ",")
+
+vim.opt.fillchars = {
+  diff = "╱",
+  eob = " ",
+}
+
+vim.opt.diffopt = {
+  "internal",
+  "filler",
+  "closeoff",
+  "context:12",
+  "algorithm:histogram",
+  "linematch:200",
+  "indent-heuristic",
+}

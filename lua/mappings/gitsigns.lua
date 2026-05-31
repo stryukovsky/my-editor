@@ -9,8 +9,19 @@ map("n", "<leader>gv", "<cmd>Gitsigns select_hunk<cr>", { desc = "git select buf
 map("n", "<leader>gR", "<cmd>Gitsigns reset_buffer<cr>", { desc = "git reset buffer" })
 -- map("n", "<leader>bl", "<cmd>Gitsigns blame_line<cr>", { desc = "git blame line" })
 
-map("n", "]g", "<cmd>Gitsigns next_hunk<cr>", { desc = "Jump To the git next hunk" })
-map("n", "[g", "<cmd>Gitsigns prev_hunk<cr>", { desc = "Jump To the git prev hunk" })
+map("n", "]g", function()
+  vim.cmd "Gitsigns next_hunk"
+  vim.defer_fn(function()
+    vim.cmd "normal! zz"
+  end, 10)
+end, { desc = "Jump To the git next hunk" })
+
+map("n", "[g", function()
+  vim.cmd "Gitsigns prev_hunk"
+  vim.defer_fn(function()
+    vim.cmd "normal! zz"
+  end, 10)
+end, { desc = "Jump To the git prev hunk" })
 
 map("n", "<leader>gS", function()
   vim.fn.system "git add ."

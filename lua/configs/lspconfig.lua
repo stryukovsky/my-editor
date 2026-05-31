@@ -11,6 +11,7 @@ local lsp_with_default_conf = {
   "solidity_ls",
   "texlab",
   "jdtls",
+  "move_analyzer",
 }
 
 vim.lsp.config("solidity_ls", {

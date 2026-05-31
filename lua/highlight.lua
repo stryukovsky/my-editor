@@ -75,6 +75,9 @@ local function override_highlights()
 
   local comment_fg = vim.api.nvim_get_hl(0, { name = "Comment" }).fg
   hl(0, "GitSignsCurrentLineBlame", { fg = comment_fg, italic = true })
+  hl(0, "GitSignsAddInline", { bold = true, italic = true, underline = true, fg = "#0042ff" })
+  hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = "#0042ff" })
+  hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = "#0042ff" })
 
   local palette = {
     insert = vim.api.nvim_get_hl(0, { name = "lualine_a_insert" }),
