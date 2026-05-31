@@ -10,10 +10,23 @@ local function toggle_severity(view)
   })
 end
 
+local function terminalwise_jump(ctx)
+  local prev_win = vim.fn.win_getid(vim.fn.winnr "#")
+
+  local buf = vim.api.nvim_win_get_buf(prev_win)
+  if vim.bo[buf].buftype == "terminal" then
+    vim.notify("Switch away from terminal before jumping", vim.log.levels.WARN)
+    return
+  end
+
+  ctx:jump()
+end
+
 ---@diagnostic disable-next-line: missing-fields
 trouble.setup {
   warn_no_results = false, -- show a warning when there are no results
   open_no_results = false, -- open the trouble window when there are no results
+  auto_preview = false,
   modes = {
     global_results = {
       desc = "Search results with file and position",
@@ -50,10 +63,10 @@ trouble.setup {
     q = "close",
     o = "jump_close",
     ["<esc>"] = "cancel",
-    ["<cr>"] = "jump",
-    ["l"] = "jump",
+    ["<cr>"] = terminalwise_jump,
+    ["l"] = terminalwise_jump,
     ["h"] = "fold_close",
-    ["<2-leftmouse>"] = "jump",
+    ["<2-leftmouse>"] = terminalwise_jump,
     ["<c-s>"] = "jump_split",
     ["<c-v>"] = "jump_vsplit",
     -- go down to next item (accepts count)
