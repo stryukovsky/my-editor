@@ -74,14 +74,15 @@ return function(mode)
 
       local index = 2 + picker:get_selection_row()
       local max_attempts = 5
-      local success = false
+      -- first try and then max_attempts retries
+      local success = set_cursor_pos_in_trouble_win(index)
       for i = 1, max_attempts, 1 do
         if success then
           break
         end
         vim.defer_fn(function()
           success = set_cursor_pos_in_trouble_win(index)
-        end, 400 * i)
+        end, 200 * i)
       end
       if not success then
         vim.print "Cannot open trouble in time: seems really big stuff indexed"
