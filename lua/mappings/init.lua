@@ -18,8 +18,8 @@ map("n", "<C-c>", function()
   end
 end, { desc = "Copy whole file if buffer is editable" })
 
-map("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
-map("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+map({"v", "n"}, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
+map({"v", "n"}, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 map("n", "p", "P", { desc = "override paste" })
 
 local termux_version = os.getenv "TERMUX_VERSION"
