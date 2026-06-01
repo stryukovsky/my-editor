@@ -73,20 +73,14 @@ return function(mode)
       })
 
       local index = 2 + picker:get_selection_row()
-      local max_attempts = 5
-      -- first try and then max_attempts retries
-      local success = set_cursor_pos_in_trouble_win(index)
-      for i = 1, max_attempts, 1 do
-        if success then
-          break
+      vim.defer_fn(function()
+        local success = vim.wait(1000, function()
+          return set_cursor_pos_in_trouble_win(index)
+        end, 200)
+        if not success then
+          vim.print "Cannot set cursor in trouble: seems really big stuff indexed"
         end
-        vim.defer_fn(function()
-          success = set_cursor_pos_in_trouble_win(index)
-        end, 200 * i)
-      end
-      if not success then
-        vim.print "Cannot open trouble in time: seems really big stuff indexed"
-      end
+      end, 100)
     else
       actions.select_default(bufnr)
       vim.defer_fn(function()
