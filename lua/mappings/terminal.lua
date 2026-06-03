@@ -66,7 +66,7 @@ map("n", "<Leader>tn", function()
   if is_buffer_terminal() or is_normal_buffer() or is_initial_dashboard() then
     vim.cmd.terminal()
     vim.cmd.BufferPin()
-    local base = "  Terminal " .. random_char() .. " "
+    local base = "  " .. random_char() .. " "
     local name = unique_name(base)
     vim.api.nvim_buf_set_name(0, name)
   else
@@ -77,7 +77,7 @@ end, { desc = "Terminal: new" })
 map("n", "<Leader>tr", function()
   local old = vim.api.nvim_buf_get_name(0)
   taken_names[old] = nil
-  local base = "  Terminal " .. vim.fn.input { prompt = "New buf name: " }
+  local base = "  " .. vim.fn.input { prompt = "New buf name: " }
   local name = unique_name(base)
   vim.api.nvim_buf_set_name(0, name)
 end, { desc = "Terminal: rename buffer" })

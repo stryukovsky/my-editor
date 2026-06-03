@@ -78,6 +78,9 @@ require("telescope").setup {
     },
     live_grep = {
       wrap_results = true,
+      prompt_title = " Global search in project ",
+      results_title = " Results accross all project",
+      preview_title = "󰈙 Preview ",
       mappings = require "mappings.telescope.live_grep",
       entry_maker = entry_for_filesearch,
     },

@@ -57,9 +57,13 @@ local function open_single_child_dir_recursively(state)
 end
 
 local function getTelescopeOpts(state, path)
+  local relative_path = vim.fn.fnamemodify(path, ":.")
   return {
     cwd = path,
     search_dirs = { path },
+    prompt_title = " Search in " .. relative_path,
+    results_title = " Results in " .. relative_path,
+    preview_title = "󰈙 Preview in " .. relative_path,
     attach_mappings = function(prompt_bufnr, map)
       local actions = require "telescope.actions"
       actions.select_default:replace(function()
