@@ -53,3 +53,5 @@ require "configs.rainbow_delimiters"
 -- at the end, so all highlight rules can be applied
 require "configs.material-theme"
 require "highlight"
+require "configs.bigfiles"
+
