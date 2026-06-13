@@ -256,9 +256,12 @@ local function execute(req)
   elseif req.body then
     opts.body = req.body
     vim.notify("http-runner: using raw body: " .. req.body, vim.log.levels.DEBUG)
-    if req.headers then
-      opts.headers = req.headers
+    if not req.headers then req.headers = {} end
+    if not header_value(req.headers, "Content-Type") and req.body:match("^%s*{") then
+      req.headers["Content-Type"] = "application/json"
+      vim.notify("http-runner: auto-set Content-Type: application/json for JSON body", vim.log.levels.DEBUG)
     end
+    opts.headers = req.headers
 
   elseif req.params then
     local ct = header_value(req.headers, "Content-Type")
