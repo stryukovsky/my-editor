@@ -10,12 +10,6 @@ return {
     ft = { "markdown" },
   },
   {
-    "mistweaverco/kulala.nvim",
-    keys = {},
-    ft = { "http", "rest" },
-    opts = {},
-  },
-  {
     "RRethy/vim-illuminate",
   },
   {

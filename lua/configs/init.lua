@@ -13,7 +13,7 @@ end
 require "configs.marks"
 require "configs.barbar"
 require "configs.treesitter"
-require "configs.kulala"
+-- require "configs.kulala"
 require "configs.oil"
 require "configs.gomove"
 require "configs.gitsigns"

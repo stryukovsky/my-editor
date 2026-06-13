@@ -6,11 +6,4 @@ return {
     init = require "configs.markdown-preview",
     ft = { "markdown" },
   },
-  {
-    "mistweaverco/kulala.nvim",
-    keys = {},
-    ft = { "http", "rest" },
-    opts = {},
-  },
 }
-
