@@ -2,7 +2,7 @@ return function(path)
   
       local sysname = vim.loop.os_uname().sysname
       if sysname == "Darwin" then
-        vim.fn.jobstart({ "open", path }, { detach = true })
+        vim.fn.jobstart({ "open", "-R", path }, { detach = true })
       elseif sysname == "Linux" then
         vim.fn.jobstart({ "nautilus", "--select", path }, { detach = true })
       elseif sysname == "Windows_NT" then

@@ -288,52 +288,21 @@ class clear_all_selections(Command):
         self.fm.ui.redraw_main_column()
 
 
-class open_in_nautilus(Command):
+class open_in_finder(Command):
     """
-    :open_in_nautilus
+    :open_in_finder
 
-    Open selected items in GNOME Files (Nautilus):
+    Reveal selected items in Finder:
       - Directories are opened directly.
-      - Files are selected in their parent folder.
+      - Files are revealed (selected) in their parent folder.
     """
 
     def execute(self):
-        from ranger.ext.get_executables import get_executables
-
-        if "nautilus" not in get_executables():
-            self.fm.notify("Nautilus not found!", bad=True)
-            return
-
         selected = [f.path for f in self.fm.thistab.get_selection()]
         if not selected:
             selected = [self.fm.thisfile.path]
 
-        dirs = []
-        files = []
-
         for path in selected:
             p = Path(path)
-            if p.is_dir():
-                dirs.append(str(p))
-            else:
-                # Only add file if it exists (avoid broken selections)
-                if p.exists():
-                    files.append(str(p))
-
-        args = ["nautilus"]
-
-        args.append("--select")
-
-        if dirs:
-            args.extend(dirs)
-
-        if files:
-            args.extend(files)
-
-        if len(args) > 1:  # Avoid running "nautilus" with no args unless intended
-            subprocess.Popen(
-                args,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                preexec_fn=os.setpgrp,
-            )
+            if p.exists():
+                subprocess.Popen(["open", "-R", str(p)])

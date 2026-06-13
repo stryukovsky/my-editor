@@ -7,3 +7,6 @@ brew install go
 brew install pcre2
 brew install ripgrep
 brew install anomalyco/tap/opencode
+brew install ranger
+brew install --cask mactex
+brew install bpytop
