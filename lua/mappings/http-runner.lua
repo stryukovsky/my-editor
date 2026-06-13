@@ -1,12 +1,19 @@
 local map = require "mappings.map"
 
 local function is_http_buffer()
-  return vim.api.nvim_buf_get_name(0):match("%.http$") ~= nil
+  local name = vim.api.nvim_buf_get_name(0)
+  local ok = name:match("%.http$") ~= nil
+  vim.notify("http-runner: buffer name='" .. name .. "', is_http=" .. tostring(ok), vim.log.levels.DEBUG)
+  return ok
+end
+
+local function get_line(buf, row)
+  return vim.api.nvim_buf_get_lines(buf, row, row + 1, false)[1]
 end
 
 local function count_consecutive_blanks(lines, start, step)
   local count = 0
-  local i = start
+  local i = start + 1
   while i >= 1 and i <= #lines and lines[i] == "" do
     count = count + 1
     i = i + step
@@ -14,57 +21,117 @@ local function count_consecutive_blanks(lines, start, step)
   return count
 end
 
-local function find_block(lines, cursor_line)
+local function find_block(buf, lines, cursor_row)
   local n = #lines
+  vim.notify(
+    "http-runner: find_block total_lines=" .. n .. " cursor_row(0-idx)=" .. cursor_row,
+    vim.log.levels.DEBUG
+  )
 
-  local block_start = 1
-  local i = cursor_line - 1
-  while i >= 1 do
-    if lines[i]:match("^###") then
+  local block_start = 0
+  local i = cursor_row - 1
+  while i >= 0 do
+    local line = get_line(buf, i)
+    vim.notify(
+      "http-runner: backward scan row=" .. i .. " line='" .. (line or "nil") .. "'",
+      vim.log.levels.DEBUG
+    )
+    if line and line:match("^###") then
       block_start = i + 1
+      vim.notify("http-runner: found ### at row " .. i .. ", block_start=" .. block_start, vim.log.levels.DEBUG)
       break
-    elseif lines[i] == "" then
-      if count_consecutive_blanks(lines, i, -1) >= 2 then
+    elseif line == "" then
+      local blanks = count_consecutive_blanks(lines, i, -1)
+      vim.notify("http-runner: blanks backward from row " .. i .. " = " .. blanks, vim.log.levels.DEBUG)
+      if blanks >= 2 then
         block_start = i + 1
+        vim.notify("http-runner: 2+ blanks at row " .. i .. ", block_start=" .. block_start, vim.log.levels.DEBUG)
         break
       end
     end
     i = i - 1
   end
 
-  local block_end = n
-  i = cursor_line + 1
-  while i <= n do
-    if lines[i]:match("^###") then
+  local block_end = n - 1
+  i = cursor_row + 1
+  while i < n do
+    local line = get_line(buf, i)
+    vim.notify(
+      "http-runner: forward scan row=" .. i .. " line='" .. (line or "nil") .. "'",
+      vim.log.levels.DEBUG
+    )
+    if line and line:match("^###") then
       block_end = i - 1
+      vim.notify("http-runner: found ### at row " .. i .. ", block_end=" .. block_end, vim.log.levels.DEBUG)
       break
-    elseif lines[i] == "" then
-      if count_consecutive_blanks(lines, i, 1) >= 2 then
+    elseif line == "" then
+      local blanks = count_consecutive_blanks(lines, i, 1)
+      vim.notify("http-runner: blanks forward from row " .. i .. " = " .. blanks, vim.log.levels.DEBUG)
+      if blanks >= 2 then
         block_end = i - 1
+        vim.notify("http-runner: 2+ blanks at row " .. i .. ", block_end=" .. block_end, vim.log.levels.DEBUG)
         break
       end
     end
     i = i + 1
   end
 
+  vim.notify(
+    "http-runner: block range (0-idx) " .. block_start .. " -> " .. block_end,
+    vim.log.levels.DEBUG
+  )
+
+  if block_start > block_end then
+    vim.notify(
+      "http-runner: empty block (start " .. block_start .. " > end " .. block_end .. ")",
+      vim.log.levels.WARN
+    )
+    return nil
+  end
+
   return block_start, block_end
 end
 
-local function parse_request(lines, start_line, end_line)
+local function parse_request(buf, lines, start_row, end_row)
   local method, url, headers, body_lines
   local in_body = false
 
-  for i = start_line, end_line do
-    local line = lines[i]
+  vim.notify(
+    "http-runner: parsing rows (0-idx) " .. start_row .. "-" .. end_row,
+    vim.log.levels.DEBUG
+  )
 
-    if line:match("^#") then
+  for row = start_row, end_row do
+    local line = get_line(buf, row)
+    vim.notify(
+      "http-runner:  parse row " .. row .. " in_body=" .. tostring(in_body) .. " '" .. (line or "nil") .. "'",
+      vim.log.levels.DEBUG
+    )
+
+    if not line then
+      vim.notify("http-runner:  -> nil line (skip)", vim.log.levels.DEBUG)
+    elseif line:match("^#") then
+      vim.notify("http-runner:  -> comment (skip)", vim.log.levels.DEBUG)
     elseif not method then
       method, url = line:match("^(%S+)%s+(%S+)")
+      if method then
+        vim.notify(
+          "http-runner:  -> method='" .. method .. "' url='" .. (url or "nil") .. "'",
+          vim.log.levels.DEBUG
+        )
+      else
+        vim.notify(
+          "http-runner:  -> not a METHOD URL line (no match)",
+          vim.log.levels.DEBUG
+        )
+      end
     elseif in_body then
       table.insert(body_lines, line)
+      vim.notify("http-runner:  -> body line", vim.log.levels.DEBUG)
     elseif line == "" then
       in_body = true
       body_lines = {}
+      vim.notify("http-runner:  -> blank line, switching to body", vim.log.levels.DEBUG)
     else
       local key, value = line:match("^([%w%-]+):%s*(.+)")
       if key then
@@ -72,53 +139,104 @@ local function parse_request(lines, start_line, end_line)
           headers = {}
         end
         headers[key] = value
+        vim.notify(
+          "http-runner:  -> header " .. key .. ": " .. value,
+          vim.log.levels.DEBUG
+        )
+      else
+        vim.notify(
+          "http-runner:  -> unrecognized line (not header/blank/method/comment)",
+          vim.log.levels.DEBUG
+        )
       end
     end
   end
+
+  local body = body_lines and #body_lines > 0 and table.concat(body_lines, "\n") or nil
+  vim.notify(
+    "http-runner: parsed method=" .. (method or "GET (default)")
+      .. " url=" .. (url or "nil")
+      .. " headers=" .. vim.inspect(headers)
+      .. " body=" .. (body and #body > 0 and #body .. " chars" or "nil"),
+    vim.log.levels.DEBUG
+  )
 
   return {
     method = method and method:upper() or "GET",
     url = url,
     headers = headers,
-    body = body_lines and #body_lines > 0 and table.concat(body_lines, "\n") or nil,
+    body = body,
   }
 end
 
 local function execute(req)
+  vim.notify(
+    "http-runner: executing " .. req.method .. " " .. (req.url or "nil"),
+    vim.log.levels.INFO
+  )
+
   local ok, curl = pcall(require, "plenary.curl")
   if not ok then
-    vim.notify("plenary.nvim not available", vim.log.levels.ERROR)
+    vim.notify(
+      "http-runner: failed to require plenary.curl: " .. tostring(curl),
+      vim.log.levels.ERROR
+    )
     return
   end
+  vim.notify("http-runner: plenary.curl loaded", vim.log.levels.DEBUG)
 
   local fn = curl[req.method:lower()]
   if not fn then
-    vim.notify("Unsupported method: " .. req.method, vim.log.levels.ERROR)
+    vim.notify(
+      "http-runner: unsupported method '" .. req.method .. "', available: "
+        .. vim.inspect(vim.tbl_keys(curl)),
+      vim.log.levels.ERROR
+    )
     return
   end
 
   local opts = {}
   if req.body then
     opts.body = req.body
+    vim.notify("http-runner: body = " .. req.body, vim.log.levels.DEBUG)
   end
   if req.headers then
     opts.headers = req.headers
+    vim.notify("http-runner: headers = " .. vim.inspect(req.headers), vim.log.levels.DEBUG)
   end
+
+  vim.notify(
+    "http-runner: calling curl." .. req.method:lower() .. "('" .. req.url .. "', " .. vim.inspect(opts) .. ")",
+    vim.log.levels.DEBUG
+  )
 
   local ok2, res = pcall(fn, req.url, opts)
   if not ok2 then
-    vim.notify("Request failed: " .. tostring(res), vim.log.levels.ERROR)
+    vim.notify(
+      "http-runner: request failed with error: " .. tostring(res),
+      vim.log.levels.ERROR
+    )
     return
   end
+
+  vim.notify(
+    "http-runner: response status=" .. (res.status or "nil")
+      .. " body_len=" .. ((res.body or ""):len())
+      .. " headers_count=" .. (#(res.headers or {})),
+    vim.log.levels.INFO
+  )
   return res
 end
 
 local function show_response(res)
   if not res then
+    vim.notify("http-runner: no response to display", vim.log.levels.WARN)
     return
   end
 
+  vim.notify("http-runner: opening response in right vsplit", vim.log.levels.DEBUG)
   vim.cmd("rightbelow vsplit")
+
   local buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_win_set_buf(0, buf)
 
@@ -132,7 +250,12 @@ local function show_response(res)
     table.insert(content, "")
   end
   if res.body then
-    vim.list_extend(content, vim.split(res.body, "\n", { plain = true }))
+    local body_lines = vim.split(res.body, "\n", { plain = true })
+    vim.list_extend(content, body_lines)
+    vim.notify(
+      "http-runner: wrote " .. #body_lines .. " body lines to response buffer",
+      vim.log.levels.DEBUG
+    )
   end
 
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
@@ -140,35 +263,79 @@ local function show_response(res)
   vim.bo[buf].bufhidden = "wipe"
   vim.bo[buf].modified = false
   vim.bo[buf].filetype = "http-response"
+
+  vim.notify("http-runner: response displayed", vim.log.levels.DEBUG)
 end
 
 map("n", "<leader>rq", function()
+  vim.notify("http-runner: <leader>rq triggered", vim.log.levels.DEBUG)
+
   if not is_http_buffer() then
-    vim.notify("Not a .http file", vim.log.levels.WARN)
+    vim.notify(
+      "http-runner: buffer is not a .http file (bufname="
+        .. vim.api.nvim_buf_get_name(0) .. ")",
+      vim.log.levels.WARN
+    )
     return
   end
 
-  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-  local cursor_line = vim.api.nvim_win_get_cursor(0)[1] + 1
+  local buf = vim.api.nvim_get_current_buf()
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+  vim.notify("http-runner: buffer has " .. #lines .. " lines", vim.log.levels.DEBUG)
 
-  if cursor_line < 1 or cursor_line > #lines then
+  if #lines == 0 then
+    vim.notify("http-runner: buffer is empty", vim.log.levels.WARN)
     return
   end
 
-  local current_line = lines[cursor_line]
-  if current_line == "" or current_line:match("^###") then
-    vim.notify("No request at cursor position", vim.log.levels.WARN)
+  local raw_cursor = vim.api.nvim_win_get_cursor(0)
+  local cursor_row = raw_cursor[1]
+  vim.notify(
+    "http-runner: cursor (0-idx) row=" .. cursor_row .. " col=" .. raw_cursor[2],
+    vim.log.levels.DEBUG
+  )
+
+  if cursor_row < 0 or cursor_row >= #lines then
+    vim.notify(
+      "http-runner: cursor row " .. cursor_row .. " out of range [0, " .. (#lines - 1) .. "]",
+      vim.log.levels.WARN
+    )
     return
   end
 
-  local start_line, end_line = find_block(lines, cursor_line)
-  local req = parse_request(lines, start_line, end_line)
+  local current_line = get_line(buf, cursor_row)
+  vim.notify(
+    "http-runner: current line (0-idx row " .. cursor_row .. ") = '" .. (current_line or "nil") .. "'",
+    vim.log.levels.DEBUG
+  )
+
+  if current_line == "" then
+    vim.notify("http-runner: cursor is on an empty line", vim.log.levels.WARN)
+    return
+  end
+  if current_line and current_line:match("^###") then
+    vim.notify("http-runner: cursor is on a ### separator line", vim.log.levels.WARN)
+    return
+  end
+
+  local start_row, end_row = find_block(buf, lines, cursor_row)
+  if not start_row then
+    vim.notify("http-runner: could not find request block", vim.log.levels.WARN)
+    return
+  end
+
+  local req = parse_request(buf, lines, start_row, end_row)
 
   if not req.url then
-    vim.notify("No valid METHOD URL in request block", vim.log.levels.WARN)
+    vim.notify(
+      "http-runner: no URL found — rows " .. start_row .. "-" .. end_row
+        .. " do not contain METHOD URL",
+      vim.log.levels.WARN
+    )
     return
   end
 
+  vim.notify("http-runner: executing request", vim.log.levels.INFO)
   local res = execute(req)
   show_response(res)
 end, { desc = "Execute HTTP request under cursor" })
