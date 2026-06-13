@@ -27,6 +27,7 @@ source <(fzf --zsh)
 export FZF_DEFAULT_OPTS='--height 40% --tmux center,40% --layout reverse --border top'
 
 alias top="bpytop"
+alias htop="bpytop"
 alias ff="ranger"
 alias mc="ranger"
 alias o="xdg-open"
