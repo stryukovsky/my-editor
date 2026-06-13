@@ -92,9 +92,24 @@ local function find_block(buf, lines, cursor_row)
   return block_start, block_end
 end
 
+local function urlencode(s)
+  return (tostring(s):gsub("([^%w%.%-_~])", function(c)
+    return string.format("%%%02X", c:byte())
+  end))
+end
+
+local function header_value(headers, name)
+  if not headers then return nil end
+  for k, v in pairs(headers) do
+    if k:lower() == name:lower() then return v end
+  end
+  return nil
+end
+
 local function parse_request(buf, lines, start_row, end_row)
-  local method, url, headers, body_lines
+  local method, url, headers, params, body_lines
   local in_body = false
+  local body_is_json = false
 
   vim.notify(
     "http-runner: parsing rows (0-idx) " .. start_row .. "-" .. end_row,
@@ -126,8 +141,29 @@ local function parse_request(buf, lines, start_row, end_row)
         )
       end
     elseif in_body then
-      table.insert(body_lines, line)
-      vim.notify("http-runner:  -> body line", vim.log.levels.DEBUG)
+      if not body_is_json then
+        local trimmed = line:match("^%s*(.-)%s*$")
+        if trimmed and trimmed ~= "" then
+          if trimmed:sub(1, 1) == "{" then
+            body_is_json = true
+            vim.notify("http-runner:  -> body is JSON", vim.log.levels.DEBUG)
+          end
+        end
+      end
+      if body_is_json then
+        table.insert(body_lines, line)
+        vim.notify("http-runner:  -> body line", vim.log.levels.DEBUG)
+      else
+        local pkey, pval = line:match("^([%w%.%-_]+)=(.+)$")
+        if pkey then
+          if not params then params = {} end
+          params[pkey] = pval
+          vim.notify("http-runner:  -> body param " .. pkey .. "=" .. pval, vim.log.levels.DEBUG)
+        else
+          table.insert(body_lines, line)
+          vim.notify("http-runner:  -> body line (non-param)", vim.log.levels.DEBUG)
+        end
+      end
     elseif line == "" then
       in_body = true
       body_lines = {}
@@ -144,10 +180,20 @@ local function parse_request(buf, lines, start_row, end_row)
           vim.log.levels.DEBUG
         )
       else
-        vim.notify(
-          "http-runner:  -> unrecognized line (not header/blank/method/comment)",
-          vim.log.levels.DEBUG
-        )
+        local pkey, pval = line:match("^([%w%.%-_]+)=(.+)$")
+        if pkey then
+          if not params then params = {} end
+          params[pkey] = pval
+          vim.notify(
+            "http-runner:  -> param " .. pkey .. "=" .. pval,
+            vim.log.levels.DEBUG
+          )
+        else
+          vim.notify(
+            "http-runner:  -> unrecognized line (not header/param/blank/method/comment)",
+            vim.log.levels.DEBUG
+          )
+        end
       end
     end
   end
@@ -157,7 +203,9 @@ local function parse_request(buf, lines, start_row, end_row)
     "http-runner: parsed method=" .. (method or "GET (default)")
       .. " url=" .. (url or "nil")
       .. " headers=" .. vim.inspect(headers)
-      .. " body=" .. (body and #body > 0 and #body .. " chars" or "nil"),
+      .. " params=" .. vim.inspect(params)
+      .. " body=" .. (body and #body > 0 and #body .. " chars" or "nil")
+      .. " body_is_json=" .. tostring(body_is_json),
     vim.log.levels.DEBUG
   )
 
@@ -165,6 +213,7 @@ local function parse_request(buf, lines, start_row, end_row)
     method = method and method:upper() or "GET",
     url = url,
     headers = headers,
+    params = params,
     body = body,
   }
 end
@@ -196,13 +245,43 @@ local function execute(req)
   end
 
   local opts = {}
-  if req.body then
+
+  if req.method == "GET" and req.params then
+    opts.query = req.params
+    vim.notify("http-runner: using params as query: " .. vim.inspect(req.params), vim.log.levels.DEBUG)
+    if req.headers then
+      opts.headers = req.headers
+    end
+
+  elseif req.body then
     opts.body = req.body
-    vim.notify("http-runner: body = " .. req.body, vim.log.levels.DEBUG)
-  end
-  if req.headers then
+    vim.notify("http-runner: using raw body: " .. req.body, vim.log.levels.DEBUG)
+    if req.headers then
+      opts.headers = req.headers
+    end
+
+  elseif req.params then
+    local ct = header_value(req.headers, "Content-Type")
+    if ct and ct:lower():find("application/json") then
+      opts.body = vim.json.encode(req.params)
+      if not req.headers then req.headers = {} end
+      req.headers["Content-Type"] = "application/json"
+      opts.headers = req.headers
+      vim.notify("http-runner: params as JSON: " .. opts.body, vim.log.levels.DEBUG)
+    else
+      local parts = {}
+      for k, v in pairs(req.params) do
+        table.insert(parts, urlencode(k) .. "=" .. urlencode(v))
+      end
+      opts.body = table.concat(parts, "&")
+      if not req.headers then req.headers = {} end
+      req.headers["Content-Type"] = "application/x-www-form-urlencoded"
+      opts.headers = req.headers
+      vim.notify("http-runner: params as urlencoded: " .. opts.body, vim.log.levels.DEBUG)
+    end
+
+  elseif req.headers then
     opts.headers = req.headers
-    vim.notify("http-runner: headers = " .. vim.inspect(req.headers), vim.log.levels.DEBUG)
   end
 
   vim.notify(
