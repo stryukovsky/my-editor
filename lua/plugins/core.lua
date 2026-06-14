@@ -20,7 +20,9 @@ return {
     dependencies = { { "nvim-tree/nvim-web-devicons" } },
   },
   {
-    "saadparwaiz1/cmp_luasnip",
+    "L3MON4D3/LuaSnip",
+    version = "v2.*", -- Follow latest release
+    build = "make install_jsregexp", -- Optional but recommended for regex snippets
   },
   {
     "Wansmer/treesj",
@@ -32,7 +34,7 @@ return {
   {
     "saghen/blink.cmp",
     -- optional: provides snippets for the snippet source
-    dependencies = { "rafamadriz/friendly-snippets" },
+    dependencies = { "rafamadriz/friendly-snippets", "L3MON4D3/LuaSnip" },
 
     -- use a release tag to download pre-built binaries
     version = "1.*",

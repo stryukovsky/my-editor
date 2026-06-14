@@ -49,7 +49,9 @@ o.numberwidth = 2
 o.ruler = true
 
 -- Get all .add files from the spell directory
-local spell_dir = vim.fn.expand "~/.config/nvim/spell"
+local config_dir = vim.fn.stdpath "config"
+--
+local spell_dir = vim.fn.expand(config_dir .. "/spell")
 -- local spell_files = vim.fn.glob(spell_dir .. '/*', false, true)
 local spell_files = vim.fn.glob(spell_dir .. "/*.add", false, true)
 
