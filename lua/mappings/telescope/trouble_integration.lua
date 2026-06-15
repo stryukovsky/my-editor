@@ -3,20 +3,6 @@ local action_state = require "telescope.actions.state"
 local actions = require "telescope.actions"
 local close_trouble = require "utils.close_trouble"
 
-local function is_terminal_buf(bufnr)
-  return vim.bo[bufnr].buftype == "terminal"
-end
-
-local function get_non_terminal_win()
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    if not is_terminal_buf(buf) then
-      return win
-    end
-  end
-  return nil
-end
-
 local function get_trouble_win()
   local trouble_win = nil
   for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -57,7 +43,7 @@ return function(mode)
       return
     end
     local count = picker.manager:num_results()
-    if count > 1 then
+    if count > 0 then
       close_trouble()
       local sort_disabler = 0
 
@@ -81,26 +67,6 @@ return function(mode)
           vim.print "Cannot set cursor in trouble: seems really big stuff indexed"
         end
       end, 100)
-    else
-      actions.select_default(bufnr)
-      vim.defer_fn(function()
-        local cur_win = vim.api.nvim_get_current_win()
-        local cur_buf = vim.api.nvim_win_get_buf(cur_win)
-        -- if we landed on a terminal, find a real window
-        if is_terminal_buf(cur_buf) then
-          local win = get_non_terminal_win()
-          if win then
-            vim.api.nvim_set_current_win(win)
-          end
-          return
-        end
-        if selection.lnum then
-          local line_count = vim.api.nvim_buf_line_count(cur_buf)
-          local safe_lnum = math.min(selection.lnum, line_count)
-          local safe_col = selection.col or 0
-          vim.api.nvim_win_set_cursor(cur_win, { safe_lnum, safe_col })
-        end
-      end, 800)
     end
   end
 end
