@@ -31,6 +31,7 @@ alias htop="bpytop"
 alias ff="ranger"
 alias mc="ranger"
 alias o="xdg-open"
+alias activ="source .venv/bin/activate"
 
 # opencode
 export PATH="$PATH:$HOME/Tools/" # Coursier binary is stored here
