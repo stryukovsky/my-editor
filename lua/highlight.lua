@@ -95,6 +95,10 @@ local function override_highlights()
       V = palette.visual,
     },
   }
+
+  -- for macros.lua
+  vim.api.nvim_set_hl(0, "MacroStartBadge", { bg = "#e06c75", fg = "#282c34", bold = true })
+  vim.api.nvim_set_hl(0, "MacroStartChar", { bg = "#e06c75", fg = "#282c34", bold = true })
 end
 
 vim.api.nvim_create_autocmd({ "ColorScheme", "UIEnter" }, {
