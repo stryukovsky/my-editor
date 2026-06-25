@@ -33,6 +33,21 @@ alias mc="ranger"
 alias o="xdg-open"
 alias activ="source .venv/bin/activate"
 
+function vpn_on_hiddify() {
+    export http_proxy="http://127.0.0.1:12334"
+    export https_proxy="http://127.0.0.1:12334"
+    export HTTP_PROXY="http://127.0.0.1:12334"
+    export HTTPS_PROXY="http://127.0.0.1:12334"
+}
+
+function vpn_off_hiddify() {
+    unset http_proxy
+    unset https_proxy
+    unset HTTP_PROXY
+    unset HTTPS_PROXY
+}
+
+
 # opencode
 export PATH="$PATH:$HOME/Tools/" # Coursier binary is stored here
 export PATH="$PATH:$HOME/Tools/nvim/bin/" # Neovim
