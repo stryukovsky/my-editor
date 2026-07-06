@@ -79,22 +79,7 @@ local function override_highlights()
   hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = "#0042ff" })
   hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = "#0042ff" })
 
-  local palette = {
-    insert = vim.api.nvim_get_hl(0, { name = "lualine_a_insert" }),
-    -- foreground = "White",
-    normal = vim.api.nvim_get_hl(0, { name = "lualine_a_normal" }),
-    replace = vim.api.nvim_get_hl(0, { name = "lualine_a_replace" }),
-    visual = vim.api.nvim_get_hl(0, { name = "lualine_a_visual" }),
-  }
-  require("line-number-change-mode").setup {
-    mode = {
-      i = palette.insert,
-      n = palette.normal,
-      R = palette.replace,
-      v = palette.visual,
-      V = palette.visual,
-    },
-  }
+  vim.opt.guicursor = "a:blinkwait700-blinkoff400-blinkon250"
 
   -- for macros.lua
   vim.api.nvim_set_hl(0, "MacroStartBadge", { bg = "#e06c75", fg = "#282c34", bold = true })

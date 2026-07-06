@@ -6,7 +6,7 @@ o.laststatus = 3
 o.showmode = false
 vim.opt.title = true
 vim.opt.titlestring = [[nvim | %{fnamemodify(getcwd(), ":~")}]]
-
+vim.opt.foldcolumn = "1"
 o.clipboard = "unnamedplus"
 local handle = io.popen "which gpaste-client 2>/dev/null"
 if handle ~= nil then
@@ -38,11 +38,9 @@ o.softtabstop = 1
 
 g.matchparen_disable_cursor_hl = 1
 g.enabled_virtual_lines = true
-opt.fillchars = { eob = " " }
 o.ignorecase = true
 o.smartcase = true
 o.mouse = "a"
-o.statuscolumn = "%s%2l"
 -- Numbers
 o.number = true
 o.numberwidth = 2
@@ -138,17 +136,15 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 
 vim.api.nvim_create_autocmd({ "FileType" }, {
   callback = function()
-    -- check if treesitter has parser
-    -- if require("nvim-treesitter.parsers").has_parser() then
-    -- use treesitter folding
-    vim.opt.foldmethod = "expr"
-    vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
-    vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+    -- Wait until Neovim is idle and the Tree-sitter parser is actually ready
+    vim.schedule(function()
+      -- Ensure the buffer still exists before applying options
+      if vim.api.nvim_buf_is_valid(0) then
+        vim.opt_local.foldmethod = "expr"
+        vim.opt_local.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+      end
+    end)
     vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-    -- else
-    --   -- use alternative foldmethod
-    --   vim.opt.foldmethod = "syntax"
-    -- end
   end,
 })
 
@@ -177,6 +173,9 @@ vim.opt.langmap = vim.fn.join({
 vim.opt.fillchars = {
   diff = "╱",
   eob = " ",
+  foldopen = "", -- Arrow down for open folds
+  foldclose = "", -- Arrow right for closed folds
+  foldsep = " ", -- Blank space for lines inside an open fold
 }
 
 vim.opt.diffopt = {

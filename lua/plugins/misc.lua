@@ -30,5 +30,4 @@ return {
     "fei6409/log-highlight.nvim",
     opts = {},
   },
-  { "sethen/line-number-change-mode.nvim" },
 }
