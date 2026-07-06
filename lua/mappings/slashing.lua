@@ -1,4 +1,4 @@
-local map = require("mappings.map")
+local map = require "mappings.map"
 map("v", "/", function()
   vim.cmd "nohlsearch"
   -- send esc key so selection will be handled properly
@@ -12,6 +12,12 @@ end, { desc = "Search in visual selection" })
 -- end, { desc = "Substitute in entire file" })
 
 map("n", "<leader>ri", function()
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("gv:s///g<Left><Left>", true, false, true), "n", false)
+  vim.cmd "nohlsearch"
+end, { desc = "Substitute in selection" })
+
+map("v", "<leader>ri", function()
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "x", false)
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("gv:s///g<Left><Left>", true, false, true), "n", false)
   vim.cmd "nohlsearch"
 end, { desc = "Substitute in selection" })

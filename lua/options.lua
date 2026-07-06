@@ -173,8 +173,8 @@ vim.opt.langmap = vim.fn.join({
 vim.opt.fillchars = {
   diff = "╱",
   eob = " ",
-  foldopen = "", -- Arrow down for open folds
-  foldclose = "", -- Arrow right for closed folds
+  foldopen = "", -- Arrow down for open folds
+  foldclose = "", -- Arrow right for closed folds
   foldsep = " ", -- Blank space for lines inside an open fold
 }
 

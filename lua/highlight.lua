@@ -79,8 +79,9 @@ local function override_highlights()
   hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = "#0042ff" })
   hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = "#0042ff" })
 
-  vim.opt.guicursor = "n:block-blinkwait700-blinkoff400-blinkon250,i:ver25,r:block-CursorR,sm:block"
+  vim.opt.guicursor = "n:block-blinkwait700-blinkoff400-blinkon250,i:ver25,r:block-CursorR,v:block-CursorV,sm:block"
   vim.api.nvim_set_hl(0, "CursorR", { bg = "#ff0000", fg = "#ffffff", bold = true })
+  vim.api.nvim_set_hl(0, "CursorV", { bg = "#0042ff", fg = "#ffffff", bold = true })
 
   -- for macros.lua
   vim.api.nvim_set_hl(0, "MacroStartBadge", { bg = "#e06c75", fg = "#282c34", bold = true })
