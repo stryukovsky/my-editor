@@ -47,7 +47,7 @@ local telescope_components = {
   },
   {
     modes = ui_components_modes,
-    shortcut = "<A-h>",
+    shortcut = "<A-H>",
     command = function()
       vim.cmd "Telescope buffers"
     end,

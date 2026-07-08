@@ -140,6 +140,9 @@ local config = {
       local node = state.tree:get_node()
       local abs_path = node:get_id()
       local from_cwd_path = vim.fn.fnamemodify(abs_path, ":.")
+      if node.type == "directory" then
+        from_cwd_path = from_cwd_path .. "/**"
+      end
       if vim.g.spectre_opened then
         spectre.close()
       end

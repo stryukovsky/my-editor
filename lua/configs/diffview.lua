@@ -62,7 +62,7 @@ require("diffview").setup {
       },
       {
         "n",
-        "<A-h>",
+        "<A-H>",
         function()
           if vim.g.diffViewOpened then
             vim.g.diffViewOpened = false

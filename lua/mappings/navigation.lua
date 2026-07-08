@@ -53,7 +53,7 @@ map("n", "<leader>.", "<CMD>BufferMoveNext<CR>", { desc = "Navigation move buffe
 map("n", "<leader><", "<CMD>BufferMovePrevious<CR>", { desc = "Navigation move buffer left" })
 map("n", "<leader>>", "<CMD>BufferMoveNext<CR>", { desc = "Navigation move buffer right" })
 
-map("n", "<leader>pb", "<CMD>BufferPick<CR>", { desc = "Pick buffer" })
+map("n", "<A-h>", "<CMD>BufferPick<CR>", { desc = "Pick buffer" })
 map("n", "<leader>pin", "<CMD>BufferPin<CR>", { desc = "Navigation pin buffer" })
 
 -- navigate in jumps
