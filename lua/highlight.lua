@@ -79,9 +79,25 @@ local function override_highlights()
   hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = "#0042ff" })
   hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = "#0042ff" })
 
-  vim.opt.guicursor = "n:block-blinkwait700-blinkoff400-blinkon250,i:ver25,r:block-CursorR,v:block-CursorV,sm:block"
-  vim.api.nvim_set_hl(0, "CursorR", { bg = "#ff0000", fg = "#ffffff", bold = true })
-  vim.api.nvim_set_hl(0, "CursorV", { bg = "#0042ff", fg = "#ffffff", bold = true })
+
+  local lualine_hl = {
+    n = "lualine_a_normal",
+    i = "lualine_a_insert",
+    v = "lualine_a_visual",
+    r = "lualine_a_replace",
+    c = "lualine_a_command",
+    t = "lualine_a_terminal",
+  }
+
+  local cursor_parts = {}
+  for mode_key, hl_name in pairs(lualine_hl) do
+    local hl_data = vim.api.nvim_get_hl(0, { name = hl_name })
+    if hl_data then
+      vim.api.nvim_set_hl(0, "Cursor" .. mode_key:upper(), { bg = hl_data.bg, fg = hl_data.fg or "NONE", bold = true })
+      table.insert(cursor_parts, mode_key .. ":block-Cursor" .. mode_key:upper())
+    end
+  end
+  vim.opt.guicursor = table.concat(cursor_parts, ",")
 
   -- for macros.lua
   vim.api.nvim_set_hl(0, "MacroStartBadge", { bg = "#e06c75", fg = "#282c34", bold = true })
