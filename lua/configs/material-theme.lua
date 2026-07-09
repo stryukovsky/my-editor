@@ -53,7 +53,7 @@ require("material").setup {
     "which-key",
   },
   custom_highlights = {
-    Visual = { reverse = true, underline = true },
+    Visual = {bg = "#0042ff", fg = "#ffffff"},
   },
   lualine_style = "stealth", -- Lualine style ( can be 'stealth' or 'default' )
 }
