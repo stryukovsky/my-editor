@@ -51,8 +51,6 @@ local function get_lualine_theme()
     lualine_theme.replace.z = {fg = '#ffffff', bg='#ff0000'}
     lualine_theme.visual.a = {fg = '#ffffff', bg='#0000ff'}
     lualine_theme.visual.z = {fg = '#ffffff', bg='#0000ff'}
-    lualine_theme.normal.a = {fg = '#ffffff', bg='#000000'}
-    lualine_theme.normal.z = {fg = '#ffffff', bg='#000000'}
 
   return lualine_theme
 end

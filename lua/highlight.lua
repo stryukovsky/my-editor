@@ -1,5 +1,30 @@
 local hl = vim.api.nvim_set_hl
 
+local function sync_cursorline_nr()
+  local mode_map = {
+    n = "normal",
+    i = "insert",
+    v = "visual",
+    V = "visual",
+    ["\22"] = "visual",
+    s = "visual",
+    S = "visual",
+    ["\19"] = "visual",
+    r = "replace",
+    R = "replace",
+    c = "command",
+    t = "terminal",
+  }
+  local mode_name = mode_map[vim.fn.mode()]
+  if not mode_name then
+    return
+  end
+  local hl_data = vim.api.nvim_get_hl(0, { name = "lualine_a_" .. mode_name })
+  if hl_data and hl_data.bg then
+    vim.api.nvim_set_hl(0, "CursorLineNr", { bg = hl_data.bg, fg = hl_data.fg or "NONE", bold = true })
+  end
+end
+
 local function override_highlights()
   hl(0, "PreProc", { link = "Comment" })
 
@@ -99,11 +124,18 @@ local function override_highlights()
   -- for macros.lua
   vim.api.nvim_set_hl(0, "MacroStartBadge", { bg = "#e06c75", fg = "#282c34", bold = true })
   vim.api.nvim_set_hl(0, "MacroStartChar", { bg = "#e06c75", fg = "#282c34", bold = true })
+
+  sync_cursorline_nr()
 end
 
 vim.api.nvim_create_autocmd({ "ColorScheme", "UIEnter" }, {
   pattern = "*",
   callback = override_highlights,
+})
+
+vim.api.nvim_create_autocmd("ModeChanged", {
+  pattern = "*",
+  callback = sync_cursorline_nr,
 })
 
 vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "ErrorMsg", linehl = "", numhl = "" })
