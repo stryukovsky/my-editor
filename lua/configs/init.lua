@@ -57,3 +57,5 @@ require "configs.material-theme"
 require "highlight"
 require "configs.bigfiles"
 require "configs.statuscolumn"
+require "configs.diffview"
+

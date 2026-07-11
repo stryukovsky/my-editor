@@ -183,4 +183,5 @@ return {
       -- local builtin = require("statuscol.builtin")
     end,
   },
+  { "sindrets/diffview.nvim" },
 }
