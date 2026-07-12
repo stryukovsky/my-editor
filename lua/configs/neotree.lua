@@ -10,24 +10,7 @@ local system_file_explorer = require "utils.system_file_explorer"
 local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
 
-local open_files_do_not_replace_types = {
-  "Trouble",
-  "qf",
-  "edgy",
-  "NeogitStatus",
-  "NeogitPopup",
-  "NeogitCommitView",
-  "NeogitCommitSelectView",
-  "NeogitLogView",
-  "NeogitDiffView",
-  "NeogitRefsView",
-  "NeogitReflogView",
-  "NeogitStashView",
-  "NeogitConsole",
-  "NeogitGitCommandHistory",
-  "spectre_panel",
-  "nofile",
-}
+local open_files_do_not_replace_types = require("utils.technical_ui_filetypes")
 
 local function open_single_child_dir_recursively(state)
   local node = state.tree:get_node()

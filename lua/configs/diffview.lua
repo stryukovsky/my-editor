@@ -26,6 +26,7 @@ local function add(array1, array2)
 end
 
 local function override_select_entry()
+  diffview_actions.select_entry()
   require("diffview").emit "select_entry"
   require("diffview").emit "focus_entry"
 end
