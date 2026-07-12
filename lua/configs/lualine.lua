@@ -13,6 +13,71 @@ local symbols = trouble.statusline {
   hl_group = "lualine_c_normal",
 }
 
+local function gitsigns_hunk_status()
+  -- Проверяем, активен ли gitsigns в буфере
+  if not vim.b.gitsigns_status_dict then
+    return ""
+  end
+
+  local ok, gitsigns = pcall(require, "gitsigns")
+  if not ok then
+    return ""
+  end
+
+  local hunks = gitsigns.get_hunks()
+  if not hunks or #hunks == 0 or #hunks > 1000 then
+    return "" -- Изменений нет
+  end
+
+  local current_line = vim.api.nvim_win_get_cursor(0)[1]
+  local current_hunk_idx = nil
+  for idx, hunk in ipairs(hunks) do
+    local start_line, end_line
+
+    if hunk.type == "delete" then
+      -- Для удалений: курсор считается «внутри», если он на строке старта
+      -- или gitsigns отрисовывает маркер удаления вокруг этой строки
+      start_line = hunk.added.start
+      end_line = hunk.added.start
+    else
+      -- Для add и change: строки физически присутствуют в файле
+      start_line = hunk.added.start
+      -- Если count равен 0 (на всякий случай), берем старт, иначе вычисляем конец
+      end_line = hunk.added.start + math.max(0, hunk.added.count - 1)
+    end
+
+    -- Проверяем, входит ли курсор в диапазон данного ханка
+    if current_line >= start_line and current_line <= end_line then
+      current_hunk_idx = idx
+      break
+    end
+  end
+  -- Перебираем все ханки и проверяем, входит ли текущая строка в их диапазон
+  -- for idx, hunk in ipairs(hunks) do
+  --   -- gitsigns возвращает координаты начала и конца изменений
+  --   local start_line = hunk.added.start
+  --   local end_line = start_line + hunk.added.count
+  --
+  --   -- Особый случай для удаленных строк (когда новых строк добавлено 0)
+  --   if hunk.added.count == 0 then
+  --     end_line = start_line
+  --   end
+  --
+  --   -- Если курсор находится в границах ханка
+  --   if current_line >= start_line and current_line <= end_line then
+  --     current_hunk_idx = idx
+  --     break
+  --   end
+  -- end
+
+  -- Форматируем вывод
+  if current_hunk_idx then
+    return string.format(" hunk %d/%d", current_hunk_idx, #hunks) -- Например:    2/5 (если внутри)
+  else
+    return string.format(" hunks %d", #hunks) -- Например:    5 (если курсор снаружи)
+  end
+end
+
 local function to_hex_color(color)
   return "#" .. string.format("%x", color)
 end
@@ -45,12 +110,11 @@ local function get_lualine_theme()
     lualine_theme[k].c.bg = bg_color
     lualine_theme[k].b.fg = fg_color
     lualine_theme[k].c.fg = fg_color
-
   end
-    lualine_theme.replace.a = {fg = '#ffffff', bg='#ff0000'}
-    lualine_theme.replace.z = {fg = '#ffffff', bg='#ff0000'}
-    lualine_theme.visual.a = {fg = '#ffffff', bg='#0000ff'}
-    lualine_theme.visual.z = {fg = '#ffffff', bg='#0000ff'}
+  lualine_theme.replace.a = { fg = "#ffffff", bg = "#ff0000" }
+  lualine_theme.replace.z = { fg = "#ffffff", bg = "#ff0000" }
+  lualine_theme.visual.a = { fg = "#ffffff", bg = "#0000ff" }
+  lualine_theme.visual.z = { fg = "#ffffff", bg = "#0000ff" }
 
   return lualine_theme
 end
@@ -73,7 +137,7 @@ require("lualine").setup {
   },
   sections = {
     lualine_a = { "mode" },
-    lualine_b = { git_fetch.lualine_component(), "branch" },
+    lualine_b = { git_fetch.lualine_component(), "branch", { gitsigns_hunk_status } },
     lualine_c = {
       {
         "filename",
