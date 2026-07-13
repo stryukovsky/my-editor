@@ -59,3 +59,13 @@ require "configs.bigfiles"
 require "configs.statuscolumn"
 require "configs.diffview"
 
+vim.api.nvim_create_autocmd("User", {
+  pattern = "CodeDiffOpen",
+  callback = function()
+    vim.g.codediff_saved_showtabline = vim.o.showtabline
+    local unset = vim.keymap.del
+    vim.o.showtabline = 0
+    -- local bufnr = vim.api.nvim_get_current_buf()
+    -- unset("n", "<A-f>", { buffer = 0 })
+  end,
+})
