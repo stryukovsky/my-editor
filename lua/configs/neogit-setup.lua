@@ -2,7 +2,7 @@ local neogit = require "neogit"
 
 neogit.setup {
   graph_style = "unicode",
-  kind = "split",
+  kind = "floating",
   -- Floating window style
   floating = {
     relative = "editor",
@@ -22,8 +22,8 @@ neogit.setup {
   -- Automatically close the console if the process exits with a 0 (success) status
   auto_close_console = true,
   commit_editor = {
-    kind = "split",
-    show_staged_diff = true,
+    kind = "floating",
+    show_staged_diff = false,
     -- Accepted values:
     -- "split" to show the staged diff below the commit editor
     -- "vsplit" to show it to the right
@@ -37,7 +37,7 @@ neogit.setup {
     kind = "floating",
   },
   commit_view = {
-    kind = "split",
+    kind = "floating",
     verify_commit = vim.fn.executable "gpg" == 1, -- Can be set to true or false, otherwise we try to find the binary
   },
   log_view = {

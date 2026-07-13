@@ -70,6 +70,7 @@ local mocks = {
   { "n", "<A->>", do_nothing, { desc = "do nothing" } },
   { "n", "<A-/>", do_nothing, { desc = "do nothing" } },
   { "n", "<A-?>", do_nothing, { desc = "do nothing" } },
+  { "n", "<leader><leader>", do_nothing, { desc = "do nothing" } },
 }
 
 local file_panel_keymaps = {
