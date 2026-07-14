@@ -124,6 +124,8 @@ local function override_highlights()
   -- for macros.lua
   vim.api.nvim_set_hl(0, "MacroStartBadge", { bg = "#e06c75", fg = "#282c34", bold = true })
   vim.api.nvim_set_hl(0, "MacroStartChar", { bg = "#e06c75", fg = "#282c34", bold = true })
+  vim.api.nvim_set_hl(0, "CodeDiffCharInsert", { bg = "#0042ff", fg = "#282c34", underline = true })
+  vim.api.nvim_set_hl(0, "CodeDiffCharDelete", { bg = "#0042ff", fg = "#282c34", underline = true })
 
   sync_cursorline_nr()
 end

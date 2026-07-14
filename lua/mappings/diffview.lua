@@ -7,7 +7,7 @@ map("n", "<leader>gd", function()
     return
   end
 
-  vim.fn.feedkeys(":DiffviewOpen ", "n")
+  vim.fn.feedkeys(":CodeDiff ", "n")
 end, { desc = "Git comp...are" })
 
 map("n", "<leader>gq", function()
@@ -19,10 +19,6 @@ end, { desc = "Git diff close" })
 map("n", "<leader>gs", function()
   vim.cmd "nohlsearch"
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "x", false)
-  if vim.g.diffViewOpened or vim.g.fileHistoryOpened then
-    vim.notify "Already opened Diffview. Close it before"
-    return
-  end
 
-  vim.cmd "DiffviewOpen"
+  vim.cmd "CodeDiff"
 end, { desc = "Git status" })

@@ -2,13 +2,35 @@
 local map = require "mappings.map"
 local neotest = require "neotest"
 local trouble = require "trouble"
--- local kulala = require "kulala"
--- local kulala_ui = require "kulala.ui"
 local oil = require "oil"
 local neotree_command = require "neo-tree.command"
 local spectre = require "spectre"
 local close_telescope = require "mappings.close_telescope"
 local is_normal_buffer = require "utils.is_normal_buffer"
+
+local codediff_tabpages = {}
+vim.api.nvim_create_autocmd("User", {
+  pattern = "CodeDiffOpen",
+  callback = function()
+    local tabpage = vim.api.nvim_get_current_tabpage()
+    codediff_tabpages[tabpage] = true
+  end,
+})
+
+vim.api.nvim_create_autocmd("User", {
+  pattern = "CodeDiffClose",
+  callback = function()
+    local tabpage = vim.api.nvim_get_current_tabpage()
+    codediff_tabpages[tabpage] = nil
+  end,
+})
+
+local function is_codediff_tab()
+  if not codediff_tabpages then
+    return false
+  end
+  return codediff_tabpages[vim.api.nvim_get_current_tabpage()] == true
+end
 
 local ui_components_modes = { "n" }
 
@@ -101,6 +123,11 @@ vim.g.last_opened_telescope = ""
 _G.dialog_component_callback_close = function() end
 for _, value in ipairs(telescope_components) do
   map(value.modes, value.shortcut, function()
+    if is_codediff_tab() then
+      vim.notify "Cannot open: CodeDiff is current tabpage"
+      return
+    end
+
     if close_telescope() then
       if vim.g.last_opened_telescope ~= value.desc then
         value.command()
@@ -183,6 +210,11 @@ end, { desc = "Theme" })
 
 -- neotree
 local function workaround_neotree_focus(source, opts)
+    if is_codediff_tab() then
+      vim.notify "Cannot open: CodeDiff is current tabpage"
+      return
+    end
+
   pcall(function()
     local focus_command = vim.tbl_extend("error", {
       action = "focus", -- Focus NeoTree
