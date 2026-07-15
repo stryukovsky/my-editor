@@ -2,7 +2,7 @@ local neogit = require "neogit"
 
 neogit.setup {
   graph_style = "unicode",
-  kind = "floating",
+  kind = "split",
   -- Floating window style
   floating = {
     relative = "editor",
@@ -22,7 +22,7 @@ neogit.setup {
   -- Automatically close the console if the process exits with a 0 (success) status
   auto_close_console = true,
   commit_editor = {
-    kind = "floating",
+    kind = "split",
     show_staged_diff = false,
     -- Accepted values:
     -- "split" to show the staged diff below the commit editor
@@ -34,35 +34,35 @@ neogit.setup {
     spell_check = true,
   },
   commit_select_view = {
-    kind = "floating",
+    kind = "split",
   },
   commit_view = {
-    kind = "floating",
+    kind = "split",
     verify_commit = vim.fn.executable "gpg" == 1, -- Can be set to true or false, otherwise we try to find the binary
   },
   log_view = {
     kind = "split",
   },
   rebase_editor = {
-    kind = "floating",
+    kind = "split",
   },
   reflog_view = {
-    kind = "floating",
+    kind = "split",
   },
   merge_editor = {
-    kind = "floating",
+    kind = "split",
   },
   preview_buffer = {
-    kind = "floating",
+    kind = "split",
   },
   popup = {
-    kind = "floating",
+    kind = "split",
   },
   stash = {
-    kind = "floating",
+    kind = "split",
   },
   refs_view = {
-    kind = "floating",
+    kind = "split",
   },
   -- Each Integration is auto-detected through plugin presence, however, it can be disabled by setting to `false`
   integrations = {
