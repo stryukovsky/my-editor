@@ -26,10 +26,10 @@ return {
       align_move = "gm", -- Temporarily align moved code blocks across panes
       toggle_layout = "t", -- Toggle between side-by-side and inline layout
       toggle_compact = "gc", -- Toggle compact mode (fold unchanged regions)
+      toggle_stage = "s",
     },
     explorer = {
       select = "<CR>",
-      toggle_stage = "s",
       -- toggle_staged = "s", -- Toggle Staged Changes group visibility,
     },
   },
