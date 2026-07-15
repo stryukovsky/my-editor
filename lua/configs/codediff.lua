@@ -1,11 +1,12 @@
 return {
   highlights = {
-    char_insert = "CodeDiffCharInsert", -- Character-level insertions (nil = auto-derive)
-    char_delete = "CodeDiffCharDelete", -- Character-level deletions (nil = auto-derive)
+    -- char_insert = "#22bb22", -- Character-level insertions (nil = auto-derive)
+    -- char_delete = "#ffaabb", -- Character-level deletions (nil = auto-derive)
   },
   diff = {
     layout = "inline",
   },
+  explorer = { focus_on_select = true },
   keymaps = {
     view = {
       quit = "q", -- Close diff tab
@@ -28,7 +29,8 @@ return {
     },
     explorer = {
       select = "<CR>",
-      toggle_staged = "s", -- Toggle Staged Changes group visibility,
+      toggle_stage = "s",
+      -- toggle_staged = "s", -- Toggle Staged Changes group visibility,
     },
   },
 }

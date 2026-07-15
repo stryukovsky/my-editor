@@ -75,8 +75,8 @@ local function override_highlights()
   hl(0, "NormalFloat", { bg = background })
   hl(0, "NotifyBackground", { bg = background })
 
-  hl(0, "SpectreSearch", { fg = foreground_active })
-  hl(0, "SpectreReplace", { link = "Added" })
+  hl(0, "SpectreSearch", { bg="#bb0000", fg="#ffffff"})
+  hl(0, "SpectreReplace", { bg="#00bb00", fg="#ffffff"})
 
   hl(0, "CodeCompanionInlineDiffHint", { bg = background, fg = foreground_active })
 
@@ -98,6 +98,7 @@ local function override_highlights()
   hl(0, "NeogitDiffDeleteCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
   hl(0, "NeogitDiffHeaderCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
 
+  hl(0, "Comment", { fg = "#878787", italic = true })
   local comment_fg = vim.api.nvim_get_hl(0, { name = "Comment" }).fg
   hl(0, "GitSignsCurrentLineBlame", { fg = comment_fg, italic = true })
   hl(0, "GitSignsAddInline", { bold = true, italic = true, underline = true, fg = "#0042ff" })
@@ -126,6 +127,14 @@ local function override_highlights()
   vim.api.nvim_set_hl(0, "MacroStartChar", { bg = "#e06c75", fg = "#282c34", bold = true })
   vim.api.nvim_set_hl(0, "CodeDiffCharInsert", { bg = "#0042ff", fg = "#282c34", underline = true })
   vim.api.nvim_set_hl(0, "CodeDiffCharDelete", { bg = "#0042ff", fg = "#282c34", underline = true })
+
+  if vim.o.background == "light" then
+    hl(0, "CodeDiffExplorerSelected", { bg = "#bfc1b4" })
+  elseif vim.o.background == "dark" then
+    hl(0, "CodeDiffExplorerSelected", { bg = "#282c34" })
+  else
+    hl(0, "CodeDiffExplorerSelected", { bg = "#282c34" })
+  end
 
   sync_cursorline_nr()
 end

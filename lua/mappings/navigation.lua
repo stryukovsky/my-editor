@@ -1,5 +1,6 @@
 local map = require "mappings.map"
 local is_normal_buffer = require "utils.is_normal_buffer"
+local is_codediff_tab = require "utils.is_codediff_tab"
 
 -- toggle numbering
 local is_relative = false
@@ -39,22 +40,30 @@ map("n", "<A-v>", function()
   vim.print("Virtual lines enabled: " .. vim.diagnostic.severity[virtual_lines_diagnostic_counter])
 end, { desc = "Navigation filter virtual diagnostics" })
 
+local function construct_handler(cmd)
+  return function()
+    if is_codediff_tab() then
+      vim.notify "Cannot open: CodeDiff is current tabpage"
+      return
+    end
+
+    vim.cmd(cmd)
+  end
+end
 -- tabs navigation
-map({ "n" }, "<A-,>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
-map({ "n" }, "<A-<>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
-map({ "n" }, "<A->>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
-map({ "n" }, "<A-.>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
+map({ "n" }, "<A-,>", construct_handler "BufferPrevious", { desc = "Navigation prev buffer" })
+map({ "n" }, "<A-<>", construct_handler "BufferPrevious", { desc = "Navigation prev buffer" })
+map({ "n" }, "<A->>", construct_handler "BufferNext", { desc = "Navigation next buffer" })
+map({ "n" }, "<A-.>", construct_handler "BufferNext", { desc = "Navigation next buffer" })
+map("n", "<leader>x", construct_handler "BufferClose!", { desc = "Navigation close buffer" })
+map("n", "<leader>X", construct_handler "silent BufferCloseAllButCurrentOrPinned", { desc = "Navigation close other buffers" })
+map("n", "<leader>,", construct_handler "BufferMovePrevious", { desc = "Navigation move buffer left" })
+map("n", "<leader>.", construct_handler "BufferMoveNext", { desc = "Navigation move buffer right" })
+map("n", "<leader><", construct_handler "BufferMovePrevious", { desc = "Navigation move buffer left" })
+map("n", "<leader>>", construct_handler "BufferMoveNext", { desc = "Navigation move buffer right" })
 
-map("n", "<leader>x", "<CMD>BufferClose!<CR>", { desc = "Navigation close buffer" })
-map("n", "<leader>X", "<CMD>silent BufferCloseAllButCurrentOrPinned<CR>", { desc = "Navigation close other buffers" })
-
-map("n", "<leader>,", "<CMD>BufferMovePrevious<CR>", { desc = "Navigation move buffer left" })
-map("n", "<leader>.", "<CMD>BufferMoveNext<CR>", { desc = "Navigation move buffer right" })
-map("n", "<leader><", "<CMD>BufferMovePrevious<CR>", { desc = "Navigation move buffer left" })
-map("n", "<leader>>", "<CMD>BufferMoveNext<CR>", { desc = "Navigation move buffer right" })
-
-map("n", "<A-h>", "<CMD>BufferPick<CR>", { desc = "Pick buffer" })
-map("n", "<leader>pin", "<CMD>BufferPin<CR>", { desc = "Navigation pin buffer" })
+map("n", "<A-h>", construct_handler "BufferPick", { desc = "Pick buffer" })
+map("n", "<leader>pin", construct_handler "BufferPin", { desc = "Navigation pin buffer" })
 
 -- navigate in jumps
 map("n", "<A-[>", "<cmd>pop<cr>", { desc = "Navigation jump prev" })

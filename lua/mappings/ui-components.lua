@@ -7,30 +7,8 @@ local neotree_command = require "neo-tree.command"
 local spectre = require "spectre"
 local close_telescope = require "mappings.close_telescope"
 local is_normal_buffer = require "utils.is_normal_buffer"
+local is_codediff_tab  = require "utils.is_codediff_tab"
 
-local codediff_tabpages = {}
-vim.api.nvim_create_autocmd("User", {
-  pattern = "CodeDiffOpen",
-  callback = function()
-    local tabpage = vim.api.nvim_get_current_tabpage()
-    codediff_tabpages[tabpage] = true
-  end,
-})
-
-vim.api.nvim_create_autocmd("User", {
-  pattern = "CodeDiffClose",
-  callback = function()
-    local tabpage = vim.api.nvim_get_current_tabpage()
-    codediff_tabpages[tabpage] = nil
-  end,
-})
-
-local function is_codediff_tab()
-  if not codediff_tabpages then
-    return false
-  end
-  return codediff_tabpages[vim.api.nvim_get_current_tabpage()] == true
-end
 
 local ui_components_modes = { "n" }
 
