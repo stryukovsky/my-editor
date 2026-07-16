@@ -13,100 +13,6 @@ local symbols = trouble.statusline {
   hl_group = "lualine_c_normal",
 }
 
-local function merge_hunks(hunks)
-  if not hunks or #hunks == 0 then
-    return hunks
-  end
-  local sorted = vim.deepcopy(hunks)
-  table.sort(sorted, function(a, b)
-    return a.added.start < b.added.start
-  end)
-  local merged = { sorted[1] }
-  for i = 2, #sorted do
-    local prev = merged[#merged]
-    local curr = sorted[i]
-    local prev_end = prev.added.start + math.max(0, prev.added.count - 1)
-    local curr_start = curr.added.start
-    if curr_start <= prev_end + 1 then
-      local curr_end = curr.added.start + math.max(0, curr.added.count - 1)
-      local new_end = math.max(prev_end, curr_end)
-      prev.added.count = new_end - prev.added.start + 1
-      if prev.type ~= curr.type and (prev.type == "delete" or curr.type == "delete") then
-        prev.type = "change"
-      end
-    else
-      table.insert(merged, curr)
-    end
-  end
-  return merged
-end
-
-local function gitsigns_hunk_status()
-  -- Проверяем, активен ли gitsigns в буфере
-  if not vim.b.gitsigns_status_dict then
-    return ""
-  end
-
-  local ok, gitsigns = pcall(require, "gitsigns")
-  if not ok then
-    return ""
-  end
-
-  local bufnr = vim.api.nvim_get_current_buf()
-  local hunks = merge_hunks(gitsigns.get_hunks(bufnr))
-  if not hunks or #hunks == 0 or #hunks > 1000 then
-    return "" -- Изменений нет
-  end
-
-  local current_line = vim.api.nvim_win_get_cursor(0)[1]
-  local current_hunk_idx = nil
-  for idx, hunk in ipairs(hunks) do
-    local start_line, end_line
-
-    if hunk.type == "delete" then
-      -- Для удалений: курсор считается «внутри», если он на строке старта
-      -- или gitsigns отрисовывает маркер удаления вокруг этой строки
-      start_line = hunk.added.start
-      end_line = hunk.added.start
-    else
-      -- Для add и change: строки физически присутствуют в файле
-      start_line = hunk.added.start
-      -- Если count равен 0 (на всякий случай), берем старт, иначе вычисляем конец
-      end_line = hunk.added.start + math.max(0, hunk.added.count - 1)
-    end
-
-    -- Проверяем, входит ли курсор в диапазон данного ханка
-    if current_line >= start_line and current_line <= end_line then
-      current_hunk_idx = idx
-      break
-    end
-  end
-  -- Перебираем все ханки и проверяем, входит ли текущая строка в их диапазон
-  -- for idx, hunk in ipairs(hunks) do
-  --   -- gitsigns возвращает координаты начала и конца изменений
-  --   local start_line = hunk.added.start
-  --   local end_line = start_line + hunk.added.count
-  --
-  --   -- Особый случай для удаленных строк (когда новых строк добавлено 0)
-  --   if hunk.added.count == 0 then
-  --     end_line = start_line
-  --   end
-  --
-  --   -- Если курсор находится в границах ханка
-  --   if current_line >= start_line and current_line <= end_line then
-  --     current_hunk_idx = idx
-  --     break
-  --   end
-  -- end
-
-  -- Форматируем вывод
-  if current_hunk_idx then
-    return string.format(" hunk %d/%d", current_hunk_idx, #hunks) -- Например:    2/5 (если внутри)
-  else
-    return string.format(" hunks %d", #hunks) -- Например:    5 (если курсор снаружи)
-  end
-end
-
 local function to_hex_color(color)
   return "#" .. string.format("%x", color)
 end
@@ -148,6 +54,17 @@ local function get_lualine_theme()
   return lualine_theme
 end
 
+local function gitsigns_diff()
+  local gitsigns = vim.b.gitsigns_status_dict
+  if gitsigns then
+    return {
+      added = gitsigns.added,
+      modified = gitsigns.changed,
+      removed = gitsigns.removed,
+    }
+  end
+end
+
 vim.api.nvim_create_autocmd({ "ColorScheme" }, {
   pattern = "*",
   callback = function()
@@ -166,7 +83,20 @@ require("lualine").setup {
   },
   sections = {
     lualine_a = { "mode" },
-    lualine_b = { git_fetch.lualine_component(), "branch", { gitsigns_hunk_status } },
+    lualine_b = {
+      git_fetch.lualine_component(),
+      "branch",
+      {
+        "diff",
+        source = gitsigns_diff,
+        symbols = { added = " ", modified = " ", removed = " " }, -- красивые иконки
+        diff_color = {
+          added = { fg = "#98be65" },
+          modified = { fg = "#ff9e64" },
+          removed = { fg = "#ec5f67" },
+        },
+      },
+    },
     lualine_c = {
       {
         "filename",
@@ -200,7 +130,7 @@ require("lualine").setup {
     --       return "󰛢"
     --     end,
     --     cond = function()
-    --       return package.loaded["grapple"] and require("grapple").exists()
+    --       return packafge.loaded["grapple"] and require("grapple").exists()
     --     end,
     --   },
     -- },

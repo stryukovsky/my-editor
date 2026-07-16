@@ -101,8 +101,8 @@ local function override_highlights()
   local bgCodeDiffExplorerSelected_light = "#bfc1b4"
   local bgCodeDiffExplorerSelected_dark = "#282c34"
 
-  local fgGitSignsChanges_dark = "#0042ff"
-  local fgGitSignsChanges_light = "#000000"
+  local fgGitSignsChanges_dark = "#ffffff"
+  local fgGitSignsChanges_light = "#0042ff"
 
   if vim.o.background == "light" then
     hl(0, "CodeDiffExplorerSelected", { bg = bgCodeDiffExplorerSelected_light })
