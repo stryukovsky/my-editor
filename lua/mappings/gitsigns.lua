@@ -14,6 +14,10 @@ local function center_hunk()
   vim.defer_fn(function()
     vim.cmd "normal! zz"
   end, 10)
+  vim.defer_fn(function()
+    gitsigns.preview_hunk_inline()
+  end, 20)
+
 end
 map("n", "<leader>gS", function()
   vim.fn.system "git add ."

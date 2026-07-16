@@ -10,15 +10,11 @@ map("n", "<leader>gd", function()
   vim.fn.feedkeys(":CodeDiff ", "n")
 end, { desc = "Git comp...are" })
 
-map("n", "<leader>gq", function()
-  vim.cmd "DiffviewClose"
-  vim.g.diffViewOpened = false
-  vim.g.fileHistoryOpened = false
-end, { desc = "Git diff close" })
 
-map("n", "<leader>gs", function()
+map("n", "<leader>gH", function()
   vim.cmd "nohlsearch"
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "x", false)
 
-  vim.cmd "CodeDiff"
-end, { desc = "Git status" })
+  vim.cmd "CodeDiff history"
+end, { desc = "Git history" })
+

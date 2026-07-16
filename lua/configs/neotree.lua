@@ -10,7 +10,7 @@ local system_file_explorer = require "utils.system_file_explorer"
 local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
 
-local open_files_do_not_replace_types = require("utils.technical_ui_filetypes")
+local open_files_do_not_replace_types = require "utils.technical_ui_filetypes"
 
 local function open_single_child_dir_recursively(state)
   local node = state.tree:get_node()
@@ -76,6 +76,7 @@ local config = {
   sources = {
     "filesystem",
     "document_symbols",
+    "git_status",
   },
   default_source = "filesystem", -- you can choose a specific source `last` here which indicates the last used source
   enable_diagnostics = false,
@@ -304,6 +305,21 @@ local config = {
       },
     },
   },
+  git_status = {
+    window = {
+      mappings = {
+        ["l"] = "open",
+        ["S"] = "git_add_all",
+        ["s"] = "git_add_file",
+        ["u"] = "git_unstage_file",
+        ["x"] = "git_revert_file",
+        ["c"] = "git_commit",
+        ["gp"] = "git_push",
+        ["gg"] = "git_commit_and_push",
+      },
+    },
+  },
+
   document_symbols = {
     window = {
       mappings = {

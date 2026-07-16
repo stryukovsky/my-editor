@@ -13,6 +13,34 @@ local symbols = trouble.statusline {
   hl_group = "lualine_c_normal",
 }
 
+local function merge_hunks(hunks)
+  if not hunks or #hunks == 0 then
+    return hunks
+  end
+  local sorted = vim.deepcopy(hunks)
+  table.sort(sorted, function(a, b)
+    return a.added.start < b.added.start
+  end)
+  local merged = { sorted[1] }
+  for i = 2, #sorted do
+    local prev = merged[#merged]
+    local curr = sorted[i]
+    local prev_end = prev.added.start + math.max(0, prev.added.count - 1)
+    local curr_start = curr.added.start
+    if curr_start <= prev_end + 1 then
+      local curr_end = curr.added.start + math.max(0, curr.added.count - 1)
+      local new_end = math.max(prev_end, curr_end)
+      prev.added.count = new_end - prev.added.start + 1
+      if prev.type ~= curr.type and (prev.type == "delete" or curr.type == "delete") then
+        prev.type = "change"
+      end
+    else
+      table.insert(merged, curr)
+    end
+  end
+  return merged
+end
+
 local function gitsigns_hunk_status()
   -- Проверяем, активен ли gitsigns в буфере
   if not vim.b.gitsigns_status_dict then
@@ -24,7 +52,8 @@ local function gitsigns_hunk_status()
     return ""
   end
 
-  local hunks = gitsigns.get_hunks()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local hunks = merge_hunks(gitsigns.get_hunks(bufnr))
   if not hunks or #hunks == 0 or #hunks > 1000 then
     return "" -- Изменений нет
   end

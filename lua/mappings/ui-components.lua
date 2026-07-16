@@ -124,39 +124,6 @@ for _, value in ipairs(telescope_components) do
   end, { desc = value.desc })
 end
 
-local kulala_state_is_opened = false
-map(ui_components_modes, "<A-y>", function()
-  if kulala_state_is_opened then
-    kulala_ui.close_kulala_buffer()
-    _G.dialog_component_callback_close = function() end
-  else
-    _G.dialog_component_callback_close()
-    kulala.open()
-    _G.dialog_component_callback_close = function()
-      kulala_state_is_opened = false
-      kulala_ui.close_kulala_buffer()
-      _G.dialog_component_callback_close = function() end
-    end
-  end
-  kulala_state_is_opened = not kulala_state_is_opened
-end, { desc = "UI kulala toggle" })
-
-map(ui_components_modes, "<A-Y>", function()
-  if kulala_state_is_opened then
-    kulala_ui.close_kulala_buffer()
-    _G.dialog_component_callback_close = function() end
-  else
-    _G.dialog_component_callback_close()
-    kulala_ui.open() -- this is key difference - it runs query on cursor
-    _G.dialog_component_callback_close = function()
-      kulala_state_is_opened = false
-      kulala_ui.close_kulala_buffer()
-      _G.dialog_component_callback_close = function() end
-    end
-  end
-  kulala_state_is_opened = not kulala_state_is_opened
-end, { desc = "UI kulala toggle with sending request" })
-
 map("n", "<A-o>", function()
   if vim.g.state_oil_opened then
     oil.close()
@@ -224,6 +191,10 @@ end, { desc = "UI neotree files", silent = true })
 map(ui_components_modes, "<A-l>", function()
   workaround_neotree_focus("document_symbols", {})
 end, { desc = "UI neotree structure" })
+
+map(ui_components_modes, "<A-k>", function()
+  workaround_neotree_focus("git_status", {})
+end, { desc = "UI neotree status" })
 
 _G.bottom_component_callback_close = function() end
 --

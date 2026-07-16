@@ -6,7 +6,10 @@ return {
   diff = {
     layout = "inline",
   },
-  explorer = { focus_on_select = true },
+  explorer = {
+      focus_on_select = true,
+      view_mode = "tree",
+  },
   keymaps = {
     view = {
       quit = "q", -- Close diff tab
@@ -30,7 +33,6 @@ return {
     },
     explorer = {
       select = "<CR>",
-      -- toggle_staged = "s", -- Toggle Staged Changes group visibility,
     },
   },
 }

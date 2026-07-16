@@ -29,6 +29,7 @@ require("oil").setup {
     ["<A-p>"] = "actions.preview",
     ["<A-e>"] = function(_) end,
     ["<A-l>"] = function(_) end,
+    ["<A-k>"] = function(_) end,
     ["<A-b>"] = function(_) end,
     -- ["<C-c>"] = { "actions.close", mode = "n" },
     -- ["<C-l>"] = "actions.refresh",

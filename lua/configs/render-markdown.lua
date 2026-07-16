@@ -1,7 +1,7 @@
 require("render-markdown").setup {
   code = {
     -- Turn on / off code block & inline code rendering.
-    enabled = false,
+    enabled = true,
   },
   heading = {
     enabled = true,
