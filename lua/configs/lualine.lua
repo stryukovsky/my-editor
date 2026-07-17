@@ -17,7 +17,26 @@ local function to_hex_color(color)
   return "#" .. string.format("%x", color)
 end
 
-local defaults_for_x_component = { "lsp_status", "filetype" }
+local function hl_fg(name, default)
+  local hl = vim.api.nvim_get_hl(0, { name = name })
+  return hl and hl.fg and to_hex_color(hl.fg) or default
+end
+
+local defaults_for_x_component = {
+  {
+    "diagnostics",
+    diagnostics_color = {
+      error = { fg = hl_fg("Red", "#ec5f67") },
+      warn = { fg = hl_fg("Orange", "#ff9e64") },
+      info = { fg = hl_fg("Blue", "#00bfff") },
+      hint = { fg = hl_fg("Green", "#10b981") },
+    },
+  },
+
+  "lsp_status",
+  "filetype",
+}
+
 local function lualine_x_component()
   if not is_ollama_installed() then
     return defaults_for_x_component
@@ -89,11 +108,11 @@ require("lualine").setup {
       {
         "diff",
         source = gitsigns_diff,
-        symbols = { added = " ", modified = " ", removed = " " }, -- красивые иконки
+        symbols = { added = " ", modified = " ", removed = " " },
         diff_color = {
-          added = { fg = "#98be65" },
-          modified = { fg = "#ff9e64" },
-          removed = { fg = "#ec5f67" },
+          added = { fg = hl_fg("Green", "#98be65") },
+          modified = { fg = hl_fg("Orange", "#ff9e64") },
+          removed = { fg = hl_fg("Red", "#ec5f67") },
         },
       },
     },

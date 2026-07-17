@@ -9,6 +9,7 @@ local spectre = require "spectre"
 local system_file_explorer = require "utils.system_file_explorer"
 local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
+local async = require "plenary.async"
 
 local open_files_do_not_replace_types = require "utils.technical_ui_filetypes"
 
@@ -67,6 +68,8 @@ end
 
 ---@type neotree.Config.Base
 local config = {
+  enable_git_status = true,
+  git_status_async = true, -- <-- this is the new setting
   -- when opening files, do not use windows containing these filetypes or buftypes
   open_files_do_not_replace_types = open_files_do_not_replace_types,
   -- If a user has a sources list it will replace this one.
@@ -107,6 +110,12 @@ local config = {
       local path = node:get_id()
       vim.fn.jobstart({ "ghostty", "--working-directory=" .. path }, { detach = true })
     end,
+    ["my_git_add_file"] = function(state)
+      async.run(function()
+        commands.git_add_file(state)
+      end, function() end)
+    end,
+
     ["system_open"] = function(state)
       local node = state.tree:get_node()
       local path = node:get_id()
@@ -310,7 +319,7 @@ local config = {
       mappings = {
         ["l"] = "open",
         ["S"] = "git_add_all",
-        ["s"] = "git_add_file",
+        ["s"] = "my_git_add_file",
         ["u"] = "git_unstage_file",
         ["x"] = "git_revert_file",
         ["c"] = "git_commit",
