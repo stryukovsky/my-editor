@@ -7,8 +7,8 @@ return {
     layout = "inline",
   },
   explorer = {
-      focus_on_select = true,
-      view_mode = "tree",
+    focus_on_select = false,
+    view_mode = "tree",
   },
   keymaps = {
     view = {
