@@ -137,7 +137,9 @@ local function override_highlights()
 
   local cursor_parts = {}
   for _, mode_key in ipairs(modes) do
-    vim.api.nvim_set_hl(0, "Cursor" .. mode_key:upper(), { reverse = true, bold = true })
+    if mode_key ~= "c" then
+      vim.api.nvim_set_hl(0, "Cursor" .. mode_key:upper(), { reverse = true, bold = true })
+    end
     local blink = (mode_key == "n" or mode_key == "t" or mode_key == "c") and "-blinkwait700-blinkoff400-blinkon250" or ""
     table.insert(cursor_parts, mode_key .. ":block-Cursor" .. mode_key:upper() .. blink)
   end
