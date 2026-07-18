@@ -11,6 +11,7 @@ neogit.setup {
     style = "minimal",
     border = "rounded",
   },
+  sections = { recent = { hidden = true, folded = false } },
   -- Disable line numbers
   disable_line_numbers = true,
   -- Disable relative line numbers
@@ -95,6 +96,7 @@ neogit.setup {
       ["<Esc>"] = "Close",
       ["<Tab>"] = function() end,
       ["o"] = "GoToFile",
+      ["<cr>"] = "GoToFile",
       ["[g"] = "GoToPreviousHunkHeader",
       ["]g"] = "GoToNextHunkHeader",
     },

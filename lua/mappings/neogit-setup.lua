@@ -86,6 +86,14 @@ map(
   end),
   { desc = "git: select branch and log it" }
 )
+map(
+  "n",
+  "<A-k>",
+  create_binding(function()
+    neogit.open {}
+  end),
+  { desc = "git: status" }
+)
 
 map(
   "n",
