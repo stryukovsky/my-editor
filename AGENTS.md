@@ -2,6 +2,16 @@
 
 Personal Neovim configuration managed by [lazy.nvim](https://github.com/folke/lazy.nvim).
 
+## File Templates (`lua/configs/templates.lua`)
+
+- Templates are defined in `templates/index.json` — each entry has `name`, `path` (relative to `templates/`), and `destination` (absolute target path to create/append to).
+- `:Template {name}` or `<leader>te` (Telescope picker) creates a file from a template.
+- If the destination already exists, the template content is **appended** (not overwritten). First creation **overwrites**.
+- If `kind` is `"dap"`, configurations are merged by `name` into the existing `launch.json` instead of raw appending.
+- To add a new template: create the file in `templates/` and register it in `templates/index.json`.
+- For dap configurations never define `"console"` property, never define it
+- For dap configurations always define `"cwd"` property with default value `"${workspaceFolder}"`
+
 ## Entrypoint & Loading Order
 
 - `init.lua` bootstraps lazy.nvim, then requires: `options` → `configs` → `mappings` → `theme`

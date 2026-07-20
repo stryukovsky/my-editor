@@ -46,9 +46,43 @@ function M.create(name)
     vim.fn.mkdir(dst_dir, "p")
   end
 
-  local flags = vim.fn.filereadable(dst) == 1 and "a" or ""
-  vim.fn.writefile(src_content, dst, flags)
+  if template.kind == "dap" then
+    M._merge_dap(src_content, dst)
+  else
+    local flags = vim.fn.filereadable(dst) == 1 and "a" or ""
+    vim.fn.writefile(src_content, dst, flags)
+  end
   vim.notify(string.format("Template '%s' created at %s", name, dst), vim.log.levels.INFO)
+end
+
+function M._merge_dap(src_content, dst)
+  local template_data = vim.json.decode(table.concat(src_content, "\n"))
+
+  local existing
+  if vim.fn.filereadable(dst) == 1 then
+    local ok, lines = pcall(vim.fn.readfile, dst, "")
+    if ok then
+      existing = vim.json.decode(table.concat(lines, "\n"))
+    end
+  end
+
+  local merged = existing or { version = "0.2.0", configurations = {} }
+  merged.configurations = merged.configurations or {}
+
+  local seen = {}
+  for _, cfg in ipairs(merged.configurations) do
+    seen[cfg.name] = true
+  end
+  for _, cfg in ipairs(template_data.configurations or {}) do
+    if not seen[cfg.name] then
+      table.insert(merged.configurations, cfg)
+      seen[cfg.name] = true
+    end
+  end
+
+  local output = vim.json.encode(merged)
+  local lines = vim.split(output, "\n")
+  vim.fn.writefile(lines, dst, "")
 end
 
 function M.complete(arg_lead, _cmd_line, _cursor_pos)

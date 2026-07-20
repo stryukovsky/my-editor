@@ -2,6 +2,14 @@
   {
     "name": "python-dap",
     "path": "python-dap.json",
-    "destination": ".vscode/launch.json"
+    "destination": ".vscode/launch.json",
+    "kind": "dap"
+  },
+  {
+    "name": "python-dap-command",
+    "path": "python-dap-command.json",
+    "destination": ".vscode/launch.json",
+    "kind": "dap"
   }
 ]
+
