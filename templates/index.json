@@ -1,0 +1,7 @@
+[
+  {
+    "name": "python-dap",
+    "path": "python-dap.json",
+    "destination": ".vscode/launch.json"
+  }
+]

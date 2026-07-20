@@ -56,6 +56,7 @@ require "configs.rainbow_delimiters"
 require "configs.material-theme"
 require "highlight"
 require "configs.bigfiles"
+require "configs.templates"
 require "configs.statuscolumn"
 -- require "configs.diffview"
 
