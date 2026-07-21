@@ -29,4 +29,5 @@ return {
   "todo",
   "codecompanion",
   "neotest-summary",
+  "codediff-explorer",
 }

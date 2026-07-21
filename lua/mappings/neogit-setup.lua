@@ -56,6 +56,10 @@ map("n", "<leader>gpull", function()
   neogit.open { "pull" }
 end, { desc = "git: pull" })
 
+map("n", "<leader>gd", function()
+  neogit.open { "diff" }
+end, { desc = "git: diff" })
+
 map("n", "<leader>gPull", function()
   neogit.open { "pull" }
 end, { desc = "git: pull" })

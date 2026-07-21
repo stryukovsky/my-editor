@@ -65,6 +65,7 @@ neogit.setup {
   refs_view = {
     kind = "split",
   },
+  diff_viewer = "codediff", -- Sets codediff as the default viewer
   -- Each Integration is auto-detected through plugin presence, however, it can be disabled by setting to `false`
   integrations = {
     -- If enabled, use telescope for menu selection rather than vim.ui.select.
@@ -74,7 +75,7 @@ neogit.setup {
     -- The diffview integration enables the diff popup.
     --
     -- Requires you to have `sindrets/diffview.nvim` installed.
-    diffview = false,
+    codediff = true,
 
     -- If enabled, uses fzf-lua for menu selection. If the telescope integration
     -- is also selected then telescope is used instead
