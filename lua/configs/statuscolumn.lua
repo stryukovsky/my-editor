@@ -9,17 +9,36 @@ require("statuscol").setup {
   thousands = ".", -- or line number thousands separator string ("." / ",")
   relculright = true, -- whether to right-align the cursor line number with 'relativenumber' set
   -- Builtin 'statuscolumn' options
-  ft_ignore = nil, -- Lua table with 'filetype' values for which 'statuscolumn' will be unset
+  ft_ignore = require("utils.technical_ui_filetypes"), -- Lua table with 'filetype' values for which 'statuscolumn' will be unset
   bt_ignore = nil, -- Lua table with 'buftype' values for which 'statuscolumn' will be unset
   -- Default segments (fold -> sign -> line number + separator), explained below
   segments = {
-    { text = { builtin.foldfunc }, click = "v:lua.ScFa" }, -- Колонка свёрток БЕЗ цифр-
+    {
+        text = { builtin.foldfunc },
+        click = "v:lua.ScFa",
+        -- auto = true,
+    },
     {
       text = { builtin.lnumfunc, " " },
       condition = { true, builtin.not_empty },
       click = "v:lua.ScLa",
+      -- auto = true,
     },
-    { text = { "%s" }, click = "v:lua.ScSa" },
+    {
+      sign = {
+          namespace = { "gitsigns" },
+          wrap = true,
+      },
+      click = "v:lua.ScSa",
+    },
+    {
+      sign = {
+          name = { ".*" },
+          namespace = { ".*" },
+          wrap = false,
+      },
+      click = "v:lua.ScSa",
+    },
   },
   clickmod = "c", -- modifier used for certain actions in the builtin clickhandlers:
   -- "a" for Alt, "c" for Ctrl and "m" for Meta.

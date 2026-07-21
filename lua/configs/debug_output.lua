@@ -27,6 +27,18 @@ local function random_3char()
   return table.concat(result)
 end
 
+local function strip_ansi(str)
+  -- CSI: ESC [ <params: digits ; ? > = <  > <final byte>
+  str = str:gsub("\27%[[%d;?]*[%a@~]", "")
+  -- OSC/DCS/SOS/PM/APC terminated by ST (ESC \)
+  str = str:gsub("\27[%]PX^_].-\27\\", "")
+  -- OSC/DCS/SOS/PM/APC terminated by BEL
+  str = str:gsub("\27[%]PX^_].-\7", "")
+  -- Simple two-byte escapes: ESC <letter>
+  str = str:gsub("\27[%a\\^_]", "")
+  return str
+end
+
 local function check_process_running(pid)
   if not pid then
     return false
@@ -132,7 +144,7 @@ local function show_session_output(session_id)
   end
 
   -- Combine header and outputs
-  local content = vim.list_extend(header, outputs)
+  local content = vim.list_extend(header, vim.tbl_map(strip_ansi, outputs))
 
   -- Set buffer content
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
@@ -297,7 +309,7 @@ function M.setup()
     -- Split output by newlines and append each line
     local lines = vim.split(event.output, "\n", { plain = true })
     for _, line in ipairs(lines) do
-      table.insert(session_outputs[session_id], line)
+      table.insert(session_outputs[session_id], strip_ansi(line))
     end
 
     -- Update all buffers showing this session's output
@@ -307,7 +319,8 @@ function M.setup()
           vim.schedule(function()
             vim.bo[buf].modifiable = true
             local current_lines = vim.api.nvim_buf_line_count(buf)
-            vim.api.nvim_buf_set_lines(buf, current_lines, -1, false, lines)
+            local clean_lines = vim.tbl_map(strip_ansi, lines)
+            vim.api.nvim_buf_set_lines(buf, current_lines, -1, false, clean_lines)
             vim.bo[buf].modifiable = false
 
             -- Auto-scroll to bottom if window is visible
@@ -343,7 +356,6 @@ function M.setup()
       session_pids[session.id] = body.systemProcessId
     end
   end
-
 
   -- Subscribe to additional DAP termination events for optimized behavior
   -- Especially useful for DAPs which emit these specific events

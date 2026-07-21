@@ -77,6 +77,7 @@ local function override_highlights()
 
   hl(0, "SpectreSearch", { bg = "#bb0000", fg = "#ffffff" })
   hl(0, "SpectreReplace", { bg = "#00bb00", fg = "#ffffff" })
+  hl(0, "MarkSignHL", { fg = "#bb0000" })
 
   hl(0, "CodeCompanionInlineDiffHint", { bg = background, fg = foreground_active })
 

@@ -28,4 +28,5 @@ return {
   "grapple",
   "todo",
   "codecompanion",
+  "neotest-summary",
 }

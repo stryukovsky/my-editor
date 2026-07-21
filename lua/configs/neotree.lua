@@ -265,8 +265,11 @@ local config = {
       ["W"] = "expand_all_subnodes",
       -- ["q"] = "close_window",
       ["?"] = "show_help",
-      ["<"] = "prev_source",
-      [">"] = "next_source",
+      ["<A-<>"] = "prev_source",
+      ["<A->>"] = "next_source",
+      ["<A-,>"] = "prev_source",
+      ["<A-.>"] = "next_source",
+
     },
   },
   filesystem = {

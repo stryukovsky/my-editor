@@ -2,12 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "LangGraph Dev (uv run)",
+      "name": "LangGraph backend",
       "type": "debugpy",
       "request": "launch",
-      "module": "langgraph",
-      "args": ["dev"],
-      "cwd": "${workspaceFolder}"
+      "program": "${workspaceFolder}/.venv/bin/langgraph",
+      "cwd": "${workspaceFolder}",
+      "args": ["dev"]
     }
   ]
 }
