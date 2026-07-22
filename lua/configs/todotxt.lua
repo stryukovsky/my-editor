@@ -40,27 +40,31 @@ local ns = vim.api.nvim_create_namespace("todotxt-project-highlights")
 
 local function apply_project_highlights()
   local buf = vim.api.nvim_get_current_buf()
-  if not buf or vim.bo[buf].filetype ~= "todotxt" then
-    return
-  end
+  if not buf or vim.bo[buf].filetype ~= "todotxt" then return end
 
   vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
 
+  local ok, parser = pcall(vim.treesitter.get_parser, buf, "todotxt")
+  if not ok or not parser then return end
+
+  local tree = parser:parse()
+  if not tree or vim.tbl_isempty(tree) then return end
+
+  local query = vim.treesitter.query.parse("todotxt", "(project) @project")
+
   local project_map = {}
   local color_count = 0
-  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 
-  for lnum, line in ipairs(lines) do
-    local pos = 1
-    while true do
-      local s, e, project = line:find("%f[%w+]%+([%w_]+)", pos)
-      if not s then break end
-      if not project_map[project] then
+  for _, node in query:iter_captures(tree[1]:root(), buf, 0, -1) do
+    local project = vim.treesitter.get_node_text(node, buf)
+    if project then
+      local name = project:sub(2)
+      if not project_map[name] then
         color_count = color_count + 1
-        project_map[project] = ((color_count - 1) % #project_colors) + 1
+        project_map[name] = ((color_count - 1) % #project_colors) + 1
       end
-      vim.api.nvim_buf_add_highlight(buf, ns, "TodoProject" .. project_map[project], lnum - 1, s - 1, e - 1)
-      pos = e
+      local start_row, start_col, _, end_col = node:range()
+      vim.api.nvim_buf_add_highlight(buf, ns, "TodoProject" .. project_map[name], start_row, start_col, end_col)
     end
   end
 end
