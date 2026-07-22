@@ -10,3 +10,4 @@ brew install anomalyco/tap/opencode
 brew install ranger
 brew install --cask mactex
 brew install bpytop
+brew install plantuml

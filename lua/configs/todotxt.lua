@@ -47,15 +47,20 @@ local function apply_project_highlights()
   vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
 
   local project_map = {}
+  local color_count = 0
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 
   for lnum, line in ipairs(lines) do
-    for project in line:gmatch("%f[%w+]%+([%w_]+)") do
+    local pos = 1
+    while true do
+      local s, e, project = line:find("%f[%w+]%+([%w_]+)", pos)
+      if not s then break end
       if not project_map[project] then
-        project_map[project] = (#project_map % #project_colors) + 1
+        color_count = color_count + 1
+        project_map[project] = ((color_count - 1) % #project_colors) + 1
       end
-      vim.api.nvim_buf_add_highlight(buf, ns, "TodoProject" .. project_map[project], lnum - 1, 0, -1)
-      break
+      vim.api.nvim_buf_add_highlight(buf, ns, "TodoProject" .. project_map[project], lnum - 1, s - 1, e - 1)
+      pos = e
     end
   end
 end
