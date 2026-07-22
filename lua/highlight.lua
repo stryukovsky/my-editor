@@ -151,6 +151,19 @@ local function override_highlights()
   vim.api.nvim_set_hl(0, "MacroStartChar", { bg = "#e06c75", fg = "#282c34", bold = true })
 
   sync_cursorline_nr()
+
+  local project_colors = {
+    "#c678dd",
+    "#e06c75",
+    "#98c379",
+    "#56b6c2",
+    "#d19a66",
+    "#61afef",
+    "#e5c07b",
+  }
+  for i, color in ipairs(project_colors) do
+    hl(0, "TodoProject" .. i, { fg = color, bold = true })
+  end
 end
 
 vim.api.nvim_create_autocmd({ "ColorScheme", "UIEnter" }, {
