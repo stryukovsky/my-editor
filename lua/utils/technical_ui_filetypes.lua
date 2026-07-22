@@ -26,7 +26,6 @@ return {
   "trouble",
   "spectre",
   "grapple",
-  "todo",
   "codecompanion",
   "neotest-summary",
   "codediff-explorer",

@@ -189,4 +189,6 @@ return {
     cmd = "CodeDiff",
     opts = require("configs.codediff"),
   },
+  { "phrmendes/todotxt.nvim" },
+
 }

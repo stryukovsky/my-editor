@@ -58,5 +58,5 @@ require "highlight"
 require "configs.bigfiles"
 require "configs.templates"
 require "configs.statuscolumn"
--- require "configs.diffview"
+require "configs.todotxt"
 

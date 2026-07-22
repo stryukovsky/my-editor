@@ -110,7 +110,9 @@ local ft_string_groups = {
 
 vim.api.nvim_create_autocmd("BufWinEnter", {
   callback = function()
-    if vim.api.nvim_buf_line_count(0) > 10000 or vim.fn.getfsize(vim.api.nvim_buf_get_name(0)) > 10240 then return end
+    if vim.api.nvim_buf_line_count(0) > 10000 or vim.fn.getfsize(vim.api.nvim_buf_get_name(0)) > 10240 then
+      return
+    end
     o.spell = true
     vim.o.spelloptions = "camel,noplainbuffer"
 
@@ -137,7 +139,9 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 
 vim.api.nvim_create_autocmd({ "FileType" }, {
   callback = function()
-    if vim.api.nvim_buf_line_count(0) > 10000 or vim.fn.getfsize(vim.api.nvim_buf_get_name(0)) > 10240 then return end
+    if vim.api.nvim_buf_line_count(0) > 10000 or vim.fn.getfsize(vim.api.nvim_buf_get_name(0)) > 10240 then
+      return
+    end
     -- Wait until Neovim is idle and the Tree-sitter parser is actually ready
     vim.schedule(function()
       -- Ensure the buffer still exists before applying options
@@ -178,6 +182,13 @@ vim.opt.fillchars = {
   foldopen = "", -- Arrow down for open folds
   foldclose = "", -- Arrow right for closed folds
   foldsep = " ", -- Blank space for lines inside an open fold
+}
+
+vim.filetype.add {
+  filename = {
+    ["todo.txt"] = "todotxt",
+    ["done.txt"] = "todotxt",
+  },
 }
 
 vim.opt.diffopt = {
