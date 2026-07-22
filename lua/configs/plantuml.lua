@@ -1,8 +1,46 @@
 local M = {}
 
+local cache = {}
+local cache_order = {}
+local MAX_CACHE = 10
+
+local function hash_input(lines)
+  local str = table.concat(lines, "\n")
+  local h = 0
+  for i = 1, #str do
+    h = (h * 31 + string.byte(str, i)) % 2 ^ 31
+  end
+  return tostring(h)
+end
+
+local function open_buffer(out_lines)
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.bo[buf].filetype = "plantuml-preview"
+  vim.bo[buf].buftype = ""
+  vim.bo[buf].bufhidden = "hide"
+  vim.bo[buf].buflisted = true
+
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, out_lines)
+  vim.bo[buf].modifiable = false
+
+  vim.api.nvim_set_current_buf(buf)
+  vim.wo.wrap = false
+
+  local ok = pcall(vim.api.nvim_buf_set_name, buf, "plantuml-preview")
+  if not ok then
+    vim.api.nvim_buf_set_name(buf, "plantuml-preview" .. math.random(9999))
+  end
+end
+
 function M.visualize(lines)
   if not lines or #lines == 0 then
     vim.notify("No lines to visualize", vim.log.levels.ERROR)
+    return
+  end
+
+  local key = hash_input(lines)
+  if cache[key] then
+    open_buffer(cache[key])
     return
   end
 
@@ -28,24 +66,14 @@ function M.visualize(lines)
 
   local out_lines = vim.split(output, "\n", { plain = true })
 
-  local buf = vim.api.nvim_create_buf(false, true)
-  vim.bo[buf].buftype = "nofile"
-  vim.bo[buf].bufhidden = "wipe"
-
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, out_lines)
-
-  vim.bo[buf].modifiable = false
-
-  -- vim.cmd "split"
-  local win = vim.api.nvim_get_current_win()
-  vim.api.nvim_win_set_buf(win, buf)
-  vim.wo[win].wrap = false
-
-  local ok, name = pcall(vim.api.nvim_buf_set_name, buf, "plantuml-ascii")
-  if not ok then
-    vim.api.nvim_buf_set_name(buf, "plantuml-ascii-" .. math.random(9999))
+  if #cache_order >= MAX_CACHE then
+    local oldest = table.remove(cache_order, 1)
+    cache[oldest] = nil
   end
+  cache[key] = out_lines
+  table.insert(cache_order, key)
+
+  open_buffer(out_lines)
 end
 
 return M
-
