@@ -12,6 +12,28 @@ local symbols = trouble.statusline {
   -- Set it to the lualine section you want to use
   hl_group = "lualine_c_normal",
 }
+local function get_neotree_path()
+  -- Safely check if neo-tree manager is loaded
+  local status, manager = pcall(require, "neo-tree.sources.manager")
+  if not status then
+    return ""
+  end
+
+  -- Get current state of the filesystem source
+  local state = manager.get_state "filesystem"
+  if not state or not state.tree then
+    return ""
+  end
+
+  -- Get the node under the cursor
+  local node = state.tree:get_node()
+  if not node then
+    return ""
+  end
+
+  -- Format the node absolute path relative to the current CWD
+  return vim.fn.fnamemodify(node:get_id(), ":.")
+end
 
 local function to_hex_color(color)
   return "#" .. string.format("%x", color)
@@ -159,5 +181,22 @@ require("lualine").setup {
   tabline = {},
   winbar = {},
   inactive_winbar = {},
-  extensions = {},
+  extensions = {
+    {
+      sections = {
+        lualine_a = {
+          function()
+            return "NEO-TREE"
+          end,
+        },
+        lualine_c = { get_neotree_path }, -- Displays relative path from CWD
+      },
+      filetypes = { "neo-tree" },
+    },
+  },
+  "trouble",
+  "oil",
+  "toggleterm",
+  "lazy",
+  "mason",
 }

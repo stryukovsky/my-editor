@@ -186,8 +186,8 @@ vim.opt.fillchars = {
 
 vim.filetype.add {
   filename = {
-    ["todo.txt"] = "todotxt",
-    ["done.txt"] = "todotxt",
+    ["todo.todotxt"] = "todotxt",
+    ["done.todotxt"] = "todotxt",
   },
 }
 
@@ -200,3 +200,35 @@ vim.opt.diffopt = {
   "linematch:200",
   "indent-heuristic",
 }
+
+local md_table_group = vim.api.nvim_create_augroup("markdown_table_wrap", { clear = true })
+
+vim.api.nvim_create_autocmd("BufEnter", {
+  group = md_table_group,
+  pattern = "*.md",
+  callback = function()
+    if vim.api.nvim_buf_line_count(0) > 10000 or vim.fn.getfsize(vim.api.nvim_buf_get_name(0)) > 10240 then
+      return
+    end
+    local max_table_line = 0
+    for _, line in ipairs(vim.api.nvim_buf_get_lines(0, 0, -1, false)) do
+      if select(2, line:gsub("|", "")) >= 2 then
+        local len = vim.fn.strdisplaywidth(line)
+        if len > max_table_line then
+          max_table_line = len
+        end
+      end
+    end
+    if max_table_line > 0 and vim.o.columns < max_table_line then
+      vim.opt_local.wrap = false
+    end
+  end,
+})
+
+vim.api.nvim_create_autocmd("BufLeave", {
+  group = md_table_group,
+  pattern = "*.md",
+  callback = function()
+    vim.opt_local.wrap = true
+  end,
+})

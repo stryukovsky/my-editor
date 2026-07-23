@@ -1,8 +1,19 @@
 ---@diagnostic disable: missing-fields
+local function directory_for_todotxt()
+  local home = vim.env.HOME
+  local work_dir = home .. "/Work/my-vault/"
+
+  if vim.fn.isdirectory(work_dir) == 1 then
+    return work_dir
+  else
+    return home .. "/Documents/"
+  end
+end
+
 require("todotxt").setup {
   lsp = true,
-  todotxt = vim.env.HOME .. "/Documents/todo.txt",
-  donetxt = vim.env.HOME .. "/Documents/done.txt",
+  todotxt = directory_for_todotxt() .. "todo.todotxt",
+  donetxt = directory_for_todotxt() .. "done.todotxt",
   max_priority = "C",
   metadata = {
     tag = { sort = "asc" },
@@ -95,7 +106,9 @@ vim.api.nvim_create_autocmd("FileType", {
   pattern = "todotxt",
   callback = function(ev)
     local buf = ev.buf
-    vim.schedule(function() apply_project_highlights(buf) end)
+    vim.schedule(function()
+      apply_project_highlights(buf)
+    end)
     vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
       buffer = buf,
       callback = function()
