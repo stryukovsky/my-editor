@@ -39,9 +39,9 @@ end
 
 local ns = vim.api.nvim_create_namespace "todotxt-project-highlights"
 
-local function apply_project_highlights()
-  local buf = vim.api.nvim_get_current_buf()
-  if not buf or vim.bo[buf].filetype ~= "todotxt" then
+local function apply_project_highlights(buf)
+  buf = buf or vim.api.nvim_get_current_buf()
+  if not buf or not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].filetype ~= "todotxt" then
     return
   end
 
@@ -79,13 +79,28 @@ local function apply_project_highlights()
   end
 end
 
+local debounce_timer
+
+local function schedule_highlights(buf)
+  if debounce_timer then
+    pcall(debounce_timer.close, debounce_timer)
+  end
+  debounce_timer = vim.defer_fn(function()
+    debounce_timer = nil
+    apply_project_highlights(buf)
+  end, 50)
+end
+
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "todotxt",
   callback = function(ev)
-    vim.schedule(apply_project_highlights)
+    local buf = ev.buf
+    vim.schedule(function() apply_project_highlights(buf) end)
     vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
-      buffer = ev.buf,
-      callback = apply_project_highlights,
+      buffer = buf,
+      callback = function()
+        schedule_highlights(buf)
+      end,
     })
   end,
 })
