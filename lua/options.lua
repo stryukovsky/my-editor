@@ -201,10 +201,11 @@ vim.opt.diffopt = {
   "indent-heuristic",
 }
 
-local md_table_group = vim.api.nvim_create_augroup("markdown_table_wrap", { clear = true })
+-- i cannot set nowrap for buffer only for window, so for bufleave i need return wrap back
+local wide_buffers_wrap_toggling = vim.api.nvim_create_augroup("wide_buffers_wrap", { clear = true })
 
 vim.api.nvim_create_autocmd("BufEnter", {
-  group = md_table_group,
+  group = wide_buffers_wrap_toggling,
   pattern = "*.md",
   callback = function()
     if vim.api.nvim_buf_line_count(0) > 10000 or vim.fn.getfsize(vim.api.nvim_buf_get_name(0)) > 10240 then
@@ -226,9 +227,25 @@ vim.api.nvim_create_autocmd("BufEnter", {
 })
 
 vim.api.nvim_create_autocmd("BufLeave", {
-  group = md_table_group,
+  group = wide_buffers_wrap_toggling,
   pattern = "*.md",
   callback = function()
     vim.opt_local.wrap = true
+  end,
+})
+
+vim.api.nvim_create_autocmd("BufLeave", {
+  group = wide_buffers_wrap_toggling,
+  pattern = "plantuml-preview*",
+  callback = function()
+    vim.opt_local.wrap = true
+  end,
+})
+
+vim.api.nvim_create_autocmd("BufEnter", {
+  group = wide_buffers_wrap_toggling,
+  pattern = "plantuml-preview*",
+  callback = function()
+    vim.opt_local.wrap = false
   end,
 })
