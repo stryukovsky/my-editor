@@ -48,6 +48,11 @@ for i, color in ipairs(project_colors) do
   vim.api.nvim_set_hl(0, "TodoProject" .. i, { fg = color, bold = true })
 end
 
+vim.api.nvim_set_hl(0, "TodoPriorityA", { bg = "#e06c75", fg = "#ffffff", bold = true })
+vim.api.nvim_set_hl(0, "TodoPriorityB", { bg = "#d19a66", fg = "#ffffff", bold = true })
+vim.api.nvim_set_hl(0, "TodoPriorityC", { bg = "#98c379", fg = "#ffffff", bold = true })
+vim.api.nvim_set_hl(0, "TodoDoneTask", { strikethrough = true })
+
 local ns = vim.api.nvim_create_namespace "todotxt-project-highlights"
 
 local function apply_project_highlights(buf)
@@ -68,23 +73,47 @@ local function apply_project_highlights(buf)
     return
   end
 
-  local query = vim.treesitter.query.parse("todotxt", "(project) @project")
+  local query = vim.treesitter.query.parse("todotxt", "(project) @project (priority) @priority")
 
   local project_map = {}
   local color_count = 0
 
   for _, node in query:iter_captures(tree[1]:root(), buf, 0, -1) do
-    local project = vim.treesitter.get_node_text(node, buf)
-    if project then
-      local name = project:sub(2)
-      if not project_map[name] then
-        color_count = color_count + 1
-        project_map[name] = ((color_count - 1) % #project_colors) + 1
+    local t = node:type()
+    if t == "project" then
+      local project = vim.treesitter.get_node_text(node, buf)
+      if project then
+        local pname = project:sub(2)
+        if not project_map[pname] then
+          color_count = color_count + 1
+          project_map[pname] = ((color_count - 1) % #project_colors) + 1
+        end
+        local start_row, start_col, _, end_col = node:range()
+        vim.api.nvim_buf_set_extmark(buf, ns, start_row, start_col, {
+          end_col = end_col,
+          hl_group = "TodoProject" .. project_map[pname],
+        })
       end
-      local start_row, start_col, _, end_col = node:range()
-      vim.api.nvim_buf_set_extmark(buf, ns, start_row, start_col, {
-        end_col = end_col,
-        hl_group = "TodoProject" .. project_map[name],
+    elseif t == "priority" then
+      local text = vim.treesitter.get_node_text(node, buf)
+      if text == "(A)" or text == "(B)" or text == "(C)" then
+        local start_row, start_col, _, end_col = node:range()
+        vim.api.nvim_buf_set_extmark(buf, ns, start_row, start_col, {
+          end_col = end_col,
+          hl_group = "TodoPriority" .. text:sub(2, 2),
+        })
+      end
+    end
+  end
+
+  for i = 0, vim.api.nvim_buf_line_count(buf) - 1 do
+    local line = vim.api.nvim_buf_get_lines(buf, i, i + 1, false)[1]
+    if line and line:sub(1, 2) == "x " then
+      vim.api.nvim_buf_set_extmark(buf, ns, i, 0, {
+        end_row = i,
+        end_col = #line,
+        hl_group = "TodoDoneTask",
+        hl_mode = "combine",
       })
     end
   end

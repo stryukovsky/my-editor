@@ -147,8 +147,8 @@ local function override_highlights()
   vim.opt.guicursor = table.concat(cursor_parts, ",")
 
   -- for macros.lua
-  vim.api.nvim_set_hl(0, "MacroStartBadge", { bg = "#e06c75", fg = "#282c34", bold = true })
-  vim.api.nvim_set_hl(0, "MacroStartChar", { bg = "#e06c75", fg = "#282c34", bold = true })
+  hl(0, "MacroStartBadge", { bg = "#e06c75", fg = "#282c34", bold = true })
+  hl(0, "MacroStartChar", { bg = "#e06c75", fg = "#282c34", bold = true })
 
   sync_cursorline_nr()
 
@@ -164,6 +164,10 @@ local function override_highlights()
   for i, color in ipairs(project_colors) do
     hl(0, "TodoProject" .. i, { fg = color, bold = true })
   end
+  hl(0, "TodoPriorityA", { bg = "#e06c75", fg = "#ffffff", bold = true })
+  hl(0, "TodoPriorityB", { bg = "#d19a66", fg = "#ffffff", bold = true })
+  hl(0, "TodoPriorityC", { bg = "#98c379", fg = "#ffffff", bold = true })
+  hl(0, "TodoDoneTask", { strikethrough = true })
 end
 
 vim.api.nvim_create_autocmd({ "ColorScheme", "UIEnter" }, {
