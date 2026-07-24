@@ -134,3 +134,31 @@ map("n", "<leader>jP", function()
     end,
   })
 end, { desc = "Work: push todotxt update" })
+
+map("n", "<leader>jp", function()
+  local todotxt_file = todotxt.config.todotxt
+  if not todotxt_file then
+    vim.notify("todotxt path not configured", vim.log.levels.WARN)
+    return
+  end
+  local parent = vim.fn.fnamemodify(todotxt_file, ":h")
+  local git_root = vim.fn.systemlist { "git", "-C", parent, "rev-parse", "--show-toplevel" }
+  if vim.v.shell_error ~= 0 then
+    vim.notify("Not a git repo: " .. parent, vim.log.levels.WARN)
+    return
+  end
+  vim.fn.jobstart({ "git", "-C", git_root[1], "pull" }, {
+    on_stderr = function(_, data)
+      if data then
+        vim.notify(table.concat(data, "\n"), vim.log.levels.ERROR)
+      end
+    end,
+    on_exit = function(_, pull_code)
+      if pull_code == 0 then
+        vim.notify("todotxt pulled successfully", vim.log.levels.INFO)
+      else
+        vim.notify("git pull failed", vim.log.levels.ERROR)
+      end
+    end,
+  })
+end, { desc = "Work: pull todotxt update" })
