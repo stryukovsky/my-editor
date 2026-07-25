@@ -9,6 +9,60 @@ map("n", "<leader>js+", function()
   todotxt.sort_tasks_by_project()
 end, { desc = "Work: sort on +Projects" })
 
+local function priority_sorter(a, b)
+  if a.priority and b.priority then
+    return a.priority < b.priority
+  end
+  if a.priority and not b.priority then
+    return true
+  end
+  if not a.priority and b.priority then
+    return false
+  end
+  return false
+end
+
+local function group_tasks_by_project(lines)
+  local by_project = {}
+  local default_group = {}
+
+  for _, line in ipairs(lines) do
+    if line ~= "" and not line:match "^%s*x " then
+      local priority = line:match "^%(([A-Z])%)"
+      local first_proj = line:match "%+([^%s]+)"
+      local entry = { line = line, priority = priority }
+      if first_proj then
+        if not by_project[first_proj] then
+          by_project[first_proj] = {}
+        end
+        table.insert(by_project[first_proj], entry)
+      else
+        table.insert(default_group, entry)
+      end
+    end
+  end
+
+  local proj_names = vim.tbl_keys(by_project)
+  table.sort(proj_names)
+
+  for _, name in ipairs(proj_names) do
+    table.sort(by_project[name], priority_sorter)
+  end
+  table.sort(default_group, priority_sorter)
+
+  return by_project, proj_names, default_group
+end
+
+local function task_cell_text(line)
+  local text = line
+    :gsub("%+%S+", "")
+    :gsub("%s+", " ")
+    :gsub("^%s+", "")
+    :gsub("%s+$", "")
+    :gsub("|", "\\|")
+  return text
+end
+
 map("n", "<leader>jss", function()
   local buf = vim.api.nvim_get_current_buf()
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
@@ -32,19 +86,6 @@ map("n", "<leader>jss", function()
     end
   end
 
-  local sorter = function(a, b)
-    if a.priority and b.priority then
-      return a.priority < b.priority
-    end
-    if a.priority and not b.priority then
-      return true
-    end
-    if not a.priority and b.priority then
-      return false
-    end
-    return false
-  end
-
   local result = {}
   local proj_names = vim.tbl_keys(by_project)
   table.sort(proj_names)
@@ -54,7 +95,7 @@ map("n", "<leader>jss", function()
       table.insert(result, "")
       table.insert(result, "")
     end
-    table.sort(by_project[name], sorter)
+    table.sort(by_project[name], priority_sorter)
     for _, task in ipairs(by_project[name]) do
       table.insert(result, task.line)
     end
@@ -65,7 +106,7 @@ map("n", "<leader>jss", function()
       table.insert(result, "")
       table.insert(result, "")
     end
-    table.sort(default_group, sorter)
+    table.sort(default_group, priority_sorter)
     for _, task in ipairs(default_group) do
       table.insert(result, task.line)
     end
@@ -73,6 +114,75 @@ map("n", "<leader>jss", function()
 
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, result)
 end, { desc = "Work: sort by project + priority" })
+
+map("n", "<leader>jmd", function()
+  local lines
+  if vim.bo.filetype == "todotxt" then
+    lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  else
+    local todotxt_file = todotxt.config.todotxt
+    if not todotxt_file or vim.fn.filereadable(todotxt_file) ~= 1 then
+      vim.notify("todotxt path not configured or unreadable", vim.log.levels.WARN)
+      return
+    end
+    lines = vim.fn.readfile(todotxt_file)
+  end
+
+  local by_project, proj_names, default_group = group_tasks_by_project(lines)
+
+  if #default_group > 0 then
+    table.insert(proj_names, "(none)")
+    by_project["(none)"] = default_group
+  end
+
+  if #proj_names == 0 then
+    vim.notify("No tasks to preview", vim.log.levels.INFO)
+    return
+  end
+
+  local columns = {}
+  local max_rows = 0
+  for _, name in ipairs(proj_names) do
+    local cells = {}
+    for _, task in ipairs(by_project[name]) do
+      table.insert(cells, task_cell_text(task.line))
+    end
+    columns[name] = cells
+    if #cells > max_rows then
+      max_rows = #cells
+    end
+  end
+
+  local header = "| " .. table.concat(proj_names, " | ") .. " |"
+  local separator = "| " .. table.concat(vim.tbl_map(function()
+    return "---"
+  end, proj_names), " | ") .. " |"
+
+  local md = { header, separator }
+  for row = 1, max_rows do
+    local cells = {}
+    for _, name in ipairs(proj_names) do
+      table.insert(cells, columns[name][row] or "")
+    end
+    table.insert(md, "| " .. table.concat(cells, " | ") .. " |")
+  end
+
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.bo[buf].filetype = "todotxt-preview"
+  vim.bo[buf].buftype = ""
+  vim.bo[buf].bufhidden = "wipe"
+  vim.bo[buf].modifiable = true
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, md)
+  vim.bo[buf].modifiable = false
+  vim.bo[buf].modified = false
+
+  local ok = pcall(vim.api.nvim_buf_set_name, buf, "todotxt-preview.md")
+  if not ok then
+    vim.api.nvim_buf_set_name(buf, "todotxt-preview-" .. math.random(9999) .. ".md")
+  end
+
+  vim.api.nvim_set_current_buf(buf)
+end, { desc = "Work: markdown table preview by project" })
 
 map("n", "<leader>jc", function()
   todotxt.cycle_priority()
