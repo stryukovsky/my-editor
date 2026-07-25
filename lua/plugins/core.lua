@@ -152,9 +152,9 @@ return {
     -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
     opts = {
-      file_types = { "markdown", "Avante" },
+      file_types = { "markdown", "codecompanion", "todotxt-preview" },
     },
-    ft = { "markdown", "codecompanion" },
+    ft = { "markdown", "codecompanion", "todotxt-preview" },
     lazy = true,
   },
   { "stryukovsky/git-conflict.nvim", branch = "main" },

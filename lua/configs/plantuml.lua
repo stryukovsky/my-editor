@@ -17,7 +17,7 @@ local function open_buffer(out_lines)
   local buf = vim.api.nvim_create_buf(false, true)
   vim.bo[buf].filetype = "plantuml-preview"
   vim.bo[buf].buftype = ""
-  vim.bo[buf].bufhidden = "hide"
+  vim.bo[buf].bufhidden = "wipe"
   vim.bo[buf].buflisted = true
 
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, out_lines)

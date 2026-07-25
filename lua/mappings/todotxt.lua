@@ -175,11 +175,14 @@ map("n", "<leader>jmd", function()
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, md)
   vim.bo[buf].modifiable = false
   vim.bo[buf].modified = false
+  vim.bo[buf].buflisted = true
 
-  local ok = pcall(vim.api.nvim_buf_set_name, buf, "todotxt-preview.md")
+  -- Name without .md so filetype detection does not overwrite todotxt-preview.
+  local ok = pcall(vim.api.nvim_buf_set_name, buf, "todotxt-preview")
   if not ok then
-    vim.api.nvim_buf_set_name(buf, "todotxt-preview-" .. math.random(9999) .. ".md")
+    vim.api.nvim_buf_set_name(buf, "todotxt-preview-" .. math.random(9999))
   end
+  vim.bo[buf].filetype = "todotxt-preview"
 
   vim.api.nvim_set_current_buf(buf)
 end, { desc = "Work: markdown table preview by project" })

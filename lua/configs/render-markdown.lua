@@ -1,6 +1,9 @@
+-- Custom ft needs the markdown parser, otherwise render-markdown has nothing to query.
+vim.treesitter.language.register("markdown", "todotxt-preview")
+
 require("render-markdown").setup {
   completions = { lsp = { enabled = true } },
-  file_types = { "markdown", "md", "todotxt-preview" },
+  file_types = { "markdown", "codecompanion", "todotxt-preview" },
   code = {
     -- Turn on / off code block & inline code rendering.
     enabled = true,
@@ -29,11 +32,11 @@ require("render-markdown").setup {
       "RenderMarkdownH2",
     },
   },
-  -- Scratch/preview buffers (buftype=nofile).
   overrides = {
-   filetype  = {
-      ["markdown-preview"] = {
+    filetype = {
+      ["todotxt-preview"] = {
         anti_conceal = { enabled = false },
+        render_modes = true,
       },
     },
   },
