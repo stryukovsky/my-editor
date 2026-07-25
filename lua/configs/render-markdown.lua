@@ -1,4 +1,5 @@
 require("render-markdown").setup {
+  completions = { lsp = { enabled = true } },
   code = {
     -- Turn on / off code block & inline code rendering.
     enabled = true,

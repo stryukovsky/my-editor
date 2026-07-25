@@ -7,8 +7,8 @@ require("kulala").setup {
   lsp = {
     enable = false,
   },
- highlight = {
+  highlight = {
     enable = false,
-    disable = { "http", "kulala_http" }, 
+    disable = { "http", "kulala_http" },
   },
 }

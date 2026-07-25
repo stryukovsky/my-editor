@@ -65,7 +65,7 @@ MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-languag
 
 In `data` directory of neovim clone stuff and build jar
 
-```
+```sh
 git clone https://github.com/microsoft/java-debug data/java-debug
 cd data/java-debug
 mvn clean install
