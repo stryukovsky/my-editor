@@ -25,7 +25,7 @@ require("material").setup {
     -- "coc",
     -- "colorful-winsep",
     "dap",
-    -- "dashboard",
+    "dashboard",
     -- "eyeliner",
     "fidget",
     "flash",
