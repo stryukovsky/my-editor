@@ -30,5 +30,17 @@ return {
     "fei6409/log-highlight.nvim",
     opts = {},
   },
+  {
+    "rcarriga/nvim-notify",
+    lazy = false,
+    config = function()
+      require("configs.notify").setup()
+    end,
+  },
   { "chrisgrieser/nvim-recorder" },
+  {
+    "hat0uma/csvview.nvim",
+    opts = require("configs.csv"),
+    cmd = { "CsvViewEnable", "CsvViewDisable", "CsvViewToggle" },
+  },
 }

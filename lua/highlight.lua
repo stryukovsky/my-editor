@@ -46,6 +46,8 @@ local function override_highlights()
   hl(0, "NeogitPopupOptionKey", { link = "Title" })
   hl(0, "NeogitPopupSwitchKey", { link = "Title" })
 
+  hl(0, "CsvViewHeaderLine", { bold = true })
+
   hl(0, "DiffViewFilePanelTitle", { link = "Title" })
   hl(0, "DiffViewFilePanelFileName", { link = "Normal" })
 

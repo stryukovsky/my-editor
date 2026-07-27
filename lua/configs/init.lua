@@ -58,4 +58,4 @@ require "configs.templates"
 require "configs.statuscolumn"
 require "configs.todotxt"
 require "configs.macros-recorder"
-
+require "configs.csv"
