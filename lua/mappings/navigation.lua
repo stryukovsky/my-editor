@@ -91,3 +91,5 @@ map("x", "<C-H>", "<Plug>GoVSMLeft", {})
 map("x", "<C-J>", "<Plug>GoVSMDown", {})
 map("x", "<C-K>", "<Plug>GoVSMUp", {})
 map("x", "<C-L>", "<Plug>GoVSMRight", {})
+
+map("n", "zZ", "zszH", { desc = "Center cursor horizontally" })

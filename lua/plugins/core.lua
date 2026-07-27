@@ -187,8 +187,11 @@ return {
   {
     "esmuellert/codediff.nvim",
     cmd = "CodeDiff",
-    opts = require("configs.codediff"),
+    opts = require "configs.codediff",
   },
   { "phrmendes/todotxt.nvim" },
 
+  {
+    "rcarriga/nvim-notify",
+  },
 }

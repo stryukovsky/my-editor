@@ -90,7 +90,7 @@ require("recorder").setup {
   -- If enabled, only essential notifications are sent.
   -- If you do not use a plugin like nvim-notify, set this to `true`
   -- to remove otherwise annoying messages.
-  lessNotifications = true,
+  lessNotifications = false,
 
   -- Use nerdfont icons in the status bar components and keymap descriptions
   useNerdfontIcons = true,

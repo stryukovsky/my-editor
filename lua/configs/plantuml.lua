@@ -21,6 +21,7 @@ local function open_buffer(out_lines)
   vim.bo[buf].buflisted = true
 
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, out_lines)
+  vim.bo[buf].modified = false
   vim.bo[buf].modifiable = false
 
   vim.api.nvim_set_current_buf(buf)
@@ -74,6 +75,77 @@ function M.visualize(lines)
   table.insert(cache_order, key)
 
   open_buffer(out_lines)
+end
+
+local function output_path()
+  local source_path = vim.api.nvim_buf_get_name(0)
+  if source_path ~= "" then
+    return vim.fn.fnamemodify(source_path, ":r") .. ".png"
+  end
+
+  local cache_dir = vim.fn.stdpath "cache" .. "/plantuml"
+  vim.fn.mkdir(cache_dir, "p")
+  return cache_dir .. "/diagram.png"
+end
+
+local function default_image_viewer()
+  local system = vim.uv.os_uname().sysname
+  if system == "Darwin" then
+    return "open"
+  end
+  if system == "Linux" then
+    return "xdg-open"
+  end
+end
+
+function M.render_png(lines)
+  if not lines or #lines == 0 then
+    vim.notify("No lines to render", vim.log.levels.ERROR)
+    return
+  end
+
+  local image_viewer = default_image_viewer()
+  if not image_viewer then
+    vim.notify("PlantUML PNG rendering is only supported on macOS and Fedora Linux", vim.log.levels.ERROR)
+    return
+  end
+
+  local result = vim
+    .system({ "plantuml", "-tpng", "-pipe" }, {
+      stdin = table.concat(lines, "\n") .. "\n",
+    })
+    :wait()
+
+  if result.code ~= 0 then
+    vim.notify("plantuml failed: " .. ((result.stderr or "exit code ") .. result.code), vim.log.levels.ERROR)
+    return
+  end
+  if not result.stdout or #result.stdout == 0 then
+    vim.notify("plantuml produced no PNG output", vim.log.levels.WARN)
+    return
+  end
+
+  local path = output_path()
+  local file, err = vim.uv.fs_open(path, "w", 420)
+  if not file then
+    vim.notify("Could not write PNG: " .. err, vim.log.levels.ERROR)
+    return
+  end
+
+  local success, write_err = vim.uv.fs_write(file, result.stdout, 0)
+  vim.uv.fs_close(file)
+  if not success then
+    vim.notify("Could not write PNG: " .. write_err, vim.log.levels.ERROR)
+    return
+  end
+
+  vim.system({ image_viewer, path }, {}, function(open_result)
+    if open_result.code ~= 0 then
+      vim.schedule(function()
+        vim.notify("Could not open PNG: " .. (open_result.stderr or path), vim.log.levels.ERROR)
+      end)
+    end
+  end)
 end
 
 return M
