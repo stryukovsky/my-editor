@@ -69,4 +69,6 @@ treesitter.install {
   "comment", -- For comment-based features
 
   "todotxt",
+  "text",
+  "csv",
 }
