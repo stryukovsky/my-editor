@@ -201,41 +201,33 @@ vim.opt.diffopt = {
   "indent-heuristic",
 }
 
--- i cannot set nowrap for buffer only for window, so for bufleave i need return wrap back
-local wide_buffers_wrap_toggling = vim.api.nvim_create_augroup("wide_buffers_wrap", { clear = true })
+-- Wrapping is window-local, so restore it when a Markdown buffer leaves a window.
+local markdown_wrap_toggling = vim.api.nvim_create_augroup("markdown_wrap", { clear = true })
 
-vim.api.nvim_create_autocmd("BufEnter", {
-  group = wide_buffers_wrap_toggling,
-  pattern = "*.md",
-  callback = function()
-    if vim.api.nvim_buf_line_count(0) > 10000 or vim.fn.getfsize(vim.api.nvim_buf_get_name(0)) > 10240 then
-      return
-    end
-    local max_table_line = 0
-    for _, line in ipairs(vim.api.nvim_buf_get_lines(0, 0, -1, false)) do
-      if select(2, line:gsub("|", "")) >= 2 then
-        local len = vim.fn.strdisplaywidth(line)
-        if len > max_table_line then
-          max_table_line = len
-        end
+vim.api.nvim_create_autocmd({ "BufWinEnter", "FileType", "WinEnter" }, {
+  group = markdown_wrap_toggling,
+  callback = function(args)
+    if vim.bo[args.buf].filetype == "markdown" then
+      for _, winid in ipairs(vim.fn.win_findbuf(args.buf)) do
+        vim.wo[winid].wrap = false
       end
     end
-    if max_table_line > 0 and vim.o.columns < max_table_line then
-      vim.opt_local.wrap = false
+  end,
+})
+
+vim.api.nvim_create_autocmd("BufLeave", {
+  group = markdown_wrap_toggling,
+  callback = function()
+    if vim.bo.filetype == "markdown" then
+      vim.opt_local.wrap = true
     end
   end,
 })
 
-vim.api.nvim_create_autocmd("BufLeave", {
-  group = wide_buffers_wrap_toggling,
-  pattern = "*.md",
-  callback = function()
-    vim.opt_local.wrap = true
-  end,
-})
+local preview_wrap_toggling = vim.api.nvim_create_augroup("preview_wrap", { clear = true })
 
 vim.api.nvim_create_autocmd("BufLeave", {
-  group = wide_buffers_wrap_toggling,
+  group = preview_wrap_toggling,
   pattern = "plantuml-preview*",
   callback = function()
     vim.opt_local.wrap = true
@@ -243,7 +235,7 @@ vim.api.nvim_create_autocmd("BufLeave", {
 })
 
 vim.api.nvim_create_autocmd("BufEnter", {
-  group = wide_buffers_wrap_toggling,
+  group = preview_wrap_toggling,
   pattern = "plantuml-preview*",
   callback = function()
     vim.opt_local.wrap = false

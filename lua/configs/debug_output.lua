@@ -2,6 +2,7 @@
 -- Manages debug session outputs with live updates and session tracking
 
 local M = {}
+local notify = require "configs.notify"
 
 -- Private state
 local session_outputs = {}
@@ -104,7 +105,7 @@ end
 local function show_session_output(session_id)
   local outputs = session_outputs[session_id]
   if not outputs or #outputs == 0 then
-    vim.notify("No output for this session", vim.log.levels.INFO)
+    notify.send("Debug Output", "No output for this session")
     return
   end
 
@@ -194,7 +195,7 @@ end
 local function show_session_picker(action)
   local has_telescope, pickers = pcall(require, "telescope.pickers")
   if not has_telescope then
-    vim.notify("Telescope not available", vim.log.levels.WARN)
+    notify.send("Debug Output", "Telescope not available", vim.log.levels.WARN)
     return
   end
 
@@ -215,7 +216,7 @@ local function show_session_picker(action)
   end
 
   if #sessions == 0 then
-    vim.notify("No DAP sessions found", vim.log.levels.INFO)
+    notify.send("Debug Output", "No DAP sessions found")
     return
   end
 
@@ -276,7 +277,7 @@ local function show_session_picker(action)
               if sess.id == session_id then
                 dap.set_session(sess)
                 dap_session = sess
-                vim.notify("Switched to session: " .. meta.name, vim.log.levels.INFO)
+                notify.send("Debug Output", "Switched to session: " .. meta.name)
                 break
               end
             end
@@ -393,7 +394,7 @@ function M.setup()
   if not process_check_timer then
     process_check_timer = vim.uv.new_timer()
     if process_check_timer == nil then
-      vim.notify("Failed to create process check timer", vim.log.levels.WARN)
+      notify.send("Debug Output", "Failed to create process check timer", vim.log.levels.WARN)
     else
       process_check_timer:start(2000, 2000, vim.schedule_wrap(check_all_processes))
     end
@@ -403,7 +404,7 @@ function M.setup()
   if not session_sync_timer then
     session_sync_timer = vim.uv.new_timer()
     if session_sync_timer == nil then
-      vim.notify("Failed to create session sync timer", vim.log.levels.WARN)
+      notify.send("Debug Output", "Failed to create session sync timer", vim.log.levels.WARN)
     else
       session_sync_timer:start(5000, 5000, vim.schedule_wrap(M.sync_sessions))
     end
