@@ -1,4 +1,4 @@
 brew install --cask ghostty
 brew install --cask mactex
 brew install bash tree-sitter-cli tree-sitter fzf go pcre2 ripgrep \
-anomalyco/tap/opencode ranger bpytop plantuml mvn imagemagick
+anomalyco/tap/opencode ranger bpytop pandoc plantuml mvn imagemagick

@@ -1,5 +1,21 @@
 local map = require "mappings.map"
 local todotxt = require "todotxt"
+local notify = require "configs.notify"
+
+local function append_stderr(stderr, data)
+  local output = table.concat(data, "\n")
+  if output ~= "" then
+    table.insert(stderr, output)
+  end
+end
+
+local function git_failure_message(command, stderr)
+  local output = table.concat(stderr, "\n")
+  if output == "" then
+    return command .. " failed"
+  end
+  return command .. " failed:\n" .. output
+end
 
 map("n", "<leader>jv", function()
   vim.cmd("edit" .. todotxt.config.todotxt)
@@ -54,12 +70,7 @@ local function group_tasks_by_project(lines)
 end
 
 local function task_cell_text(line)
-  local text = line
-    :gsub("%+%S+", "")
-    :gsub("%s+", " ")
-    :gsub("^%s+", "")
-    :gsub("%s+$", "")
-    :gsub("|", "\\|")
+  local text = line:gsub("%+%S+", ""):gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", ""):gsub("|", "\\|")
   return text
 end
 
@@ -122,7 +133,7 @@ map("n", "<leader>jmd", function()
   else
     local todotxt_file = todotxt.config.todotxt
     if not todotxt_file or vim.fn.filereadable(todotxt_file) ~= 1 then
-      vim.notify("todotxt path not configured or unreadable", vim.log.levels.WARN)
+      notify.send("Todo.txt", "Path not configured or unreadable", vim.log.levels.WARN)
       return
     end
     lines = vim.fn.readfile(todotxt_file)
@@ -136,7 +147,7 @@ map("n", "<leader>jmd", function()
   end
 
   if #proj_names == 0 then
-    vim.notify("No tasks to preview", vim.log.levels.INFO)
+    notify.send("Todo.txt", "No tasks to preview")
     return
   end
 
@@ -154,9 +165,12 @@ map("n", "<leader>jmd", function()
   end
 
   local header = "| " .. table.concat(proj_names, " | ") .. " |"
-  local separator = "| " .. table.concat(vim.tbl_map(function()
-    return "---"
-  end, proj_names), " | ") .. " |"
+  local separator = "| " .. table.concat(
+    vim.tbl_map(function()
+      return "---"
+    end, proj_names),
+    " | "
+  ) .. " |"
 
   local md = { header, separator }
   for row = 1, max_rows do
@@ -201,13 +215,13 @@ end, { desc = "Work: toggle todo state" })
 map("n", "<leader>jP", function()
   local todotxt_file = todotxt.config.todotxt
   if not todotxt_file then
-    vim.notify("todotxt path not configured", vim.log.levels.WARN)
+    notify.send("Todo.txt", "Path not configured", vim.log.levels.WARN)
     return
   end
   local parent = vim.fn.fnamemodify(todotxt_file, ":h")
   local git_root = vim.fn.systemlist { "git", "-C", parent, "rev-parse", "--show-toplevel" }
   if vim.v.shell_error ~= 0 then
-    vim.notify("Not a git repo: " .. parent, vim.log.levels.WARN)
+    notify.send("Todo.txt", "Not a git repository: " .. parent, vim.log.levels.WARN)
     return
   end
   -- compute path relative to git root
@@ -216,29 +230,37 @@ map("n", "<leader>jP", function()
     -- maybe the file is not tracked yet — fall back to basename
     relpath = { vim.fn.fnamemodify(todotxt_file, ":t") }
   end
+  local add_stderr = {}
   vim.fn.jobstart({ "git", "-C", git_root[1], "add", relpath[1] }, {
     on_stderr = function(_, data)
-      if data then
-        vim.notify(table.concat(data, "\n"), vim.log.levels.ERROR)
-      end
+      append_stderr(add_stderr, data)
     end,
     on_exit = function(_, add_code)
       if add_code ~= 0 then
-        vim.notify("git add failed", vim.log.levels.ERROR)
+        notify.send("Todo.txt", git_failure_message("git add", add_stderr), vim.log.levels.ERROR)
         return
       end
+      local commit_stderr = {}
       vim.fn.jobstart({ "git", "-C", git_root[1], "commit", "-m", "update todotxt" }, {
+        on_stderr = function(_, data)
+          append_stderr(commit_stderr, data)
+        end,
         on_exit = function(_, commit_code)
           if commit_code ~= 0 then
-            vim.notify("git commit failed", vim.log.levels.ERROR)
+            notify.send("Todo.txt", git_failure_message("git commit", commit_stderr), vim.log.levels.ERROR)
             return
           end
+          local push_stderr = {}
+          notify.send("Todo.txt", "Pushing...")
           vim.fn.jobstart({ "git", "-C", git_root[1], "push" }, {
+            on_stderr = function(_, data)
+              append_stderr(push_stderr, data)
+            end,
             on_exit = function(_, push_code)
               if push_code == 0 then
-                vim.notify("todotxt pushed successfully", vim.log.levels.INFO)
+                notify.send("Todo.txt", "Pushed successfully")
               else
-                vim.notify("git push failed", vim.log.levels.ERROR)
+                notify.send("Todo.txt", git_failure_message("git push", push_stderr), vim.log.levels.ERROR)
               end
             end,
           })
@@ -251,26 +273,25 @@ end, { desc = "Work: push todotxt update" })
 map("n", "<leader>jp", function()
   local todotxt_file = todotxt.config.todotxt
   if not todotxt_file then
-    vim.notify("todotxt path not configured", vim.log.levels.WARN)
+    notify.send("Todo.txt", "Path not configured", vim.log.levels.WARN)
     return
   end
   local parent = vim.fn.fnamemodify(todotxt_file, ":h")
   local git_root = vim.fn.systemlist { "git", "-C", parent, "rev-parse", "--show-toplevel" }
   if vim.v.shell_error ~= 0 then
-    vim.notify("Not a git repo: " .. parent, vim.log.levels.WARN)
+    notify.send("Todo.txt", "Not a git repository: " .. parent, vim.log.levels.WARN)
     return
   end
+  local pull_stderr = {}
   vim.fn.jobstart({ "git", "-C", git_root[1], "pull" }, {
     on_stderr = function(_, data)
-      if data then
-        vim.notify(table.concat(data, "\n"), vim.log.levels.ERROR)
-      end
+      append_stderr(pull_stderr, data)
     end,
     on_exit = function(_, pull_code)
       if pull_code == 0 then
-        vim.notify("todotxt pulled successfully", vim.log.levels.INFO)
+        notify.send("Todo.txt", "Pulled successfully")
       else
-        vim.notify("git pull failed", vim.log.levels.ERROR)
+        notify.send("Todo.txt", git_failure_message("git pull", pull_stderr), vim.log.levels.ERROR)
       end
     end,
   })
