@@ -28,13 +28,30 @@ map("n", "<leader>pdf", function()
   end
 
   local output = vim.fn.fnamemodify(source, ":r") .. ".pdf"
+  local config = vim.fn.stdpath "config"
+  local table_filter = config .. "/pandoc/table-grid.lua"
+  local table_header = config .. "/pandoc/table-grid-header.tex"
   notify.send("Markdown PDF", "Generating: " .. output)
 
+  -- xelatex default fonts lack Cyrillic; pick system fonts that include Russian.
+  -- Lua filter redraws tables as tabularx grid so cells wrap within page width.
   async.run(function()
-    local result = async.wrap(vim.system, 3)(
-      { "pandoc", vim.fn.fnamemodify(source, ":t"), "--pdf-engine=xelatex", "-o", output },
-      { cwd = vim.fn.fnamemodify(source, ":h"), text = true }
-    )
+    local result = async.wrap(vim.system, 3)({
+      "pandoc",
+      vim.fn.fnamemodify(source, ":t"),
+      "--pdf-engine=xelatex",
+      "--lua-filter=" .. table_filter,
+      "-H",
+      table_header,
+      "-V",
+      "mainfont=Liberation Sans",
+      "-V",
+      "monofont=Noto Sans Mono",
+      "-V",
+      "geometry:margin=1in",
+      "-o",
+      output,
+    }, { cwd = vim.fn.fnamemodify(source, ":h"), text = true })
 
     vim.schedule(function()
       if result.code == 0 then

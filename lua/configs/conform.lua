@@ -2,7 +2,7 @@ local options = {
   formatters_by_ft = {
     lua = { "stylua" },
     css = { "prettier" },
-    markdown = { "mdformat" },
+    markdown = { "prettier_markdown" },
     html = { "prettier" },
     json = { "prettier" },
     scala = { "scalafmt" },
@@ -15,8 +15,19 @@ local options = {
     solidity = { "prettier_for_solidity" },
   },
   formatters = {
-    mdformat = {
-      args = { "--wrap", "80", "-" },
+    -- proseWrap only applies to markdown; keep it off the shared prettier formatter.
+    prettier_markdown = {
+      command = "prettier",
+      args = {
+        "--stdin-filepath",
+        "$FILENAME",
+        "--parser",
+        "markdown",
+        "--print-width",
+        "80",
+        "--prose-wrap",
+        "always",
+      },
     },
     prettier_for_solidity = {
       command = "npx",
