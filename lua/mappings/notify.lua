@@ -24,7 +24,6 @@ local function open_history()
   vim.bo[buf].modified = false
   vim.bo[buf].modifiable = false
   vim.api.nvim_set_current_buf(buf)
-  vim.wo.wrap = false
 
   local ok = pcall(vim.api.nvim_buf_set_name, buf, "notify-history")
   if not ok then

@@ -1,6 +1,24 @@
 local map = require "mappings.map"
 local is_normal_buffer = require "utils.is_normal_buffer"
 local is_codediff_tab = require "utils.is_codediff_tab"
+local notify = require "configs.notify"
+
+local wrap = true
+local function toggle_wrap()
+  if wrap then
+    wrap = false
+  else
+    wrap = true
+  end
+  vim.opt_local.wrap = wrap
+  local msg = "Wrap is toggled on"
+  if not wrap then
+    msg = "Wrap is toggled off"
+  end
+  notify.send("Navigation", msg, vim.log.levels.INFO)
+end
+map("n", "<A-W>", toggle_wrap, { desc = "Navigation toggle wrap in window" })
+map("n", "<A-r>", toggle_wrap, { desc = "Navigation toggle wrap in window" })
 
 -- toggle numbering
 local is_relative = false
@@ -14,6 +32,11 @@ map("n", "<A-1>", function()
       vim.opt.number = true
       vim.opt.relativenumber = true
     end
+    local msg = "Relative line numbering"
+    if not is_relative then
+      msg = "Absolute line numbering"
+    end
+    notify.send("Navigation", msg, vim.log.levels.INFO)
   end
 end, { desc = "Navigation toggle relative numbering" })
 
@@ -26,7 +49,7 @@ map("n", "<A-v>", function()
     vim.diagnostic.config {
       virtual_lines = false,
     }
-    vim.print "Virtual lines disabled"
+    notify.send("Navigation", "Virtual lines disabled", vim.log.levels.INFO)
     return
   end
   vim.diagnostic.config {
@@ -37,13 +60,14 @@ map("n", "<A-v>", function()
     },
   }
 
-  vim.print("Virtual lines enabled: " .. vim.diagnostic.severity[virtual_lines_diagnostic_counter])
+  local msg = "Virtual lines enabled: " .. vim.diagnostic.severity[virtual_lines_diagnostic_counter]
+  notify.send("Navigation", msg, vim.log.levels.INFO)
 end, { desc = "Navigation filter virtual diagnostics" })
 
 local function construct_handler(cmd)
   return function()
     if is_codediff_tab() then
-      vim.notify "Cannot open: CodeDiff is current tabpage"
+      notify.send("Navigation", "Cannot open: CodeDiff is current tabpage", vim.log.levels.ERROR)
       return
     end
 
@@ -72,7 +96,7 @@ map("n", "<A-]>", "<cmd>tag<cr>", { desc = "Navigation jump next" })
 map({ "n", "v" }, "<leader>fm", function()
   require("conform").format({ lsp_fallback = true, async = true }, function(err, _did_edit)
     if err then
-      vim.print(err)
+      notify.send("Conform", err, vim.log.levels.ERROR)
     else
       vim.defer_fn(function()
         vim.cmd "silent! w"

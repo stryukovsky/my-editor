@@ -1,4 +1,5 @@
 require("barbar").setup {
+  animation = false,
   tabpages = true,
   highlight_alternate = false,
   highlight_inactive_file_icons = false,

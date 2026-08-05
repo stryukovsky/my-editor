@@ -78,6 +78,15 @@ local telescope_components = {
     desc = "UI telescope search in project",
   },
   {
+    modes = {"v"},
+    shortcut = "<A-F>",
+    command = function()
+      vim.cmd "Telescope grep_string"
+    end,
+    desc = "UI telescope search in project",
+  },
+
+  {
     modes = ui_components_modes,
     shortcut = "<A-z>",
     command = function()

@@ -1,36 +1,25 @@
--- local big_file_group = vim.api.nvim_create_augroup("BigFileDisableTS", { clear = true })
---
--- vim.api.nvim_create_autocmd({ "BufReadPre", "FileReadPre" }, {
---   group = big_file_group,
---   pattern = "*",
---   callback = function(args)
---     -- Define your large file threshold (e.g., 500 KB)
---     local max_filesize = 500 * 1024
---     local filepath = args.match
---
---     local ok, stats = pcall(vim.uv.fs_stat, filepath)
---     if ok and stats and stats.size > max_filesize then
---       -- 1. Completely stop and detach Tree-sitter for this buffer
---       vim.treesitter.stop(args.buf)
---
---       -- 2. Prevent standard regex syntax fallback if desired
---       vim.cmd "syntax off"
---
---       -- 3. Optional performance tweaks for giant buffers
---       vim.opt_local.foldmethod = "manual"
---       vim.opt_local.undofile = false
---       vim.opt_local.swapfile = false
---     end
---   end,
--- })
-
 local big_file_group = vim.api.nvim_create_augroup("BigFilePerformance", { clear = true })
+
+local max_filesize = 100 * 1024
+local max_lines = 10000
+
+local function too_big_file()
+  local buffer = vim.api.nvim_get_current_buf()
+  return vim.b[buffer].large_file == true
+end
+
+local function too_many_lines()
+  return vim.api.nvim_buf_line_count(0) > max_lines
+end
+
+local function skip()
+  return too_big_file() or too_many_lines()
+end
 
 vim.api.nvim_create_autocmd({ "BufReadPre", "FileReadPre" }, {
   group = big_file_group,
   pattern = "*",
   callback = function(args)
-    local max_filesize = 1000 * 1024 -- 1 МБ (настройте под себя)
     local filepath = args.match
     local ok, stats = pcall(vim.uv.fs_stat, filepath)
 
@@ -58,5 +47,67 @@ vim.api.nvim_create_autocmd("BufReadPost", {
     if vim.b[args.buf].large_file then
       pcall(vim.treesitter.stop, args.buf)
     end
+  end,
+})
+
+local ft_string_groups = {
+  json = { "jsonString" },
+  javascript = { "jsString", "jsTemplateLiteral" },
+  typescript = { "typescriptString", "typescriptTemplate" },
+  go = { "goString" },
+  rust = { "rustString" },
+  scala = { "scalaString", "scalaMultilineString" },
+  java = { "javaString" },
+  kotlin = { "kotlinString" },
+  sh = { "shString", "shDoubleQuote", "shSingleQuote" },
+  bash = { "shString", "shDoubleQuote", "shSingleQuote" },
+  python = { "pythonString", "pythonTripleQuotes" },
+}
+
+vim.api.nvim_create_autocmd("BufWinEnter", {
+  callback = function()
+    if skip() then
+      return
+    end
+
+    vim.o.spell = true
+    vim.o.spelloptions = "camel,noplainbuffer"
+
+    local groups = ft_string_groups[vim.bo.filetype]
+    if not groups then
+      return
+    end
+
+    local containedin = table.concat(groups, ",")
+
+    vim.cmd(string.format(
+      [[
+      syntax match LuaHexPrefix /0x\x\+/ contains=@NoSpell containedin=%s extend
+      syntax match LuaHexNoPrefix /\v[0-9A-Fa-f]{10,}/ contains=@NoSpell containedin=%s extend
+      highlight default link LuaHexPrefix Number
+      highlight default link LuaHexNoPrefix Number
+    ]],
+      containedin,
+      containedin,
+      containedin
+    ))
+  end,
+})
+
+vim.api.nvim_create_autocmd({ "FileType" }, {
+  callback = function()
+    if skip() then
+      return
+    end
+
+    -- Wait until Neovim is idle and the Tree-sitter parser is actually ready
+    vim.schedule(function()
+      -- Ensure the buffer still exists before applying options
+      if vim.api.nvim_buf_is_valid(0) then
+        vim.opt_local.foldmethod = "expr"
+        vim.opt_local.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+      end
+    end)
+    vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
   end,
 })

@@ -10,6 +10,7 @@ local system_file_explorer = require "utils.system_file_explorer"
 local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
 local async = require "plenary.async"
+local notify = require "configs.notify"
 
 local open_files_do_not_replace_types = require "utils.technical_ui_filetypes"
 
@@ -83,7 +84,7 @@ local config = {
   },
   default_source = "filesystem", -- you can choose a specific source `last` here which indicates the last used source
   enable_diagnostics = false,
-  enable_cursor_hijack = true, -- If enabled neotree will keep the cursor on the first letter of the filename when moving in the tree.
+  enable_cursor_hijack = false, -- If enabled neotree will keep the cursor on the first letter of the filename when moving in the tree.
   hide_root_node = false, -- Hide the root node.
 
   retain_hidden_root_indent = false, -- IF the root node is hidden, keep the indentation anyhow.
@@ -190,8 +191,8 @@ local config = {
       local modify = vim.fn.fnamemodify
 
       local results = {
-        filepath,
         modify(filepath, ":."),
+        filepath,
         modify(filepath, ":~"),
         filename,
         modify(filename, ":r"),
@@ -199,8 +200,8 @@ local config = {
       }
 
       vim.ui.select({
-        "1. Absolute path: " .. results[1],
-        "2. Path relative to CWD: " .. results[2],
+        "1. Path relative to CWD: " .. results[1],
+        "2. Absolute path: " .. results[2],
         "3. Path relative to HOME: " .. results[3],
         "4. Filename: " .. results[4],
         "5. Filename without extension: " .. results[5],
@@ -211,7 +212,7 @@ local config = {
           if i then
             local result = results[i]
             vim.fn.setreg("+", result)
-            vim.notify("Copied: " .. result)
+            notify.send("Neotree", "Copied: " .. result, vim.log.levels.INFO)
           else
             vim.notify "Invalid selection"
           end

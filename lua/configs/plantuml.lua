@@ -27,7 +27,6 @@ local function open_buffer(out_lines)
   vim.bo[buf].modifiable = false
 
   vim.api.nvim_set_current_buf(buf)
-  vim.wo.wrap = false
 
   local ok = pcall(vim.api.nvim_buf_set_name, buf, "plantuml-preview")
   if not ok then
@@ -41,7 +40,7 @@ local function run_plantuml(command, options, callback)
     vim.schedule(function()
       callback(result)
     end)
-  end)
+  end, function() end)
 end
 
 function M.visualize(lines)
@@ -58,36 +57,32 @@ function M.visualize(lines)
 
   local input = table.concat(lines, "\n") .. "\n"
 
-  run_plantuml(
-    { "plantuml", "-utxt", "-p" },
-    {
-      text = true,
-      stdin = input,
-    },
-    function(result)
-      if result.code ~= 0 then
-        notify.send("PlantUML", "Rendering failed: " .. ((result.stderr or "exit code ") .. result.code), vim.log.levels.ERROR)
-        return
-      end
-
-      local output = result.stdout
-      if not output or #output == 0 then
-        notify.send("PlantUML", "Rendering produced no output", vim.log.levels.WARN)
-        return
-      end
-
-      local out_lines = vim.split(output, "\n", { plain = true })
-
-      if #cache_order >= MAX_CACHE then
-        local oldest = table.remove(cache_order, 1)
-        cache[oldest] = nil
-      end
-      cache[key] = out_lines
-      table.insert(cache_order, key)
-
-      open_buffer(out_lines)
+  run_plantuml({ "plantuml", "-utxt", "-p" }, {
+    text = true,
+    stdin = input,
+  }, function(result)
+    if result.code ~= 0 then
+      notify.send("PlantUML", "Rendering failed: " .. ((result.stderr or "exit code ") .. result.code), vim.log.levels.ERROR)
+      return
     end
-  )
+
+    local output = result.stdout
+    if not output or #output == 0 then
+      notify.send("PlantUML", "Rendering produced no output", vim.log.levels.WARN)
+      return
+    end
+
+    local out_lines = vim.split(output, "\n", { plain = true })
+
+    if #cache_order >= MAX_CACHE then
+      local oldest = table.remove(cache_order, 1)
+      cache[oldest] = nil
+    end
+    cache[key] = out_lines
+    table.insert(cache_order, key)
+
+    open_buffer(out_lines)
+  end)
 end
 
 local function output_path()
@@ -123,44 +118,40 @@ function M.render_png(lines)
     return
   end
 
-  run_plantuml(
-    { "plantuml", "-tpng", "-pipe" },
-    {
-      stdin = table.concat(lines, "\n") .. "\n",
-    },
-    function(result)
-      if result.code ~= 0 then
-        notify.send("PlantUML", "Rendering failed: " .. ((result.stderr or "exit code ") .. result.code), vim.log.levels.ERROR)
-        return
-      end
-      if not result.stdout or #result.stdout == 0 then
-        notify.send("PlantUML", "PNG rendering produced no output", vim.log.levels.WARN)
-        return
-      end
-
-      local path = output_path()
-      local file, err = vim.uv.fs_open(path, "w", 420)
-      if not file then
-        notify.send("PlantUML", "Could not write PNG: " .. err, vim.log.levels.ERROR)
-        return
-      end
-
-      local success, write_err = vim.uv.fs_write(file, result.stdout, 0)
-      vim.uv.fs_close(file)
-      if not success then
-        notify.send("PlantUML", "Could not write PNG: " .. write_err, vim.log.levels.ERROR)
-        return
-      end
-
-      vim.system({ image_viewer, path }, {}, function(open_result)
-        if open_result.code ~= 0 then
-          vim.schedule(function()
-            notify.send("PlantUML", "Could not open PNG: " .. (open_result.stderr or path), vim.log.levels.ERROR)
-          end)
-        end
-      end)
+  run_plantuml({ "plantuml", "-tpng", "-pipe" }, {
+    stdin = table.concat(lines, "\n") .. "\n",
+  }, function(result)
+    if result.code ~= 0 then
+      notify.send("PlantUML", "Rendering failed: " .. ((result.stderr or "exit code ") .. result.code), vim.log.levels.ERROR)
+      return
     end
-  )
+    if not result.stdout or #result.stdout == 0 then
+      notify.send("PlantUML", "PNG rendering produced no output", vim.log.levels.WARN)
+      return
+    end
+
+    local path = output_path()
+    local file, err = vim.uv.fs_open(path, "w", 420)
+    if not file then
+      notify.send("PlantUML", "Could not write PNG: " .. err, vim.log.levels.ERROR)
+      return
+    end
+
+    local success, write_err = vim.uv.fs_write(file, result.stdout, 0)
+    vim.uv.fs_close(file)
+    if not success then
+      notify.send("PlantUML", "Could not write PNG: " .. write_err, vim.log.levels.ERROR)
+      return
+    end
+
+    vim.system({ image_viewer, path }, {}, function(open_result)
+      if open_result.code ~= 0 then
+        vim.schedule(function()
+          notify.send("PlantUML", "Could not open PNG: " .. (open_result.stderr or path), vim.log.levels.ERROR)
+        end)
+      end
+    end)
+  end)
 end
 
 return M
