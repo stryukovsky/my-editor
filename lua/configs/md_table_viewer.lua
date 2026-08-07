@@ -1,5 +1,6 @@
 -- Markdown table row viewer
 -- Opens the current table row in a floating window, optionally labeled by header cells.
+-- On close (q / Esc / leave), writes edited values back into the source buffer line.
 
 local M = {}
 local notify = require "configs.notify"
@@ -96,9 +97,123 @@ local function build_content(values, headers)
   return lines
 end
 
+---Parse float buffer opened with headers (# name / value blocks).
+---@param lines string[]
+---@return string[]
+local function parse_headed_content(lines)
+  local cells = {}
+  local current ---@type string[]|nil
+
+  local function flush()
+    if not current then
+      return
+    end
+    local text = vim.trim(table.concat(current, "\n"))
+    -- Pipe-table cells are single-line; collapse accidental newlines.
+    text = text:gsub("%s*\n%s*", " ")
+    table.insert(cells, text)
+    current = nil
+  end
+
+  for _, line in ipairs(lines) do
+    if line:match "^#%s+" then
+      flush()
+      current = {}
+    elseif current then
+      table.insert(current, line)
+    end
+  end
+  flush()
+  return cells
+end
+
+---Parse float buffer opened without headers (blank-line-separated values).
+---@param lines string[]
+---@return string[]
+local function parse_plain_content(lines)
+  local cells = {}
+  local current = {}
+
+  local function flush()
+    if #current == 0 then
+      return
+    end
+    local text = vim.trim(table.concat(current, "\n"))
+    text = text:gsub("%s*\n%s*", " ")
+    table.insert(cells, text)
+    current = {}
+  end
+
+  for _, line in ipairs(lines) do
+    if line == "" then
+      flush()
+    else
+      table.insert(current, line)
+    end
+  end
+  flush()
+  return cells
+end
+
+---@param cells string[]
+---@param col_count integer
+---@return string[]
+local function normalize_cell_count(cells, col_count)
+  local out = {}
+  for i = 1, col_count do
+    out[i] = cells[i] or ""
+  end
+  return out
+end
+
+---@param cells string[]
+---@param original_line string
+---@return string
+local function format_row(cells, original_line)
+  local trimmed = vim.trim(original_line)
+  local leading = trimmed:match "^|" ~= nil
+  local trailing = trimmed:match "|$" ~= nil
+
+  local body = table.concat(cells, " | ")
+  if leading and trailing then
+    return "| " .. body .. " |"
+  elseif leading then
+    return "| " .. body
+  elseif trailing then
+    return body .. " |"
+  end
+  return body
+end
+
+---@param ctx { source_buf: integer, source_row: integer, original_line: string, has_headers: boolean, col_count: integer }
+---@param float_buf integer
+local function apply_edits(ctx, float_buf)
+  if not vim.api.nvim_buf_is_valid(ctx.source_buf) then
+    notify.send("Table row", "Source buffer is gone; edits discarded", vim.log.levels.WARN)
+    return
+  end
+  if not vim.api.nvim_buf_is_valid(float_buf) then
+    return
+  end
+
+  local lines = vim.api.nvim_buf_get_lines(float_buf, 0, -1, false)
+  local cells = ctx.has_headers and parse_headed_content(lines) or parse_plain_content(lines)
+  cells = normalize_cell_count(cells, ctx.col_count)
+
+  local new_line = format_row(cells, ctx.original_line)
+  local row0 = ctx.source_row - 1
+  local line_count = vim.api.nvim_buf_line_count(ctx.source_buf)
+  if row0 < 0 or row0 >= line_count then
+    notify.send("Table row", "Source row no longer exists; edits discarded", vim.log.levels.WARN)
+    return
+  end
+
+  vim.api.nvim_buf_set_lines(ctx.source_buf, row0, row0 + 1, false, { new_line })
+end
+
 ---@param content string[]
----@return integer win
-local function open_float(content)
+---@param ctx { source_buf: integer, source_row: integer, original_line: string, has_headers: boolean, col_count: integer }
+local function open_float(content, ctx)
   local buf = vim.api.nvim_create_buf(false, true)
   vim.bo[buf].buftype = "nofile"
   vim.bo[buf].bufhidden = "wipe"
@@ -134,6 +249,7 @@ local function open_float(content)
       return
     end
     closed = true
+    apply_edits(ctx, buf)
     if vim.api.nvim_win_is_valid(win) then
       vim.api.nvim_win_close(win, true)
     elseif vim.api.nvim_buf_is_valid(buf) then
@@ -150,8 +266,6 @@ local function open_float(content)
       vim.schedule(close)
     end,
   })
-
-  return win
 end
 
 --- View the markdown table row under the cursor in a floating window.
@@ -172,7 +286,14 @@ function M.view_row()
   end
 
   local headers = find_header_cells(buf, row)
-  open_float(build_content(values, headers))
+  local ctx = {
+    source_buf = buf,
+    source_row = row,
+    original_line = line,
+    has_headers = headers ~= nil,
+    col_count = headers and math.max(#headers, #values) or #values,
+  }
+  open_float(build_content(values, headers), ctx)
 end
 
 return M
