@@ -3,18 +3,9 @@ local is_normal_buffer = require "utils.is_normal_buffer"
 local is_codediff_tab = require "utils.is_codediff_tab"
 local notify = require "configs.notify"
 
-local wrap = true
 local function toggle_wrap()
-  if wrap then
-    wrap = false
-  else
-    wrap = true
-  end
-  vim.opt_local.wrap = wrap
-  local msg = "Wrap is toggled on"
-  if not wrap then
-    msg = "Wrap is toggled off"
-  end
+  vim.wo.wrap = not vim.wo.wrap
+  local msg = vim.wo.wrap and "Wrap is toggled on" or "Wrap is toggled off"
   notify.send("Navigation", msg, vim.log.levels.INFO)
 end
 map("n", "<A-W>", toggle_wrap, { desc = "Navigation toggle wrap in window" })

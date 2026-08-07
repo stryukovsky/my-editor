@@ -111,3 +111,15 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
     vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
   end,
 })
+local big_file_lsp_group = vim.api.nvim_create_augroup("BigFileLsp", { clear = true })
+
+vim.api.nvim_create_autocmd("LspAttach", {
+  group = big_file_lsp_group,
+  callback = function(args)
+        -- TODO: add arg buf id support
+    if skip() then
+      vim.lsp.buf_detach_client(args.buf, args.data.client_id)
+    end
+  end,
+})
+

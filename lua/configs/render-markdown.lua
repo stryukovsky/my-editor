@@ -8,8 +8,8 @@ require("render-markdown").setup {
     -- Turn on / off code block & inline code rendering.
     enabled = true,
     language_icon = false,
-            language_left = '   ',
-
+    border = "thin",
+    language_left = "   ",
   },
   heading = {
     enabled = true,
