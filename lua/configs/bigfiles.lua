@@ -1,4 +1,5 @@
 local big_file_group = vim.api.nvim_create_augroup("BigFilePerformance", { clear = true })
+local notify = require "configs.notify"
 
 local max_filesize = 100 * 1024
 local max_lines = 10000
@@ -26,7 +27,18 @@ end
 ---@param buf? integer buffer id; defaults to current buffer
 local function skip(buf)
   buf = resolve_buf(buf)
-  return too_big_file(buf) or too_many_lines(buf)
+  local is_large = too_big_file(buf) or too_many_lines(buf)
+  if is_large and not vim.b[buf].large_file_notified then
+    vim.b[buf].large_file_notified = true
+    local name = vim.api.nvim_buf_get_name(buf)
+    local label = name ~= "" and vim.fn.fnamemodify(name, ":t") or ("buffer " .. buf)
+    notify.send(
+      "Big file",
+      "Some features disabled for " .. label .. " because it is large",
+      vim.log.levels.WARN
+    )
+  end
+  return is_large
 end
 
 vim.api.nvim_create_autocmd({ "BufReadPre", "FileReadPre" }, {
