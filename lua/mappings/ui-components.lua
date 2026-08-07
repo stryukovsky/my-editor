@@ -7,7 +7,8 @@ local neotree_command = require "neo-tree.command"
 local spectre = require "spectre"
 local close_telescope = require "mappings.close_telescope"
 local is_normal_buffer = require "utils.is_normal_buffer"
-local is_codediff_tab  = require "utils.is_codediff_tab"
+local is_codediff_tab = require "utils.is_codediff_tab"
+local notify = require "configs.notify"
 
 
 local ui_components_modes = { "n" }
@@ -307,6 +308,7 @@ map(ui_components_modes, "<A-i>", function()
 end, { desc = "UI trouble inspect" })
 
 map("n", "<A-b>", function()
-  vim.cmd "Gitsigns toggle_current_line_blame"
-  vim.notify("Toggled current-line blame", vim.diagnostic.severity.INFO, { timeout = 3000 })
+  local enabled = require("gitsigns").toggle_current_line_blame()
+  local msg = enabled and "Current-line blame on" or "Current-line blame off"
+  notify.replace("ui.git_blame", "UI", msg, vim.log.levels.INFO)
 end, { desc = "UI git blame buffer" })

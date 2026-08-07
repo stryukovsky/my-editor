@@ -6,7 +6,7 @@ local notify = require "configs.notify"
 local function toggle_wrap()
   vim.wo.wrap = not vim.wo.wrap
   local msg = vim.wo.wrap and "Wrap is toggled on" or "Wrap is toggled off"
-  notify.send("Navigation", msg, vim.log.levels.INFO)
+  notify.replace("navigation.wrap", "Navigation", msg, vim.log.levels.INFO)
 end
 map("n", "<A-W>", toggle_wrap, { desc = "Navigation toggle wrap in window" })
 map("n", "<A-r>", toggle_wrap, { desc = "Navigation toggle wrap in window" })
@@ -27,7 +27,7 @@ map("n", "<A-1>", function()
     if not is_relative then
       msg = "Absolute line numbering"
     end
-    notify.send("Navigation", msg, vim.log.levels.INFO)
+    notify.replace("navigation.numbering", "Navigation", msg, vim.log.levels.INFO)
   end
 end, { desc = "Navigation toggle relative numbering" })
 
@@ -40,7 +40,7 @@ map("n", "<A-v>", function()
     vim.diagnostic.config {
       virtual_lines = false,
     }
-    notify.send("Navigation", "Virtual lines disabled", vim.log.levels.INFO)
+    notify.replace("navigation.virtual_lines", "Navigation", "Virtual lines disabled", vim.log.levels.INFO)
     return
   end
   vim.diagnostic.config {
@@ -52,7 +52,7 @@ map("n", "<A-v>", function()
   }
 
   local msg = "Virtual lines enabled: " .. vim.diagnostic.severity[virtual_lines_diagnostic_counter]
-  notify.send("Navigation", msg, vim.log.levels.INFO)
+  notify.replace("navigation.virtual_lines", "Navigation", msg, vim.log.levels.INFO)
 end, { desc = "Navigation filter virtual diagnostics" })
 
 local function construct_handler(cmd)
