@@ -3,17 +3,30 @@ local big_file_group = vim.api.nvim_create_augroup("BigFilePerformance", { clear
 local max_filesize = 100 * 1024
 local max_lines = 10000
 
-local function too_big_file()
-  local buffer = vim.api.nvim_get_current_buf()
-  return vim.b[buffer].large_file == true
+---@param buf? integer
+---@return integer
+local function resolve_buf(buf)
+  if buf and buf ~= 0 then
+    return buf
+  end
+  return vim.api.nvim_get_current_buf()
 end
 
-local function too_many_lines()
-  return vim.api.nvim_buf_line_count(0) > max_lines
+---@param buf integer
+local function too_big_file(buf)
+  return vim.b[buf].large_file == true
 end
 
-local function skip()
-  return too_big_file() or too_many_lines()
+---@param buf integer
+local function too_many_lines(buf)
+  return vim.api.nvim_buf_line_count(buf) > max_lines
+end
+
+---Return true if the buffer should skip heavy features.
+---@param buf? integer buffer id; defaults to current buffer
+local function skip(buf)
+  buf = resolve_buf(buf)
+  return too_big_file(buf) or too_many_lines(buf)
 end
 
 vim.api.nvim_create_autocmd({ "BufReadPre", "FileReadPre" }, {
@@ -65,15 +78,15 @@ local ft_string_groups = {
 }
 
 vim.api.nvim_create_autocmd("BufWinEnter", {
-  callback = function()
-    if skip() then
+  callback = function(args)
+    if skip(args.buf) then
       return
     end
 
     vim.o.spell = true
     vim.o.spelloptions = "camel,noplainbuffer"
 
-    local groups = ft_string_groups[vim.bo.filetype]
+    local groups = ft_string_groups[vim.bo[args.buf].filetype]
     if not groups then
       return
     end
@@ -95,31 +108,32 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 })
 
 vim.api.nvim_create_autocmd({ "FileType" }, {
-  callback = function()
-    if skip() then
+  callback = function(args)
+    if skip(args.buf) then
       return
     end
 
     -- Wait until Neovim is idle and the Tree-sitter parser is actually ready
     vim.schedule(function()
-      -- Ensure the buffer still exists before applying options
-      if vim.api.nvim_buf_is_valid(0) then
+      if not vim.api.nvim_buf_is_valid(args.buf) then
+        return
+      end
+      vim.api.nvim_buf_call(args.buf, function()
         vim.opt_local.foldmethod = "expr"
         vim.opt_local.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-      end
+      end)
     end)
-    vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+    vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
   end,
 })
+
 local big_file_lsp_group = vim.api.nvim_create_augroup("BigFileLsp", { clear = true })
 
 vim.api.nvim_create_autocmd("LspAttach", {
   group = big_file_lsp_group,
   callback = function(args)
-        -- TODO: add arg buf id support
-    if skip() then
+    if skip(args.buf) then
       vim.lsp.buf_detach_client(args.buf, args.data.client_id)
     end
   end,
 })
-
