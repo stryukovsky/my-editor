@@ -648,3 +648,4 @@ contenttypes
 runserver
 noreload
 ok
+noqa

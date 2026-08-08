@@ -2,6 +2,7 @@
 -- Opens the current table row in a floating window, optionally labeled by header cells.
 -- On close (q / Esc / leave), writes edited values back into the source buffer line.
 -- Renames of ## column labels in the float are ignored; only values are written back.
+-- From the float, `n` / M.next() applies edits and previews the next data row.
 
 local M = {}
 local notify = require "configs.notify"
@@ -9,6 +10,9 @@ local map = require "mappings.map"
 
 -- Sentinel so empty cells survive blank-line-separated plain round-trips.
 local EMPTY_CELL = "␀"
+
+---@type { go_next: fun() }|nil
+local active = nil
 
 ---@param line string
 ---@return boolean
@@ -38,6 +42,29 @@ end
 local function is_header_row(buf, row)
   local next_line = vim.api.nvim_buf_get_lines(buf, row, row + 1, false)[1]
   return next_line ~= nil and is_separator(next_line)
+end
+
+---Next data/header row after `row` in the same table (skips the GFM separator).
+---@param buf integer
+---@param row integer 1-based
+---@return integer|nil
+local function find_next_table_row(buf, row)
+  local line_count = vim.api.nvim_buf_line_count(buf)
+  local r = row + 1
+  while r <= line_count do
+    local line = vim.api.nvim_buf_get_lines(buf, r - 1, r, false)[1]
+    if not line or vim.trim(line) == "" then
+      return nil
+    end
+    if is_separator(line) then
+      r = r + 1
+    elseif is_table_row(line) then
+      return r
+    else
+      return nil
+    end
+  end
+  return nil
 end
 
 ---Split a table row into cells. Pipes inside inline code (`...`, including `|`) are not delimiters.
@@ -312,7 +339,7 @@ local function apply_edits(ctx, float_buf)
 end
 
 ---@param content string[]
----@param ctx { source_buf: integer, source_row: integer, original_line: string, has_headers: boolean, col_count: integer, is_heading: boolean }
+---@param ctx { source_buf: integer, source_win: integer, source_row: integer, original_line: string, has_headers: boolean, col_count: integer, is_heading: boolean }
 local function open_float(content, ctx)
   local buf = vim.api.nvim_create_buf(false, true)
   -- Keep buffer until we finish apply on leave; wipe afterward.
@@ -345,13 +372,8 @@ local function open_float(content, ctx)
   })
 
   local closed = false
-  local function close()
-    if closed then
-      return
-    end
-    closed = true
-    -- Apply synchronously while float buf is still valid (leave+schedule used to wipe first).
-    apply_edits(ctx, buf)
+
+  local function teardown()
     if vim.api.nvim_win_is_valid(win) then
       pcall(vim.api.nvim_win_close, win, true)
     end
@@ -360,8 +382,47 @@ local function open_float(content, ctx)
     end
   end
 
+  local function close()
+    if closed then
+      return
+    end
+    closed = true
+    active = nil
+    -- Apply synchronously while float buf is still valid (leave+schedule used to wipe first).
+    apply_edits(ctx, buf)
+    teardown()
+  end
+
+  local function go_next()
+    if closed then
+      return
+    end
+    closed = true
+    active = nil
+    apply_edits(ctx, buf)
+    local next_row = find_next_table_row(ctx.source_buf, ctx.source_row)
+    teardown()
+    if not next_row then
+      notify.send("Table row", "No next table row", vim.log.levels.INFO)
+      return
+    end
+    vim.schedule(function()
+      if not vim.api.nvim_buf_is_valid(ctx.source_buf) then
+        return
+      end
+      if vim.api.nvim_win_is_valid(ctx.source_win) then
+        vim.api.nvim_set_current_win(ctx.source_win)
+        vim.api.nvim_win_set_cursor(ctx.source_win, { next_row, 0 })
+      end
+      M.view_row()
+    end)
+  end
+
+  active = { go_next = go_next }
+
   map("n", "q", close, { buffer = buf, nowait = true, silent = true, desc = "Close table row view" })
   map("n", "<Esc>", close, { buffer = buf, nowait = true, silent = true, desc = "Close table row view" })
+  map("n", "n", go_next, { buffer = buf, nowait = true, silent = true, desc = "Next table row" })
 
   -- Apply on leave immediately; do not schedule (buffer can be gone by then).
   vim.api.nvim_create_autocmd({ "BufLeave", "WinLeave" }, {
@@ -373,6 +434,7 @@ end
 --- View the markdown table row under the cursor in a floating window.
 function M.view_row()
   local buf = vim.api.nvim_get_current_buf()
+  local win = vim.api.nvim_get_current_win()
   local row = vim.api.nvim_win_get_cursor(0)[1]
   local line = vim.api.nvim_buf_get_lines(buf, row - 1, row, false)[1]
 
@@ -391,6 +453,7 @@ function M.view_row()
   local headers = find_header_cells(buf, row)
   local ctx = {
     source_buf = buf,
+    source_win = win,
     source_row = row,
     original_line = line,
     has_headers = headers ~= nil,
@@ -398,6 +461,25 @@ function M.view_row()
     is_heading = heading,
   }
   open_float(build_content(values, headers), ctx)
+end
+
+--- Preview the next table row (applies float edits first when a view is open).
+function M.next()
+  if active then
+    active.go_next()
+    return
+  end
+
+  local buf = vim.api.nvim_get_current_buf()
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+  local next_row = find_next_table_row(buf, row)
+  if not next_row then
+    notify.send("Table row", "No next table row", vim.log.levels.WARN)
+    return
+  end
+
+  vim.api.nvim_win_set_cursor(0, { next_row, 0 })
+  M.view_row()
 end
 
 return M
