@@ -194,4 +194,5 @@ return {
   {
     "rcarriga/nvim-notify",
   },
+  { "MagicDuck/grug-far.nvim" },
 }

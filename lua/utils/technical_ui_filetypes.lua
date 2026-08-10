@@ -25,6 +25,7 @@ return {
   "TelescopePrompt",
   "trouble",
   "spectre",
+  "grug-far",
   "grapple",
   "codecompanion",
   "neotest-summary",
