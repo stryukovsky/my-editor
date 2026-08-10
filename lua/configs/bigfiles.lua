@@ -52,14 +52,15 @@ vim.api.nvim_create_autocmd({ "BufReadPre", "FileReadPre" }, {
       -- Объявляем глобальную/буферную переменную, чтобы другие плагины знали о лимите
       vim.b[args.buf].large_file = true
 
-      -- Отключаем тяжелые базовые механизмы Neovim
-      vim.cmd "syntax off"
-      -- vim.opt_local.eventignore:append { "BufEnter", "BufWinEnter", "WinEnter" } -- Блокирует фризы при переключении
-      vim.opt_local.foldmethod = "manual"
-      vim.opt_local.spell = false
-      vim.opt_local.swapfile = false
-      vim.opt_local.undofile = false
-      vim.opt_local.filetype = "" -- Отключает автокоманды типов файлов
+      -- Buffer-local only — never `:syntax off` (that kills highlighting for the whole session).
+      vim.bo[args.buf].syntax = "OFF"
+      vim.bo[args.buf].swapfile = false
+      vim.bo[args.buf].undofile = false
+      vim.bo[args.buf].filetype = "" -- Отключает автокоманды типов файлов
+      vim.api.nvim_buf_call(args.buf, function()
+        vim.opt_local.foldmethod = "manual"
+        vim.opt_local.spell = false
+      end)
     end
   end,
 })
@@ -124,6 +125,9 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
     if skip(args.buf) then
       return
     end
+
+    -- nvim-treesitter main does not auto-enable highlighting.
+    pcall(vim.treesitter.start, args.buf)
 
     -- Wait until Neovim is idle and the Tree-sitter parser is actually ready
     vim.schedule(function()

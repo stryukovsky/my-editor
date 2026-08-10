@@ -672,3 +672,13 @@ msgpack
 jsonplus
 serde
 pydantic
+dj
+asgi
+WSGI
+URLCONF
+getenv
+pathlib
+conn
+deepseek
+sk
+openrouter
