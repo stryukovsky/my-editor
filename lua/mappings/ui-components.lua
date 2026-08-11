@@ -4,7 +4,7 @@ local neotest = require "neotest"
 local trouble = require "trouble"
 local oil = require "oil"
 local neotree_command = require "neo-tree.command"
-local spectre = require "spectre"
+local grug_far = require "grug-far"
 local close_telescope = require "mappings.close_telescope"
 local is_normal_buffer = require "utils.is_normal_buffer"
 local is_codediff_tab = require "utils.is_codediff_tab"
@@ -211,23 +211,17 @@ _G.bottom_component_callback_close = function() end
 -- special case for neotree only
 local right_component_callback_close = function() end
 
--- spectre
-vim.g.spectre_opened = false
+local function close_grug_far()
+  grug_far.hide_instance "far"
+end
+
 map(ui_components_modes, "<A-q>", function()
-  if vim.g.spectre_opened then
-    spectre.close()
-  else
-    if is_normal_buffer() then
-      right_component_callback_close()
-      right_component_callback_close = function()
-        vim.g.spectre_opened = false
-        spectre.close()
-      end
-      spectre.open()
-    end
+  if is_normal_buffer() then
+    _G.bottom_component_callback_close()
+    _G.bottom_component_callback_close = close_grug_far
+    grug_far.toggle_instance { instanceName = "far", staticTitle = "Find and Replace" }
   end
-  vim.g.spectre_opened = not vim.g.spectre_opened
-end, { desc = "UI Spectre toggle" })
+end, { desc = "UI find and replace toggle" })
 
 -- neotest
 local neotest_summary_opened = false

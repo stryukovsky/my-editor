@@ -370,6 +370,8 @@ local function open_float(content, ctx)
     title = ctx.is_heading and "Headers of table" or "Table row",
     title_pos = "center",
   })
+  -- always wrap in table viewer
+  vim.wo.wrap = true
 
   local closed = false
 

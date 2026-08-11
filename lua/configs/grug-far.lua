@@ -1,9 +1,15 @@
 require("grug-far").setup {
-  -- Prefer a bottom split so it behaves closer to spectre.
+  -- Open search and replace in a bottom split.
   windowCreationCommand = "botright split",
   startInInsertMode = true,
   transient = true,
   wrap = true,
+
+  openTargetWindow = {
+    exclude = require "utils.technical_ui_filetypes",
+    preferredLocation = "prev",
+    useScratchBuffer = false,
+  },
 
   -- No maplocalleader in this config; use leader for buffer actions.
   keymaps = {
@@ -28,7 +34,7 @@ require("grug-far").setup {
     swapReplacementInterpreter = { n = "<leader>rx" },
     applyNext = { n = "<leader>rj" },
     applyPrev = { n = "<leader>rk" },
-    syncNext = { n = "<leader>rn" },
+    syncNext = { n = "<leader>rc" },
     syncPrev = { n = "<leader>rp" },
     syncFile = { n = "<leader>rv" },
     nextInput = { n = "<tab>" },

@@ -5,7 +5,7 @@ local renderer = require "neo-tree.ui.renderer"
 local telescope = require "telescope.builtin"
 local cmds = require "neo-tree.sources.filesystem.commands"
 local commands = require "neo-tree.sources.common.commands"
-local spectre = require "spectre"
+local grug_far = require "grug-far"
 local system_file_explorer = require "utils.system_file_explorer"
 local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
@@ -132,16 +132,8 @@ local config = {
     end,
     ["replace_in_directory"] = function(state)
       local node = state.tree:get_node()
-      local abs_path = node:get_id()
-      local from_cwd_path = vim.fn.fnamemodify(abs_path, ":.")
-      if node.type == "directory" then
-        from_cwd_path = from_cwd_path .. "/**"
-      end
-      if vim.g.spectre_opened then
-        spectre.close()
-      end
-      vim.g.spectre_opened = true
-      spectre.open { path = from_cwd_path }
+      local path = node:get_id()
+      grug_far.open { prefills = { paths = path } }
     end,
     ["open_parent_folder"] = function(state)
       local node = state.tree:get_node()

@@ -1,5 +1,5 @@
 local map = require "mappings.map"
-local spectre = require "spectre"
+local grug_far = require "grug-far"
 
 local is_normal_buffer = require "utils.is_normal_buffer"
 
@@ -17,14 +17,10 @@ local function get_editable_filepath()
 end
 
 map("n", "<leader>rr", function()
-  if vim.g.spectre_opened then
-    spectre.close()
-  end
-  vim.g.spectre_opened = true
   local filepath = get_editable_filepath()
   if filepath then
-    spectre.open { path = filepath }
+    grug_far.open { prefills = { paths = filepath } }
   else
     vim.print "Not a normal file buffer"
   end
-end, { noremap = true, desc = "Replace in all file" })
+end, { noremap = true, desc = "Replace in current file" })

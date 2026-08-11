@@ -59,7 +59,6 @@ return {
     -- event = 'BufWritePre', -- uncomment for format on save
     opts = require "configs.conform",
   },
-  { "nvim-pack/nvim-spectre" },
   {
     "nvim-lualine/lualine.nvim",
   },
