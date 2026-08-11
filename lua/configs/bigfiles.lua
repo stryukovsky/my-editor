@@ -128,7 +128,6 @@ local function enable_heavy(buf)
     local ft = vim.bo.filetype
     vim.bo.syntax = ft ~= "" and ft or ""
 
-    pcall(vim.treesitter.start, buf)
     vim.opt_local.foldmethod = "expr"
     vim.opt_local.foldexpr = "v:lua.vim.treesitter.foldexpr()"
     vim.opt_local.spell = true
@@ -214,8 +213,6 @@ vim.api.nvim_create_autocmd("FileType", {
       return
     end
 
-    -- nvim-treesitter main does not auto-enable highlighting.
-    pcall(vim.treesitter.start, args.buf)
     vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
 
     vim.schedule(function()
