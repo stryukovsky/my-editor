@@ -72,6 +72,7 @@ local config = {
   enable_git_status = true,
   git_status_async = true, -- <-- this is the new setting
   consider_untracked_as_git_change = true,
+  use_popups_for_input = false,
   -- when opening files, do not use windows containing these filetypes or buftypes
   open_files_do_not_replace_types = open_files_do_not_replace_types,
   -- If a user has a sources list it will replace this one.
