@@ -59,3 +59,4 @@ require "configs.statuscolumn"
 require "configs.todotxt"
 require "configs.macros-recorder"
 require "configs.csv"
+require("configs.input").setup()
