@@ -328,6 +328,19 @@ local config = {
   },
 
   document_symbols = {
+    renderers = {
+      root = {
+        { "indent" },
+        { "icon", default = "C" },
+        { "name", zindex = 10 },
+      },
+      -- Icon + name only (no "Function" / "Constant" kind_name column).
+      symbol = {
+        { "indent", with_expanders = true },
+        { "kind_icon", default = "?" },
+        { "name", zindex = 10 },
+      },
+    },
     window = {
       mappings = {
         ["<l>"] = "toggle_node",

@@ -730,3 +730,6 @@ req
 attr
 typehint
 loaddata
+entrypoint
+cwd
+debugpy

@@ -138,7 +138,23 @@ local function override_highlights()
 
   local cursor_parts = {}
   for _, mode_key in ipairs(modes) do
-    if mode_key ~= "c" then
+    if mode_key == "i" then
+      -- Solid insert cursor: reverse is invisible on empty cells (e.g. empty vim.ui.input).
+      local insert_hl = vim.api.nvim_get_hl(0, { name = "lualine_a_insert" })
+      if insert_hl and insert_hl.bg then
+        vim.api.nvim_set_hl(0, "CursorI", {
+          bg = insert_hl.bg,
+          fg = insert_hl.fg or background or "NONE",
+          bold = true,
+        })
+      else
+        vim.api.nvim_set_hl(0, "CursorI", {
+          bg = foreground_active,
+          fg = background,
+          bold = true,
+        })
+      end
+    elseif mode_key ~= "c" then
       vim.api.nvim_set_hl(0, "Cursor" .. mode_key:upper(), { reverse = true, bold = true })
     end
     local blink = (mode_key == "n" or mode_key == "t" or mode_key == "c") and "-blinkwait700-blinkoff400-blinkon250" or ""

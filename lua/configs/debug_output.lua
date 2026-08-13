@@ -318,16 +318,29 @@ function M.setup()
       for buf, _ in pairs(active_output_buffers[session_id]) do
         if vim.api.nvim_buf_is_valid(buf) then
           vim.schedule(function()
+            if not vim.api.nvim_buf_is_valid(buf) then
+              return
+            end
             vim.bo[buf].modifiable = true
             local current_lines = vim.api.nvim_buf_line_count(buf)
+
+            -- Follow output only when the cursor is already on the last line.
+            local wins_to_follow = {}
+            for _, win in ipairs(vim.api.nvim_list_wins()) do
+              if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == buf then
+                if vim.api.nvim_win_get_cursor(win)[1] >= current_lines then
+                  wins_to_follow[#wins_to_follow + 1] = win
+                end
+              end
+            end
+
             local clean_lines = vim.tbl_map(strip_ansi, lines)
             vim.api.nvim_buf_set_lines(buf, current_lines, -1, false, clean_lines)
             vim.bo[buf].modifiable = false
 
-            -- Auto-scroll to bottom if window is visible
-            for _, win in ipairs(vim.api.nvim_list_wins()) do
-              if vim.api.nvim_win_get_buf(win) == buf then
-                local last_line = vim.api.nvim_buf_line_count(buf)
+            local last_line = vim.api.nvim_buf_line_count(buf)
+            for _, win in ipairs(wins_to_follow) do
+              if vim.api.nvim_win_is_valid(win) then
                 vim.api.nvim_win_set_cursor(win, { last_line, 0 })
               end
             end
