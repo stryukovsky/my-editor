@@ -79,8 +79,8 @@ return {
     "romgrk/barbar.nvim",
   },
   {
-    "nvim-neo-tree/neo-tree.nvim",
-    branch = "v3.x",
+    "stryukovsky/neo-tree.nvim",
+    branch = "option-consider-untracked-as-git-change",
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
