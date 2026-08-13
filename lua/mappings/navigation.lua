@@ -31,6 +31,13 @@ map("n", "<A-1>", function()
   end
 end, { desc = "Navigation toggle relative numbering" })
 
+map("n", "<A-G>", function()
+  vim.g.grammar_strict = not vim.g.grammar_strict
+  require("configs.strict_grammar").apply_spellbad()
+  local msg = vim.g.grammar_strict and "Grammar-strict on" or "Grammar-strict off"
+  notify.replace("spell.grammar_strict", "Spell", msg, vim.log.levels.INFO)
+end, { desc = "Toggle grammar-strict spell highlight" })
+
 local virtual_lines_diagnostic_counter = 4
 map("n", "<A-v>", function()
   virtual_lines_diagnostic_counter = virtual_lines_diagnostic_counter - 1

@@ -52,8 +52,18 @@ require("material").setup {
     "trouble",
     "which-key",
   },
-  custom_highlights = {
-    Visual = {bg = "#0042ff", fg = "#ffffff"},
-  },
+  custom_highlights = function(colors)
+    local spell_bad = { undercurl = true }
+    if vim.g.grammar_strict then
+      spell_bad = { fg = colors.main.red, italic = true, undercurl = true }
+    end
+    return {
+      Visual = { bg = "#0042ff", fg = "#ffffff" },
+      SpellBad = spell_bad,
+      SpellCap = {},
+      SpellLocal = {},
+      SpellRare = {},
+    }
+  end,
   lualine_style = "stealth", -- Lualine style ( can be 'stealth' or 'default' )
 }

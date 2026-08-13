@@ -38,6 +38,7 @@ o.softtabstop = 1
 
 g.matchparen_disable_cursor_hl = 1
 g.enabled_virtual_lines = true
+g.grammar_strict = false
 o.ignorecase = true
 o.smartcase = true
 o.mouse = "a"

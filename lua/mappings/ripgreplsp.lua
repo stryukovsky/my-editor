@@ -1,10 +1,18 @@
 local map = require "mappings.map"
-local ripgreplsp = require "configs.ripgreplsp"
+local ripgrelsp = require "configs.ripgrelsp"
 
 map("n", "<leader>rd", function()
-  ripgreplsp.find_definition()
+  ripgrelsp.find_definition()
 end, { desc = "rg: find definition" })
 
 map("n", "<leader>ru", function()
-  ripgreplsp.find_usages()
+  ripgrelsp.find_usages()
 end, { desc = "rg: find usages" })
+
+map("n", "<leader>ad", function()
+  ripgrelsp.find_definition_ast()
+end, { desc = "ast-grep: find definition" })
+
+map("n", "<leader>ar", function()
+  ripgrelsp.find_usages_ast()
+end, { desc = "ast-grep: find usages" })

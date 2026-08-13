@@ -82,10 +82,7 @@ local function override_highlights()
   hl(0, "CodeCompanionInlineDiffHint", { bg = background, fg = foreground_active })
 
   hl(0, "FlashLabelOverriden", { bg = background, fg = foreground_active })
-
-  hl(0, "SpellRare", {})
-  hl(0, "SpellCap", {})
-  hl(0, "SpellLocal", {})
+  require("configs.strict_grammar").apply_spellbad()
 
   hl(0, "Cursor", { bg = foreground_active })
   hl(0, "NeogitDiffContext", { bg = background })
@@ -188,7 +185,11 @@ end
 
 vim.api.nvim_create_autocmd({ "ColorScheme", "UIEnter" }, {
   pattern = "*",
-  callback = override_highlights,
+  callback = function()
+    override_highlights()
+    -- material.nvim applies SpellBad in an async pass after ColorScheme.
+    vim.schedule(override_highlights)
+  end,
 })
 
 vim.api.nvim_create_autocmd("ModeChanged", {
