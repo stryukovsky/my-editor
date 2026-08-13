@@ -531,6 +531,15 @@ function M.get_active_sessions_count()
   return count
 end
 
+function M.get_total_sessions_count()
+  return vim.tbl_count(session_metadata)
+end
+
+---Show telescope unless this Neovim run has only ever had a single debugee.
+function M.should_show_session_picker()
+  return M.get_total_sessions_count() > 1
+end
+
 --- Get session metadata
 --- @param session_id string|nil Session ID (nil for all sessions)
 --- @return table Session metadata

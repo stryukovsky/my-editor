@@ -30,7 +30,8 @@ map("n", "<leader>dp", function()
 end, { desc = "debug pause" })
 
 map("n", "<leader>dk", function()
-  if debug_output.get_active_sessions_count() > 1 then
+  -- Picker if any prior/dead sessions exist; skip only when this was the sole debugee ever.
+  if debug_output.should_show_session_picker() then
     debug_output.show_session_picker(function(_, meta, dap_session)
       if dap_session then
         vim.notify("Killing " .. meta.name)

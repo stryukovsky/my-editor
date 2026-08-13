@@ -733,3 +733,6 @@ loaddata
 entrypoint
 cwd
 debugpy
+datafeed
+accruance
+dfatrait

@@ -28,4 +28,5 @@ return {
   "codecompanion",
   "neotest-summary",
   "codediff-explorer",
+  "zenmode-bg",
 }
