@@ -96,14 +96,10 @@ local function get_lualine_theme()
   return lualine_theme
 end
 
-local function gitsigns_diff()
-  local gitsigns = vim.b.gitsigns_status_dict
-  if gitsigns then
-    return {
-      added = gitsigns.added,
-      modified = gitsigns.changed,
-      removed = gitsigns.removed,
-    }
+local function minidiff_source()
+  local s = vim.b.minidiff_summary
+  if s then
+    return { added = s.add, modified = s.change, removed = s.delete }
   end
 end
 
@@ -131,7 +127,7 @@ require("lualine").setup {
       is_it_merge.lualine_component(),
       {
         "diff",
-        source = gitsigns_diff,
+        source = minidiff_source,
         symbols = { added = " ", modified = " ", removed = " " },
         diff_color = {
           added = { fg = hl_fg("Green", "#98be65") },

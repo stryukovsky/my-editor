@@ -26,7 +26,7 @@ require("statuscol").setup {
     },
     {
       sign = {
-        namespace = { "gitsigns" },
+        namespace = { "MiniDiffViz" },
         wrap = true,
       },
       click = "v:lua.ScSa",
@@ -51,6 +51,13 @@ require("statuscol").setup {
     DapBreakpoint = builtin.toggle_breakpoint,
     DapBreakpointCondition = builtin.toggle_breakpoint,
     ["diagnostic/signs"] = builtin.diagnostic_click,
-    gitsigns = builtin.gitsigns_click,
+    MiniDiffViz = function(args)
+      local minidiff = require "configs.minidiff"
+      if args.button == "l" then
+        minidiff.preview()
+      elseif args.button == "m" then
+        minidiff.reset_hunk()
+      end
+    end,
   },
 }

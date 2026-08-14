@@ -70,4 +70,6 @@ treesitter.install {
 
   "todotxt",
   "csv",
+
+  "diff",
 }

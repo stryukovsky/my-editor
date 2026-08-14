@@ -8,8 +8,6 @@ local grug_far = require "grug-far"
 local close_telescope = require "mappings.close_telescope"
 local is_normal_buffer = require "utils.is_normal_buffer"
 local is_codediff_tab = require "utils.is_codediff_tab"
-local notify = require "configs.notify"
-
 
 local ui_components_modes = { "n" }
 
@@ -79,7 +77,7 @@ local telescope_components = {
     desc = "UI telescope search in project",
   },
   {
-    modes = {"v"},
+    modes = { "v" },
     shortcut = "<A-F>",
     command = function()
       vim.cmd "Telescope grep_string"
@@ -165,10 +163,10 @@ end, { desc = "Theme" })
 
 -- neotree
 local function workaround_neotree_focus(source, opts)
-    if is_codediff_tab() then
-      vim.notify "Cannot open: CodeDiff is current tabpage"
-      return
-    end
+  if is_codediff_tab() then
+    vim.notify "Cannot open: CodeDiff is current tabpage"
+    return
+  end
 
   pcall(function()
     local focus_command = vim.tbl_extend("error", {
@@ -302,7 +300,5 @@ map(ui_components_modes, "<A-i>", function()
 end, { desc = "UI trouble inspect" })
 
 map("n", "<A-b>", function()
-  local enabled = require("gitsigns").toggle_current_line_blame()
-  local msg = enabled and "Current-line blame on" or "Current-line blame off"
-  notify.replace("ui.git_blame", "UI", msg, vim.log.levels.INFO)
-end, { desc = "UI git blame buffer" })
+  vim.cmd "CodeDiff file HEAD"
+end, { desc = "UI file diff vs HEAD" })

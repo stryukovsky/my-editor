@@ -121,8 +121,14 @@ local function override_highlights()
   end
 
   hl(0, "Comment", { fg = "#878787", italic = true })
-  local comment_fg = vim.api.nvim_get_hl(0, { name = "Comment" }).fg
-  hl(0, "GitSignsCurrentLineBlame", { fg = comment_fg, italic = true })
+  hl(0, "MiniDiffSignAdd", { link = "GitSignsAdd" })
+  hl(0, "MiniDiffSignChange", { link = "GitSignsChange" })
+  hl(0, "MiniDiffSignDelete", { link = "GitSignsDelete" })
+  hl(0, "MiniDiffOverAdd", { link = "DiffAdd" })
+  hl(0, "MiniDiffOverDelete", { link = "DiffDelete" })
+  hl(0, "MiniDiffOverChange", { link = "GitSignsDeleteInline" })
+  hl(0, "MiniDiffOverChangeBuf", { link = "GitSignsAddInline" })
+  hl(0, "MiniDiffOverContext", { link = "DiffChange" })
 
   local modes = {
     "n",
