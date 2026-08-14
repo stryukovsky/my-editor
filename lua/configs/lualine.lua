@@ -2,6 +2,7 @@ local trouble = require "trouble"
 local is_ollama_installed = require "utils.is_ollama_installed"
 local dap_output = require "configs.debug_output"
 local git_fetch = require "configs.periodic-git-fetch"
+local is_it_merge = require "configs.is_it_merge"
 local symbols = trouble.statusline {
   mode = "lsp_document_symbols",
   groups = {},
@@ -127,6 +128,7 @@ require("lualine").setup {
     lualine_b = {
       git_fetch.lualine_component(),
       "branch",
+      is_it_merge.lualine_component(),
       {
         "diff",
         source = gitsigns_diff,
