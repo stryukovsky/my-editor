@@ -182,7 +182,9 @@ return {
   {
     "esmuellert/codediff.nvim",
     cmd = "CodeDiff",
-    opts = require "configs.codediff",
+    opts = function()
+      return require("configs.codediff").opts
+    end,
   },
   { "phrmendes/todotxt.nvim" },
 

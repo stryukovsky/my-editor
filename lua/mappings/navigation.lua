@@ -4,8 +4,15 @@ local is_codediff_tab = require "utils.is_codediff_tab"
 local notify = require "configs.notify"
 
 local function toggle_wrap()
-  vim.wo.wrap = not vim.wo.wrap
-  local msg = vim.wo.wrap and "Wrap is toggled on" or "Wrap is toggled off"
+  local enabled = not vim.wo.wrap
+  vim.g.wrap = enabled
+  vim.wo.wrap = enabled
+  vim.wo.linebreak = enabled
+  vim.wo.breakindent = enabled
+  if is_codediff_tab() then
+    require("configs.codediff").apply_wrap(enabled)
+  end
+  local msg = enabled and "Wrap is toggled on" or "Wrap is toggled off"
   notify.replace("navigation.wrap", "Navigation", msg, vim.log.levels.INFO)
 end
 map("n", "<A-W>", toggle_wrap, { desc = "Navigation toggle wrap in window" })
