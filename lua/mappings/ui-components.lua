@@ -264,6 +264,9 @@ map(ui_components_modes, "<A-p>", function()
   if trouble.is_open "telescope_files" then
     trouble.close "telescope_files"
   end
+  if trouble.is_open "minidiff_review" then
+    trouble.close "minidiff_review"
+  end
   if trouble.is_open "diagnostics" then
     trouble.close "diagnostics"
   else
@@ -286,6 +289,9 @@ map(ui_components_modes, "<A-i>", function()
   end
   if trouble.is_open "telescope_files" then
     trouble.close "telescope_files"
+  end
+  if trouble.is_open "minidiff_review" then
+    trouble.close "minidiff_review"
   end
   if trouble.is_open "lsp" then
     trouble.close "lsp"

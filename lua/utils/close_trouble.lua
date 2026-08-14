@@ -18,4 +18,7 @@ return function()
   if trouble_main.is_open "quickfix" then
     trouble_main.close "quickfix"
   end
+  if trouble_main.is_open "minidiff_review" then
+    trouble_main.close "minidiff_review"
+  end
 end

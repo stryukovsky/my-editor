@@ -32,12 +32,17 @@ MiniDiff.setup {
 vim.api.nvim_create_autocmd({ "BufEnter", "BufReadPost" }, {
   group = vim.api.nvim_create_augroup("MiniDiffSkipHeavy", { clear = true }),
   callback = function(ev)
+    if vim.b[ev.buf].minidiff_review then
+      return
+    end
     if vim.b[ev.buf].skip_heavy_operations or vim.b[ev.buf].large_file then
       vim.b[ev.buf].minidiff_disable = true
       pcall(MiniDiff.disable, ev.buf)
     end
   end,
 })
+
+require("configs.minidiff_review").setup()
 
 ---@return table|nil hunk
 ---@return table|nil data
@@ -88,6 +93,9 @@ local function is_large(hunk, data)
 end
 
 function M.preview()
+  if vim.b.minidiff_review then
+    return
+  end
   local hunk, data = hunk_at_cursor()
   if not hunk or not data then
     return
@@ -100,11 +108,17 @@ function M.preview()
 end
 
 function M.reset_hunk()
+  if vim.b.minidiff_review then
+    return
+  end
   local line = vim.fn.line "."
   pcall(MiniDiff.do_hunks, 0, "reset", { line_start = line, line_end = line })
 end
 
 function M.reset_buffer()
+  if vim.b.minidiff_review then
+    return
+  end
   pcall(MiniDiff.do_hunks, 0, "reset")
 end
 
@@ -123,6 +137,9 @@ function M.nav(dir)
   end
   MiniDiff.goto_hunk(dir > 0 and "next" or "prev")
   vim.cmd "normal! zz"
+  if vim.b.minidiff_review then
+    return
+  end
   local hunk, data = hunk_at_cursor()
   if not hunk or not data then
     return

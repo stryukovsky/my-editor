@@ -22,6 +22,16 @@ local function terminalwise_jump(ctx)
   ctx:jump()
 end
 
+local function review_jump(view, ctx)
+  local item = ctx and ctx.item
+  if not item then
+    return
+  end
+  require("configs.minidiff_review").jump(view, item)
+end
+
+local function review_noop() end
+
 ---@diagnostic disable-next-line: missing-fields
 trouble.setup {
   warn_no_results = false, -- show a warning when there are no results
@@ -41,6 +51,27 @@ trouble.setup {
       title = "{hl:Title} Search Results{hl}    {count} entries found ",
       format = "{padded_pos}   {text:ts}",
     },
+    minidiff_review = {
+      desc = "MiniDiff review files",
+      source = "minidiff_review",
+      title = "{hl:Title} Review{hl}  {review_range}  {count} files",
+      format = "{review_status} {review_path} {review_stats}",
+      auto_preview = false,
+      auto_refresh = false,
+      follow = false,
+      focus = true,
+      max_items = 2000,
+      keys = {
+        ["<cr>"] = review_jump,
+        l = review_jump,
+        o = review_jump,
+        ["<2-leftmouse>"] = review_jump,
+        ["<c-s>"] = review_jump,
+        ["<c-v>"] = review_jump,
+        p = review_noop,
+        P = review_noop,
+      },
+    },
   },
   formatters = {
     padded_filename = function(ctx)
@@ -54,6 +85,36 @@ trouble.setup {
       return {
         text = string.format("%-6s", pos),
       }
+    end,
+    review_range = function()
+      local current = require("configs.minidiff_review").session()
+      if not current then
+        return { text = "" }
+      end
+      return { text = current.old_name .. " → " .. current.new_name, hl = "Comment" }
+    end,
+    review_status = function(ctx)
+      local file = ctx.item.item or {}
+      local hl = ({
+        A = "DiffAdd",
+        D = "DiffDelete",
+        M = "DiffChange",
+        T = "DiffChange",
+        R = "Comment",
+        C = "Comment",
+      })[file.kind] or "Normal"
+      return { text = string.format("%-5s", file.status or ""), hl = hl }
+    end,
+    review_path = function(ctx)
+      local file = ctx.item.item or {}
+      return {
+        text = file.label or ctx.item.filename,
+        hl = file.clickable and "TroubleText" or "Comment",
+      }
+    end,
+    review_stats = function(ctx)
+      local file = ctx.item.item or {}
+      return { text = file.stats or "", hl = "Comment" }
     end,
   },
   keys = {

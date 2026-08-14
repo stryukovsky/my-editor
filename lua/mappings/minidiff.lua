@@ -17,3 +17,7 @@ end, { desc = "Jump to next git hunk" })
 map("n", "[g", function()
   minidiff.nav(-1)
 end, { desc = "Jump to prev git hunk" })
+
+map("n", "<leader>gC", function()
+  require("configs.minidiff_review").open_picker()
+end, { desc = "git compare two refs" })
