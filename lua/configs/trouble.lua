@@ -10,16 +10,21 @@ local function toggle_severity(view)
   })
 end
 
-local function terminalwise_jump(ctx)
+local function terminalwise_jump(view, ctx)
   local prev_win = vim.fn.win_getid(vim.fn.winnr "#")
-
-  local buf = vim.api.nvim_win_get_buf(prev_win)
-  if vim.bo[buf].buftype == "terminal" then
-    vim.notify("Switch away from terminal before jumping", vim.log.levels.WARN)
-    return
+  if prev_win ~= 0 and vim.api.nvim_win_is_valid(prev_win) then
+    local buf = vim.api.nvim_win_get_buf(prev_win)
+    if vim.bo[buf].buftype == "terminal" then
+      vim.notify("Switch away from terminal before jumping", vim.log.levels.WARN)
+      return
+    end
   end
 
-  ctx:jump()
+  if ctx and ctx.item then
+    view:jump(ctx.item)
+  elseif ctx and ctx.node then
+    view:fold(ctx.node)
+  end
 end
 
 local function review_jump(view, ctx)
@@ -70,6 +75,9 @@ trouble.setup {
         ["<c-v>"] = review_jump,
         p = review_noop,
         P = review_noop,
+        q = function()
+          require("configs.minidiff_review").finish_review { force = true }
+        end,
       },
     },
   },

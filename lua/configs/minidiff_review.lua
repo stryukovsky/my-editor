@@ -30,9 +30,17 @@ local COMMIT_LIMIT = 300
 ---@field buffers table<string, integer>
 ---@field confirmed table<string, boolean>
 ---@field target_win integer|nil
+---@field trouble_win integer|nil
 
 ---@type minidiff.ReviewSession|nil
 local session
+
+--- True while we are tearing down on purpose, so WinClosed does not prompt again.
+local finishing = false
+
+local function bottom_close()
+  M.finish_review()
+end
 
 function M.session()
   return session
@@ -142,21 +150,82 @@ local function split_lines(text)
   return lines
 end
 
-local function wipe_session_buffers()
+---@return integer|nil
+local function current_review_win()
+  local ok, View = pcall(require, "trouble.view")
+  if not ok then
+    return nil
+  end
+  local found = View.get { mode = "minidiff_review", open = true }
+  local entry = found and found[#found]
+  local win = entry and entry.view and entry.view.win and entry.view.win.win
+  if win and vim.api.nvim_win_is_valid(win) then
+    return win
+  end
+end
+
+local function sync_review_win()
   if not session then
     return
   end
-  for _, buf in pairs(session.buffers) do
-    if vim.api.nvim_buf_is_valid(buf) then
-      vim.api.nvim_buf_delete(buf, { force = true })
-    end
+  local win = current_review_win()
+  if win then
+    session.trouble_win = win
   end
-  session.buffers = {}
+end
+
+local function open_review_view()
+  require("trouble").open { mode = "minidiff_review", focus = true }
+  vim.schedule(sync_review_win)
+end
+
+local function close_review_view()
+  require("utils.close_trouble").close_mode "minidiff_review"
+end
+
+local function wipe_buffers(buffers)
+  require("configs.barbar_api").close_buffers(buffers)
+end
+
+---@param opts? { force?: boolean }
+---@return boolean
+function M.finish_review(opts)
+  opts = opts or {}
+  if finishing then
+    return true
+  end
+  local trouble = require "trouble"
+  if not session then
+    finishing = true
+    close_review_view()
+    finishing = false
+    return true
+  end
+  if not opts.force then
+    notify.send("MiniDiff review", "Firstly quit review by pressing 'q' in file list", vim.log.levels.WARN)
+    if not trouble.is_open "minidiff_review" then
+      open_review_view()
+    else
+      sync_review_win()
+    end
+    return false
+  end
+  finishing = true
+  close_review_view()
+  local buffers = session.buffers
+  session = nil
+  wipe_buffers(buffers)
+  if _G.bottom_component_callback_close == bottom_close then
+    _G.bottom_component_callback_close = function() end
+  end
+  vim.schedule(close_review_view)
+  vim.defer_fn(close_review_view, 50)
+  finishing = false
+  return true
 end
 
 function M.cleanup()
-  wipe_session_buffers()
-  session = nil
+  M.finish_review { force = true }
 end
 
 ---@param file minidiff.ReviewFile
@@ -220,8 +289,27 @@ local function review_buf_name(file, buf)
 end
 
 ---@param buf integer
+---@param path string
+---@param lines string[]
+local function apply_review_highlight(buf, path, lines)
+  local ft = vim.filetype.match { filename = path, contents = lines } or ""
+  if ft == "" then
+    return
+  end
+  -- FileType/ftplugin often call vim.treesitter.start() on the current buffer.
+  vim.api.nvim_buf_call(buf, function()
+    vim.bo.filetype = ft
+  end)
+  local lang = vim.treesitter.language.get_lang(ft)
+  if lang and pcall(vim.treesitter.start, buf, lang) then
+    return
+  end
+  vim.bo[buf].syntax = ft
+end
+
+---@param buf integer
 local function lock_review_buf(buf)
-  vim.bo[buf].buftype = "acwrite"
+  vim.bo[buf].buftype = ""
   vim.bo[buf].bufhidden = "hide"
   vim.bo[buf].buflisted = true
   vim.bo[buf].swapfile = false
@@ -281,7 +369,7 @@ local function ensure_buf(file)
     },
   }
 
-  vim.bo[buf].buftype = "acwrite"
+  vim.bo[buf].buftype = ""
   vim.bo[buf].bufhidden = "hide"
   vim.bo[buf].buflisted = true
   vim.bo[buf].swapfile = false
@@ -291,20 +379,12 @@ local function ensure_buf(file)
 
   pcall(vim.api.nvim_buf_set_name, buf, review_buf_name(file, buf))
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-
-  local ft = vim.filetype.match { filename = file.path, contents = lines } or ""
-  if ft ~= "" then
-    vim.bo[buf].filetype = ft
-    local lang = vim.treesitter.language.get_lang(ft)
-    if lang then
-      pcall(vim.treesitter.start, buf, lang)
-    end
-  end
+  apply_review_highlight(buf, file.path, lines)
 
   MiniDiff.enable(buf)
   if MiniDiff.get_buf_data(buf) == nil then
     session.buffers[file.path] = nil
-    pcall(vim.api.nvim_buf_delete, buf, { force = true })
+    require("configs.barbar_api").close_buffer(buf)
     notify.send("MiniDiff review", "Could not enable mini.diff on " .. file.path, vim.log.levels.ERROR)
     return nil
   end
@@ -413,6 +493,13 @@ function M.jump(_view, item)
     vim.api.nvim_win_set_buf(win, buf)
   end
   vim.api.nvim_set_current_win(win)
+  local ft = vim.bo[buf].filetype
+  if ft ~= "" then
+    local lang = vim.treesitter.language.get_lang(ft)
+    if lang then
+      pcall(vim.treesitter.start, buf, lang)
+    end
+  end
 end
 
 function M.trouble_items()
@@ -515,7 +602,12 @@ local function start_session(old_name, new_name, cwd)
     return
   end
 
-  M.cleanup()
+  M.finish_review { force = true }
+  require("utils.close_trouble")()
+  if _G.bottom_component_callback_close then
+    pcall(_G.bottom_component_callback_close)
+  end
+
   session = {
     cwd = cwd,
     old_name = old_name,
@@ -526,21 +618,12 @@ local function start_session(old_name, new_name, cwd)
     buffers = {},
     confirmed = {},
     target_win = nil,
+    trouble_win = nil,
   }
   session.target_win = usable_editor_win()
+  _G.bottom_component_callback_close = bottom_close
 
-  local close_trouble = require "utils.close_trouble"
-  close_trouble()
-  if _G.bottom_component_callback_close then
-    _G.bottom_component_callback_close()
-  end
-  _G.bottom_component_callback_close = function()
-    pcall(function()
-      require("trouble").close "minidiff_review"
-    end)
-  end
-
-  require("trouble").open { mode = "minidiff_review", focus = true }
+  open_review_view()
 end
 
 ---@param kind string
@@ -729,6 +812,44 @@ function M.setup()
         for _, client in ipairs(vim.lsp.get_clients { bufnr = ev.buf }) do
           pcall(vim.lsp.buf_detach_client, ev.buf, client.id)
         end
+      end)
+    end,
+  })
+
+  local guard = vim.api.nvim_create_augroup("MiniDiffReviewTroubleGuard", { clear = true })
+  vim.api.nvim_create_autocmd("FileType", {
+    group = guard,
+    pattern = "trouble",
+    callback = function()
+      if session then
+        vim.schedule(sync_review_win)
+      end
+    end,
+  })
+  vim.api.nvim_create_autocmd("WinClosed", {
+    group = guard,
+    callback = function(ev)
+      if finishing or not session then
+        return
+      end
+      local closed = tonumber(ev.match)
+      if not closed or closed ~= session.trouble_win then
+        return
+      end
+      session.trouble_win = nil
+      if vim.v.exiting ~= vim.NIL then
+        M.finish_review { force = true }
+        return
+      end
+      vim.schedule(function()
+        if finishing or not session then
+          return
+        end
+        if require("trouble").is_open "minidiff_review" then
+          sync_review_win()
+          return
+        end
+        M.finish_review()
       end)
     end,
   })

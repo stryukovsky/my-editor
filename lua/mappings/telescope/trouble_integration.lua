@@ -44,7 +44,9 @@ return function(mode)
     end
     local count = picker.manager:num_results()
     if count > 0 then
-      close_trouble()
+      if not close_trouble() then
+        return
+      end
       local sort_disabler = 0
 
       ---@diagnostic disable-next-line: missing-fields

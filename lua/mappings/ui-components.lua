@@ -215,7 +215,9 @@ end
 
 map(ui_components_modes, "<A-q>", function()
   if is_normal_buffer() then
-    _G.bottom_component_callback_close()
+    if _G.bottom_component_callback_close() == false then
+      return
+    end
     _G.bottom_component_callback_close = close_grug_far
     grug_far.toggle_instance { instanceName = "far", staticTitle = "Find and Replace" }
   end
@@ -242,7 +244,9 @@ map(ui_components_modes, "<A-T>", function()
   if neotest_output_opened then
     neotest.output_panel.close()
   else
-    _G.bottom_component_callback_close()
+    if _G.bottom_component_callback_close() == false then
+      return
+    end
     _G.bottom_component_callback_close = function()
       neotest_output_opened = false
       neotest.output_panel.close()
@@ -255,6 +259,12 @@ end, { desc = "UI Test show output" })
 -- trouble plugin
 -- "<cmd>Trouble diagnostics toggle focus=true<CR>"
 map(ui_components_modes, "<A-p>", function()
+  local review = require "configs.minidiff_review"
+  if trouble.is_open "minidiff_review" or review.session() then
+    if not review.finish_review() then
+      return
+    end
+  end
   if trouble.is_open "lsp" then
     trouble.close "lsp"
   end
@@ -264,13 +274,12 @@ map(ui_components_modes, "<A-p>", function()
   if trouble.is_open "telescope_files" then
     trouble.close "telescope_files"
   end
-  if trouble.is_open "minidiff_review" then
-    trouble.close "minidiff_review"
-  end
   if trouble.is_open "diagnostics" then
     trouble.close "diagnostics"
   else
-    _G.bottom_component_callback_close()
+    if _G.bottom_component_callback_close() == false then
+      return
+    end
     _G.bottom_component_callback_close = function()
       trouble.close "diagnostics"
     end
@@ -281,6 +290,12 @@ end, { desc = "UI trouble diagnostics" })
 -- trouble plugin
 -- "<cmd>Trouble diagnostics toggle focus=true<CR>"
 map(ui_components_modes, "<A-i>", function()
+  local review = require "configs.minidiff_review"
+  if trouble.is_open "minidiff_review" or review.session() then
+    if not review.finish_review() then
+      return
+    end
+  end
   if trouble.is_open "diagnostics" then
     trouble.close "diagnostics"
   end
@@ -290,13 +305,12 @@ map(ui_components_modes, "<A-i>", function()
   if trouble.is_open "telescope_files" then
     trouble.close "telescope_files"
   end
-  if trouble.is_open "minidiff_review" then
-    trouble.close "minidiff_review"
-  end
   if trouble.is_open "lsp" then
     trouble.close "lsp"
   else
-    _G.bottom_component_callback_close()
+    if _G.bottom_component_callback_close() == false then
+      return
+    end
     _G.bottom_component_callback_close = function()
       trouble.close "lsp"
     end
