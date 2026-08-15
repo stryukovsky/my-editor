@@ -19,21 +19,12 @@ map("n", "<A-W>", toggle_wrap, { desc = "Navigation toggle wrap in window" })
 map("n", "<A-r>", toggle_wrap, { desc = "Navigation toggle wrap in window" })
 
 -- toggle numbering
-local is_relative = false
 map("n", "<A-1>", function()
   if is_normal_buffer() then
-    is_relative = not is_relative
-    if is_relative then
-      vim.opt.number = true
-      vim.opt.relativenumber = false
-    else
-      vim.opt.number = true
-      vim.opt.relativenumber = true
-    end
-    local msg = "Relative line numbering"
-    if not is_relative then
-      msg = "Absolute line numbering"
-    end
+    local relative = not vim.opt.relativenumber:get()
+    vim.opt.number = true
+    vim.opt.relativenumber = relative
+    local msg = relative and "Relative line numbering" or "Absolute line numbering"
     notify.replace("navigation.numbering", "Navigation", msg, vim.log.levels.INFO)
   end
 end, { desc = "Navigation toggle relative numbering" })

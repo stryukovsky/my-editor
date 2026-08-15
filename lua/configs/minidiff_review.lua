@@ -389,10 +389,6 @@ local function ensure_buf(file)
     return nil
   end
   MiniDiff.set_ref_text(buf, split_lines(old_text))
-  local data = MiniDiff.get_buf_data(buf)
-  if data and not data.overlay then
-    MiniDiff.toggle_overlay(buf)
-  end
 
   lock_review_buf(buf)
 
