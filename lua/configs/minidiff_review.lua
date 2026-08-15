@@ -1,5 +1,6 @@
 local MiniDiff = require "mini.diff"
 local notify = require "configs.notify"
+local gitutils = require "configs.gitutils"
 
 local M = {}
 
@@ -50,28 +51,12 @@ end
 ---@param cwd? string
 ---@return string|nil, string|nil
 local function git(args, cwd)
-  cwd = cwd or (session and session.cwd) or vim.fn.getcwd()
-  local cmd = { "git", "-C", cwd }
-  vim.list_extend(cmd, args)
-  local result = vim.system(cmd, { text = true }):wait()
-  if result.code ~= 0 then
-    local err = vim.trim((result.stderr or "") ~= "" and result.stderr or ("git exited " .. result.code))
-    return nil, err
-  end
-  return result.stdout or "", nil
+  return gitutils.run(args, cwd or (session and session.cwd) or vim.fn.getcwd())
 end
 
 ---@return string|nil, string|nil
 local function git_root()
-  local dir = vim.fn.expand "%:p:h"
-  if dir == "" or vim.fn.isdirectory(dir) == 0 then
-    dir = vim.fn.getcwd()
-  end
-  local out, err = git({ "rev-parse", "--show-toplevel" }, dir)
-  if not out then
-    return nil, err
-  end
-  return vim.trim(out), nil
+  return gitutils.root(vim.fn.expand "%:p:h")
 end
 
 ---@param ref string

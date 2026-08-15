@@ -75,6 +75,30 @@ local function detach_lsp(buf)
 end
 
 ---@param buf integer
+---@return boolean
+local function skip_minidiff(buf)
+  return vim.b[buf].minidiff_review == true or vim.b[buf].large_hunk_viewer == true
+end
+
+---@param buf integer
+local function disable_minidiff(buf)
+  if skip_minidiff(buf) then
+    return
+  end
+  vim.b[buf].minidiff_disable = true
+  pcall(require("mini.diff").disable, buf)
+end
+
+---@param buf integer
+local function enable_minidiff(buf)
+  if skip_minidiff(buf) then
+    return
+  end
+  vim.b[buf].minidiff_disable = false
+  pcall(require("mini.diff").enable, buf)
+end
+
+---@param buf integer
 local function apply_hex_syntax(buf)
   local groups = ft_string_groups[vim.bo[buf].filetype]
   if not groups then
@@ -114,6 +138,7 @@ local function disable_heavy(buf, opts)
     vim.opt_local.spell = false
   end)
   detach_lsp(buf)
+  disable_minidiff(buf)
 end
 
 ---@param buf integer
@@ -140,6 +165,7 @@ local function enable_heavy(buf)
   vim.api.nvim_buf_call(buf, function()
     pcall(vim.cmd, "LspStart")
   end)
+  enable_minidiff(buf)
 end
 
 ---@param buf? integer
@@ -224,6 +250,18 @@ vim.api.nvim_create_autocmd("FileType", {
         vim.opt_local.foldexpr = "v:lua.vim.treesitter.foldexpr()"
       end)
     end)
+  end,
+})
+
+vim.api.nvim_create_autocmd({ "BufEnter", "BufReadPost" }, {
+  group = big_file_group,
+  callback = function(args)
+    if skip_minidiff(args.buf) then
+      return
+    end
+    if is_skipping(args.buf) or vim.b[args.buf].large_file then
+      disable_minidiff(args.buf)
+    end
   end,
 })
 

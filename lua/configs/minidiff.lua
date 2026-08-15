@@ -30,22 +30,8 @@ MiniDiff.setup {
   },
 }
 
-
--- TODO: maybe this stuff move to bigfiles
-vim.api.nvim_create_autocmd({ "BufEnter", "BufReadPost" }, {
-  group = vim.api.nvim_create_augroup("MiniDiffSkipHeavy", { clear = true }),
-  callback = function(ev)
-    if vim.b[ev.buf].minidiff_review or vim.b[ev.buf].large_hunk_viewer then
-      return
-    end
-    if vim.b[ev.buf].skip_heavy_operations or vim.b[ev.buf].large_file then
-      vim.b[ev.buf].minidiff_disable = true
-      pcall(MiniDiff.disable, ev.buf)
-    end
-  end,
-})
-
 require("configs.minidiff_review").setup()
+-- TODO: idk
 require("configs.large_hunks_viewer").setup()
 
 ---@param hunk table
