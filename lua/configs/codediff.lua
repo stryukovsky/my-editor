@@ -82,7 +82,7 @@ end
 local function set_win_wrap(win, enabled)
   vim.wo[win].wrap = enabled
   vim.wo[win].linebreak = enabled
-  vim.wo[win].breakindent = enabled
+  vim.wo[win].breakindent = false
 end
 
 ---@param buf integer

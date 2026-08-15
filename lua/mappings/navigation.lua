@@ -8,7 +8,7 @@ local function toggle_wrap()
   vim.g.wrap = enabled
   vim.wo.wrap = enabled
   vim.wo.linebreak = enabled
-  vim.wo.breakindent = enabled
+  vim.wo.breakindent = false
   if is_codediff_tab() then
     require("configs.codediff").apply_wrap(enabled)
   end

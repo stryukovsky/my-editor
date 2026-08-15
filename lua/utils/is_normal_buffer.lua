@@ -1,7 +1,7 @@
 return function()
   local bufnr = vim.api.nvim_get_current_buf()
 
-  if vim.b[bufnr].minidiff_review then
+  if vim.b[bufnr].minidiff_review or vim.b[bufnr].large_hunk_viewer then
     return false
   end
 

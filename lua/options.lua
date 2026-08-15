@@ -78,11 +78,11 @@ opt.foldlevel = 9900
 opt.whichwrap:append "<>[]hl"
 
 -- `vim.g.wrap` is the shared preference (CodeDiff + <A-W>/<A-r>).
--- Normal windows stay nowrap until toggled; linebreak/breakindent apply when wrap is on.
+-- Normal windows stay nowrap until toggled; linebreak applies when wrap is on.
 g.wrap = true
 o.wrap = false
 o.linebreak = true
-o.breakindent = true
+o.breakindent = false
 
 o.winborder = "rounded"
 -- disable some default providers

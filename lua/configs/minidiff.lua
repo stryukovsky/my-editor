@@ -3,10 +3,6 @@ local notify = require "configs.notify"
 
 local M = {}
 
-local LARGE_LINE = 400
-local LARGE_HUNK_LINES = 40
-local LARGE_HUNK_BYTES = 8000
-
 if vim.g.minidiff_overlay == nil then
   vim.g.minidiff_overlay = false
 end
@@ -34,10 +30,12 @@ MiniDiff.setup {
   },
 }
 
+
+-- TODO: maybe this stuff move to bigfiles
 vim.api.nvim_create_autocmd({ "BufEnter", "BufReadPost" }, {
   group = vim.api.nvim_create_augroup("MiniDiffSkipHeavy", { clear = true }),
   callback = function(ev)
-    if vim.b[ev.buf].minidiff_review then
+    if vim.b[ev.buf].minidiff_review or vim.b[ev.buf].large_hunk_viewer then
       return
     end
     if vim.b[ev.buf].skip_heavy_operations or vim.b[ev.buf].large_file then
@@ -48,6 +46,7 @@ vim.api.nvim_create_autocmd({ "BufEnter", "BufReadPost" }, {
 })
 
 require("configs.minidiff_review").setup()
+require("configs.large_hunks_viewer").setup()
 
 ---@param hunk table
 ---@return integer, integer
@@ -57,22 +56,6 @@ local function hunk_buf_range(hunk)
   end
   local from = math.max(hunk.buf_start, 1)
   return from, from
-end
-
----@return table|nil hunk
----@return table|nil data
-local function hunk_at_cursor()
-  local data = MiniDiff.get_buf_data(0)
-  if not data or not data.hunks then
-    return
-  end
-  local lnum = vim.api.nvim_win_get_cursor(0)[1]
-  for _, hunk in ipairs(data.hunks) do
-    local from, to = hunk_buf_range(hunk)
-    if lnum >= from and lnum <= to then
-      return hunk, data
-    end
-  end
 end
 
 ---@return integer|nil from
@@ -127,50 +110,8 @@ vim.api.nvim_create_autocmd("User", {
   end,
 })
 
----@param hunk table
----@param data table
----@return boolean
-local function is_large(hunk, data)
-  if hunk.buf_count + hunk.ref_count > LARGE_HUNK_LINES then
-    return true
-  end
-  local bytes = 0
-  if hunk.buf_count > 0 then
-    local start0 = math.max(hunk.buf_start - 1, 0)
-    local lines = vim.api.nvim_buf_get_lines(0, start0, start0 + hunk.buf_count, false)
-    for _, line in ipairs(lines) do
-      bytes = bytes + #line
-      if #line > LARGE_LINE or bytes > LARGE_HUNK_BYTES then
-        return true
-      end
-    end
-  end
-  if hunk.ref_count > 0 and type(data.ref_text) == "string" then
-    local ref_lines = vim.split(data.ref_text, "\n", { plain = true })
-    for i = hunk.ref_start, hunk.ref_start + hunk.ref_count - 1 do
-      local line = ref_lines[i] or ""
-      bytes = bytes + #line
-      if #line > LARGE_LINE or bytes > LARGE_HUNK_BYTES then
-        return true
-      end
-    end
-  end
-  return false
-end
-
 function M.preview()
-  if vim.b.minidiff_review then
-    return
-  end
-  local hunk, data = hunk_at_cursor()
-  if not hunk or not data then
-    return
-  end
-  if is_large(hunk, data) then
-    vim.cmd "CodeDiff file HEAD"
-    return
-  end
-  M.toggle_overlay()
+  require("configs.large_hunks_viewer").view_hunk()
 end
 
 function M.reset_hunk()
