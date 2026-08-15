@@ -128,6 +128,7 @@ dap.configurations.python = {
     request = "launch",
     name = "Run Command",
     program = "${file}",
+    cwd = "${workspaceFolder}",
     runtimeExecutable = inputCommand,
   },
   {
@@ -135,5 +136,6 @@ dap.configurations.python = {
     request = "launch",
     name = "Run file",
     program = "${file}",
+    cwd = "${workspaceFolder}",
   },
 }

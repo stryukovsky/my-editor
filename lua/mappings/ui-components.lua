@@ -54,6 +54,22 @@ local telescope_components = {
   },
   {
     modes = ui_components_modes,
+    shortcut = "<A-P>",
+    command = function()
+      require("configs.projects").picker_all()
+    end,
+    desc = "UI telescope projects",
+  },
+  {
+    modes = ui_components_modes,
+    shortcut = "<A-y>",
+    command = function()
+      require("configs.projects").picker_open()
+    end,
+    desc = "UI telescope open project tabs",
+  },
+  {
+    modes = ui_components_modes,
     shortcut = "<A-u>",
     command = function()
       vim.cmd "Telescope undo"
@@ -318,4 +334,3 @@ map(ui_components_modes, "<A-i>", function()
     trouble.open { mode = "lsp", focus = true }
   end
 end, { desc = "UI trouble inspect" })
-

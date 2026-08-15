@@ -53,11 +53,7 @@ return {
   },
   {
     "mfussenegger/nvim-dap-python",
-    ft = "python",
     dependencies = "mfussenegger/nvim-dap",
-    config = function(_, _)
-      local dap_py = require "dap-python"
-      dap_py.setup("python", { console = nil, include_configs = false })
-    end,
+    lazy = true,
   },
 }

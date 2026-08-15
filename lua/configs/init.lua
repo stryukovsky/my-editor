@@ -13,6 +13,7 @@ end
 require "configs.marks"
 require "configs.barbar"
 require "configs.scope"
+require "configs.projects"
 require "configs.treesitter"
 -- require "configs.kulala"
 require "configs.oil"

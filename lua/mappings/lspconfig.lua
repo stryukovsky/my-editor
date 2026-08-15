@@ -32,12 +32,8 @@ map("n", "<leader>rn", function()
   vim.lsp.buf.rename()
 end, opts "renamer")
 
-map("n", "<leader>ps", function()
-  local path = "python"
-  vim.fn.system(path .. " -m pip install pydebug debugpy")
-  vim.cmd("LspPyrightSetPythonPath " .. path)
-  require("dap-python").setup(path)
-  vim.print "Python env setup completed"
+map("n", "<leader>py", function()
+  require("configs.python").setup()
 end, opts "Python: setup")
 
 map("n", "K", function()
