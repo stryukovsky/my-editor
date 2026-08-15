@@ -229,7 +229,6 @@ local config = {
     mappings = {
       ["<space>"] = "noop",
       ["/"] = "noop",
-      ["<A-q>"] = function() end,
       -- ["<esc>"] = "cancel", -- close preview or floating neo-tree window
       ["<esc>"] = function(state)
         commands.cancel(state)
