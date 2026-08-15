@@ -46,7 +46,7 @@ local telescope_components = {
   },
   {
     modes = ui_components_modes,
-    shortcut = "<A-H>",
+    shortcut = "<A-b>",
     command = function()
       vim.cmd "Telescope buffers"
     end,
@@ -319,6 +319,3 @@ map(ui_components_modes, "<A-i>", function()
   end
 end, { desc = "UI trouble inspect" })
 
-map("n", "<A-b>", function()
-  vim.cmd "CodeDiff file HEAD"
-end, { desc = "UI file diff vs HEAD" })

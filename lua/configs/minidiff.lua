@@ -126,31 +126,22 @@ function M.select()
   MiniDiff.textobject()
 end
 
----@param dir 1|-1
-function M.nav(dir)
+function M.toggle_overlay()
+  pcall(MiniDiff.toggle_overlay, 0)
+end
+
+---@param direction 1|-1
+function M.nav(direction)
   if vim.wo.diff then
-    vim.cmd.normal { dir > 0 and "]c" or "[c", bang = true }
+    vim.cmd.normal { direction > 0 and "]c" or "[c", bang = true }
+    vim.cmd "normal! zz"
     return
   end
   if MiniDiff.get_buf_data(0) == nil then
     return
   end
-  MiniDiff.goto_hunk(dir > 0 and "next" or "prev")
+  MiniDiff.goto_hunk(direction > 0 and "next" or "prev")
   vim.cmd "normal! zz"
-  if vim.b.minidiff_review then
-    return
-  end
-  local hunk, data = hunk_at_cursor()
-  if not hunk or not data then
-    return
-  end
-  if is_large(hunk, data) then
-    vim.cmd "CodeDiff file HEAD"
-    return
-  end
-  if not data.overlay then
-    MiniDiff.toggle_overlay(0)
-  end
 end
 
 return M

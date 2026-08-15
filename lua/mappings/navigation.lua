@@ -91,7 +91,7 @@ map("n", "<leader>.", construct_handler "BufferMoveNext", { desc = "Navigation m
 map("n", "<leader><", construct_handler "BufferMovePrevious", { desc = "Navigation move buffer left" })
 map("n", "<leader>>", construct_handler "BufferMoveNext", { desc = "Navigation move buffer right" })
 
-map("n", "<A-h>", construct_handler "BufferPick", { desc = "Pick buffer" })
+map("n", "<A-space>", construct_handler "BufferPick", { desc = "Pick buffer" })
 map("n", "<leader>pin", construct_handler "BufferPin", { desc = "Navigation pin buffer" })
 
 -- navigate in jumps

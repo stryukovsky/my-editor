@@ -124,11 +124,43 @@ local function override_highlights()
   hl(0, "MiniDiffSignAdd", { link = "GitSignsAdd" })
   hl(0, "MiniDiffSignChange", { link = "GitSignsChange" })
   hl(0, "MiniDiffSignDelete", { link = "GitSignsDelete" })
+
+  local function rgb_parts(color)
+    return math.floor(color / 65536) % 256, math.floor(color / 256) % 256, color % 256
+  end
+
+  local function rgb_join(r, g, b)
+    return math.floor(r) * 65536 + math.floor(g) * 256 + math.floor(b)
+  end
+
+  local function mix_rgb(from, toward, amount)
+    local r1, g1, b1 = rgb_parts(from)
+    local r2, g2, b2 = rgb_parts(toward)
+    return rgb_join(r1 + (r2 - r1) * amount, g1 + (g2 - g1) * amount, b1 + (b2 - b1) * amount)
+  end
+
+  local function overlay_bg(src, mix_amount)
+    local src_hl = vim.api.nvim_get_hl(0, { name = src, link = false })
+    local fallback = src == "DiffDelete" and (vim.o.background == "light" and 0xe53935 or 0xf07178)
+      or (vim.o.background == "light" and 0x91b859 or 0xc3e88d)
+    local base = src_hl.bg
+    if not base then
+      base = type(background) == "number" and mix_rgb(background, fallback, 0.22) or fallback
+    end
+    if mix_amount then
+      return { bg = mix_rgb(base, fallback, mix_amount) }
+    end
+    return { bg = base }
+  end
+
+  -- Line overlay: red/green backgrounds, no strikethrough. Word-diff is a darker mix.
+  -- Change hunks reuse delete (old) + add (new).
   hl(0, "MiniDiffOverAdd", { link = "DiffAdd" })
-  hl(0, "MiniDiffOverDelete", { link = "DiffDelete" })
-  hl(0, "MiniDiffOverChange", { link = "GitSignsDeleteInline" })
-  hl(0, "MiniDiffOverChangeBuf", { link = "GitSignsAddInline" })
-  hl(0, "MiniDiffOverContext", { link = "DiffChange" })
+  hl(0, "MiniDiffOverDelete", overlay_bg "DiffDelete")
+  hl(0, "MiniDiffOverChange", overlay_bg("DiffDelete", 0.35))
+  hl(0, "MiniDiffOverChangeBuf", overlay_bg("DiffAdd", 0.35))
+  hl(0, "MiniDiffOverContext", { link = "MiniDiffOverDelete" })
+  hl(0, "MiniDiffOverContextBuf", { link = "MiniDiffOverAdd" })
 
   local modes = {
     "n",
