@@ -1,10 +1,79 @@
 local map = require "mappings.map"
-map("v", "/", function()
+
+local function leave_visual()
   vim.cmd "nohlsearch"
-  -- send esc key so selection will be handled properly
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "x", false)
-  vim.fn.feedkeys("/\\%V", "n")
+end
+
+local function search_jump(key)
+  local ok = pcall(vim.cmd, "normal! " .. vim.v.count1 .. key)
+  if ok then
+    require("hlslens").start()
+  end
+end
+
+map("n", "/", function()
+  require("searchbox").incsearch()
+end, { desc = "Search forward" })
+
+map("n", "<A-q>", function()
+  require("searchbox").incsearch()
+end, { desc = "Search forward" })
+
+map("n", "?", function()
+  require("searchbox").incsearch { reverse = true, title = " Search back " }
+end, { desc = "Search backward" })
+
+map("v", "/", function()
+  leave_visual()
+  vim.schedule(function()
+    require("searchbox").incsearch {
+      visual_mode = true,
+      title = " Search in selection ",
+    }
+  end)
 end, { desc = "Search in visual selection" })
+
+map("v", "<A-q>", function()
+  leave_visual()
+  vim.schedule(function()
+    require("searchbox").incsearch {
+      visual_mode = true,
+      title = " Search in selection ",
+    }
+  end)
+end, { desc = "Search in visual selection" })
+
+map("v", "?", function()
+  leave_visual()
+  vim.schedule(function()
+    require("searchbox").incsearch {
+      reverse = true,
+      visual_mode = true,
+      title = " Search back in selection ",
+    }
+  end)
+end, { desc = "Search backward in visual selection" })
+
+map({ "n", "x" }, "n", function()
+  search_jump "n"
+end, { desc = "Next search match" })
+
+map({ "n", "x" }, "N", function()
+  search_jump "N"
+end, { desc = "Previous search match" })
+
+map("n", "*", function()
+  search_jump "*"
+end, { desc = "Search word forward" })
+
+map("n", "g*", function()
+  search_jump "g*"
+end, { desc = "Search word forward (no bounds)" })
+
+map("n", "g#", function()
+  search_jump "g#"
+end, { desc = "Search word backward (no bounds)" })
 
 -- map("n", "<leader>rr", function()
 --   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(":%s///g<Left><Left>", true, false, true), "n", false)

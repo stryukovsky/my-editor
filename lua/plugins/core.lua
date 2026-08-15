@@ -4,6 +4,11 @@ return {
     event = "VeryLazy",
   },
   {
+    "VonHeikemen/searchbox.nvim",
+    dependencies = { "MunifTanjim/nui.nvim" },
+  },
+  { "kevinhwang91/nvim-hlslens" },
+  {
     "stryukovsky/neogit",
     branch = "log-view-fix-open-commit-link",
     dependencies = {
@@ -77,6 +82,9 @@ return {
   },
   {
     "romgrk/barbar.nvim",
+  },
+  {
+    "tiagovla/scope.nvim",
   },
   {
     "stryukovsky/neo-tree.nvim",

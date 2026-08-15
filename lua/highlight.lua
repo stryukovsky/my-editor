@@ -82,6 +82,8 @@ local function override_highlights()
   hl(0, "CodeCompanionInlineDiffHint", { bg = background, fg = foreground_active })
 
   hl(0, "FlashLabelOverriden", { bg = background, fg = foreground_active })
+  hl(0, "HlSearchLensNear", { link = "Title" })
+  hl(0, "HlSearchLens", { link = "Comment" })
   require("configs.strict_grammar").apply_spellbad()
 
   hl(0, "Cursor", { bg = foreground_active })

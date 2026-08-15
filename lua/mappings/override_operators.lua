@@ -17,6 +17,7 @@ local function highlight_current(is_visual)
     -- Set the search register and enable highlighting
     vim.fn.setreg('/', pattern)
     vim.opt.hlsearch = true
+    require("hlslens").start()
 end
 
 -- Map # to highlight word under cursor

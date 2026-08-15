@@ -70,11 +70,14 @@ local function construct_handler(cmd)
     vim.cmd(cmd)
   end
 end
--- tabs navigation
+-- buffer navigation
 map({ "n" }, "<A-,>", construct_handler "BufferPrevious", { desc = "Navigation prev buffer" })
-map({ "n" }, "<A-<>", construct_handler "BufferPrevious", { desc = "Navigation prev buffer" })
-map({ "n" }, "<A->>", construct_handler "BufferNext", { desc = "Navigation next buffer" })
 map({ "n" }, "<A-.>", construct_handler "BufferNext", { desc = "Navigation next buffer" })
+
+-- tab navigation
+map({ "n" }, "<A-<>", "<cmd>tabprevious<CR>", { desc = "Navigation prev tab" })
+map({ "n" }, "<A->>", "<cmd>tabnext<CR>", { desc = "Navigation next tab" })
+map("n", "<leader>tab", "<cmd>tabnew<CR>", { desc = "Navigation new tab" })
 map("n", "<leader>x", construct_handler "BufferClose!", { desc = "Navigation close buffer" })
 map("n", "<leader>X", construct_handler "silent BufferCloseAllButCurrentOrPinned", { desc = "Navigation close other buffers" })
 map("n", "<leader>,", construct_handler "BufferMovePrevious", { desc = "Navigation move buffer left" })

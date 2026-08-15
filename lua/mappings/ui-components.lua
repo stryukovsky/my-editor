@@ -213,7 +213,7 @@ local function close_grug_far()
   grug_far.hide_instance "far"
 end
 
-map(ui_components_modes, "<A-q>", function()
+map(ui_components_modes, "<A-R>", function()
   if is_normal_buffer() then
     if _G.bottom_component_callback_close() == false then
       return
