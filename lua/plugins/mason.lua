@@ -55,5 +55,7 @@ return {
     "mfussenegger/nvim-dap-python",
     dependencies = "mfussenegger/nvim-dap",
     lazy = true,
+    -- no ft/opts: lazy must not call setup() on FileType python
+    config = function() end,
   },
 }

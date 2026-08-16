@@ -26,6 +26,26 @@ end
 ---@param python string
 function M.apply(python)
   require("dap-python").setup(python, { console = nil, include_configs = false })
+  local dap = require "dap"
+  dap.configurations.python = {
+    {
+      type = "python",
+      request = "launch",
+      name = "Run Command",
+      program = "${file}",
+      cwd = "${workspaceFolder}",
+      runtimeExecutable = function()
+        return vim.fn.input "Command:"
+      end,
+    },
+    {
+      type = "python",
+      request = "launch",
+      name = "Run file",
+      program = "${file}",
+      cwd = "${workspaceFolder}",
+    },
+  }
   vim.fn.system { python, "-m", "pip", "install", "debugpy" }
   for _, name in ipairs { "basedpyright", "pyright" } do
     pcall(vim.lsp.config, name, {

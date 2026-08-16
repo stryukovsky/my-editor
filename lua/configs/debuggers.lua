@@ -121,21 +121,3 @@ dap.configurations.scala = {
     },
   },
 }
-
-dap.configurations.python = {
-  {
-    type = "python",
-    request = "launch",
-    name = "Run Command",
-    program = "${file}",
-    cwd = "${workspaceFolder}",
-    runtimeExecutable = inputCommand,
-  },
-  {
-    type = "python",
-    request = "launch",
-    name = "Run file",
-    program = "${file}",
-    cwd = "${workspaceFolder}",
-  },
-}

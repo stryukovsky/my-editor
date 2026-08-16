@@ -259,8 +259,6 @@ local config = {
       ["W"] = "expand_all_subnodes",
       -- ["q"] = "close_window",
       ["?"] = "show_help",
-      ["<A-<>"] = "prev_source",
-      ["<A->>"] = "next_source",
       ["<A-,>"] = "prev_source",
       ["<A-.>"] = "next_source",
 
