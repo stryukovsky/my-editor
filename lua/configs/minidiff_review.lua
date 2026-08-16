@@ -758,12 +758,6 @@ local function pick_ref(title, cwd, on_pick)
 end
 
 function M.open_picker()
-  local is_codediff_tab = require "utils.is_codediff_tab"
-  if is_codediff_tab() then
-    notify.send("MiniDiff review", "Cannot open: CodeDiff is current tabpage", vim.log.levels.ERROR)
-    return
-  end
-
   local cwd, err = git_root()
   if not cwd then
     notify.send("MiniDiff review", err or "Not a git repository", vim.log.levels.ERROR)

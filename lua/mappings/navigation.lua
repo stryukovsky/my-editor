@@ -1,6 +1,5 @@
 local map = require "mappings.map"
 local is_normal_buffer = require "utils.is_normal_buffer"
-local is_codediff_tab = require "utils.is_codediff_tab"
 local notify = require "configs.notify"
 
 local function toggle_wrap()
@@ -9,9 +8,6 @@ local function toggle_wrap()
   vim.wo.wrap = enabled
   vim.wo.linebreak = enabled
   vim.wo.breakindent = false
-  if is_codediff_tab() then
-    require("configs.codediff").apply_wrap(enabled)
-  end
   local msg = enabled and "Wrap is toggled on" or "Wrap is toggled off"
   notify.replace("navigation.wrap", "Navigation", msg, vim.log.levels.INFO)
 end
@@ -62,11 +58,6 @@ end, { desc = "Navigation filter virtual diagnostics" })
 
 local function construct_handler(cmd)
   return function()
-    if is_codediff_tab() then
-      notify.send("Navigation", "Cannot open: CodeDiff is current tabpage", vim.log.levels.ERROR)
-      return
-    end
-
     vim.cmd(cmd)
   end
 end

@@ -77,7 +77,7 @@ opt.foldlevel = 9900
 -- when cursor reaches end/beginning of line
 opt.whichwrap:append "<>[]hl"
 
--- `vim.g.wrap` is the shared preference (CodeDiff + <A-W>/<A-r>).
+-- `vim.g.wrap` is the shared preference for <A-W>/<A-r>.
 -- Normal windows stay nowrap until toggled; linebreak applies when wrap is on.
 g.wrap = true
 o.wrap = false

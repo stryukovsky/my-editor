@@ -1,17 +1,5 @@
 local neogit = require "neogit"
 local map = require "mappings.map"
-local is_codediff_tab = require "utils.is_codediff_tab"
-
-local function create_binding(fn)
-  return function()
-    if is_codediff_tab() then
-      vim.notify "Cannot open: CodeDiff is current tabpage"
-      return
-    end
-
-    fn()
-  end
-end
 
 map("n", "<leader>gc", function()
   neogit.open { "commit", kind = "split" }
@@ -21,24 +9,13 @@ map("n", "<leader>gPush", function()
   neogit.open { "push" }
 end, { desc = "git: push" })
 
+map("n", "<leader>gmerge", function()
+  neogit.open { "merge" }
+end, { desc = "git: merge" })
 
-map(
-  "n",
-  "<leader>gmerge",
-  create_binding(function()
-    neogit.open { "merge" }
-  end),
-  { desc = "git: merge" }
-)
-
-map(
-  "n",
-  "<leader>gMerge",
-  create_binding(function()
-    neogit.open { "merge" }
-  end),
-  { desc = "git: merge" }
-)
+map("n", "<leader>gMerge", function()
+  neogit.open { "merge" }
+end, { desc = "git: merge" })
 
 map("n", "<leader>gpush", function()
   neogit.open { "push" }
@@ -64,49 +41,25 @@ map("n", "<leader>gPull", function()
   neogit.open { "pull" }
 end, { desc = "git: pull" })
 
-map(
-  "n",
-  "<leader>gb",
-  create_binding(function()
-    neogit.open { "branch" }
-  end),
-  { desc = "git: branch" }
-)
+map("n", "<leader>gb", function()
+  neogit.open { "branch" }
+end, { desc = "git: branch" })
 
-map(
-  "n",
-  "<leader>gl",
-  create_binding(function()
-    neogit.action("log", "log_current", { kind = "split", "--graph", "--decorate", "--topo-order", "--max-count=256" })()
-  end),
-  { desc = "git: current brach log" }
-)
+map("n", "<leader>gl", function()
+  neogit.action("log", "log_current", { kind = "split", "--graph", "--decorate", "--topo-order", "--max-count=256" })()
+end, { desc = "git: current brach log" })
 
-map(
-  "n",
-  "<leader>gL",
-  create_binding(function()
-    neogit.action("log", "log_other", { kind = "split", "--graph", "--decorate", "--topo-order", "--max-count=256" })()
-  end),
-  { desc = "git: select branch and log it" }
-)
-map(
-  "n",
-  "<A-k>",
-  create_binding(function()
-    neogit.open {}
-  end),
-  { desc = "git: status" }
-)
+map("n", "<leader>gL", function()
+  neogit.action("log", "log_other", { kind = "split", "--graph", "--decorate", "--topo-order", "--max-count=256" })()
+end, { desc = "git: select branch and log it" })
 
-map(
-  "n",
-  "<leader>gg",
-  create_binding(function()
-    neogit.open {}
-  end),
-  { desc = "git: status" }
-)
+map("n", "<A-k>", function()
+  neogit.open {}
+end, { desc = "git: status" })
+
+map("n", "<leader>gg", function()
+  neogit.open {}
+end, { desc = "git: status" })
 
 -- Periodic git fetch controls
 map("n", "<leader>gpf", function()

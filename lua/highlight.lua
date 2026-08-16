@@ -98,25 +98,18 @@ local function override_highlights()
   hl(0, "NeogitDiffDeleteCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
   hl(0, "NeogitDiffHeaderCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
 
-  local bgCodeDiffExplorerSelected_light = "#bfc1b4"
-  local bgCodeDiffExplorerSelected_dark = "#282c34"
-
   local fgGitSignsChanges_dark = "#ffffff"
   local fgGitSignsChanges_light = "#0042ff"
-  hl(0, "CodeDiffExplorerTreeGroup", { fg = "#bb0000" })
 
   if vim.o.background == "light" then
-    hl(0, "CodeDiffExplorerSelected", { bg = bgCodeDiffExplorerSelected_light })
     hl(0, "GitSignsAddInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_light })
     hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_light })
     hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = fgGitSignsChanges_light })
   elseif vim.o.background == "dark" then
-    hl(0, "CodeDiffExplorerSelected", { bg = bgCodeDiffExplorerSelected_dark })
     hl(0, "GitSignsAddInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
     hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
     hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = fgGitSignsChanges_dark })
   else
-    hl(0, "CodeDiffExplorerSelected", { bg = bgCodeDiffExplorerSelected_dark })
     hl(0, "GitSignsAddInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
     hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
     hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = fgGitSignsChanges_dark })

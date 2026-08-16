@@ -26,6 +26,5 @@ return {
   "grapple",
   "codecompanion",
   "neotest-summary",
-  "codediff-explorer",
   "zenmode-bg",
 }

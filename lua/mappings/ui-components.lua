@@ -7,7 +7,6 @@ local neotree_command = require "neo-tree.command"
 local grug_far = require "grug-far"
 local close_telescope = require "mappings.close_telescope"
 local is_normal_buffer = require "utils.is_normal_buffer"
-local is_codediff_tab = require "utils.is_codediff_tab"
 
 local ui_components_modes = { "n" }
 
@@ -125,11 +124,6 @@ vim.g.last_opened_telescope = ""
 _G.dialog_component_callback_close = function() end
 for _, value in ipairs(telescope_components) do
   map(value.modes, value.shortcut, function()
-    if is_codediff_tab() then
-      vim.notify "Cannot open: CodeDiff is current tabpage"
-      return
-    end
-
     if close_telescope() then
       if vim.g.last_opened_telescope ~= value.desc then
         value.command()
@@ -166,11 +160,6 @@ end, { desc = "Theme" })
 
 -- neotree
 local function workaround_neotree_focus(source, opts)
-  if is_codediff_tab() then
-    vim.notify "Cannot open: CodeDiff is current tabpage"
-    return
-  end
-
   pcall(function()
     local focus_command = vim.tbl_extend("error", {
       action = "focus", -- Focus NeoTree

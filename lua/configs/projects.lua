@@ -134,12 +134,10 @@ function M.open_tabs()
   local items = {}
   local seen = {}
   for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
-    if not (_G.codediff_tabpages and _G.codediff_tabpages[tab]) then
-      local path = M.tab_project(tab)
-      if path and not seen[path] then
-        seen[path] = true
-        items[#items + 1] = { path = path, tab = tab }
-      end
+    local path = M.tab_project(tab)
+    if path and not seen[path] then
+      seen[path] = true
+      items[#items + 1] = { path = path, tab = tab }
     end
   end
   return items
@@ -157,9 +155,6 @@ end
 
 local function tab_is_reusable()
   if M.tab_project() then
-    return false
-  end
-  if require "utils.is_codediff_tab"() then
     return false
   end
   return require "utils.is_buffer_initial_dashboard"()

@@ -185,21 +185,7 @@ return {
       -- local builtin = require("statuscol.builtin")
     end,
   },
-  { "sindrets/diffview.nvim" },
-
-  {
-    "esmuellert/codediff.nvim",
-    cmd = "CodeDiff",
-    opts = function()
-      return require("configs.codediff").opts
-    end,
-    config = function(_, opts)
-      require("codediff").setup(opts)
-      require("configs.codediff").patch_plugin()
-    end,
-  },
   { "phrmendes/todotxt.nvim" },
-
   {
     "rcarriga/nvim-notify",
   },
