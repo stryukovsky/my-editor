@@ -13,7 +13,6 @@ return {
   "NeogitStashView",
   "NeogitConsole",
   "NeogitGitCommandHistory",
-  "nofile",
   "dirbuf",
   "dirvish",
   "fugitive",

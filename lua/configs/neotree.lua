@@ -238,8 +238,7 @@ local config = {
         "toggle_preview",
         config = {
           use_float = true,
-          use_image_nvim = false,
-          -- title = "Neo-tree Preview", -- You can define a custom title for the preview floating window.
+          title = "Neo-tree Preview", -- You can define a custom title for the preview floating window.
         },
       },
       -- ["<C-f>"] = { "scroll_preview", config = {direction = -10} },
@@ -265,6 +264,7 @@ local config = {
     },
   },
   filesystem = {
+    hijack_netrw_behavior = "disabled",
     window = {
       mappings = {
         ["<cr>"] = "go_deep", -- expand nested file takes precedence

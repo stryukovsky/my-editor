@@ -172,6 +172,10 @@ function M.open(path)
     notify.send("Projects", "Project directory missing: " .. M.display_path(path or ""), vim.log.levels.ERROR)
     return
   end
+  if M.current_root() == path or M.normalize(vim.fn.getcwd()) == path then
+    notify.send("Projects", "Project is already opened: " .. M.display_path(path), vim.log.levels.INFO)
+    return
+  end
   bump(path)
   local existing = M.find_tab(path)
   if existing then

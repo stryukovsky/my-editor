@@ -2,7 +2,7 @@
 local map = require "mappings.map"
 local neotest = require "neotest"
 local trouble = require "trouble"
-local oil = require "oil"
+local oil = require "configs.oil"
 local neotree_command = require "neo-tree.command"
 local grug_far = require "grug-far"
 local close_telescope = require "mappings.close_telescope"
@@ -149,21 +149,8 @@ for _, value in ipairs(telescope_components) do
 end
 
 map("n", "<A-o>", function()
-  if vim.g.state_oil_opened then
-    oil.close()
-    _G.dialog_component_callback_close = function() end
-  else
-    _G.dialog_component_callback_close()
-    _G.dialog_component_callback_close = function()
-      vim.g.state_oil_opened = false
-      oil.close()
-      _G.dialog_component_callback_close = function() end
-    end
-    vim.cmd "Neotree close"
-    oil.open(nil, { preview = { vertical = true } })
-  end
-  vim.g.state_oil_opened = not vim.g.state_oil_opened
-end, { desc = "UI oil toggle float browser" })
+  oil.toggle()
+end, { desc = "UI oil toggle file browser" })
 
 -- windows focus move
 map(ui_components_modes, "<A-a>", "<C-W>h", { desc = "UI switch window left" })
