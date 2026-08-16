@@ -1,3 +1,5 @@
+local gitutils = require "configs.gitutils"
+
 local M = {}
 
 local INTERVAL_MS = 3000
@@ -5,8 +7,10 @@ local INTERVAL_MS = 3000
 vim.g.is_it_merge = ""
 
 local git_dir ---@type string|nil
+local git_root ---@type string|nil
 local start_key ---@type string|nil
 local timer ---@type uv.uv_timer_t|nil
+local poll_gen = 0
 
 local function file_exists(path)
   return vim.uv.fs_stat(path) ~= nil
@@ -31,37 +35,6 @@ local function start_dir()
     return vim.fn.fnamemodify(name, ":p:h")
   end
   return vim.fn.getcwd()
-end
-
----Walk up from a path and return the absolute git dir (handles worktrees).
-local function find_git_dir(dir)
-  local current = dir
-  while current and current ~= "" do
-    local git_path = current .. "/.git"
-    local stat = vim.uv.fs_stat(git_path)
-    if stat then
-      if stat.type == "directory" then
-        return git_path
-      end
-      if stat.type == "file" then
-        local line = read_line(git_path)
-        if line then
-          local gitdir = line:match "^gitdir:%s*(.+)$"
-          if gitdir then
-            if gitdir:sub(1, 1) ~= "/" then
-              gitdir = vim.fn.fnamemodify(current .. "/" .. gitdir, ":p")
-            end
-            return gitdir:gsub("/$", "")
-          end
-        end
-      end
-    end
-    local parent = vim.fn.fnamemodify(current, ":h")
-    if parent == current then
-      break
-    end
-    current = parent
-  end
 end
 
 local function rebase_label(dir)
@@ -92,12 +65,65 @@ local function operation_text(dir)
   return rebase_label(dir) or ""
 end
 
-local function poll()
-  local text = git_dir and operation_text(git_dir) or ""
+---@param stdout string
+---@return integer
+local function parse_rg_counts(stdout)
+  local n = 0
+  for line in vim.gsplit(stdout, "\n", { plain = true, trimempty = true }) do
+    n = n + (tonumber(line) or 0)
+  end
+  return n
+end
+
+---@param op string
+---@param conflicts integer
+---@return string
+local function format_status(op, conflicts)
+  if conflicts > 0 then
+    if op ~= "" then
+      return op .. " " .. conflicts
+    end
+    return "CONFLICTS " .. conflicts
+  end
+  return op
+end
+
+local function set_status(text)
   if text == vim.g.is_it_merge then
     return
   end
   vim.g.is_it_merge = text
+end
+
+local function poll()
+  local op = git_dir and operation_text(git_dir) or ""
+  if not git_root then
+    set_status(op)
+    return
+  end
+
+  poll_gen = poll_gen + 1
+  local gen = poll_gen
+  vim.system({
+    "rg",
+    "--count-matches",
+    "--no-filename",
+    "^>>>>>>>",
+    ".",
+  }, { cwd = git_root, text = true }, function(result)
+    vim.schedule(function()
+      if gen ~= poll_gen then
+        return
+      end
+      local conflicts = 0
+      if result.code == 0 then
+        conflicts = parse_rg_counts(result.stdout or "")
+      elseif result.code ~= 1 then
+        conflicts = 0
+      end
+      set_status(format_status(op, conflicts))
+    end)
+  end)
 end
 
 local function resolve_git_dir()
@@ -106,7 +132,14 @@ local function resolve_git_dir()
     return
   end
   start_key = dir
-  git_dir = find_git_dir(dir)
+  git_root = select(1, gitutils.root(dir))
+  git_dir = nil
+  if git_root then
+    local out = select(1, gitutils.run({ "rev-parse", "--absolute-git-dir" }, git_root))
+    if out and vim.trim(out) ~= "" then
+      git_dir = vim.fs.normalize(vim.trim(out))
+    end
+  end
   poll()
 end
 
