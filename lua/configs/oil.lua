@@ -287,7 +287,11 @@ oil.setup {
   },
 }
 
--- TODO: describe final goal of this autocmd
+-- Oil is not the default file explorer (`default_file_explorer = false`).
+-- Neovim can still put a directory listing in an editor window (oil, netrw, or
+-- a raw directory buffer) after closing the last file, `:e dir`, etc.
+-- Replace those accidental listings with the dashboard. Intentional oil via
+-- `<A-o>` sets `state_oil_opened` and is left alone.
 vim.api.nvim_create_autocmd("BufWinEnter", {
   callback = function(ev)
     if vim.g.state_oil_opened then
@@ -302,12 +306,13 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
     if ft ~= "oil" and ft ~= "netrw" and not (name ~= "" and vim.fn.isdirectory(name) == 1) then
       return
     end
+    -- Oil/netrw finish setup after BufWinEnter; wait so we replace the shown buffer.
     vim.schedule(function()
-      -- TODO: describe why here is return
+      -- Toggle may have opened oil in the meantime, or this buffer may already be gone.
       if vim.g.state_oil_opened or not vim.api.nvim_buf_is_valid(buf) then
         return
       end
-      -- TODO: add comments here
+      -- Same listing can be in several windows; swap each of them to the dashboard.
       for _, win in ipairs(vim.api.nvim_list_wins()) do
         if vim.api.nvim_win_get_buf(win) == buf then
           show_empty_in(win)
