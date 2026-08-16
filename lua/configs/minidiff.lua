@@ -122,6 +122,15 @@ function M.nav(direction)
   if MiniDiff.get_buf_data(0) == nil then
     return
   end
+  if direction > 0 then
+    local _, idx = MiniDiff.get_contiguous_hunk_range_at_cursor(0)
+    local total = vim.b.minidiff_summary and vim.b.minidiff_summary.n_ranges or 0
+    if idx and idx == total then
+      notify.send("MiniDiff", "It was last hunk, so neogit", vim.log.levels.INFO)
+      require("neogit").open {}
+      return
+    end
+  end
   MiniDiff.goto_hunk(direction > 0 and "next" or "prev")
   vim.cmd "normal! zz"
 end
