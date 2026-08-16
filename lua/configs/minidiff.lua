@@ -31,7 +31,6 @@ MiniDiff.setup {
 }
 
 require("configs.minidiff_review").setup()
--- TODO: idk
 require("configs.large_hunks_viewer").setup()
 
 ---@param hunk table
@@ -133,6 +132,22 @@ function M.toggle_overlay()
     overlay_wanted() and "Hunk overlay on" or "Hunk overlay off",
     vim.log.levels.INFO
   )
+end
+
+function M.lualine_hunks()
+  local data = MiniDiff.get_buf_data(0)
+  if not data or not data.hunks or #data.hunks == 0 then
+    return ""
+  end
+  local total = #data.hunks
+  local lnum = vim.api.nvim_win_get_cursor(0)[1]
+  for i, hunk in ipairs(data.hunks) do
+    local from, to = hunk_buf_range(hunk)
+    if lnum >= from and lnum <= to then
+      return string.format("hunks: %d/%d", i, total)
+    end
+  end
+  return string.format("hunks: %d", total)
 end
 
 ---@param direction 1|-1

@@ -96,13 +96,6 @@ local function get_lualine_theme()
   return lualine_theme
 end
 
-local function minidiff_source()
-  local s = vim.b.minidiff_summary
-  if s then
-    return { added = s.add, modified = s.change, removed = s.delete }
-  end
-end
-
 vim.api.nvim_create_autocmd({ "ColorScheme" }, {
   pattern = "*",
   callback = function()
@@ -125,16 +118,7 @@ require("lualine").setup {
       git_fetch.lualine_component(),
       "branch",
       is_it_merge.lualine_component(),
-      {
-        "diff",
-        source = minidiff_source,
-        symbols = { added = " ", modified = " ", removed = " " },
-        diff_color = {
-          added = { fg = hl_fg("Green", "#98be65") },
-          modified = { fg = hl_fg("Orange", "#ff9e64") },
-          removed = { fg = hl_fg("Red", "#ec5f67") },
-        },
-      },
+      require("configs.minidiff").lualine_hunks,
     },
     lualine_c = {
       {
