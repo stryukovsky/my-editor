@@ -33,41 +33,6 @@ MiniDiff.setup {
 require("configs.minidiff_review").setup()
 require("configs.large_hunks_viewer").setup()
 
----@param hunk table
----@return integer, integer
-local function hunk_buf_range(hunk)
-  if hunk.buf_count > 0 then
-    return hunk.buf_start, hunk.buf_start + hunk.buf_count - 1
-  end
-  local from = math.max(hunk.buf_start, 1)
-  return from, from
-end
-
----@return integer|nil from
----@return integer|nil to
-local function contiguous_range_at_cursor()
-  local data = MiniDiff.get_buf_data(0)
-  if not data or not data.hunks or #data.hunks == 0 then
-    return
-  end
-  local lnum = vim.api.nvim_win_get_cursor(0)[1]
-  local ranges = {}
-  for _, hunk in ipairs(data.hunks) do
-    local from, to = hunk_buf_range(hunk)
-    local last = ranges[#ranges]
-    if last and from <= last.to + 1 then
-      last.to = math.max(last.to, to)
-    else
-      table.insert(ranges, { from = from, to = to })
-    end
-  end
-  for _, range in ipairs(ranges) do
-    if lnum >= range.from and lnum <= range.to then
-      return range.from, range.to
-    end
-  end
-end
-
 local function overlay_wanted()
   return vim.g.minidiff_overlay == true
 end
@@ -103,11 +68,11 @@ function M.reset_hunk()
   if vim.b.minidiff_review then
     return
   end
-  local from, to = contiguous_range_at_cursor()
-  if not from or not to then
+  local range = MiniDiff.get_contiguous_hunk_range_at_cursor(0)
+  if not range then
     return
   end
-  pcall(MiniDiff.do_hunks, 0, "reset", { line_start = from, line_end = to })
+  pcall(MiniDiff.do_hunks, 0, "reset", { line_start = range.from, line_end = range.to })
 end
 
 function M.reset_buffer()
@@ -135,17 +100,14 @@ function M.toggle_overlay()
 end
 
 function M.lualine_hunks()
-  local data = MiniDiff.get_buf_data(0)
-  if not data or not data.hunks or #data.hunks == 0 then
+  local summary = vim.b.minidiff_summary
+  local total = summary and summary.n_ranges or 0
+  if total == 0 then
     return ""
   end
-  local total = #data.hunks
-  local lnum = vim.api.nvim_win_get_cursor(0)[1]
-  for i, hunk in ipairs(data.hunks) do
-    local from, to = hunk_buf_range(hunk)
-    if lnum >= from and lnum <= to then
-      return string.format("hunks: %d/%d", i, total)
-    end
+  local _, idx = MiniDiff.get_contiguous_hunk_range_at_cursor(0)
+  if idx then
+    return string.format("hunks: %d/%d", idx, total)
   end
   return string.format("hunks: %d", total)
 end

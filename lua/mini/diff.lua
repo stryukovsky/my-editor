@@ -586,6 +586,34 @@ MiniDiff.get_buf_data = function(buf_id)
   })
 end
 
+--- Contiguous hunk ranges
+---
+--- Adjacent hunks are merged into one range. Same data as used by
+--- |MiniDiff.goto_hunk()| and |MiniDiff.textobject()|.
+---
+---@param buf_id __diff_buf_id
+---@return table|nil Array of `{ from = line, to = line }`, or `nil` if not enabled.
+MiniDiff.get_contiguous_hunk_ranges = function(buf_id)
+  buf_id = H.validate_buf_id(buf_id)
+  local buf_cache = H.cache[buf_id]
+  if buf_cache == nil then return nil end
+  return H.get_contiguous_hunk_ranges(buf_cache.hunks)
+end
+
+--- Contiguous hunk range under cursor
+---
+---@param buf_id __diff_buf_id
+---@return table|nil Range `{ from = line, to = line }`
+---@return integer|nil 1-based index among contiguous ranges
+MiniDiff.get_contiguous_hunk_range_at_cursor = function(buf_id)
+  local ranges = MiniDiff.get_contiguous_hunk_ranges(buf_id)
+  if ranges == nil then return nil end
+  local cur_line = vim.fn.line('.')
+  for i, r in ipairs(ranges) do
+    if r.from <= cur_line and cur_line <= r.to then return r, i end
+  end
+end
+
 --- Set reference text for the buffer
 ---
 --- Note: this will call |MiniDiff.enable()| for target buffer if it is not
