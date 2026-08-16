@@ -1,7 +1,6 @@
 local oil = require "oil"
 local notify = require "configs.notify"
 local system_file_explorer = require "utils.system_file_explorer"
-local neotree_command = require "neo-tree.command"
 
 local compact_columns = { "icon" }
 local detail_columns = { "icon", "permissions", "size", "mtime" }
