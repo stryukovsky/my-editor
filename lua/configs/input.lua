@@ -86,6 +86,7 @@ function M.setup()
     on_confirm = on_confirm or function() end
     -- Capture before opening the float / startinsert.
     local prev_mode = vim.api.nvim_get_mode().mode
+    local prev_win = vim.api.nvim_get_current_win()
     local prompt = opts.prompt or "Input"
     local default = opts.default == nil and "" or tostring(opts.default)
     local max_width = math.max(1, vim.o.columns - 4)
@@ -130,6 +131,12 @@ function M.setup()
       callback = refresh_title,
     })
 
+    local function restore_prev_win()
+      if vim.api.nvim_win_is_valid(prev_win) and vim.api.nvim_get_current_win() ~= prev_win then
+        pcall(vim.api.nvim_set_current_win, prev_win)
+      end
+    end
+
     local function finish(value)
       if completed then
         return
@@ -144,8 +151,10 @@ function M.setup()
       if vim.api.nvim_win_is_valid(window) then
         vim.api.nvim_win_close(window, true)
       end
+      restore_prev_win()
 
       vim.schedule(function()
+        restore_prev_win()
         restore_mode(prev_mode)
         on_confirm(value)
       end)

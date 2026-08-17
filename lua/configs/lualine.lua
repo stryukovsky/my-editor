@@ -111,6 +111,21 @@ require("lualine").setup {
   options = {
     theme = get_lualine_theme(),
     globalstatus = true,
+    refresh = {
+      events = {
+        "WinEnter",
+        "BufEnter",
+        "BufWritePost",
+        "SessionLoadPost",
+        "FileChangedShellPost",
+        "VimResized",
+        "Filetype",
+        "CursorMoved",
+        "CursorMovedI",
+        "ModeChanged",
+        "TabEnter",
+      },
+    },
   },
   sections = {
     lualine_a = { "mode" },

@@ -59,4 +59,10 @@ require "theme"
 local langmapper = require "langmapper"
 langmapper.automapping { global = true, buffer = true }
 
+-- langmapper translates `/` (searchbox) to `.` because that is the same physical
+-- key on the Russian layout. Keep Vim's repeat-last-change on `.`.
+for _, mode in ipairs { "n", "v", "x", "s" } do
+  pcall(vim.keymap.del, mode, ".")
+end
+
 vim.notify = require("notify")

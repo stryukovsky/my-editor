@@ -3,6 +3,7 @@ local map = require "mappings.map"
 local widgets = require "dap.ui.widgets"
 local dap = require "dap"
 local debug_output = require "configs.debug_output"
+local notify = require "configs.notify"
 debug_output.setup()
 -- local trouble = require "trouble"
 
@@ -19,28 +20,29 @@ map("n", "<leader>dp", function()
   if debug_output.get_active_sessions_count() > 1 then
     debug_output.show_session_picker(function(_, meta, dap_session)
       if dap_session then
-        vim.notify("Pausing " .. meta.name)
         dap.pause()
-        vim.notify("Paused " .. meta.name)
+        notify.replace("dap.pause", "Debug", "Paused " .. meta.name)
       end
-    end)
-  else
+    end, { live_only = true, notify_switch = false })
+  elseif debug_output.ensure_tab_session() then
     dap.pause()
+  else
+    vim.notify("No debug session in this tab", vim.log.levels.WARN)
   end
 end, { desc = "debug pause" })
 
 map("n", "<leader>dk", function()
-  -- Picker if any prior/dead sessions exist; skip only when this was the sole debugee ever.
-  if debug_output.should_show_session_picker() then
+  if debug_output.get_active_sessions_count() > 1 then
     debug_output.show_session_picker(function(_, meta, dap_session)
       if dap_session then
-        vim.notify("Killing " .. meta.name)
         dap.terminate()
-        vim.notify("Killed " .. meta.name)
+        notify.replace("dap.kill", "Debug", "Killed " .. meta.name)
       end
-    end)
-  else
+    end, { live_only = true, notify_switch = false })
+  elseif debug_output.ensure_tab_session() then
     dap.terminate()
+  else
+    vim.notify("No debug session in this tab", vim.log.levels.WARN)
   end
 end, { desc = "debug kill" })
 
@@ -48,9 +50,9 @@ map("n", "<leader>dc", function()
   if debug_output.get_active_sessions_count() > 1 then
     debug_output.show_session_picker(function(_, meta, dap_session)
       if dap_session then
-        vim.notify("Chosen " .. meta.name)
+        notify.replace("dap.choose", "Debug", "Chosen " .. meta.name)
       end
-    end)
+    end, { live_only = true })
   end
 end, { desc = "debug choose session" })
 
@@ -149,7 +151,19 @@ map({ "n", "v" }, "<A-X>", function()
   widgets_mappings { "<leader>dei", "<A-X>" }
 end, { desc = "debug evaluate input" })
 
+map("n", "<leader>dw", function()
+  local session = debug_output.ensure_tab_session()
+  if not session then
+    vim.notify("No debug session in this tab", vim.log.levels.WARN)
+    return
+  end
+  if not session.stopped_thread_id and not session.current_frame then
+    vim.notify("Debuggee is not stopped", vim.log.levels.INFO)
+    return
+  end
+  dap.focus_frame()
+end, { desc = "debug go to stopped position" })
+
 map({ "n", "v" }, "<leader>db", function()
-  dap.list_breakpoints()
-  vim.cmd.Trouble("qflist", "open", "focus=true")
+  require("trouble").open { mode = "dap_breakpoints", focus = true }
 end, { desc = "debug list breakpoints" })

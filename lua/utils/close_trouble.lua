@@ -55,8 +55,11 @@ function M.close_all()
     "diagnostics",
     "telescope",
     "telescope_files",
+    "global_results",
+    "file_results",
     "qflist",
     "quickfix",
+    "dap_breakpoints",
   } do
     M.close_mode(mode)
   end

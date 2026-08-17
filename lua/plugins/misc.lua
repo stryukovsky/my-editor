@@ -40,7 +40,8 @@ return {
   { "chrisgrieser/nvim-recorder" },
   {
     "hat0uma/csvview.nvim",
-    opts = require("configs.csv"),
+    opts = require "configs.csv",
     cmd = { "CsvViewEnable", "CsvViewDisable", "CsvViewToggle" },
   },
+  { "r4ppz/lspeek.nvim" },
 }

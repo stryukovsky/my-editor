@@ -11,6 +11,11 @@ local active_output_buffers = {}
 local session_pids = {} -- Track PIDs for each session
 local process_check_timer = nil -- Timer for periodic process checking
 local session_sync_timer = nil -- Timer for session synchronization
+local breakpoint_hooks = false
+
+local PAUSE_ICON = "󰏤"
+local RUNNING_ICON = "●"
+local IDLE_ICON = "○"
 
 -- Initialize random seed once
 math.randomseed(os.time())
@@ -70,6 +75,178 @@ local function check_all_processes()
     end
   end
 end
+
+local function current_tab()
+  return vim.api.nvim_get_current_tabpage()
+end
+
+local function each_dap_session(fn)
+  local dap = require "dap"
+  local seen = {}
+  local function walk(session)
+    if not session or seen[session] then
+      return
+    end
+    seen[session] = true
+    fn(session)
+    for _, child in pairs(session.children or {}) do
+      walk(child)
+    end
+  end
+  for _, session in pairs(dap.sessions()) do
+    walk(session)
+  end
+end
+
+local function find_dap_session(session_id)
+  local found
+  each_dap_session(function(session)
+    if session.id == session_id then
+      found = session
+    end
+  end)
+  return found
+end
+
+local function session_root(session)
+  while session and session.parent do
+    session = session.parent
+  end
+  return session
+end
+
+local function session_tab(session)
+  local current = session
+  while current do
+    local meta = session_metadata[current.id]
+    if meta and meta.tab then
+      return meta.tab
+    end
+    current = current.parent
+  end
+end
+
+--- True when this session is still a real debuggee, not a leftover adapter.
+local function session_is_live(session)
+  if not session or session.closed then
+    return false
+  end
+  local pid = session_pids[session.id]
+  if pid then
+    return check_process_running(pid)
+  end
+  local meta = session_metadata[session.id]
+  if meta and not meta.active then
+    return false
+  end
+  if session.stopped_thread_id then
+    return true
+  end
+  local has_children = false
+  for _, child in pairs(session.children or {}) do
+    has_children = true
+    if session_is_live(child) then
+      return true
+    end
+  end
+  -- Parent whose children already died is a leftover adapter.
+  if has_children then
+    return false
+  end
+  return meta == nil or meta.active ~= false
+end
+
+local function live_roots_for_tab(tab)
+  tab = tab or current_tab()
+  local roots = {}
+  each_dap_session(function(session)
+    if not session_is_live(session) then
+      return
+    end
+    local sid_tab = session_tab(session)
+    if sid_tab ~= nil and sid_tab ~= tab then
+      return
+    end
+    local root = session_root(session)
+    if session_is_live(root) then
+      roots[root.id] = root
+    elseif session_is_live(session) then
+      roots[session.id] = session
+    end
+  end)
+  return roots
+end
+
+local function meta_for_session(session)
+  if not session then
+    return nil
+  end
+  local meta = session_metadata[session.id]
+  if meta then
+    return meta
+  end
+  for _, child in pairs(session.children or {}) do
+    local child_meta = session_metadata[child.id]
+    if child_meta then
+      return child_meta
+    end
+  end
+end
+
+local function session_status_icon(session_id, session, meta)
+  session = session or find_dap_session(session_id)
+  if session and session.stopped_thread_id then
+    return PAUSE_ICON
+  end
+  if session and session_is_live(session) then
+    local pid = session_pids[session_id]
+    if pid then
+      return check_process_running(pid) and RUNNING_ICON or IDLE_ICON
+    end
+    return RUNNING_ICON
+  end
+  if not meta or not meta.active then
+    return IDLE_ICON
+  end
+  local pid = session_pids[session_id]
+  if pid then
+    return check_process_running(pid) and RUNNING_ICON or IDLE_ICON
+  end
+  return RUNNING_ICON
+end
+
+local function metadata_for_tab(tab)
+  tab = tab or current_tab()
+  local result = {}
+  for session_id, meta in pairs(session_metadata) do
+    if meta.tab == tab then
+      result[session_id] = meta
+    end
+  end
+  return result
+end
+
+local function notify_breakpoints_changed()
+  vim.api.nvim_exec_autocmds("User", { pattern = "DapBreakpointsChanged" })
+end
+
+local function hook_breakpoint_changes(dap)
+  if breakpoint_hooks then
+    return
+  end
+  breakpoint_hooks = true
+  local orig_toggle = dap.toggle_breakpoint
+  dap.toggle_breakpoint = function(...)
+    orig_toggle(...)
+    notify_breakpoints_changed()
+  end
+  local orig_clear = dap.clear_breakpoints
+  dap.clear_breakpoints = function(...)
+    orig_clear(...)
+    notify_breakpoints_changed()
+  end
+end
+
 local function find_window_for_buffer(buf)
   if not vim.api.nvim_buf_is_valid(buf) then
     return nil
@@ -192,7 +369,9 @@ end
 
 --- Show telescope picker for session selection and execute action
 --- @param action function Callback function(session_id, meta, dap_session) to execute after selection
-local function show_session_picker(action)
+--- @param opts? { live_only?: boolean, notify_switch?: boolean }
+local function show_session_picker(action, opts)
+  opts = opts or {}
   local has_telescope, pickers = pcall(require, "telescope.pickers")
   if not has_telescope then
     notify.send("Debug Output", "Telescope not available", vim.log.levels.WARN)
@@ -205,14 +384,30 @@ local function show_session_picker(action)
   local actions = require "telescope.actions"
   local action_state = require "telescope.actions.state"
 
-  -- Build list of sessions
   local sessions = {}
-  for session_id, meta in pairs(session_metadata) do
-    table.insert(sessions, {
-      session_id = session_id,
-      display = string.format("[%s] %s - %s (%s)", meta.active and "●" or "○", meta.name, meta.command, meta.started_at),
-      meta = meta,
-    })
+  if opts.live_only then
+    for _, root in pairs(live_roots_for_tab()) do
+      local meta = meta_for_session(root)
+        or {
+          name = root.config and root.config.name or "DAP",
+          command = root.config and (root.config.program or root.config.request) or "",
+          started_at = "",
+          active = true,
+        }
+      table.insert(sessions, {
+        session_id = root.id,
+        display = string.format("[%s] %s - %s (%s)", session_status_icon(root.id, root, meta), meta.name, meta.command, meta.started_at),
+        meta = meta,
+      })
+    end
+  else
+    for session_id, meta in pairs(metadata_for_tab()) do
+      table.insert(sessions, {
+        session_id = session_id,
+        display = string.format("[%s] %s - %s (%s)", session_status_icon(session_id, nil, meta), meta.name, meta.command, meta.started_at),
+        meta = meta,
+      })
+    end
   end
 
   if #sessions == 0 then
@@ -268,19 +463,14 @@ local function show_session_picker(action)
 
           local session_id = selection.value.session_id
           local meta = selection.value.meta
-          local dap_session = nil
-
-          -- Set as current session if it's active
-          if meta.active then
-            -- Find the session object in dap sessions
-            for _, sess in pairs(dap.sessions()) do
-              if sess.id == session_id then
-                dap.set_session(sess)
-                dap_session = sess
-                notify.send("Debug Output", "Switched to session: " .. meta.name)
-                break
-              end
+          local dap_session = find_dap_session(session_id)
+          if dap_session and session_is_live(dap_session) then
+            dap.set_session(dap_session)
+            if opts.notify_switch ~= false then
+              notify.send("Debug Output", "Switched to session: " .. meta.name)
             end
+          else
+            dap_session = nil
           end
 
           -- Execute the provided action
@@ -299,6 +489,7 @@ end
 --- Setup DAP output capture and listeners
 function M.setup()
   local dap = require "dap"
+  hook_breakpoint_changes(dap)
 
   -- Capture output
   dap.defaults.fallback.on_output = function(session, event)
@@ -361,6 +552,7 @@ function M.setup()
       type = session.config.type or "Unknown",
       started_at = os.date "%Y-%m-%d %H:%M:%S",
       active = true,
+      tab = current_tab(),
     }
   end
 
@@ -393,6 +585,22 @@ function M.setup()
             end)
           end
         end
+      end
+    end
+
+    -- A parent adapter is not its own debuggee once every child has ended.
+    local parent = session.parent
+    if parent and session_metadata[parent.id] then
+      local any_live_child = false
+      for _, child in pairs(parent.children or {}) do
+        if child ~= session and session_is_live(child) then
+          any_live_child = true
+          break
+        end
+      end
+      if not any_live_child then
+        session_metadata[parent.id].active = false
+        session_metadata[parent.id].ended_at = session_metadata[parent.id].ended_at or os.date "%Y-%m-%d %H:%M:%S"
       end
     end
   end
@@ -446,12 +654,11 @@ end
 
 --- Show DAP output for current or selected session
 function M.show_output()
-  local dap = require "dap"
-  local session = dap.session()
+  local session = M.ensure_tab_session()
 
-  local total_sessions = vim.tbl_count(session_metadata)
+  local total_sessions = M.get_total_sessions_count()
 
-  -- If more than 1 session ever existed, always show picker
+  -- If more than 1 session ever existed in this tab, always show picker
   if total_sessions > 1 then
     show_session_picker(function(session_id, meta, dap_session)
       show_session_output(session_id)
@@ -517,27 +724,65 @@ end
 
 --- Show telescope picker for session selection
 --- @param action function Callback function(session_id, meta, dap_session) to execute after selection
-function M.show_session_picker(action)
-  show_session_picker(action)
+--- @param opts? { live_only?: boolean, notify_switch?: boolean }
+function M.show_session_picker(action, opts)
+  show_session_picker(action, opts)
 end
 
 function M.get_active_sessions_count()
-  local count = 0
-  for _, meta in pairs(session_metadata) do
-    if meta.active then
-      count = count + 1
-    end
-  end
-  return count
+  return vim.tbl_count(live_roots_for_tab())
 end
 
 function M.get_total_sessions_count()
-  return vim.tbl_count(session_metadata)
+  return vim.tbl_count(metadata_for_tab())
 end
 
----Show telescope unless this Neovim run has only ever had a single debugee.
+--- DAP session bound to the current tab, if any.
+function M.session_for_tab(tab)
+  tab = tab or current_tab()
+  local dap = require "dap"
+  local current = dap.session()
+  if current and session_is_live(current) then
+    local sid_tab = session_tab(current)
+    if sid_tab == nil then
+      local meta = session_metadata[current.id]
+      if meta then
+        meta.tab = tab
+      end
+      return current
+    end
+    if sid_tab == tab then
+      return current
+    end
+  end
+  local found
+  for _, root in pairs(live_roots_for_tab(tab)) do
+    if root.stopped_thread_id then
+      return root
+    end
+    for _, child in pairs(root.children or {}) do
+      if session_is_live(child) and child.stopped_thread_id then
+        return child
+      end
+    end
+    found = found or root
+  end
+  return found
+end
+
+--- Focus a DAP session that belongs to the current tab.
+--- @return table|nil
+function M.ensure_tab_session()
+  local session = M.session_for_tab()
+  if session then
+    require("dap").set_session(session)
+  end
+  return session
+end
+
+--- Show a picker only when this tab has more than one live debuggee.
 function M.should_show_session_picker()
-  return M.get_total_sessions_count() > 1
+  return M.get_active_sessions_count() > 1
 end
 
 --- Get session metadata
@@ -562,9 +807,7 @@ end
 function M.lualine_component()
   return {
     function()
-      local dap = require "dap"
-      local session = dap.session()
-
+      local session = M.session_for_tab()
       if not session then
         return ""
       end
@@ -574,39 +817,17 @@ function M.lualine_component()
         return "DAP"
       end
 
-      -- Check actual process status if we have PID
-      local status_icon = "○" -- Default to inactive
-      if meta.active then
-        local pid = session_pids[session.id]
-        if pid then
-          -- If we have a PID, check actual process status
-          if check_process_running(pid) then
-            status_icon = "●" -- Actually running
-          else
-            status_icon = "○" -- Process dead but marked as active
-          end
-        else
-          status_icon = "●" -- No PID but marked as active
-        end
-      else
-        status_icon = "○" -- Explicitly marked as inactive
-      end
-
+      local status_icon = session_status_icon(session.id, session, meta)
       local name = meta.name or "DAP"
       local active_count = M.get_active_sessions_count()
 
       if active_count > 1 then
         return string.format("%s %s (%d)", status_icon, name, active_count)
-      else
-        return string.format("%s %s", status_icon, name)
       end
+      return string.format("%s %s", status_icon, name)
     end,
     cond = function()
-      local ok, dap = pcall(require, "dap")
-      if not ok then
-        return false
-      end
-      return vim.tbl_count(dap.sessions()) > 0
+      return M.session_for_tab() ~= nil
     end,
   }
 end

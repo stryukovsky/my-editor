@@ -1,6 +1,4 @@
 return {
-  ["<leader>]"] = "swap_with_right_with_opp",
-  ["<leader>["] = "swap_with_left_with_opp",
-  ["<leader>>"] = "swap_with_right_with_opp",
-  ["<leader><"] = "swap_with_left_with_opp",
+  ["<leader>swr"] = "swap_with_right_with_opp",
+  ["<leader>swl"] = "swap_with_left_with_opp",
 }
