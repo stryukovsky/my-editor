@@ -57,12 +57,27 @@ require("material").setup {
     if vim.g.grammar_strict then
       spell_bad = { fg = colors.main.red, italic = true, undercurl = true }
     end
+    local function lighten(hex, amount)
+      hex = hex:gsub("#", "")
+      local r = tonumber(hex:sub(1, 2), 16)
+      local g = tonumber(hex:sub(3, 4), 16)
+      local b = tonumber(hex:sub(5, 6), 16)
+      r = math.min(255, math.floor(r + (255 - r) * amount))
+      g = math.min(255, math.floor(g + (255 - g) * amount))
+      b = math.min(255, math.floor(b + (255 - b) * amount))
+      return string.format("#%02X%02X%02X", r, g, b)
+    end
+    -- Light: pale gray vs #FAFAFA. Deep ocean: dark blue gutter.
+    local gutter_bg = vim.o.background == "light" and lighten(colors.editor.active, 0.55) or "#0D1A36"
     return {
       Visual = { bg = "#0042ff", fg = "#ffffff" },
       SpellBad = spell_bad,
       SpellCap = {},
       SpellLocal = {},
       SpellRare = {},
+      SignColumn = { bg = gutter_bg, fg = colors.editor.fg },
+      FoldColumn = { bg = gutter_bg, fg = colors.main.blue },
+      LineNr = { bg = gutter_bg, fg = colors.editor.line_numbers },
     }
   end,
   lualine_style = "stealth", -- Lualine style ( can be 'stealth' or 'default' )

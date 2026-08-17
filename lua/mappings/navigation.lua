@@ -66,9 +66,14 @@ map({ "n" }, "<A-,>", construct_handler "BufferPrevious", { desc = "Navigation p
 map({ "n" }, "<A-.>", construct_handler "BufferNext", { desc = "Navigation next buffer" })
 
 -- tab navigation
+-- `<A->>` is not a valid keycode (`>` closes the notation). `>` / `<` are Shift+`.` / `,`.
 map({ "n" }, "<A-<>", "<cmd>tabprevious<CR>", { desc = "Navigation prev tab" })
-map({ "n" }, "<A->>", "<cmd>tabnext<CR>", { desc = "Navigation next tab" })
-map("n", "<leader>tab", "<cmd>tabnew<CR>", { desc = "Navigation new tab" })
+map({ "n" }, "<A-S-,>", "<cmd>tabprevious<CR>", { desc = "Navigation prev tab" })
+map({ "n" }, "<A-S-.>", "<cmd>tabnext<CR>", { desc = "Navigation next tab" })
+map("n", "<leader>tab", function()
+  vim.cmd.tabnew()
+  require("configs.dashboard").open_in(0, { isolate = true })
+end, { desc = "Navigation new tab" })
 map("n", "<leader>x", construct_handler "BufferClose!", { desc = "Navigation close buffer" })
 map("n", "<leader>X", construct_handler "silent BufferCloseAllButCurrentOrPinned", { desc = "Navigation close other buffers" })
 map("n", "<leader>,", construct_handler "BufferMovePrevious", { desc = "Navigation move buffer left" })

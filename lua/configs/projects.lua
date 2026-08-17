@@ -180,6 +180,7 @@ function M.open(path)
   end
   if not tab_is_reusable() then
     vim.cmd.tabnew()
+    require("configs.dashboard").open_in(0, { isolate = true })
   end
   M.apply_tab(path)
 end

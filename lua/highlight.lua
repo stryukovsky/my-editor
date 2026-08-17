@@ -21,7 +21,10 @@ local function sync_cursorline_nr()
   end
   local hl_data = vim.api.nvim_get_hl(0, { name = "lualine_a_" .. mode_name })
   if hl_data and hl_data.bg then
-    vim.api.nvim_set_hl(0, "CursorLineNr", { bg = hl_data.bg, fg = hl_data.fg or "NONE", bold = true })
+    local fg = hl_data.fg or "NONE"
+    vim.api.nvim_set_hl(0, "CursorLineNr", { bg = hl_data.bg, fg = fg, bold = true })
+    vim.api.nvim_set_hl(0, "CursorLineSign", { bg = hl_data.bg, fg = fg })
+    vim.api.nvim_set_hl(0, "CursorLineFold", { bg = hl_data.bg, fg = fg, bold = true })
   end
 end
 

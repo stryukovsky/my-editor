@@ -3,6 +3,7 @@ local o = vim.o
 local g = vim.g
 -------------------------------------- options ------------------------------------------
 o.laststatus = 3
+o.showtabline = 2
 o.showmode = false
 vim.opt.title = true
 vim.opt.titlestring = [[nvim | %{fnamemodify(getcwd(), ":~")}]]
@@ -208,3 +209,19 @@ vim.opt.diffopt = {
   "linematch:200",
   "indent-heuristic",
 }
+
+if vim.g.neovide then
+  -- 0.13+ string enum: "both" | "only_left" | "only_right" | "none".
+  -- The old boolean vim.g.neovide_input_macos_alt_is_meta is a no-op in 0.16.x.
+  local function apply_option_as_meta()
+    vim.g.neovide_input_macos_option_key_is_meta = "both"
+  end
+  apply_option_as_meta()
+  -- Re-apply after the GUI window exists so winit actually gets OptionAsAlt::Both.
+  vim.api.nvim_create_autocmd("UIEnter", {
+    once = true,
+    callback = apply_option_as_meta,
+  })
+  -- fonts/AdwaitaMono (must also be installed for Core Text, e.g. ~/Library/Fonts).
+  vim.opt.guifont = "AdwaitaMono Nerd Font:h14"
+end
