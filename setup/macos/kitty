@@ -1,0 +1,63 @@
+# Window settings
+remember_window_size yes
+hide_window_decorations no
+confirm_os_window_close 0
+
+# Font settings
+font_family AdwaitaMono Nerd Font
+font_size 10.5
+bold_font auto
+italic_font auto
+bold_italic_font auto
+
+# Background opacity
+background_opacity 1.0
+
+# Shell
+shell zsh
+# Ghostty: shell-integration-features = no-cursor
+shell_integration enabled no-cursor
+
+# Clipboard
+clipboard_control write-clipboard write-primary read-clipboard read-primary
+copy_on_select no
+
+# macOS: treat Option as Alt/Meta so Neovim <A-*> and shell Alt bindings work.
+# Reload is not enough; fully quit and reopen kitty after changing this.
+macos_option_as_alt yes
+macos_show_window_title_in menubar
+
+# Cursor
+cursor none
+cursor_shape block
+
+# New tabs/windows inherit the current working directory
+# (Ghostty: window-inherit-working-directory = true)
+
+# Move word-wise with Alt + Left/Right
+map alt+left send_text all \x1bb
+map alt+right send_text all \x1bf
+
+# Move word-wise with Ctrl + Left/Right
+map ctrl+left send_text all \x1b[1;5D
+map ctrl+right send_text all \x1b[1;5C
+
+# Delete word-wise with Alt/Ctrl + Backspace
+map alt+backspace send_text all \x1b\x7f
+map ctrl+backspace send_text all \x1b\x7f
+
+# Delete word AFTER cursor with Alt/Ctrl + Delete
+map alt+delete send_text all \x1bd
+map ctrl+delete send_text all \x1bd
+
+# Window management (cmd is Super/Command)
+map ctrl+t new_tab_with_cwd
+map cmd+t new_tab_with_cwd
+map ctrl+q previous_tab
+map cmd+q previous_tab
+map ctrl+e next_tab
+map cmd+e next_tab
+map ctrl+n new_os_window_with_cwd
+map cmd+n new_os_window_with_cwd
+map ctrl+w close_tab
+map cmd+w close_tab

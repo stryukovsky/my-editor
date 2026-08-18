@@ -1,4 +1,5 @@
 local notify = require "configs.notify"
+local close_zen = require "utils.close_zen"
 
 local M = {}
 
@@ -171,6 +172,7 @@ function M.open(path)
     notify.send("Projects", "Project is already opened: " .. M.display_path(path), vim.log.levels.INFO)
     return
   end
+  close_zen()
   bump(path)
   local existing = M.find_tab(path)
   if existing then
@@ -383,6 +385,7 @@ function M.picker_open()
     items = M.open_tabs(),
     empty = "No project tabs. Open one with <A-P> or mark with <leader>prj",
     on_select = function(item)
+      close_zen()
       if item.tab and vim.api.nvim_tabpage_is_valid(item.tab) then
         vim.api.nvim_set_current_tabpage(item.tab)
         M.apply_tab(item.path)

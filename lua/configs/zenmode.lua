@@ -134,3 +134,10 @@ zen_mode.setup {
 vim.api.nvim_create_autocmd("ColorScheme", {
   callback = apply_zen_bg,
 })
+
+-- zen-mode floats belong to the current tab and error if the tab changes under them.
+vim.api.nvim_create_autocmd("TabLeave", {
+  callback = function()
+    require("utils.close_zen")()
+  end,
+})

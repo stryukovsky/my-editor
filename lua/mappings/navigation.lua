@@ -1,6 +1,7 @@
 local map = require "mappings.map"
 local is_normal_buffer = require "utils.is_normal_buffer"
 local notify = require "configs.notify"
+local close_zen = require "utils.close_zen"
 
 local function toggle_wrap()
   local enabled = not vim.wo.wrap
@@ -67,10 +68,18 @@ map({ "n" }, "<A-.>", construct_handler "BufferNext", { desc = "Navigation next 
 
 -- tab navigation
 -- `<A->>` is not a valid keycode (`>` closes the notation). `>` / `<` are Shift+`.` / `,`.
-map({ "n" }, "<A-<>", "<cmd>tabprevious<CR>", { desc = "Navigation prev tab" })
-map({ "n" }, "<A-S-,>", "<cmd>tabprevious<CR>", { desc = "Navigation prev tab" })
-map({ "n" }, "<A-S-.>", "<cmd>tabnext<CR>", { desc = "Navigation next tab" })
+-- zen-mode floats break on tab change; close them first.
+local function tab_cmd(cmd)
+  return function()
+    close_zen()
+    vim.cmd(cmd)
+  end
+end
+map({ "n" }, "<A-<>", tab_cmd "tabprevious", { desc = "Navigation prev tab" })
+map({ "n" }, "<A-S-,>", tab_cmd "tabprevious", { desc = "Navigation prev tab" })
+map({ "n" }, "<A-S-.>", tab_cmd "tabnext", { desc = "Navigation next tab" })
 map("n", "<leader>tab", function()
+  close_zen()
   vim.cmd.tabnew()
   require("configs.dashboard").open_in(0, { isolate = true })
 end, { desc = "Navigation new tab" })

@@ -7,7 +7,7 @@ alacritty tmux sassc gtk-murrine-engine gnome-themes-extra \
 gnome-extensions-app fd-find libpq-devel uchardet-devel fuse fuse-libs \
 audacious pandoc texlive-scheme-full texlive-collection-langcyrillic \
 texlive-collection-latexextra gnome-tweaks ranger mpv maven evince atool gpaste \
-ghostty tree-sitter gpaste-client gpaste-ui python3-devel plantuml ImageMagick \
+ghostty kitty tree-sitter gpaste-client gpaste-ui python3-devel plantuml ImageMagick \
 ImageMagick-devel -y
 
 
