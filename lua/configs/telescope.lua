@@ -20,6 +20,23 @@ local function entry_for_filesearch(entry)
   return original_entry
 end
 
+-- `name.ext path/to/name.ext` — filename first, then the full relative path.
+local function lsp_location_path_display(_, path)
+  local basename = vim.fn.fnamemodify(path, ":t")
+  local rel = vim.fn.fnamemodify(path, ":.")
+  return string.format("%s %s", basename, rel)
+end
+
+local function lsp_location_picker()
+  return {
+    wrap_results = true,
+    initial_mode = "normal",
+    show_line = false,
+    path_display = lsp_location_path_display,
+    mappings = require "mappings.telescope.lsp",
+  }
+end
+
 require("telescope").setup {
   -- the rest of your telescope config goes here
   defaults = {
@@ -88,26 +105,10 @@ require("telescope").setup {
       wrap_results = true,
       mappings = require "mappings.telescope.current_buffer_fuzzy",
     },
-    lsp_references = {
-      wrap_results = true,
-      initial_mode = "normal",
-      mappings = require "mappings.telescope.lsp",
-    },
-    lsp_implementations = {
-      wrap_results = true,
-      initial_mode = "normal",
-      mappings = require "mappings.telescope.lsp",
-    },
-    lsp_definitions = {
-      wrap_results = true,
-      initial_mode = "normal",
-      mappings = require "mappings.telescope.lsp",
-    },
-    lsp_type_definitions = {
-      wrap_results = true,
-      initial_mode = "normal",
-      mappings = require "mappings.telescope.lsp",
-    },
+    lsp_references = lsp_location_picker(),
+    lsp_implementations = lsp_location_picker(),
+    lsp_definitions = lsp_location_picker(),
+    lsp_type_definitions = lsp_location_picker(),
     git_commits = {
       wrap_results = true,
       initial_mode = "normal",
