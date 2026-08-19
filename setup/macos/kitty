@@ -61,3 +61,17 @@ map ctrl+n new_os_window_with_cwd
 map cmd+n new_os_window_with_cwd
 map ctrl+w close_tab
 map cmd+w close_tab
+
+# Четко подгоняет FPS под 60 Гц (1000мс / 60 кадров = ~16.6мс, ставим 16)
+repaint_delay 16
+
+# Моментальный отклик на нажатие клавиш
+input_delay 1
+
+# Жесткая синхронизация с кадровой частотой macOS
+sync_to_monitor yes
+
+# Оптимизация отрисовки шрифтов на macOS (убирает микрофризы)
+macos_thicken_font 0.50
+
+

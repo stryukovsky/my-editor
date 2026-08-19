@@ -22,9 +22,8 @@ end
 
 -- `name.ext path/to/name.ext` — filename first, then the full relative path.
 local function lsp_location_path_display(_, path)
-  local basename = vim.fn.fnamemodify(path, ":t")
   local rel = vim.fn.fnamemodify(path, ":.")
-  return string.format("%s %s", basename, rel)
+  return rel
 end
 
 local function lsp_location_picker()

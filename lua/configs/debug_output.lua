@@ -12,6 +12,13 @@ local session_pids = {} -- Track PIDs for each session
 local process_check_timer = nil -- Timer for periodic process checking
 local session_sync_timer = nil -- Timer for session synchronization
 local breakpoint_hooks = false
+local pid_alive_cache = {} ---@type table<integer, { alive: boolean, at: integer }>
+local session_for_tab_cache = { tab = nil, session = nil, at = 0 }
+local live_roots_cache = { tab = nil, roots = {}, at = 0 }
+local lualine_cache = { text = "", at = 0 }
+local PID_TTL_NS = 1e9 -- 1s
+local TAB_SESSION_TTL_NS = 2e8 -- 200ms
+local LUALINE_TTL_NS = 2e8 -- 200ms
 
 local PAUSE_ICON = "󰏤"
 local RUNNING_ICON = "●"
@@ -45,23 +52,30 @@ local function strip_ansi(str)
   return str
 end
 
+local function invalidate_status_cache()
+  pid_alive_cache = {}
+  session_for_tab_cache = { tab = nil, session = nil, at = 0 }
+  live_roots_cache = { tab = nil, roots = {}, at = 0 }
+  lualine_cache = { text = "", at = 0 }
+end
+
+--- Cheap existence check: `kill(pid, 0)` via libuv, never a shell.
 local function check_process_running(pid)
   if not pid then
     return false
   end
-
-  -- Check if process is still running using system command
-  local command = string.format("kill -0 %d 2>/dev/null && echo 'running' || echo 'stopped'", pid)
-  local handle = io.popen(command)
-  if handle then
-    local result = handle:read "*a"
-    handle:close()
-    return result:match "running" ~= nil
+  local now = vim.uv.hrtime()
+  local cached = pid_alive_cache[pid]
+  if cached and (now - cached.at) < PID_TTL_NS then
+    return cached.alive
   end
-  return false
+  local alive = vim.uv.kill(pid, 0) == 0
+  pid_alive_cache[pid] = { alive = alive, at = now }
+  return alive
 end
 
 local function check_all_processes()
+  local changed = false
   for session_id, pid in pairs(session_pids) do
     -- If we have metadata for this session and it's marked as active
     if session_metadata[session_id] and session_metadata[session_id].active then
@@ -70,9 +84,13 @@ local function check_all_processes()
         -- Process is not running, mark session as inactive
         session_metadata[session_id].active = false
         session_metadata[session_id].ended_at = os.date "%Y-%m-%d %H:%M:%S"
+        changed = true
         -- Don't remove from session_pids yet as we might want to keep this for reference
       end
     end
+  end
+  if changed then
+    invalidate_status_cache()
   end
 end
 
@@ -127,13 +145,10 @@ local function session_tab(session)
 end
 
 --- True when this session is still a real debuggee, not a leftover adapter.
+--- Does not probe the OS; crashed processes are marked inactive by the timer.
 local function session_is_live(session)
   if not session or session.closed then
     return false
-  end
-  local pid = session_pids[session.id]
-  if pid then
-    return check_process_running(pid)
   end
   local meta = session_metadata[session.id]
   if meta and not meta.active then
@@ -158,6 +173,10 @@ end
 
 local function live_roots_for_tab(tab)
   tab = tab or current_tab()
+  local now = vim.uv.hrtime()
+  if live_roots_cache.tab == tab and (now - live_roots_cache.at) < TAB_SESSION_TTL_NS then
+    return live_roots_cache.roots
+  end
   local roots = {}
   each_dap_session(function(session)
     if not session_is_live(session) then
@@ -174,6 +193,7 @@ local function live_roots_for_tab(tab)
       roots[session.id] = session
     end
   end)
+  live_roots_cache = { tab = tab, roots = roots, at = now }
   return roots
 end
 
@@ -199,20 +219,12 @@ local function session_status_icon(session_id, session, meta)
     return PAUSE_ICON
   end
   if session and session_is_live(session) then
-    local pid = session_pids[session_id]
-    if pid then
-      return check_process_running(pid) and RUNNING_ICON or IDLE_ICON
-    end
     return RUNNING_ICON
   end
-  if not meta or not meta.active then
-    return IDLE_ICON
+  if meta and meta.active then
+    return RUNNING_ICON
   end
-  local pid = session_pids[session_id]
-  if pid then
-    return check_process_running(pid) and RUNNING_ICON or IDLE_ICON
-  end
-  return RUNNING_ICON
+  return IDLE_ICON
 end
 
 local function metadata_for_tab(tab)
@@ -554,14 +566,19 @@ function M.setup()
       active = true,
       tab = current_tab(),
     }
+    invalidate_status_cache()
   end
 
   -- Capture process ID when process event is received
   dap.listeners.after.event_process["store_pid"] = function(session, body)
     if body.systemProcessId then
       session_pids[session.id] = body.systemProcessId
+      invalidate_status_cache()
     end
   end
+
+  dap.listeners.after.event_stopped["debug_output_status"] = invalidate_status_cache
+  dap.listeners.after.event_continued["debug_output_status"] = invalidate_status_cache
 
   -- Subscribe to additional DAP termination events for optimized behavior
   -- Especially useful for DAPs which emit these specific events
@@ -603,6 +620,7 @@ function M.setup()
         session_metadata[parent.id].ended_at = session_metadata[parent.id].ended_at or os.date "%Y-%m-%d %H:%M:%S"
       end
     end
+    invalidate_status_cache()
   end
 
   -- Mark session as ended
@@ -642,13 +660,18 @@ function M.sync_sessions()
     actual_session_ids[session.id] = true
   end
 
+  local changed = false
   -- Mark sessions as inactive if they no longer exist in DAP
   for session_id, meta in pairs(session_metadata) do
     if meta.active and not actual_session_ids[session_id] then
       meta.active = false
       meta.ended_at = os.date "%Y-%m-%d %H:%M:%S"
       session_pids[session_id] = nil
+      changed = true
     end
+  end
+  if changed then
+    invalidate_status_cache()
   end
 end
 
@@ -709,6 +732,7 @@ function M.clear()
   session_metadata = {}
   active_output_buffers = {}
   session_pids = {}
+  invalidate_status_cache()
 
   -- Stop timers if they exist
   if process_check_timer then
@@ -740,8 +764,13 @@ end
 --- DAP session bound to the current tab, if any.
 function M.session_for_tab(tab)
   tab = tab or current_tab()
+  local now = vim.uv.hrtime()
+  if session_for_tab_cache.tab == tab and (now - session_for_tab_cache.at) < TAB_SESSION_TTL_NS then
+    return session_for_tab_cache.session
+  end
   local dap = require "dap"
   local current = dap.session()
+  local found
   if current and session_is_live(current) then
     local sid_tab = session_tab(current)
     if sid_tab == nil then
@@ -749,24 +778,34 @@ function M.session_for_tab(tab)
       if meta then
         meta.tab = tab
       end
-      return current
-    end
-    if sid_tab == tab then
-      return current
+      found = current
+    elseif sid_tab == tab then
+      found = current
     end
   end
-  local found
-  for _, root in pairs(live_roots_for_tab(tab)) do
-    if root.stopped_thread_id then
-      return root
-    end
-    for _, child in pairs(root.children or {}) do
-      if session_is_live(child) and child.stopped_thread_id then
-        return child
+  if not found then
+    local fallback
+    for _, root in pairs(live_roots_for_tab(tab)) do
+      if root.stopped_thread_id then
+        fallback = root
+        break
       end
+      local stopped_child
+      for _, child in pairs(root.children or {}) do
+        if session_is_live(child) and child.stopped_thread_id then
+          stopped_child = child
+          break
+        end
+      end
+      if stopped_child then
+        fallback = stopped_child
+        break
+      end
+      fallback = fallback or root
     end
-    found = found or root
+    found = fallback
   end
+  session_for_tab_cache = { tab = tab, session = found, at = now }
   return found
 end
 
@@ -805,29 +844,36 @@ end
 --- Get lualine component for current DAP session
 --- @return table Lualine component configuration
 function M.lualine_component()
-  return {
-    function()
-      local session = M.session_for_tab()
-      if not session then
-        return ""
-      end
+  local function text()
+    local now = vim.uv.hrtime()
+    if (now - lualine_cache.at) < LUALINE_TTL_NS then
+      return lualine_cache.text
+    end
 
+    local session = M.session_for_tab()
+    local result = ""
+    if session then
       local meta = session_metadata[session.id]
       if not meta then
-        return "DAP"
+        result = "DAP"
+      else
+        local status_icon = session_status_icon(session.id, session, meta)
+        local name = meta.name or "DAP"
+        local active_count = M.get_active_sessions_count()
+        if active_count > 1 then
+          result = string.format("%s %s (%d)", status_icon, name, active_count)
+        else
+          result = string.format("%s %s", status_icon, name)
+        end
       end
-
-      local status_icon = session_status_icon(session.id, session, meta)
-      local name = meta.name or "DAP"
-      local active_count = M.get_active_sessions_count()
-
-      if active_count > 1 then
-        return string.format("%s %s (%d)", status_icon, name, active_count)
-      end
-      return string.format("%s %s", status_icon, name)
-    end,
+    end
+    lualine_cache = { text = result, at = now }
+    return result
+  end
+  return {
+    text,
     cond = function()
-      return M.session_for_tab() ~= nil
+      return text() ~= ""
     end,
   }
 end
