@@ -43,5 +43,5 @@ return {
     opts = require "configs.csv",
     cmd = { "CsvViewEnable", "CsvViewDisable", "CsvViewToggle" },
   },
-  { "r4ppz/lspeek.nvim" },
+  { "stryukovsky/lspeek.nvim", branch = "feature/add-fragile-mode" },
 }
