@@ -1,33 +1,56 @@
+-- Marked project directories. Opening one is a Kitty tab, not a Neovim tab.
+--
+-- Data: ~/.config/nvim/data/projects.json (because stdpath("data") is patched).
+-- Mark with <leader>prj, pick with <A-P>.
+--
+-- Algorithm — is this project already open in Kitty?
+--   Ask Kitty once for all tabs (`kitten @ ls` → id, title, cwd).
+--   For each saved project path, pick the best tab:
+--     1. title == folder name AND cwd == project path   (exact, stop)
+--     2. title == folder name                           (we set --tab-title to the dirname)
+--     3. cwd == project path                            (title drifted / never set)
+--   Two folders with the same basename can collide on step 2.
+--
+-- Algorithm — open / focus:
+--   bump recency in projects.json
+--   if a tab matched → kitten @ focus-tab --match id:N
+--   else              → kitten @ launch --type=tab --cwd=<path> --tab-title=<dirname>
+
 local notify = require "configs.notify"
-local close_zen = require "utils.close_zen"
 
 local M = {}
 
+-- Path of the saved project list under the patched stdpath("data").
 local function state_path()
   return vim.fn.stdpath "data" .. "/projects.json"
 end
 
+-- Expand ~, make absolute, strip trailing slashes. nil if empty/invalid.
 ---@param path? string
 ---@return string|nil
 function M.normalize(path)
   if not path or path == "" then
     return nil
   end
-  path = vim.fn.expand(path)
-  if path == "" then
+  local expanded = vim.fn.expand(path)
+  if expanded == "" then
     return nil
   end
-  path = vim.fs.normalize(vim.fn.fnamemodify(path, ":p"))
-  path = path:gsub("/+$", "")
-  return path ~= "" and path or nil
+  local abs = vim.fs.normalize(vim.fn.fnamemodify(expanded, ":p")):gsub("/+$", "")
+  if abs == "" then
+    return nil
+  end
+  return abs
 end
 
+-- Home-relative form for picker rows (`~/src/foo`).
 ---@param path string
 ---@return string
 function M.display_path(path)
   return vim.fn.fnamemodify(path, ":~")
 end
 
+-- Last path component — this is the Kitty `--tab-title` we set on launch.
 ---@param path string
 ---@return string
 function M.name(path)
@@ -35,6 +58,7 @@ function M.name(path)
   return name ~= "" and name or path
 end
 
+-- Directory this Neovim thinks it is in: neo-tree root if any, else getcwd.
 ---@return string|nil
 function M.current_root()
   local tab = vim.api.nvim_get_current_tabpage()
@@ -52,6 +76,7 @@ function M.current_root()
   return M.normalize(vim.fn.getcwd())
 end
 
+-- Read projects.json, normalize paths, drop dupes. Order is recency (front = newest).
 ---@return string[]
 function M.load()
   local file = state_path()
@@ -66,8 +91,8 @@ function M.load()
   local projects = {}
   local seen = {}
   for _, item in ipairs(list) do
-    local path = type(item) == "string" and item or item.path
-    path = M.normalize(path)
+    local raw = type(item) == "string" and item or item.path
+    local path = M.normalize(raw)
     if path and not seen[path] then
       seen[path] = true
       projects[#projects + 1] = path
@@ -76,19 +101,22 @@ function M.load()
   return projects
 end
 
+-- Write the list back as `{ "projects": [ ... ] }`.
 ---@param projects string[]
 function M.save(projects)
   vim.fn.mkdir(vim.fn.stdpath "data", "p")
   vim.fn.writefile({ vim.json.encode { projects = projects } }, state_path())
 end
 
+-- True if this directory is already in the saved list.
 ---@param path string
 ---@return boolean
 function M.is_marked(path)
-  path = M.normalize(path)
-  return path ~= nil and vim.list_contains(M.load(), path)
+  local normalized = M.normalize(path)
+  return normalized ~= nil and vim.list_contains(M.load(), normalized)
 end
 
+-- Move path to index 1 so the next picker open shows it first, then save.
 ---@param path string
 local function bump(path)
   local projects = M.load()
@@ -102,6 +130,7 @@ local function bump(path)
   M.save(projects)
 end
 
+-- Project bound to this Neovim tabpage (vim.t.project_path). Python setup still reads this.
 ---@param tab? integer
 ---@return string|nil
 function M.tab_project(tab)
@@ -115,78 +144,72 @@ function M.tab_project(tab)
   return nil
 end
 
+-- `:tcd` this Neovim to the project and remember it on the Neovim tab. No Kitty involved.
 ---@param path string
----@return integer|nil
-function M.find_tab(path)
-  path = M.normalize(path)
-  if not path then
+function M.apply_cwd(path)
+  local normalized = M.normalize(path)
+  if not normalized then
+    return
+  end
+  vim.api.nvim_cmd({ cmd = "tcd", args = { normalized } }, {})
+  vim.t.project_path = normalized
+end
+
+-- Match one project path against Kitty tabs. Pass `tabs` to reuse a single `ls`.
+-- Returns the best tab (title+cwd, else title, else cwd) or nil.
+---@param path string
+---@param tabs? KittenTab[]
+---@return KittenTab|nil
+function M.kitty_tab(path, tabs)
+  local normalized = M.normalize(path)
+  if not normalized then
     return nil
   end
-  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
-    if M.tab_project(tab) == path then
+  local name = M.name(normalized)
+  ---@type KittenTab|nil
+  local named
+  ---@type KittenTab|nil
+  local cwd_match
+  for _, tab in ipairs(tabs or require("configs.kitten").tabs()) do
+    local tab_cwd = tab.cwd and M.normalize(tab.cwd) or nil
+    -- Title + cwd: unambiguous.
+    if tab.title == name and tab_cwd == normalized then
       return tab
     end
-  end
-  return nil
-end
-
----@return { path: string, tab: integer }[]
-function M.open_tabs()
-  local items = {}
-  local seen = {}
-  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
-    local path = M.tab_project(tab)
-    if path and not seen[path] then
-      seen[path] = true
-      items[#items + 1] = { path = path, tab = tab }
+    -- Title only: we launched with --tab-title=<dirname>.
+    if tab.title == name then
+      named = named or tab
+    end
+    -- Cwd only: tab title drifted (nvim sets window title, user renamed, …).
+    if tab_cwd == normalized then
+      cwd_match = cwd_match or tab
     end
   end
-  return items
+  return named or cwd_match
 end
 
----@param path string
-function M.apply_tab(path)
-  path = M.normalize(path)
-  if not path then
-    return
-  end
-  vim.api.nvim_cmd({ cmd = "tcd", args = { path } }, {})
-  vim.t.project_path = path
-end
-
-local function tab_is_reusable()
-  if M.tab_project() then
-    return false
-  end
-  return require "utils.is_buffer_initial_dashboard"()
-end
-
+-- If Kitty already has this project, focus that tab by id; otherwise launch a new one.
 ---@param path string
 function M.open(path)
-  path = M.normalize(path)
-  if not path or vim.fn.isdirectory(path) == 0 then
-    notify.send("Projects", "Project directory missing: " .. M.display_path(path or ""), vim.log.levels.ERROR)
+  local normalized = M.normalize(path)
+  if not normalized or vim.fn.isdirectory(normalized) == 0 then
+    notify.send("Projects", "Project directory missing: " .. M.display_path(normalized or path or ""), vim.log.levels.ERROR)
     return
   end
-  if M.current_root() == path or M.normalize(vim.fn.getcwd()) == path then
-    notify.send("Projects", "Project is already opened: " .. M.display_path(path), vim.log.levels.INFO)
-    return
-  end
-  close_zen()
-  bump(path)
-  local existing = M.find_tab(path)
+  bump(normalized)
+  local existing = M.kitty_tab(normalized)
   if existing then
-    vim.api.nvim_set_current_tabpage(existing)
-    M.apply_tab(path)
+    require("configs.kitten").focus_tab(existing.id)
     return
   end
-  if not tab_is_reusable() then
-    vim.cmd.tabnew()
-    require("configs.dashboard").open_in(0, { isolate = true })
-  end
-  M.apply_tab(path)
+  require("configs.kitten").launch {
+    type = "tab",
+    cwd = normalized,
+    tab_title = M.name(normalized),
+  }
 end
 
+-- Remember current_root() as a project and tcd this Neovim there. Does not open Kitty.
 function M.mark()
   local path = M.current_root()
   if not path or vim.fn.isdirectory(path) == 0 then
@@ -194,26 +217,26 @@ function M.mark()
     return
   end
   if M.is_marked(path) then
-    vim.t.project_path = path
-    M.apply_tab(path)
+    M.apply_cwd(path)
     notify.send("Projects", "Already a project: " .. M.display_path(path), vim.log.levels.INFO)
     return
   end
   bump(path)
-  M.apply_tab(path)
+  M.apply_cwd(path)
   notify.send("Projects", "Marked " .. M.display_path(path), vim.log.levels.INFO)
 end
 
+-- Drop path from projects.json. Kitty tabs are left alone.
 ---@param path string
 function M.unmark(path)
-  path = M.normalize(path)
-  if not path then
+  local normalized = M.normalize(path)
+  if not normalized then
     return
   end
   local projects = M.load()
   local removed = false
   for i, existing in ipairs(projects) do
-    if existing == path then
+    if existing == normalized then
       table.remove(projects, i)
       removed = true
       break
@@ -223,15 +246,14 @@ function M.unmark(path)
     return
   end
   M.save(projects)
-  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
-    if M.tab_project(tab) == path then
-      vim.t[tab].project_path = nil
-    end
+  if M.tab_project() == normalized then
+    vim.t.project_path = nil
   end
-  notify.send("Projects", "Unmarked " .. M.display_path(path), vim.log.levels.INFO)
+  notify.send("Projects", "Unmarked " .. M.display_path(normalized), vim.log.levels.INFO)
 end
 
----@param item { path: string, tab?: integer }
+-- Text for the Telescope preview pane: name, path, Kitty tab id, directory listing.
+---@param item { path: string, tab?: KittenTab }
 local function preview_lines(item)
   local path = item.path
   local lines = {
@@ -241,11 +263,10 @@ local function preview_lines(item)
   if path ~= M.display_path(path) then
     lines[#lines + 1] = "Abs:     " .. path
   end
-  local tab = item.tab or M.find_tab(path)
-  if tab then
-    lines[#lines + 1] = "Tab:     " .. tostring(vim.api.nvim_tabpage_get_number(tab)) .. " (open)"
+  if item.tab then
+    lines[#lines + 1] = "Kitty:   tab " .. tostring(item.tab.id) .. " (open)"
   else
-    lines[#lines + 1] = "Tab:     not open"
+    lines[#lines + 1] = "Kitty:   not open"
   end
   lines[#lines + 1] = ""
   lines[#lines + 1] = "Contents:"
@@ -265,7 +286,8 @@ local function preview_lines(item)
   return lines
 end
 
----@param opts { title: string, items: { path: string, tab?: integer }[], empty: string, on_select: fun(item: { path: string, tab?: integer }), unmark?: boolean }
+-- Generic Telescope list of projects. Enter → on_select; `d` unmarks when enabled.
+---@param opts { title: string, items: { path: string, tab?: KittenTab }[], empty: string, on_select: fun(item: { path: string, tab?: KittenTab }), unmark?: boolean }
 local function open_picker(opts)
   if #opts.items == 0 then
     notify.send("Projects", opts.empty, vim.log.levels.WARN)
@@ -288,14 +310,16 @@ local function open_picker(opts)
     },
   }
 
+  -- One picker row: folder name, optional [open], and the home-relative path.
   local function entry_maker(item)
-    local open = item.tab ~= nil or M.find_tab(item.path) ~= nil
+    local open = item.tab ~= nil
     return {
       value = item,
       ordinal = M.name(item.path) .. " " .. M.display_path(item.path),
       display = function()
         local name = M.name(item.path)
         if open then
+          -- Kitty already has a tab for this folder; select focuses it by id.
           name = name .. "  [open]"
         end
         return displayer {
@@ -331,6 +355,7 @@ local function open_picker(opts)
           end
         end)
         if opts.unmark then
+          -- Remove from projects.json and rebuild the list without leaving Telescope.
           local function unmark_selected()
             local selection = action_state.get_selected_entry()
             if not selection or not selection.value then
@@ -339,8 +364,9 @@ local function open_picker(opts)
             M.unmark(selection.value.path)
             local picker = action_state.get_current_picker(prompt_bufnr)
             local next_items = {}
+            local tabs = require("configs.kitten").tabs()
             for _, path in ipairs(M.load()) do
-              next_items[#next_items + 1] = { path = path, tab = M.find_tab(path) }
+              next_items[#next_items + 1] = { path = path, tab = M.kitty_tab(path, tabs) }
             end
             if #next_items == 0 then
               actions.close(prompt_bufnr)
@@ -363,10 +389,12 @@ local function open_picker(opts)
     :find()
 end
 
+-- <A-P>: one `kitten @ ls`, tag each saved project with its tab, then open the picker.
 function M.picker_all()
   local items = {}
+  local tabs = require("configs.kitten").tabs()
   for _, path in ipairs(M.load()) do
-    items[#items + 1] = { path = path, tab = M.find_tab(path) }
+    items[#items + 1] = { path = path, tab = M.kitty_tab(path, tabs) }
   end
   open_picker {
     title = "Projects",
@@ -379,23 +407,7 @@ function M.picker_all()
   }
 end
 
-function M.picker_open()
-  open_picker {
-    title = "Open project tabs",
-    items = M.open_tabs(),
-    empty = "No project tabs. Open one with <A-P> or mark with <leader>prj",
-    on_select = function(item)
-      close_zen()
-      if item.tab and vim.api.nvim_tabpage_is_valid(item.tab) then
-        vim.api.nvim_set_current_tabpage(item.tab)
-        M.apply_tab(item.path)
-      else
-        M.open(item.path)
-      end
-    end,
-  }
-end
-
+-- On startup, if cwd is a marked project, stamp vim.t.project_path for this Neovim.
 function M.setup()
   vim.api.nvim_create_autocmd("VimEnter", {
     callback = function()

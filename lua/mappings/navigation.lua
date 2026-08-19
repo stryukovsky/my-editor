@@ -78,6 +78,8 @@ end
 map({ "n" }, "<A-<>", tab_cmd "tabprevious", { desc = "Navigation prev tab" })
 map({ "n" }, "<A-S-,>", tab_cmd "tabprevious", { desc = "Navigation prev tab" })
 map({ "n" }, "<A-S-.>", tab_cmd "tabnext", { desc = "Navigation next tab" })
+-- <A-S-,> / <A-S-.> still walk Neovim tabs (leftover). New workspaces are Kitty tabs:
+-- <leader>tab → kitten @ launch --type=tab (cwd inherited). Projects go through configs.projects.
 map("n", "<leader>tab", function()
   require("configs.kitten").launch { type = "tab" }
 end, { desc = "Navigation new kitty tab" })

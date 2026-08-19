@@ -55,6 +55,7 @@ local telescope_components = {
     modes = ui_components_modes,
     shortcut = "<A-P>",
     command = function()
+      -- Lists marked projects; [open] means a Kitty tab already exists (focus vs launch).
       require("configs.projects").picker_all()
     end,
     desc = "UI telescope projects",
