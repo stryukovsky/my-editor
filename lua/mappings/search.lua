@@ -26,8 +26,12 @@ map("x", "<leader>fw", function()
   }
 end, { desc = "telescope search selection in current buffer" })
 
--- map("n", "<leader>fb", "<cmd>Telescope buffers<CR>", { desc = "telescope find buffers" })
--- map("n", "<leader>fh", "<cmd>Telescope oldfiles<CR>", { desc = "telescope find oldfiles" })
--- map("n", "<leader>fc", "<cmd>Telescope current_buffer_fuzzy_find<CR>", { desc = "telescope find in current buffer" })
--- map("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "telescope find files" })
--- map("n", "<leader>fa", "<cmd>Telescope find_files follow=true no_ignore=true hidden=true<CR>", { desc = "telescope find all files" })
+map("n", "<leader>fall", function()
+  require("telescope.builtin").find_files {
+    hidden = true,
+    no_ignore = true,
+    no_ignore_parent = true,
+    follow = true,
+    prompt_title = "Find all files",
+  }
+end, { desc = "telescope find all files including ignored" })
