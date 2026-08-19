@@ -29,6 +29,10 @@ copy_on_select no
 cursor none
 cursor_shape block
 
+# Remote control from Neovim (`kitten @ launch`, project tabs)
+allow_remote_control socket-only
+listen_on unix:/tmp/mykitty
+
 # New tabs/windows inherit the current working directory
 # (Ghostty: window-inherit-working-directory = true)
 

@@ -17,7 +17,7 @@ map("n", "<leader>ltd", function()
 end, opts "type definitions")
 
 map("n", "<leader>ld", function()
-  telescope_builtin.lsp_definitions { bufnr = 0 }
+  require("lspeek").peek_definition()
 end, opts "definitions")
 
 map("n", "<leader>lci", function()
