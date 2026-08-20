@@ -1,0 +1,79 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Go: package",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Go: current file",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${file}",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Go: current directory",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${fileDirname}",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Go: package with args",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}",
+      "args": []
+    },
+    {
+      "name": "Go: test file",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${file}",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Go: test package",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Go: test workspace",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Go: attach local",
+      "type": "go",
+      "request": "attach",
+      "mode": "local",
+      "processId": "${command:pickProcess}",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Go: attach remote",
+      "type": "go",
+      "request": "attach",
+      "mode": "remote",
+      "host": "127.0.0.1",
+      "port": 2345,
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

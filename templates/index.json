@@ -10,6 +10,17 @@
     "path": "python-dap-command.json",
     "destination": ".vscode/launch.json",
     "kind": "dap"
+  },
+  {
+    "name": "node-dap",
+    "path": "node-dap.json",
+    "destination": ".vscode/launch.json",
+    "kind": "dap"
+  },
+  {
+    "name": "go-dap",
+    "path": "go-dap.json",
+    "destination": ".vscode/launch.json",
+    "kind": "dap"
   }
 ]
-

@@ -1,0 +1,83 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Node: current file",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${file}",
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
+    },
+    {
+      "name": "Node: src/index.js",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/index.js",
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
+    },
+    {
+      "name": "Node: npm start",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start"],
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
+    },
+    {
+      "name": "Node: npm test",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["test"],
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
+    },
+    {
+      "name": "TypeScript: current file (tsx)",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["tsx"],
+      "program": "${file}",
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
+    },
+    {
+      "name": "TypeScript: src/index.ts (tsx)",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["tsx"],
+      "program": "${workspaceFolder}/src/index.ts",
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
+    },
+    {
+      "name": "TypeScript: compiled dist/index.js",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/dist/index.js",
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
+    },
+    {
+      "name": "Node: attach process",
+      "type": "pwa-node",
+      "request": "attach",
+      "processId": "${command:pickProcess}",
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
+    },
+    {
+      "name": "Node: attach port 9229",
+      "type": "pwa-node",
+      "request": "attach",
+      "port": 9229,
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
+    }
+  ]
+}

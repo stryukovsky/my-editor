@@ -2,6 +2,7 @@ local map = require "mappings.map"
 local todotxt = require "todotxt"
 local notify = require "configs.notify"
 local gitutils = require "configs.gitutils"
+local open_scratch = require "utils.open_scratch"
 
 local function git_failure_message(command, stderr)
   if not stderr or stderr == "" then
@@ -194,29 +195,27 @@ map("n", "<leader>jmd", function()
     table.insert(md, "| " .. table.concat(cells, " | ") .. " |")
   end
 
-  local buf = vim.api.nvim_create_buf(false, true)
-  vim.bo[buf].filetype = "todotxt-preview"
-  vim.bo[buf].buftype = ""
-  vim.bo[buf].bufhidden = "wipe"
-  vim.bo[buf].modifiable = true
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, md)
-  vim.bo[buf].modifiable = false
-  vim.bo[buf].modified = false
-  vim.bo[buf].buflisted = true
-
   -- Name without .md so filetype detection does not overwrite todotxt-preview.
-  local ok = pcall(vim.api.nvim_buf_set_name, buf, "todotxt-preview")
-  if not ok then
-    vim.api.nvim_buf_set_name(buf, "todotxt-preview-" .. math.random(9999))
-  end
-  vim.bo[buf].filetype = "todotxt-preview"
-
-  vim.api.nvim_set_current_buf(buf)
+  open_scratch {
+    name = "todotxt-preview",
+    filetype = "todotxt-preview",
+    lines = md,
+    buftype = "",
+  }
 end, { desc = "Work: markdown table preview by project" })
 
 map("n", "<leader>jc", function()
   todotxt.cycle_priority()
 end, { desc = "Work: cycle priority" })
+
+-- Same as <C-a> increment, but for (A)/(B)/(C) on the current task.
+map("n", "<C-a>", function()
+  if vim.bo.filetype == "todotxt" then
+    todotxt.cycle_priority()
+    return
+  end
+  vim.cmd("normal! " .. vim.v.count1 .. "\001")
+end, { desc = "Increment / cycle todo priority" })
 
 map("n", "<leader>jtd", function() end, { desc = "Work: today date" })
 

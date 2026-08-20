@@ -6,6 +6,7 @@ local oil = require "configs.oil"
 local neotree_command = require "neo-tree.command"
 local grug_far = require "grug-far"
 local close_telescope = require "mappings.close_telescope"
+local close_zen = require "utils.close_zen"
 local is_normal_buffer = require "utils.is_normal_buffer"
 
 local ui_components_modes = { "n" }
@@ -117,6 +118,7 @@ vim.g.last_opened_telescope = ""
 _G.dialog_component_callback_close = function() end
 for _, value in ipairs(telescope_components) do
   map(value.modes, value.shortcut, function()
+    close_zen()
     if close_telescope() then
       if vim.g.last_opened_telescope ~= value.desc then
         value.command()
@@ -135,6 +137,11 @@ for _, value in ipairs(telescope_components) do
   end, { desc = value.desc })
 end
 
+-- Alt+Shift+z. Plain <A-z> is Telescope oldfiles.
+map(ui_components_modes, "<A-Z>", function()
+  require("configs.zenmode").toggle_ui()
+end, { desc = "UI zen mode" })
+
 map("n", "<A-o>", function()
   oil.toggle()
 end, { desc = "UI oil toggle file browser" })
@@ -144,8 +151,16 @@ map(ui_components_modes, "<A-a>", "<C-W>h", { desc = "UI switch window left" })
 map(ui_components_modes, "<A-d>", "<C-W>l", { desc = "UI switch window right" })
 map(ui_components_modes, "<A-s>", "<C-W>j", { desc = "UI switch window down" })
 map(ui_components_modes, "<A-w>", "<C-W>k", { desc = "UI switch window up" })
-map("n", "+", "<C-W>3>", { desc = "UI window width increase" })
-map("n", "_", "<C-W>3<", { desc = "UI window width decrease" })
+map("n", "+", function()
+  if not require("configs.zenmode").widen() then
+    vim.cmd "wincmd 3>"
+  end
+end, { desc = "UI window width increase" })
+map("n", "_", function()
+  if not require("configs.zenmode").narrow() then
+    vim.cmd "wincmd 3<"
+  end
+end, { desc = "UI window width decrease" })
 
 map("n", "<leader>th", function()
   vim.cmd "Telescope colorscheme"

@@ -1,4 +1,6 @@
-local lsp_with_default_conf = {
+local M = {}
+
+M.servers = {
   "html",
   "cssls",
   "ts_ls",
@@ -37,6 +39,8 @@ vim.lsp.config("jdtls", {
   },
 })
 
-for _, lsp_name in ipairs(lsp_with_default_conf) do
+for _, lsp_name in ipairs(M.servers) do
   vim.lsp.enable(lsp_name)
 end
+
+return M

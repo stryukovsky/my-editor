@@ -201,6 +201,10 @@ local function override_highlights()
 
   sync_cursorline_nr()
 
+  -- DAP current line: buffer + number use this group. statuscolumn.lua overlays
+  -- fold/sign icon groups onto the same background so the gutter row is solid.
+  hl(0, "DapStoppedLine", { link = "Substitute" })
+
   local project_colors = {
     "#c678dd",
     "#e06c75",
@@ -235,5 +239,12 @@ vim.api.nvim_create_autocmd("ModeChanged", {
 
 vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "ErrorMsg", linehl = "", numhl = "" })
 vim.fn.sign_define("DapBreakpointCondition", { text = "", texthl = "ErrorMsg", linehl = "", numhl = "" })
-vim.fn.sign_define("DapStopped", { text = "", texthl = "ErrorMsg", linehl = "Substitute", numhl = "Substitute" })
+vim.api.nvim_set_hl(0, "DapStoppedLine", { link = "Substitute" })
+vim.fn.sign_define("DapStopped", {
+  text = "",
+  texthl = "ErrorMsg",
+  linehl = "DapStoppedLine",
+  numhl = "DapStoppedLine",
+  culhl = "ErrorMsg",
+})
 vim.fn.sign_define("DapBreakpointRejected", { text = "", texthl = "WarningMsg", linehl = "", numhl = "" })

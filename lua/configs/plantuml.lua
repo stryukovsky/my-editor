@@ -1,6 +1,7 @@
 local M = {}
 local async = require "plenary.async"
 local notify = require "configs.notify"
+local open_scratch = require "utils.open_scratch"
 
 local cache = {}
 local cache_order = {}
@@ -16,22 +17,12 @@ local function hash_input(lines)
 end
 
 local function open_buffer(out_lines)
-  local buf = vim.api.nvim_create_buf(false, true)
-  vim.bo[buf].filetype = "plantuml-preview"
-  vim.bo[buf].buftype = ""
-  vim.bo[buf].bufhidden = "wipe"
-  vim.bo[buf].buflisted = true
-
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, out_lines)
-  vim.bo[buf].modified = false
-  vim.bo[buf].modifiable = false
-
-  vim.api.nvim_set_current_buf(buf)
-
-  local ok = pcall(vim.api.nvim_buf_set_name, buf, "plantuml-preview")
-  if not ok then
-    vim.api.nvim_buf_set_name(buf, "plantuml-preview" .. math.random(9999))
-  end
+  open_scratch {
+    name = "plantuml-preview",
+    filetype = "plantuml-preview",
+    lines = out_lines,
+    buftype = "",
+  }
 end
 
 local function run_plantuml(command, options, callback)

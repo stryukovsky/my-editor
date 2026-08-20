@@ -1,3 +1,5 @@
+local M = {}
+
 local zen_mode = require "zen-mode"
 
 -- statuscol.nvim reads number/relativenumber/foldcolumn and fillchars to render
@@ -5,6 +7,8 @@ local zen_mode = require "zen-mode"
 -- BufWinEnter, so restore them after that runs.
 local STATUSCOL = "%{%v:lua.require('statuscol').get_statuscol_string()%}"
 local BACKDROP = 0.90
+local WIDTH_MIN = 40
+local WIDTH_STEP = 10
 
 -- zen-mode uses `highlight default ZenBg`, which is computed at setup() — before
 -- theme.lua — and then never updates. Force ZenBg from the current Normal bg.
@@ -65,9 +69,69 @@ vim.api.nvim_create_autocmd("ColorScheme", {
   callback = apply_zen_bg,
 })
 
--- zen-mode floats belong to the current tab and error if the tab changes under them.
+-- Close zen if a tab change would leave its floats behind.
 vim.api.nvim_create_autocmd("TabLeave", {
   callback = function()
     require("utils.close_zen")()
   end,
 })
+
+-- Toggle zen like other UI shortcuts: drop Telescope first, then open/close zen.
+-- Registers dialog_component_callback_close so the next Telescope/UI key closes zen.
+function M.toggle_ui()
+  local close_telescope = require "mappings.close_telescope"
+  local close_zen = require "utils.close_zen"
+  local had_telescope = close_telescope()
+  local view_ok, view = pcall(require, "zen-mode.view")
+  local zen_open = view_ok and view.is_open()
+
+  if zen_open and not had_telescope then
+    close_zen()
+    _G.dialog_component_callback_close = function() end
+    return
+  end
+
+  if type(_G.dialog_component_callback_close) == "function" then
+    _G.dialog_component_callback_close()
+  end
+
+  view_ok, view = pcall(require, "zen-mode.view")
+  if not (view_ok and view.is_open()) then
+    zen_mode.open()
+  end
+  _G.dialog_component_callback_close = function()
+    close_zen()
+    _G.dialog_component_callback_close = function() end
+  end
+end
+
+-- Zen-mode has no public resize API. Mutate the live session opts and call
+-- fix_layout(true) so the float is resized and recentered (unlike :wincmd >).
+---@param delta integer columns to add (negative to shrink)
+---@return boolean applied
+--- NOTE: some internal stuff is used; maybe problems here
+function M.adjust_width(delta)
+  local ok, view = pcall(require, "zen-mode.view")
+  if not ok or not view.is_open() or not view.opts or not view.opts.window then
+    return false
+  end
+  local current_width = view.opts.window.width
+  if type(current_width) ~= "number" or current_width <= 1 then
+    current_width = vim.api.nvim_win_get_width(view.win)
+  end
+  local width = math.max(WIDTH_MIN, math.min(vim.o.columns, math.floor(current_width + delta)))
+  view.opts.window.width = width
+  view.fix_layout(true)
+  require("configs.notify").replace("zen.width", "Zen", "Width " .. tostring(width), vim.log.levels.INFO)
+  return true
+end
+
+function M.widen()
+  return M.adjust_width(WIDTH_STEP)
+end
+
+function M.narrow()
+  return M.adjust_width(-WIDTH_STEP)
+end
+
+return M
