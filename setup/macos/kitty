@@ -78,4 +78,9 @@ sync_to_monitor yes
 # Оптимизация отрисовки шрифтов на macOS (убирает микрофризы)
 macos_thicken_font 0.50
 
+tab_bar_edge            top
+tab_bar_style           powerline
+tab_powerline_style     slanted
+active_tab_font_style   bold
+inactive_tab_font_style normal
 

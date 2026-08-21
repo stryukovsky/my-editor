@@ -50,6 +50,12 @@ trouble.setup {
       format = "{padded_filename} {padded_pos}   {text:ts}",
     },
 
+    telescope_files = {
+      desc = "Files found by name",
+      source = "telescope",
+      title = "{hl:Title} Files{hl}    {count} entries found ",
+      format = "{file_icon} {padded_filename}",
+    },
     file_results = {
       desc = "File results with just position",
       source = "telescope",

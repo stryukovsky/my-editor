@@ -114,6 +114,8 @@ require("telescope").setup {
     },
     find_files = {
       hidden = true,
+      wrap_results = true,
+      mappings = require "mappings.telescope.find_files",
     },
     -- yank history ignores this config, so it is moved to mapping which triggers telescope window to open
     -- yank_history = {
