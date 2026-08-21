@@ -76,6 +76,15 @@ map("n", "<leader>b", function()
   dap.toggle_breakpoint()
 end, { desc = "debug toggle breakpoint" })
 
+map("n", "<leader>B", function()
+  vim.ui.input({ prompt = "Breakpoint condition: " }, function(cond)
+    if not cond or cond == "" then
+      return
+    end
+    dap.set_breakpoint(cond)
+  end)
+end, { desc = "debug conditional breakpoint" })
+
 local function widgets_mappings(toggling_mapping)
   vim.schedule(function()
     local bufnr = vim.api.nvim_get_current_buf()
