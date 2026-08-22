@@ -1,17 +1,52 @@
-# Window settings
+# Window
 remember_window_size yes
-hide_window_decorations no
+hide_window_decorations yes
 confirm_os_window_close 0
+window_padding_width 6 10
+window_margin_width 0
+placement_strategy center
+wayland_titlebar_color background
 
-# Font settings
+# Font
 font_family AdwaitaMono Nerd Font
 font_size 10.5
 bold_font auto
 italic_font auto
 bold_italic_font auto
+disable_ligatures cursor
+adjust_line_height 115%
+modify_font underline_thickness 150%
+modify_font underline_position 2
 
-# Background opacity
+# Material Deep Ocean (matches nvim night theme)
+foreground #A6ACCD
+background #0F111A
+selection_foreground #FFFFFF
+selection_background #1F2233
+cursor #82AAFF
+cursor_text_color #0F111A
+url_color #82AAFF
+
+color0  #0F111A
+color8  #464B5D
+color1  #FF5370
+color9  #FF5370
+color2  #C3E88D
+color10 #C3E88D
+color3  #FFCB6B
+color11 #F78C6C
+color4  #82AAFF
+color12 #82AAFF
+color5  #C792EA
+color13 #C792EA
+color6  #89DDFF
+color14 #89DDFF
+color7  #EEFFFF
+color15 #FFFFFF
+
+# Background
 background_opacity 1.0
+inactive_text_alpha 0.62
 
 # Shell
 shell zsh
@@ -21,17 +56,32 @@ shell_integration enabled no-cursor
 # Clipboard
 clipboard_control write-clipboard write-primary read-clipboard read-primary
 copy_on_select no
+strip_trailing_spaces smart
+paste_actions quote-urls-at-prompt,confirm
 
 # Linux: Kitty already sends Alt as Meta. Do not bind letter Alt combos
 # here so Neovim <A-*> mappings reach the program.
 
-# Cursor
+# Cursor (nvim draws its own; hide the terminal caret)
 cursor none
 cursor_shape block
+cursor_beam_thickness 1.5
+mouse_hide_wait 3.0
 
 # Remote control from Neovim (`kitten @ launch`, project tabs)
 allow_remote_control socket-only
 listen_on unix:/tmp/mykitty
+
+# Scrollback / urls
+scrollback_lines 20000
+url_style curly
+underline_hyperlinks hover
+detect_urls yes
+
+# Bell
+enable_audio_bell no
+visual_bell_duration 0
+bell_on_tab no
 
 # New tabs/windows inherit the current working directory
 # (Ghostty: window-inherit-working-directory = true)
@@ -59,9 +109,21 @@ map ctrl+e next_tab
 map ctrl+n new_os_window_with_cwd
 map ctrl+w close_tab
 
+# Tabs
 tab_bar_edge            top
+tab_bar_align           left
 tab_bar_style           powerline
 tab_powerline_style     slanted
+tab_bar_min_tabs        1
+tab_bar_margin_height   0 0
+tab_title_template      " {index} {title[:32]} "
 active_tab_font_style   bold
 inactive_tab_font_style normal
-
+active_tab_foreground   #0F111A
+active_tab_background   #82AAFF
+inactive_tab_foreground #8F93A2
+inactive_tab_background #1A1C25
+tab_bar_background      #0B0D14
+tab_bar_margin_color    #0B0D14
+active_border_color     #82AAFF
+inactive_border_color   #1A1C25
