@@ -24,4 +24,8 @@ map("n", "<A-h>", minidiff.toggle_overlay, { desc = "git toggle hunk overlay" })
 
 map("n", "<leader>gC", function()
   require("configs.minidiff_review").open_picker()
-end, { desc = "git compare two refs" })
+end, { desc = "git review source into target" })
+
+map("n", "<leader>gH", function()
+  require("configs.minidiff_history").open()
+end, { desc = "git review branch history" })

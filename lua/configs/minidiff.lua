@@ -31,6 +31,7 @@ MiniDiff.setup {
 }
 
 require("configs.minidiff_review").setup()
+require("configs.minidiff_history").setup()
 require("configs.large_hunks_viewer").setup()
 
 local function overlay_wanted()
@@ -91,12 +92,7 @@ function M.toggle_overlay()
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     sync_overlay(buf)
   end
-  notify.replace(
-    "minidiff.overlay",
-    "MiniDiff",
-    overlay_wanted() and "Hunk overlay on" or "Hunk overlay off",
-    vim.log.levels.INFO
-  )
+  notify.replace("minidiff.overlay", "MiniDiff", overlay_wanted() and "Hunk overlay on" or "Hunk overlay off", vim.log.levels.INFO)
 end
 
 function M.lualine_hunks()

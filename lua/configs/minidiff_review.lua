@@ -1,6 +1,7 @@
 local MiniDiff = require "mini.diff"
 local notify = require "configs.notify"
 local gitutils = require "configs.gitutils"
+local pretty_date = require "utils.pretty_date"
 
 local M = {}
 
@@ -64,6 +65,11 @@ end
 ---@return string|nil, string|nil
 local function rev_parse(ref, cwd)
   local out, err = git({ "rev-parse", "--verify", ref .. "^{commit}" }, cwd)
+  if out then
+    return vim.trim(out), nil
+  end
+  -- Empty tree / other tree-ish, used when a commit has no parent.
+  out, err = git({ "rev-parse", "--verify", ref .. "^{tree}" }, cwd)
   if not out then
     return nil, err
   end
@@ -584,7 +590,7 @@ local function start_session(old_name, new_name, cwd)
   end
 
   M.finish_review { force = true }
-  require("utils.close_trouble")()
+  require "utils.close_trouble"()
   if _G.bottom_component_callback_close then
     pcall(_G.bottom_component_callback_close)
   end
@@ -610,26 +616,72 @@ end
 ---@param kind string
 ---@param value string
 ---@param text string
+---@param ts? integer
 ---@return table
-local function make_ref_entry(kind, value, text)
+local function make_ref_entry(kind, value, text, ts)
+  ts = ts or 0
   return {
     kind = kind,
     value = value,
     text = text,
+    ts = ts,
+    date = ts > 0 and pretty_date(ts) or "",
     ordinal = kind .. " " .. value .. " " .. text,
   }
+end
+
+local KIND_RANK = {
+  HEAD = 0,
+  current = 1,
+  branch = 2,
+  remote = 3,
+  tag = 4,
+  commit = 5,
+}
+
+---@param refs table[]
+local function sort_refs(refs)
+  table.sort(refs, function(a, b)
+    local ra, rb = KIND_RANK[a.kind] or 9, KIND_RANK[b.kind] or 9
+    if ra ~= rb then
+      return ra < rb
+    end
+    if a.ts ~= b.ts then
+      return a.ts > b.ts
+    end
+    return a.value < b.value
+  end)
+end
+
+---@param cwd string
+---@return string
+local function current_branch_name(cwd)
+  local out = git({ "rev-parse", "--abbrev-ref", "HEAD" }, cwd)
+  local name = out and vim.trim(out) or ""
+  if name == "" or name == "HEAD" then
+    return ""
+  end
+  return name
+end
+
+---@param cwd string
+---@return integer
+local function commit_time(cwd, ref)
+  local out = git({ "log", "-1", "--format=%ct", ref }, cwd)
+  return tonumber(out and vim.trim(out) or "") or 0
 end
 
 ---@param cwd string
 ---@return table[]
 local function collect_refs(cwd)
-  local refs = { make_ref_entry("HEAD", "HEAD", "current HEAD") }
+  local current = current_branch_name(cwd)
+  local refs = { make_ref_entry("HEAD", "HEAD", "current HEAD", commit_time(cwd, "HEAD")) }
 
   local seen = { HEAD = true }
   local for_each, err = git({
     "for-each-ref",
     "--sort=-committerdate",
-    "--format=%(refname:short)%09%(objectname:short)%09%(refname)",
+    "--format=%(refname:short)%09%(objectname:short)%09%(refname)%09%(committerdate:unix)",
     "refs/heads",
     "refs/remotes",
     "refs/tags",
@@ -640,27 +692,30 @@ local function collect_refs(cwd)
   end
 
   for _, line in ipairs(vim.split(for_each, "\n", { trimempty = true })) do
-    local name, short, full = line:match "^([^\t]+)\t([^\t]+)\t(.*)$"
+    local name, short, full, ts = line:match "^([^\t]+)\t([^\t]+)\t([^\t]+)\t(.*)$"
     if name and not seen[name] then
       seen[name] = true
       local kind = "branch"
-      if full:find "^refs/remotes/" then
+      if name == current then
+        kind = "current"
+      elseif full:find "^refs/remotes/" then
         kind = "remote"
       elseif full:find "^refs/tags/" then
         kind = "tag"
       end
-      refs[#refs + 1] = make_ref_entry(kind, name, short)
+      refs[#refs + 1] = make_ref_entry(kind, name, short, tonumber(ts) or 0)
     end
   end
 
-  local log = git({ "log", "--pretty=format:%h\t%s", "-n", tostring(COMMIT_LIMIT) }, cwd) or ""
+  local log = git({ "log", "--pretty=format:%h\t%s\t%ct", "-n", tostring(COMMIT_LIMIT) }, cwd) or ""
   for _, line in ipairs(vim.split(log, "\n", { trimempty = true })) do
-    local hash, subject = line:match "^([^\t]+)\t(.*)$"
+    local hash, subject, ts = line:match "^([^\t]+)\t([^\t]*)\t(.*)$"
     if hash then
-      refs[#refs + 1] = make_ref_entry("commit", hash, subject or "")
+      refs[#refs + 1] = make_ref_entry("commit", hash, subject or "", tonumber(ts) or 0)
     end
   end
 
+  sort_refs(refs)
   return refs
 end
 
@@ -676,18 +731,29 @@ local function pick_ref(title, cwd, on_pick)
   local previewers = require "telescope.previewers"
   local putils = require "telescope.previewers.utils"
   local entry_display = require "telescope.pickers.entry_display"
+  local strings = require "plenary.strings"
+
+  local results = collect_refs(cwd)
+  local name_width, date_width = 8, 0
+  for _, item in ipairs(results) do
+    name_width = math.max(name_width, strings.strdisplaywidth(item.value))
+    date_width = math.max(date_width, strings.strdisplaywidth(item.date))
+  end
+  name_width = math.min(name_width, 32)
 
   local displayer = entry_display.create {
     separator = " ",
     items = {
       { width = 8 },
-      { width = 32 },
+      { width = name_width },
+      { width = date_width },
       { remaining = true },
     },
   }
 
   local kind_hl = {
     HEAD = "TelescopeResultsIdentifier",
+    current = "TelescopeResultsIdentifier",
     branch = "TelescopeResultsConstant",
     remote = "TelescopeResultsNumber",
     tag = "TelescopeResultsSpecialComment",
@@ -701,7 +767,7 @@ local function pick_ref(title, cwd, on_pick)
     }, {
       prompt_title = title,
       finder = finders.new_table {
-        results = collect_refs(cwd),
+        results = results,
         entry_maker = function(item)
           return {
             value = item.value,
@@ -710,6 +776,7 @@ local function pick_ref(title, cwd, on_pick)
               return displayer {
                 { item.kind, kind_hl[item.kind] or "TelescopeResultsComment" },
                 { item.value, "TelescopeResultsIdentifier" },
+                { item.date, "TelescopeResultsComment" },
                 { item.text, "TelescopeResultsComment" },
               }
             end,
@@ -757,6 +824,13 @@ local function pick_ref(title, cwd, on_pick)
     :find()
 end
 
+---@param old_name string
+---@param new_name string
+---@param cwd string
+function M.start(old_name, new_name, cwd)
+  start_session(old_name, new_name, cwd)
+end
+
 function M.open_picker()
   local cwd, err = git_root()
   if not cwd then
@@ -764,10 +838,13 @@ function M.open_picker()
     return
   end
 
-  pick_ref("Compare from (old)", cwd, function(old_name)
+  notify.send("MiniDiff review", "Pick the source (branch to merge), then the target that accepts those changes.", vim.log.levels.INFO)
+
+  -- Source first (incoming), then target (base). Review is target → source.
+  pick_ref("Source — branch to be merge in another", cwd, function(source)
     vim.schedule(function()
-      pick_ref("Compare to (new)", cwd, function(new_name)
-        start_session(old_name, new_name, cwd)
+      pick_ref("Target — branch accepting changes", cwd, function(target)
+        start_session(target, source, cwd)
       end)
     end)
   end)
@@ -831,7 +908,7 @@ function M.setup()
 
   vim.api.nvim_create_user_command("MiniDiffReview", function()
     M.open_picker()
-  end, { desc = "Compare two git refs in a mini.diff review" })
+  end, { desc = "Review source branch changes against a target ref" })
 end
 
 return M

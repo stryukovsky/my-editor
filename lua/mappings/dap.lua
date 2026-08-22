@@ -2,9 +2,8 @@
 local map = require "mappings.map"
 local widgets = require "dap.ui.widgets"
 local dap = require "dap"
-local debug_output = require "configs.debug_output"
+local debug_output = require "debug_output"
 local notify = require "configs.notify"
-debug_output.setup()
 -- local trouble = require "trouble"
 
 -- debugger

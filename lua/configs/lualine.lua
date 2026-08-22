@@ -1,6 +1,6 @@
 local trouble = require "trouble"
 local is_ollama_installed = require "utils.is_ollama_installed"
-local dap_output = require "configs.debug_output"
+local dap_output = require "debug_output"
 local git_fetch = require "configs.periodic-git-fetch"
 local is_it_merge = require "configs.is_it_merge"
 local symbols = trouble.statusline {

@@ -80,18 +80,6 @@ require("telescope").setup {
     },
   },
   pickers = {
-    git_branches = {
-      layout_config = {
-        horizontal = {
-          preview_width = 40, -- 40 columns for preview
-        },
-        width = 0.9,
-        height = 0.8,
-      },
-      wrap_results = true,
-      initial_mode = "normal",
-      mappings = require "mappings.telescope.git_branches",
-    },
     live_grep = {
       wrap_results = true,
       prompt_title = " Global search in project ",

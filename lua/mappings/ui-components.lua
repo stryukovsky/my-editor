@@ -40,7 +40,7 @@ local telescope_components = {
     modes = ui_components_modes,
     shortcut = "<A-g>",
     command = function()
-      vim.cmd "Telescope git_branches"
+      require "configs.pretty_git_branch_picker"()
     end,
     desc = "UI telescope git branches",
   },
