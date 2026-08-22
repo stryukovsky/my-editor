@@ -1,5 +1,33 @@
 local M = {}
 
+---@param bufnr? integer
+---@return boolean
+local function skip_buffer(bufnr)
+  if not bufnr or bufnr == 0 then
+    bufnr = vim.api.nvim_get_current_buf()
+  end
+  return vim.b[bufnr].minidiff_review == true or vim.b[bufnr].large_hunk_viewer == true
+end
+
+local start = vim.lsp.start
+---@diagnostic disable-next-line: duplicate-set-field
+function vim.lsp.start(config, opts)
+  opts = opts or {}
+  if skip_buffer(opts.bufnr) then
+    return nil
+  end
+  return start(config, opts)
+end
+
+local attach = vim.lsp.buf_attach_client
+---@diagnostic disable-next-line: duplicate-set-field
+function vim.lsp.buf_attach_client(bufnr, client_id)
+  if skip_buffer(bufnr) then
+    return false
+  end
+  return attach(bufnr, client_id)
+end
+
 M.servers = {
   "html",
   "cssls",

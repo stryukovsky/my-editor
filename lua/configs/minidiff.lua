@@ -122,6 +122,11 @@ function M.nav(direction)
     local _, idx = MiniDiff.get_contiguous_hunk_range_at_cursor(0)
     local total = vim.b.minidiff_summary and vim.b.minidiff_summary.n_ranges or 0
     if idx and idx == total then
+      if vim.b.minidiff_review then
+        notify.send("MiniDiff", "Last hunk, focusing review file list", vim.log.levels.INFO)
+        require("configs.minidiff_review").focus_list()
+        return
+      end
       notify.send("MiniDiff", "It was last hunk, so neogit", vim.log.levels.INFO)
       require("neogit").open {}
       return

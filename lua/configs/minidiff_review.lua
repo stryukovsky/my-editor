@@ -170,6 +170,30 @@ local function open_review_view()
   vim.schedule(sync_review_win)
 end
 
+local function focus_review_win()
+  local win = current_review_win()
+  if win then
+    if session then
+      session.trouble_win = win
+    end
+    vim.api.nvim_set_current_win(win)
+    return
+  end
+  open_review_view()
+end
+
+function M.focus_list()
+  if require("utils.close_zen")() then
+    vim.defer_fn(function()
+      if session then
+        focus_review_win()
+      end
+    end, 50)
+    return
+  end
+  focus_review_win()
+end
+
 local function close_review_view()
   require("utils.close_trouble").close_mode "minidiff_review"
 end
@@ -841,7 +865,7 @@ function M.open_picker()
   notify.send("MiniDiff review", "Pick the source (branch to merge), then the target that accepts those changes.", vim.log.levels.INFO)
 
   -- Source first (incoming), then target (base). Review is target → source.
-  pick_ref("Source — branch to be merge in another", cwd, function(source)
+  pick_ref("Source — branch to be merged in another", cwd, function(source)
     vim.schedule(function()
       pick_ref("Target — branch accepting changes", cwd, function(target)
         start_session(target, source, cwd)
@@ -857,14 +881,10 @@ function M.setup()
       if not vim.b[ev.buf].minidiff_review then
         return
       end
-      vim.schedule(function()
-        if not vim.api.nvim_buf_is_valid(ev.buf) then
-          return
-        end
-        for _, client in ipairs(vim.lsp.get_clients { bufnr = ev.buf }) do
-          pcall(vim.lsp.buf_detach_client, ev.buf, client.id)
-        end
-      end)
+      local id = ev.data and ev.data.client_id
+      if id then
+        pcall(vim.lsp.buf_detach_client, ev.buf, id)
+      end
     end,
   })
 
