@@ -121,3 +121,8 @@ map("x", "<C-K>", "<Plug>GoVSMUp", {})
 map("x", "<C-L>", "<Plug>GoVSMRight", {})
 
 map("n", "zZ", "zszH", { desc = "Center cursor horizontally" })
+
+map({ "x", "n" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
+map({ "x", "n" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+map("n", "p", "P", { desc = "override paste" })
+
