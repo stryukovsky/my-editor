@@ -77,7 +77,7 @@ mouse_hide_wait 3.0
 # Per-pid socket (not /tmp/mykitty): KITTY_LISTEN_ON is unique per OS window,
 # and /tmp on macOS is not a reliable place for long-lived sockets.
 allow_remote_control socket-only
-listen_on unix:${HOME}/.cache/kitty/mykitty
+listen_on unix:/tmp/mykitty
 
 # Scrollback / urls
 scrollback_lines 20000
@@ -156,3 +156,6 @@ tab_bar_background      #0B0D14
 tab_bar_margin_color    #0B0D14
 active_border_color     #82AAFF
 inactive_border_color   #1A1C25
+
+shell /bin/zsh --login
+

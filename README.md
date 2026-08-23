@@ -183,6 +183,7 @@ cp setup/macos/ghostty ~/.config/ghostty/config
 
 mkdir -p ~/.config/kitty/
 cp setup/macos/kitty ~/.config/kitty/kitty.conf
+
 cp -r setup/macos/ranger ~/.config/
 bash setup/common_tools/finalize.sh
 bash setup/common_tools/ai.sh
