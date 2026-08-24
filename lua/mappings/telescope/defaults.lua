@@ -42,6 +42,7 @@ return {
     ["<A-w>"] = dummy,
     ["<Tab>"] = focus_preview,
     ["<A-q>"] = dummy,
+    ["<leader><leader>"] = dummy,
   },
   i = {
     ["<C-c>"] = actions.close,

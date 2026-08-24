@@ -1,8 +1,85 @@
 -- Custom git-branch picker (does not replace telescope.builtin.git_branches).
 
 local display = require "configs.git_display"
+local git = require "configs.gitutils"
+local actions = require "telescope.actions"
+local wrap_telescope_action = require "mappings.telescope_action_wrapper"
 
 local LOG_SEP = "\1"
+
+local HINTS = {
+  { "<cr>", "switch to this picked branch" },
+  { "m", "merge this picked branch into current git branch" },
+  { "d", "delete branch" },
+  { "r", "rebase current git branch on top of this picked branch" },
+  { "?", "toggle this help off" },
+}
+
+---@type integer|nil
+local help_win
+
+local function close_help()
+  if help_win and vim.api.nvim_win_is_valid(help_win) then
+    vim.api.nvim_win_close(help_win, true)
+  end
+  help_win = nil
+end
+
+-- Overlay only — do not enter the float, or Telescope closes the picker.
+local function help()
+  if help_win and vim.api.nvim_win_is_valid(help_win) then
+    close_help()
+    return
+  end
+
+  local key_width = 0
+  for _, row in ipairs(HINTS) do
+    key_width = math.max(key_width, vim.fn.strdisplaywidth(row[1]))
+  end
+
+  local lines = {}
+  for _, row in ipairs(HINTS) do
+    local pad = string.rep(" ", key_width - vim.fn.strdisplaywidth(row[1]))
+    lines[#lines + 1] = string.format(" %s%s  %s ", row[1], pad, row[2])
+  end
+
+  local width = 16
+  for _, line in ipairs(lines) do
+    width = math.max(width, vim.fn.strdisplaywidth(line))
+  end
+
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  vim.bo[buf].bufhidden = "wipe"
+  vim.bo[buf].modifiable = false
+
+  local height = #lines
+  help_win = vim.api.nvim_open_win(buf, false, {
+    relative = "editor",
+    width = width,
+    height = height,
+    col = math.floor((vim.o.columns - width) / 2),
+    row = math.floor((vim.o.lines - height) / 2),
+    style = "minimal",
+    border = "rounded",
+    title = " Git branches ",
+    title_pos = "center",
+    zindex = 200,
+    focusable = false,
+    noautocmd = true,
+  })
+
+  local ns = vim.api.nvim_create_namespace "pretty_git_branch_help"
+  for i, row in ipairs(HINTS) do
+    pcall(vim.hl.range, buf, ns, "TelescopeResultsIdentifier", { i - 1, 1 }, { i - 1, 1 + #row[1] })
+  end
+
+  vim.api.nvim_create_autocmd({ "BufLeave", "WinClosed" }, {
+    buffer = vim.api.nvim_get_current_buf(),
+    once = true,
+    callback = close_help,
+  })
+end
 
 -- git log --graph line: `<graph><hash>\1<decorations>\1<subject>\1<relative date>`
 ---@param line string
@@ -14,7 +91,7 @@ local function format_log_line(line)
   end
   local parts = vim.split(payload, LOG_SEP, { plain = true })
   local deco = vim.trim(parts[1] or "")
-  local subject = display.truncate_subject(parts[2] or "")
+  local subject = display.truncate_subject(parts[2] or "", 60)
   local date = parts[3] or ""
   if deco ~= "" then
     return string.format("%s%s - %s %s (%s)", graph, hash, deco, subject, date)
@@ -104,9 +181,6 @@ local function pretty_git_branch_picker(opts)
       width = 0.95,
       height = 0.8,
     },
-    mappings = {
-      n = require "mappings.telescope.git_branches_actions",
-    },
   }, opts or {})
 
   local pickers = require "telescope.pickers"
@@ -115,7 +189,14 @@ local function pretty_git_branch_picker(opts)
   local conf = require("telescope.config").values
   local utils = require "telescope.utils"
 
-  local results, err = display.list_branches(opts.cwd, {
+  local cwd, root_err = git.root(opts.cwd)
+  if not cwd then
+    utils.notify("pretty_git_branch_picker", { msg = root_err or "Not a git repository", level = "ERROR" })
+    return
+  end
+  opts.cwd = cwd
+
+  local results, err = display.list_branches(cwd, {
     pattern = opts.pattern,
     show_remote_tracking_branches = opts.show_remote_tracking_branches,
   })
@@ -144,9 +225,13 @@ local function pretty_git_branch_picker(opts)
       previewer = branch_log_previewer(opts),
       sorter = conf.file_sorter(opts),
       attach_mappings = function(_, map)
-        map("n", "?", function()
-          require("mappings.telescope.git_branches_actions")["?"]()
-        end)
+        -- override mappings of telescope only this way :(
+        map("n", "<cr>", actions.git_switch_branch)
+        map("n", "?", help)
+        map("n", "d", wrap_telescope_action(actions.git_delete_branch))
+        map("n", "m", wrap_telescope_action(actions.git_merge_branch))
+        map("n", "r", wrap_telescope_action(actions.git_rebase_branch))
+
         return true
       end,
     })

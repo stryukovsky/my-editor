@@ -6,7 +6,7 @@ local git = require "configs.gitutils"
 local M = {}
 
 M.ELLIPSIS = "…"
-M.COMMIT_SUBJECT_MAX = 60
+M.COMMIT_SUBJECT_MAX = 40
 
 local SLASH_SHORTEN = {
   [0] = { n = 35, keep = 16 },
@@ -71,12 +71,14 @@ function M.shorten_branch_name(name)
 end
 
 ---@param subject string
+---@param max? integer
 ---@return string
-function M.truncate_subject(subject)
-  if vim.fn.strchars(subject) <= M.COMMIT_SUBJECT_MAX then
+function M.truncate_subject(subject, max)
+  max = max or M.COMMIT_SUBJECT_MAX
+  if vim.fn.strchars(subject) <= max then
     return subject
   end
-  return vim.fn.strcharpart(subject, 0, M.COMMIT_SUBJECT_MAX) .. M.ELLIPSIS
+  return vim.fn.strcharpart(subject, 0, max) .. M.ELLIPSIS
 end
 
 ---@param upstream string origin/main
@@ -185,6 +187,92 @@ function M.branch_widths(results)
     end
   end
   return widths
+end
+
+---@class git_display.Commit
+---@field value string
+---@field short string
+---@field author string
+---@field subject string
+---@field display_subject string
+---@field ts integer
+---@field date string
+
+---@param cwd? string
+---@param opts? { ref?: string, limit?: integer }
+---@return git_display.Commit[]
+---@return string|nil err
+function M.list_commits(cwd, opts)
+  opts = opts or {}
+  local args = { "log", "--format=%H%x00%h%x00%an%x00%ct%x00%s" }
+  if opts.limit then
+    args[#args + 1] = "-n"
+    args[#args + 1] = tostring(opts.limit)
+  end
+  if opts.ref then
+    args[#args + 1] = opts.ref
+  end
+
+  local out, err = git.run(args, cwd)
+  if not out then
+    return {}, err or "git log failed"
+  end
+
+  local now = os.time()
+  local commits = {}
+  for line in vim.gsplit(out, "\n", { trimempty = true }) do
+    local fields = vim.split(line, "\0", { plain = true })
+    local hash = fields[1]
+    if hash and hash ~= "" then
+      local ts = tonumber(fields[4]) or 0
+      commits[#commits + 1] = {
+        value = hash,
+        short = fields[2] or hash:sub(1, 7),
+        author = M.shorten_author(fields[3] or ""),
+        subject = fields[5] or "",
+        display_subject = M.truncate_subject(fields[5] or ""),
+        ts = ts,
+        date = pretty_date(ts, now),
+      }
+    end
+  end
+  return commits, nil
+end
+
+---@param commits git_display.Commit[]
+---@return table<string, integer>
+function M.commit_widths(commits)
+  local strings = require "plenary.strings"
+  local widths = { short = 0, author = 0, date = 0 }
+  for _, commit in ipairs(commits) do
+    for key, value in pairs(widths) do
+      widths[key] = math.max(value, strings.strdisplaywidth(commit[key] or ""))
+    end
+  end
+  return widths
+end
+
+---@param widths table<string, integer>
+---@return fun(entry: git_display.Commit): table
+function M.commit_displayer(widths)
+  local entry_display = require "telescope.pickers.entry_display"
+  local displayer = entry_display.create {
+    separator = " ",
+    items = {
+      { width = widths.short },
+      { width = widths.author },
+      { width = widths.date },
+      { remaining = true },
+    },
+  }
+  return function(entry)
+    return displayer {
+      { entry.short, "TelescopeResultsIdentifier" },
+      { entry.author, "TelescopeResultsComment" },
+      { entry.date, "TelescopeResultsComment" },
+      { entry.display_subject, "TelescopeResultsNormal" },
+    }
+  end
 end
 
 ---@param widths table<string, integer>

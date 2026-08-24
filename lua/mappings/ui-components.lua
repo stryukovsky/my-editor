@@ -32,7 +32,7 @@ local telescope_components = {
     modes = ui_components_modes,
     shortcut = "<A-c>",
     command = function()
-      vim.cmd "Telescope git_commits"
+      require "configs.pretty_git_commit_picker"()
     end,
     desc = "UI telescope git commits",
   },
@@ -114,10 +114,24 @@ local telescope_components = {
 
 map("n", "<leader>sa", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", { desc = "Actions: spelling" })
 
+local function telescope_is_open()
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "TelescopePrompt" then
+      return true
+    end
+  end
+  return false
+end
+
 vim.g.last_opened_telescope = ""
 _G.dialog_component_callback_close = function() end
 for _, value in ipairs(telescope_components) do
   map(value.modes, value.shortcut, function()
+    -- <leader> is Space; do not let <leader><leader> steal <Space> in a picker.
+    if value.shortcut == "<leader><leader>" and telescope_is_open() then
+      return
+    end
     close_zen()
     if close_telescope() then
       if vim.g.last_opened_telescope ~= value.desc then

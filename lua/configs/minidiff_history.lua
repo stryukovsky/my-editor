@@ -4,7 +4,6 @@
 local display = require "configs.git_display"
 local git = require "configs.gitutils"
 local notify = require "configs.notify"
-local pretty_date = require "utils.pretty_date"
 local review = require "configs.minidiff_review"
 
 local M = {}
@@ -12,6 +11,7 @@ local M = {}
 local COMMIT_LIMIT = 300
 local EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 local TITLE = "MiniDiff history"
+local COMMIT_HELP = "<Space> toggle + next · <CR> review merged diff"
 
 ---@param cwd string
 ---@param args string[]
@@ -61,84 +61,8 @@ local function parent_diff_previewer(cwd, ref_field)
   }
 end
 
----@class minidiff_history.Commit
----@field value string
----@field short string
----@field author string
----@field subject string
----@field display_subject string
----@field ts integer
----@field date string
-
----@param cwd string
----@param branch string
----@return minidiff_history.Commit[]
----@return string|nil err
-local function list_commits(cwd, branch)
-  local out, err = git_run(cwd, {
-    "log",
-    "--format=%H%x00%h%x00%an%x00%ct%x00%s",
-    "-n",
-    tostring(COMMIT_LIMIT),
-    branch,
-  })
-  if not out then
-    return {}, err or "git log failed"
-  end
-
-  local now = os.time()
-  local commits = {}
-  for line in vim.gsplit(out, "\n", { trimempty = true }) do
-    local fields = vim.split(line, "\0", { plain = true })
-    local hash = fields[1]
-    if hash and hash ~= "" then
-      local ts = tonumber(fields[4]) or 0
-      commits[#commits + 1] = {
-        value = hash,
-        short = fields[2] or hash:sub(1, 7),
-        author = display.shorten_author(fields[3] or ""),
-        subject = fields[5] or "",
-        display_subject = display.truncate_subject(fields[5] or ""),
-        ts = ts,
-        date = pretty_date(ts, now),
-      }
-    end
-  end
-  return commits, nil
-end
-
----@param commits minidiff_history.Commit[]
----@return fun(entry: minidiff_history.Commit): table
-local function commit_displayer(commits)
-  local strings = require "plenary.strings"
-  local entry_display = require "telescope.pickers.entry_display"
-  local widths = { short = 0, author = 0, date = 0 }
-  for _, commit in ipairs(commits) do
-    for key, value in pairs(widths) do
-      widths[key] = math.max(value, strings.strdisplaywidth(commit[key] or ""))
-    end
-  end
-  local displayer = entry_display.create {
-    separator = " ",
-    items = {
-      { width = widths.short },
-      { width = widths.author },
-      { width = widths.date },
-      { remaining = true },
-    },
-  }
-  return function(entry)
-    return displayer {
-      { entry.short, "TelescopeResultsIdentifier" },
-      { entry.author, "TelescopeResultsComment" },
-      { entry.date, "TelescopeResultsComment" },
-      { entry.display_subject, "TelescopeResultsNormal" },
-    }
-  end
-end
-
 ---@param picker table
----@return minidiff_history.Commit[]
+---@return git_display.Commit[]
 local function selected_commits(picker)
   local multi = picker:get_multi_selection()
   if #multi > 0 then
@@ -153,7 +77,7 @@ end
 
 ---@param cwd string
 ---@param branch string
----@param commits minidiff_history.Commit[]
+---@param commits git_display.Commit[]
 local function open_merged_review(cwd, branch, commits)
   if #commits == 0 then
     notify.send(TITLE, "No commits selected", vim.log.levels.WARN)
@@ -190,7 +114,7 @@ local function pick_commits(cwd, branch)
   local actions = require "telescope.actions"
   local action_state = require "telescope.actions.state"
 
-  local commits, err = list_commits(cwd, branch)
+  local commits, err = display.list_commits(cwd, { ref = branch, limit = COMMIT_LIMIT })
   if err then
     notify.send(TITLE, err, vim.log.levels.ERROR)
     return
@@ -200,9 +124,7 @@ local function pick_commits(cwd, branch)
     return
   end
 
-  local make_display = commit_displayer(commits)
-
-  notify.replace("minidiff.history.help", TITLE, "Press <Space> to add/remove a commit. Press <CR> to review the merged diff.", vim.log.levels.INFO)
+  local make_display = display.commit_displayer(display.commit_widths(commits))
 
   pickers
     .new({
@@ -215,6 +137,7 @@ local function pick_commits(cwd, branch)
       },
     }, {
       prompt_title = "Commits on " .. branch,
+      results_title = COMMIT_HELP,
       finder = finders.new_table {
         results = commits,
         entry_maker = function(item)
@@ -240,11 +163,12 @@ local function pick_commits(cwd, branch)
             end
           end
           actions.toggle_selection(prompt_bufnr)
+          actions.move_selection_next(prompt_bufnr)
           local n = #picker:get_multi_selection()
           notify.replace(
             "minidiff.history.selection",
             TITLE,
-            string.format("%s %s — %d selected. <Space> toggle, <CR> review merged diff.", was and "Removed" or "Added", entry.short, n),
+            string.format("%s %s — %d selected. <Space> toggle and go next, <CR> review merged diff.", was and "Removed" or "Added", entry.short, n),
             vim.log.levels.INFO
           )
         end
@@ -255,8 +179,13 @@ local function pick_commits(cwd, branch)
           actions.close(prompt_bufnr)
           open_merged_review(cwd, branch, chosen)
         end)
-        map("n", "<Space>", toggle_commit)
-        map("i", "<C-Space>", toggle_commit)
+        map("n", "<leader>", toggle_commit, { nowait = true })
+        map("n", "<leader><leader>", function()
+          toggle_commit()
+          vim.schedule(function()
+            toggle_commit()
+          end)
+        end)
         return true
       end,
     })
@@ -284,8 +213,6 @@ local function pick_branch(cwd)
 
   local make_display = display.branch_displayer(display.branch_widths(results))
 
-  notify.replace("minidiff.history.help", TITLE, "Select a branch. Preview is the tip commit's diff to its parent.", vim.log.levels.INFO)
-
   pickers
     .new({
       cwd = cwd,
@@ -296,7 +223,7 @@ local function pick_branch(cwd)
         height = 0.8,
       },
     }, {
-      prompt_title = "History branch",
+      prompt_title = "select a branch where to see commits changes",
       finder = finders.new_table {
         results = results,
         entry_maker = function(item)
