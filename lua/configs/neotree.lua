@@ -15,28 +15,27 @@ local open_files_do_not_replace_types = require "utils.technical_ui_filetypes"
 
 local function open_single_child_dir_recursively(state)
   local node = state.tree:get_node()
-  if node.type == "directory" then
-    if not node:is_expanded() then
-      filesystem.toggle_directory(state, node, nil, nil, nil, function()
-        local children_count = #node:get_child_ids()
-        if children_count >= 1 then
-          renderer.focus_node(state, node:get_child_ids()[1])
-        end
-        if children_count == 1 then
-          local first_child_node = state.tree:get_node()
-          if first_child_node.type == "directory" then
-            open_single_child_dir_recursively(state)
-          end
-        end
-      end)
-    elseif node:has_children() then
-      renderer.focus_node(state, node:get_child_ids()[1])
-    end
-  else
-    -- if file, open it
+  if node.type ~= "directory" then
     cmds.open(state)
-    vim.cmd "normal! :q<CR>" -- This will close the current window (the old terminal)
-    -- cmds.clear_filter(state)
+    return
+  end
+
+  local function focus_first_child()
+    local children = node:get_child_ids()
+    if #children == 0 then
+      return
+    end
+
+    renderer.focus_node(state, children[1])
+    if #children == 1 and state.tree:get_node().type == "directory" then
+      open_single_child_dir_recursively(state)
+    end
+  end
+
+  if node:is_expanded() then
+    focus_first_child()
+  else
+    filesystem.toggle_directory(state, node, nil, nil, nil, focus_first_child)
   end
 end
 
