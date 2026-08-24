@@ -1,9 +1,9 @@
 -- Custom git-commit picker (does not replace telescope.builtin.git_commits).
--- List rows: git_display. Preview: git_preview.commit_diff (or opts.previewer).
+-- List rows: display. Preview: preview.commit_diff (or opts.previewer).
 
-local display = require "configs.git_display"
+local display = require "telescope_pretty_git.display"
 local git = require "configs.gitutils"
-local git_preview = require "configs.git_preview"
+local git_preview = require "telescope_pretty_git.preview"
 local wrap_telescope_action = require "mappings.telescope_action_wrapper"
 
 local COMMIT_LIMIT = 1000

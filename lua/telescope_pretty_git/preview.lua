@@ -1,6 +1,6 @@
 -- Shared Telescope *preview pane* for git pickers (the right-hand window).
 --
--- Result rows (hash, author, date, truncated subject) live in `configs.git_display`.
+-- Result rows (hash, author, date, truncated subject) live in `display`.
 -- This module only renders the preview: run git async, debounce fast scrolling,
 -- cancel the previous job so a skipped entry never paints.
 --
@@ -11,7 +11,7 @@
 --
 -- Or call `new_buffer_previewer` with your own `cmd` / `format` / `highlight`.
 
-local display = require "configs.git_display"
+local display = require "telescope_pretty_git.display"
 
 local M = {}
 
@@ -19,7 +19,7 @@ local DEBOUNCE_MS = 80
 local BRANCH_LOG_COUNT = 80
 local ONELINE_COUNT = 40
 local LOG_SEP = "\1"
-local preview_ns = vim.api.nvim_create_namespace "git_preview.log"
+local preview_ns = vim.api.nvim_create_namespace "telescope_pretty_git.preview.log"
 
 -- git log --graph line: `<graph><hash>\1<decorations>\1<subject>\1<relative date>`
 ---@param line string
@@ -77,7 +77,7 @@ local function highlight_ft(bufnr, lines, ft)
   putils.highlighter(bufnr, ft, {})
 end
 
----@class git_preview.Spec
+---@class telescope_pretty_git.preview.Spec
 ---@field title string
 ---@field cwd string
 ---@field cmd fun(entry: table): string[]
@@ -87,7 +87,7 @@ end
 
 --- One Telescope buffer previewer. `seq` is a generation counter: each new
 --- selection increments it; delayed git callbacks with an old id are ignored.
----@param spec git_preview.Spec
+---@param spec telescope_pretty_git.preview.Spec
 ---@return table
 function M.new_buffer_previewer(spec)
   local previewers = require "telescope.previewers"

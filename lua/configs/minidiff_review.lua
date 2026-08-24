@@ -744,7 +744,7 @@ local function collect_refs(cwd)
 end
 
 -- Own finder (HEAD + branches + remotes + tags + recent commits). Not a pretty
--- picker — mixed ref kinds — but the preview pane is still git_preview.
+-- picker — mixed ref kinds — but it reuses the pretty Git preview pane.
 ---@param title string
 ---@param cwd string
 ---@param on_pick fun(ref: string)
@@ -808,7 +808,7 @@ local function pick_ref(title, cwd, on_pick)
         end,
       },
       sorter = conf.generic_sorter {},
-      previewer = require("configs.git_preview").oneline_log { cwd = cwd },
+      previewer = require("telescope_pretty_git").preview.oneline_log { cwd = cwd },
       attach_mappings = function(prompt_bufnr)
         actions.select_default:replace(function()
           local selection = action_state.get_selected_entry()
