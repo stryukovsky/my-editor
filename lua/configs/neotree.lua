@@ -10,7 +10,6 @@ local system_file_explorer = require "utils.system_file_explorer"
 local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
 local async = require "plenary.async"
-local notify = require "configs.notify"
 
 local open_files_do_not_replace_types = require "utils.technical_ui_filetypes"
 
@@ -111,7 +110,7 @@ local config = {
     ["open_new_window"] = function(state)
       local node = state.tree:get_node()
       local path = node:get_id()
-      vim.fn.jobstart({ "ghostty", "--working-directory=" .. path }, { detach = true })
+      require("utils.terminal").open(path, { source = "Neo-tree" })
     end,
     ["my_git_add_file"] = function(state)
       async.run(function()

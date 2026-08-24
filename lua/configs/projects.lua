@@ -1,4 +1,4 @@
--- Marked project directories. Opening one is a Kitty tab, not a Neovim tab.
+-- Marked project directories. Opening one is a terminal workspace, not a Neovim tab.
 --
 -- Data: ~/.config/nvim/data/projects.json (because stdpath("data") is patched).
 -- Mark with <leader>prj, pick with <A-P>.
@@ -13,10 +13,11 @@
 --
 -- Algorithm — open / focus:
 --   bump recency in projects.json
---   if a tab matched → kitten @ focus-tab --match id:N
---   else              → kitten @ launch --type=tab --cwd=<path> --tab-title=<dirname>
+--   in Kitty: focus a matching tab, or launch a new tab
+--   in Ghostty: launch a new terminal window
 
 local notify = require "configs.notify"
+local terminal = require "utils.terminal"
 
 local M = {}
 
@@ -188,7 +189,7 @@ function M.kitty_tab(path, tabs)
   return named or cwd_match
 end
 
--- If Kitty already has this project, focus that tab by id; otherwise launch a new one.
+-- In Kitty, focus an existing project tab or launch a new one. In Ghostty, launch a new window.
 ---@param path string
 function M.open(path)
   local normalized = M.normalize(path)
@@ -197,16 +198,17 @@ function M.open(path)
     return
   end
   bump(normalized)
-  local existing = M.kitty_tab(normalized)
-  if existing then
-    require("configs.kitten").focus_tab(existing.id)
-    return
+  if terminal.is_kitty() then
+    local existing = M.kitty_tab(normalized)
+    if existing then
+      require("configs.kitten").focus_tab(existing.id)
+      return
+    end
   end
-  require("configs.kitten").launch {
-    type = "tab",
-    cwd = normalized,
+
+  terminal.open(normalized, {
     tab_title = M.name(normalized),
-  }
+  })
 end
 
 -- Remember current_root() as a project and tcd this Neovim there. Does not open Kitty.
