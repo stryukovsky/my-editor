@@ -743,6 +743,8 @@ local function collect_refs(cwd)
   return refs
 end
 
+-- Own finder (HEAD + branches + remotes + tags + recent commits). Not a pretty
+-- picker — mixed ref kinds — but the preview pane is still git_preview.
 ---@param title string
 ---@param cwd string
 ---@param on_pick fun(ref: string)

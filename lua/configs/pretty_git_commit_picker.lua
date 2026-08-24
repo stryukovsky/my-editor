@@ -1,4 +1,5 @@
 -- Custom git-commit picker (does not replace telescope.builtin.git_commits).
+-- List rows: git_display. Preview: git_preview.commit_diff (or opts.previewer).
 
 local display = require "configs.git_display"
 local git = require "configs.gitutils"
@@ -74,6 +75,7 @@ local function pretty_git_commit_picker(opts)
           return make_entry.set_default_entry_mt(entry, opts)
         end,
       },
+      -- Same async git_preview as <A-c>; MiniDiff history reuses this picker.
       previewer = custom_previewer or git_preview.commit_diff { cwd = cwd },
       sorter = conf.file_sorter(opts),
       attach_mappings = function(prompt_bufnr, map)

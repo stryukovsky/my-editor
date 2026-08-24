@@ -6,6 +6,18 @@ local M = {}
 local enabled = false
 local FILETYPES = { scala = true, sbt = true }
 
+local function open_readonly_file(path, filetype)
+  if vim.fn.filereadable(path) ~= 1 then
+    notify.send("Metals", string.format("File not found: %s", path), vim.log.levels.WARN)
+    return
+  end
+
+  vim.cmd.edit(vim.fn.fnameescape(path))
+  vim.bo.filetype = filetype
+  vim.bo.readonly = true
+  vim.bo.modifiable = false
+end
+
 local function parse_java_opts(opts_string)
   local result = {}
   if type(opts_string) ~= "string" or opts_string == "" then
@@ -105,6 +117,24 @@ local function attach_buf(bufnr)
   vim.api.nvim_buf_call(bufnr, function()
     require("metals").initialize_or_attach(create_config())
   end)
+end
+
+function M.telescope_commands()
+  require("telescope").extensions.metals.commands()
+end
+
+function M.show_logs()
+  local config = require("metals.config").get_config_cache()
+  if not config or not config.root_dir then
+    notify.send("Metals", "Start Metals before opening its logs", vim.log.levels.WARN)
+    return
+  end
+
+  open_readonly_file(vim.fs.joinpath(config.root_dir, ".metals", "metals.log"), "log")
+end
+
+function M.run_doctor()
+  require("metals").run_doctor()
 end
 
 function M.enable()

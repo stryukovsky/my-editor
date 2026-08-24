@@ -1,5 +1,15 @@
--- Debounced git previews for Telescope. Fast scrolling cancels the in-flight job
--- so only the entry you stop on is rendered.
+-- Shared Telescope *preview pane* for git pickers (the right-hand window).
+--
+-- Result rows (hash, author, date, truncated subject) live in `configs.git_display`.
+-- This module only renders the preview: run git async, debounce fast scrolling,
+-- cancel the previous job so a skipped entry never paints.
+--
+-- Ready-made previewers:
+--   branch_log   — graph log of a branch   (<A-g> pretty branch picker)
+--   commit_diff  — `git show` patch        (<A-c> pretty commits; MiniDiff history)
+--   oneline_log  — short log of a ref      (MiniDiff review ref picker)
+--
+-- Or call `new_buffer_previewer` with your own `cmd` / `format` / `highlight`.
 
 local display = require "configs.git_display"
 
@@ -54,6 +64,7 @@ local function highlight_log_buffer(bufnr, content)
   end
 end
 
+-- Treesitter highlight is costly on huge patches; fall back to regex syntax.
 ---@param bufnr integer
 ---@param lines string[]
 ---@param ft string
@@ -74,6 +85,8 @@ end
 ---@field format? fun(lines: string[]): string[]
 ---@field highlight? fun(bufnr: integer, lines: string[])
 
+--- One Telescope buffer previewer. `seq` is a generation counter: each new
+--- selection increments it; delayed git callbacks with an old id are ignored.
 ---@param spec git_preview.Spec
 ---@return table
 function M.new_buffer_previewer(spec)
@@ -118,6 +131,8 @@ function M.new_buffer_previewer(spec)
       return spec.bufname(entry)
     end,
     define_preview = function(self, entry)
+      -- Drop the last git job immediately; wait DEBOUNCE_MS in case the user
+      -- keeps moving. Only then start a new process.
       seq = seq + 1
       local id = seq
       local bufnr = self.state.bufnr
@@ -163,6 +178,7 @@ function M.new_buffer_previewer(spec)
   }
 end
 
+--- Graph log of `entry.value` (branch name or ref). Used by the pretty branch picker.
 ---@param opts { cwd: string }
 ---@return table
 function M.branch_log(opts)
@@ -198,6 +214,7 @@ function M.branch_log(opts)
   }
 end
 
+--- `git show` of `entry.value` (commit or branch tip). Pretty commits + MiniDiff history.
 ---@param opts { cwd: string }
 ---@return table
 function M.commit_diff(opts)
@@ -226,6 +243,7 @@ function M.commit_diff(opts)
   }
 end
 
+--- Short log of `entry.value`. MiniDiff review ref picker (branches, tags, commits).
 ---@param opts { cwd: string }
 ---@return table
 function M.oneline_log(opts)

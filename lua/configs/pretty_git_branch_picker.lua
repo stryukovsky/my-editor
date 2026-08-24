@@ -1,4 +1,5 @@
 -- Custom git-branch picker (does not replace telescope.builtin.git_branches).
+-- List rows: git_display. Preview: git_preview.branch_log (or opts.previewer).
 
 local display = require "configs.git_display"
 local git = require "configs.gitutils"
@@ -107,6 +108,8 @@ local function pretty_git_branch_picker(opts)
   end
   opts.cwd = cwd
 
+  -- History/review pass attach_mappings / previewer; peel them off so they are
+  -- not treated as Telescope picker opts.
   local custom_attach = opts.attach_mappings
   local custom_previewer = opts.previewer
   local prompt_title = opts.prompt_title or "Git Branches"
@@ -143,6 +146,7 @@ local function pretty_git_branch_picker(opts)
           return make_entry.set_default_entry_mt(entry, opts)
         end,
       },
+      -- Default graph log; MiniDiff history overrides with commit_diff.
       previewer = custom_previewer or git_preview.branch_log { cwd = cwd },
       sorter = conf.file_sorter(opts),
       attach_mappings = function(prompt_bufnr, map)

@@ -1,5 +1,5 @@
--- Review a branch's history: pick a branch, then N commits, open their merged
--- tree diff in the existing MiniDiff review.
+-- MiniDiff history: pick a branch, then N commits, open their merged tree diff.
+-- Reuses pretty_git_* pickers (list rows + git_preview). Only mappings differ.
 
 local git = require "configs.gitutils"
 local git_preview = require "configs.git_preview"
@@ -70,6 +70,7 @@ local function pick_commits(cwd, branch)
   local actions = require "telescope.actions"
   local action_state = require "telescope.actions.state"
 
+  -- Pretty commit list + git_preview.commit_diff; <CR> starts a merged review.
   require("configs.pretty_git_commit_picker") {
     cwd = cwd,
     ref = branch,
@@ -124,6 +125,8 @@ local function pick_branch(cwd)
   local actions = require "telescope.actions"
   local action_state = require "telescope.actions.state"
 
+  -- Pretty branch UI, but preview the tip patch (not the graph log) and
+  -- <CR> opens the commit picker instead of switching branch.
   require("configs.pretty_git_branch_picker") {
     cwd = cwd,
     prompt_title = "select a branch where to see commits changes",

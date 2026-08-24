@@ -1,4 +1,5 @@
--- Shared git row formatting for Telescope pickers.
+-- Shared git *result row* formatting for Telescope pickers (left-hand list).
+-- Preview pane rendering is `configs.git_preview`.
 
 local pretty_date = require "utils.pretty_date"
 local git = require "configs.gitutils"
