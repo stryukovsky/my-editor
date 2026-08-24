@@ -1,22 +1,23 @@
+local notify = require "configs.notify"
+local dap = require "dap"
+
+local M = {}
+
+local enabled = false
+local FILETYPES = { scala = true, sbt = true }
+
 local function parse_java_opts(opts_string)
   local result = {}
-
-  -- Handle empty or nil input
-  if not opts_string or opts_string == "" then
+  if type(opts_string) ~= "string" or opts_string == "" then
     return result
   end
 
-  -- Split by spaces first to get individual options
   for opt in opts_string:gmatch "%S+" do
-    -- Check if the option contains '='
     local key, value = opt:match "^(.-)=(.*)$"
-
     if key and value then
-      -- Option has key=value format
       table.insert(result, key)
       table.insert(result, value)
     else
-      -- Option doesn't have '=' (standalone option)
       table.insert(result, opt)
     end
   end
@@ -24,16 +25,23 @@ local function parse_java_opts(opts_string)
   return result
 end
 
+local function env_string(name)
+  local value = vim.fn.getenv(name)
+  if type(value) ~= "string" or value == "" then
+    return nil
+  end
+  return value
+end
+
 local function create_config()
   local metals_config = require("metals").bare_config()
-
-  local success, server_props = pcall(parse_java_opts, vim.fn.getenv "METALS_JAVA_OPTS")
+  local success, server_props = pcall(parse_java_opts, env_string "METALS_JAVA_OPTS")
   metals_config.settings = {
     showImplicitArguments = true,
     excludedPackages = { "akka.actor.typed.javadsl", "com.github.swagger.akka.javadsl" },
   }
-  if server_props and success then
-    local coursier_creds = vim.fn.getenv "COURSIER_CREDENTIALS"
+  if success and server_props then
+    local coursier_creds = env_string "COURSIER_CREDENTIALS"
     if coursier_creds then
       table.insert(server_props, "-Dcoursier.credentials")
       table.insert(server_props, coursier_creds)
@@ -42,23 +50,83 @@ local function create_config()
   end
   metals_config.init_options.statusBarProvider = "off"
 
-  -- Example if you are using cmp how to make sure the correct capabilities for snippets are set
-  metals_config.capabilities = require("cmp_nvim_lsp").default_capabilities()
+  local ok_blink, blink = pcall(require, "blink.cmp")
+  if ok_blink and blink.get_lsp_capabilities then
+    metals_config.capabilities = blink.get_lsp_capabilities()
+  end
 
-  metals_config.on_attach = function(client, bufnr)
+  metals_config.on_attach = function()
     require("metals").setup_dap()
+
+    -- scala
+    dap.configurations.scala = {
+      {
+        type = "scala",
+        request = "launch",
+        name = "RunOrTest",
+        metals = {
+          runType = "runOrTestFile",
+          --args = { "firstArg", "secondArg", "thirdArg" }, -- here just as an example
+        },
+      },
+      {
+        type = "scala",
+        request = "launch",
+        name = "Test Target",
+        metals = {
+          runType = "testTarget",
+        },
+      },
+      {
+        type = "scala",
+        request = "launch",
+        name = "Sbt run",
+        metals = {
+          shellCommand = "sbt run",
+        },
+      },
+    }
   end
 
   return metals_config
 end
 
-return function(self, _)
-  local nvim_metals_group = vim.api.nvim_create_augroup("nvim-metals", { clear = true })
-  vim.api.nvim_create_autocmd("FileType", {
-    pattern = self.ft,
-    callback = function()
-      require("metals").initialize_or_attach(create_config())
-    end,
-    group = nvim_metals_group,
-  })
+---@param bufnr integer
+local function attach_buf(bufnr)
+  if bufnr == 0 then
+    bufnr = vim.api.nvim_get_current_buf()
+  end
+  if not vim.api.nvim_buf_is_valid(bufnr) then
+    return
+  end
+  if not FILETYPES[vim.bo[bufnr].filetype] then
+    return
+  end
+  vim.api.nvim_buf_call(bufnr, function()
+    require("metals").initialize_or_attach(create_config())
+  end)
 end
+
+function M.enable()
+  if enabled then
+    attach_buf(0)
+    notify.replace("scala.metals", "Metals", "Already enabled", vim.log.levels.INFO)
+    return
+  end
+  enabled = true
+  vim.api.nvim_create_autocmd("FileType", {
+    pattern = { "scala", "sbt" },
+    group = vim.api.nvim_create_augroup("nvim-metals", { clear = true }),
+    callback = function(ev)
+      attach_buf(ev.buf)
+    end,
+  })
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_loaded(buf) then
+      attach_buf(buf)
+    end
+  end
+  notify.send("Metals", "LSP and DAP enabled", vim.log.levels.INFO)
+end
+
+return M

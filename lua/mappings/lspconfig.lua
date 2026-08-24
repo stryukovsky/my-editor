@@ -36,6 +36,10 @@ map("n", "<leader>py", function()
   require("configs.python").setup()
 end, opts "Python: setup")
 
+map("n", "<leader>scala", function()
+  require("configs.scalametals").enable()
+end, opts "Scala: enable Metals")
+
 map("n", "K", function()
   vim.lsp.buf.signature_help()
 end, { silent = true, noremap = true, desc = "LSP toggle signature" })

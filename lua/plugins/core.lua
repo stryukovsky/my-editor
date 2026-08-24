@@ -143,12 +143,7 @@ return {
     "jake-stewart/multicursor.nvim",
     branch = "1.0",
   },
-  {
-    "johmsalas/text-case.nvim",
-    config = function()
-      require("textcase").setup {}
-    end,
-  },
+  { "johmsalas/text-case.nvim" },
   {
     "MeanderingProgrammer/render-markdown.nvim",
     -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins

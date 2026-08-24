@@ -92,32 +92,3 @@ dap.configurations.typescript = {
     skipFiles = { "${workspaceFolder}/node_modules/**" },
   },
 }
-
--- scala
-dap.configurations.scala = {
-  {
-    type = "scala",
-    request = "launch",
-    name = "RunOrTest",
-    metals = {
-      runType = "runOrTestFile",
-      --args = { "firstArg", "secondArg", "thirdArg" }, -- here just as an example
-    },
-  },
-  {
-    type = "scala",
-    request = "launch",
-    name = "Test Target",
-    metals = {
-      runType = "testTarget",
-    },
-  },
-  {
-    type = "scala",
-    request = "launch",
-    name = "Sbt run",
-    metals = {
-      shellCommand = "sbt run",
-    },
-  },
-}

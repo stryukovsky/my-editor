@@ -752,8 +752,6 @@ local function pick_ref(title, cwd, on_pick)
   local conf = require("telescope.config").values
   local actions = require "telescope.actions"
   local action_state = require "telescope.actions.state"
-  local previewers = require "telescope.previewers"
-  local putils = require "telescope.previewers.utils"
   local entry_display = require "telescope.pickers.entry_display"
   local strings = require "plenary.strings"
 
@@ -808,32 +806,7 @@ local function pick_ref(title, cwd, on_pick)
         end,
       },
       sorter = conf.generic_sorter {},
-      previewer = previewers.new_buffer_previewer {
-        title = "Ref log",
-        define_preview = function(self, entry)
-          putils.job_maker(
-            {
-              "git",
-              "-C",
-              cwd,
-              "--no-pager",
-              "log",
-              "--oneline",
-              "-n",
-              "40",
-              entry.value,
-            },
-            self.state.bufnr,
-            {
-              callback = function(bufnr)
-                if vim.api.nvim_buf_is_valid(bufnr) then
-                  putils.highlighter(bufnr, "gitcommit", {})
-                end
-              end,
-            }
-          )
-        end,
-      },
+      previewer = require("configs.git_preview").oneline_log { cwd = cwd },
       attach_mappings = function(prompt_bufnr)
         actions.select_default:replace(function()
           local selection = action_state.get_selected_entry()

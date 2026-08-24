@@ -40,11 +40,9 @@ return {
     "scalameta/nvim-metals",
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "hrsh7th/cmp-nvim-lsp",
-      "hrsh7th/nvim-cmp",
+      "mfussenegger/nvim-dap",
     },
-    ft = { "scala", "sbt" },
-    config = require "configs.scalametals",
+    lazy = true,
   },
   {
     "mrcjkb/rustaceanvim",

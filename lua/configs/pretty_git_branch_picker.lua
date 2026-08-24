@@ -2,10 +2,9 @@
 
 local display = require "configs.git_display"
 local git = require "configs.gitutils"
+local git_preview = require "configs.git_preview"
 local actions = require "telescope.actions"
 local wrap_telescope_action = require "mappings.telescope_action_wrapper"
-
-local LOG_SEP = "\1"
 
 local HINTS = {
   { "<cr>", "switch to this picked branch" },
@@ -81,94 +80,6 @@ local function help()
   })
 end
 
--- git log --graph line: `<graph><hash>\1<decorations>\1<subject>\1<relative date>`
----@param line string
----@return string
-local function format_log_line(line)
-  local graph, hash, payload = line:match("^(.-)([0-9a-fA-F]+)" .. LOG_SEP .. "(.*)$")
-  if not hash then
-    return line
-  end
-  local parts = vim.split(payload, LOG_SEP, { plain = true })
-  local deco = vim.trim(parts[1] or "")
-  local subject = display.truncate_subject(parts[2] or "", 60)
-  local date = parts[3] or ""
-  if deco ~= "" then
-    return string.format("%s%s - %s %s (%s)", graph, hash, deco, subject, date)
-  end
-  return string.format("%s%s - %s (%s)", graph, hash, subject, date)
-end
-
-local preview_ns = vim.api.nvim_create_namespace "pretty_git_branch_picker.preview"
-
----@param bufnr integer
----@param content string[]
-local function highlight_log_buffer(bufnr, content)
-  local hl = vim.hl
-  for i = 1, #content do
-    local line = content[i]
-    local hstart, hend = line:find "[0-9a-fA-F]+"
-    if hstart and hend < #line then
-      pcall(hl.range, bufnr, preview_ns, "TelescopeResultsIdentifier", { i - 1, hstart - 1 }, { i - 1, hend })
-    end
-    local _, cstart = line:find "- %("
-    if cstart then
-      local cend = string.find(line, "%) ")
-      if cend then
-        pcall(hl.range, bufnr, preview_ns, "TelescopeResultsConstant", { i - 1, cstart - 1 }, { i - 1, cend })
-      end
-    end
-    local dstart = line:find " %(%d"
-    if dstart then
-      pcall(hl.range, bufnr, preview_ns, "TelescopeResultsSpecialComment", { i - 1, dstart }, { #line })
-    end
-  end
-end
-
----@param opts table
----@return table
-local function branch_log_previewer(opts)
-  local previewers = require "telescope.previewers"
-  local putils = require "telescope.previewers.utils"
-  local git_command = require("telescope.utils").__git_command
-
-  return previewers.new_buffer_previewer {
-    title = "Git Branch Preview",
-    get_buffer_by_name = function(_, entry)
-      return entry.value
-    end,
-    define_preview = function(self, entry)
-      local cmd = git_command({
-        "--no-pager",
-        "log",
-        "--graph",
-        "--max-count=1000",
-        "--pretty=format:%h%x01%d%x01%s%x01%cr",
-        "--abbrev-commit",
-        "--date=relative",
-        entry.value,
-      }, opts)
-
-      putils.job_maker(cmd, self.state.bufnr, {
-        value = entry.value,
-        bufname = self.state.bufname,
-        cwd = opts.cwd,
-        callback = function(bufnr, content)
-          if not content then
-            return
-          end
-          local lines = {}
-          for i, raw in ipairs(content) do
-            lines[i] = format_log_line(raw)
-          end
-          vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-          highlight_log_buffer(bufnr, lines)
-        end,
-      })
-    end,
-  }
-end
-
 ---@param opts? table
 local function pretty_git_branch_picker(opts)
   opts = vim.tbl_deep_extend("force", {
@@ -196,6 +107,15 @@ local function pretty_git_branch_picker(opts)
   end
   opts.cwd = cwd
 
+  local custom_attach = opts.attach_mappings
+  local custom_previewer = opts.previewer
+  local prompt_title = opts.prompt_title or "Git Branches"
+  local results_title = opts.results_title
+  opts.attach_mappings = nil
+  opts.previewer = nil
+  opts.prompt_title = nil
+  opts.results_title = nil
+
   local results, err = display.list_branches(cwd, {
     pattern = opts.pattern,
     show_remote_tracking_branches = opts.show_remote_tracking_branches,
@@ -212,7 +132,8 @@ local function pretty_git_branch_picker(opts)
 
   pickers
     .new(opts, {
-      prompt_title = "Git Branches",
+      prompt_title = prompt_title,
+      results_title = results_title,
       finder = finders.new_table {
         results = results,
         entry_maker = function(entry)
@@ -222,16 +143,18 @@ local function pretty_git_branch_picker(opts)
           return make_entry.set_default_entry_mt(entry, opts)
         end,
       },
-      previewer = branch_log_previewer(opts),
+      previewer = custom_previewer or git_preview.branch_log { cwd = cwd },
       sorter = conf.file_sorter(opts),
-      attach_mappings = function(_, map)
+      attach_mappings = function(prompt_bufnr, map)
+        if custom_attach then
+          return custom_attach(prompt_bufnr, map)
+        end
         -- override mappings of telescope only this way :(
         map("n", "<cr>", actions.git_switch_branch)
         map("n", "?", help)
         map("n", "d", wrap_telescope_action(actions.git_delete_branch))
         map("n", "m", wrap_telescope_action(actions.git_merge_branch))
         map("n", "r", wrap_telescope_action(actions.git_rebase_branch))
-
         return true
       end,
     })
