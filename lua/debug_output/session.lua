@@ -11,7 +11,7 @@ local M = {}
 
 --- Depth-first walk of every DAP session, including children.
 ---@param fn DebugOutputSessionVisitor
-function M.each_dap_session(fn)
+function M.walk_through_each_dap_session(fn)
   local dap = require "dap"
   local seen = {}
   local function walk(session)
@@ -33,7 +33,7 @@ end
 ---@return DebugOutputDapSession|nil
 function M.find_dap_session(session_id)
   local found
-  M.each_dap_session(function(session)
+  M.walk_through_each_dap_session(function(session)
     if session.id == session_id then
       found = session
     end
@@ -45,16 +45,17 @@ end
 ---@param session DebugOutputDapSession|nil
 ---@return DebugOutputDapSession|nil
 function M.root(session)
-  while session and session.parent do
-    session = session.parent
+  local current = session
+  while current and current.parent do
+    current = current.parent
   end
-  return session
+  return current
 end
 
 --- Tabpage recorded on this session or an ancestor.
 ---@param session DebugOutputDapSession|nil
 ---@return integer|nil
-function M.tab(session)
+function M.get_tabpage_of_session(session)
   local current = session
   while current do
     local meta = state.session_metadata[current.id]
@@ -104,11 +105,11 @@ function M.live_roots_for_tab(tab)
     return state.live_roots_cache.roots
   end
   local roots = {}
-  M.each_dap_session(function(session)
+  M.walk_through_each_dap_session(function(session)
     if not M.is_live(session) then
       return
     end
-    local sid_tab = M.tab(session)
+    local sid_tab = M.get_tabpage_of_session(session)
     if sid_tab ~= nil and sid_tab ~= tab then
       return
     end
@@ -218,7 +219,7 @@ function M.for_tab(tab)
   local current = dap.session()
   local found
   if current and M.is_live(current) then
-    local sid_tab = M.tab(current)
+    local sid_tab = M.get_tabpage_of_session(current)
     if sid_tab == nil then
       local meta = state.session_metadata[current.id]
       if meta then
