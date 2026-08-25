@@ -20,7 +20,7 @@ map("n", "<A-q>", function()
   require("searchbox").incsearch()
 end, { desc = "Search forward" })
 
-map("n", "?", function()
+map("n", "<A-Q>", function()
   require("searchbox").incsearch { reverse = true, title = " Search back " }
 end, { desc = "Search backward" })
 
@@ -43,17 +43,6 @@ map("v", "<A-q>", function()
     }
   end)
 end, { desc = "Search in visual selection" })
-
-map("v", "?", function()
-  leave_visual()
-  vim.schedule(function()
-    require("searchbox").incsearch {
-      reverse = true,
-      visual_mode = true,
-      title = " Search back in selection ",
-    }
-  end)
-end, { desc = "Search backward in visual selection" })
 
 map({ "n", "x" }, "n", function()
   search_jump "n"
