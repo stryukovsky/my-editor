@@ -66,6 +66,8 @@ trouble.setup {
       source = "telescope",
       title = "{hl:Title} Search Results{hl}    {count} entries found ",
       format = "{padded_filename} {padded_pos}   {text:ts}",
+      auto_preview = false,
+      auto_refresh = false,
     },
 
     telescope_files = {
@@ -73,12 +75,21 @@ trouble.setup {
       source = "telescope",
       title = "{hl:Title} Files{hl}    {count} entries found ",
       format = "{file_icon} {padded_filename}",
+      auto_preview = false,
+      auto_refresh = false,
     },
     file_results = {
       desc = "File results with just position",
       source = "telescope",
       title = "{hl:Title} Search Results{hl}    {count} entries found ",
       format = "{padded_pos}   {text:ts}",
+      auto_preview = false,
+      auto_refresh = false,
+    },
+    lsp_references = {
+      desc = "Frozen LSP references",
+      auto_refresh = false,
+      follow = true,
     },
     minidiff_review = {
       desc = "MiniDiff review files",

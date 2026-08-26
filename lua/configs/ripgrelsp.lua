@@ -81,9 +81,9 @@ function M.find_definition(word)
   live_grep(pattern, "rg definition: " .. symbol, ext)
 end
 
----Find usages. Call sites search `\.?word\(`; otherwise plain word search.
+---Find usages with ripgrep. Call sites search `\.?word\(`; otherwise plain word search.
 ---@param word? string
-function M.find_usages(word)
+function M.find_usages_rg(word)
   local symbol = resolve_word(word)
   if not symbol then
     notify.send("ripgrelsp", "No word under cursor", vim.log.levels.WARN)
@@ -479,6 +479,26 @@ function M.find_usages_ast(word)
     return
   end
   run_ast(symbol, usage_patterns(symbol, is_call_site(symbol)), "sg usages: " .. symbol)
+end
+
+---Find usages with ast-grep when available, otherwise fall back to ripgrep.
+---@param word? string
+function M.find_usages(word)
+  if not resolve_ast_grep() then
+    notify.send("Find usages", "ast-grep is unavailable; falling back to ripgrep", vim.log.levels.WARN)
+    return M.find_usages_rg(word)
+  end
+
+  if not current_sg_lang() then
+    notify.send(
+      "Find usages",
+      "ast-grep does not support " .. (vim.bo.filetype ~= "" and vim.bo.filetype or "this filetype") .. "; falling back to ripgrep",
+      vim.log.levels.WARN
+    )
+    return M.find_usages_rg(word)
+  end
+
+  return M.find_usages_ast(word)
 end
 
 return M

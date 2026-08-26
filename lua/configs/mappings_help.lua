@@ -133,9 +133,9 @@ local SECTIONS = {
   {
     title = "LSP",
     items = {
-      { "<leader>lr", "LSP references" },
-      { "<leader>ld", "peek definition" },
-      { "<leader>ltd", "peek type definition" },
+      { "<leader>lr", "find references" },
+      { "<leader>ld", "find definition" },
+      { "<leader>ltd", "find type definition" },
       { "<leader>fm", "format file" },
       { "<leader>rn", "rename symbol" },
       { "<leader>lsp", "LSP picker" },
@@ -145,13 +145,10 @@ local SECTIONS = {
     },
   },
   {
-    title = "Ripgrep",
+    title = "Treesj",
     items = {
-      { "<leader>rd", "rg find definition" },
-      { "<leader>ru", "rg find usages" },
-      { "<leader>ar", "ast-grep find usages" },
-      { "<leader>ss", "split (treesj)" },
-      { "<leader>sj", "join (treesj)" },
+      { "<leader>ss", "split" },
+      { "<leader>sj", "join" },
     },
   },
   {
@@ -363,7 +360,6 @@ function M.toggle()
   map("n", "q", M.close, opts)
   map("n", "<Esc>", M.close, opts)
   map("n", "?", M.close, opts)
-  map("n", "<A-?>", M.close, opts)
   map("n", "<A-S-/>", M.close, opts)
 
   vim.api.nvim_create_autocmd("BufLeave", {

@@ -1,12 +1,19 @@
 local map = require "mappings.map"
+local trouble = require "trouble"
+local close_trouble = require "utils/close_trouble"
+
 local telescope_builtin = require "telescope.builtin"
 local function opts(desc)
   return { desc = "LSP " .. desc }
 end
 
 map("n", "<leader>lr", function()
-  telescope_builtin.lsp_references { bufnr = 0 }
-end, opts "references (usages)")
+  close_trouble()
+  trouble.open {
+    mode = "lsp_references",
+    focus = true,
+  }
+end, opts "find references (usages)")
 
 map("n", "<leader>li", function()
   telescope_builtin.lsp_implementations { bufnr = 0 }
