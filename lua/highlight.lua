@@ -101,24 +101,24 @@ local function override_highlights()
   hl(0, "NeogitDiffDeleteCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
   hl(0, "NeogitDiffHeaderCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
 
-  local fgGitSignsChanges_dark = "#ffffff"
-  local fgGitSignsChanges_light = "#0042ff"
+  -- local fgGitSignsChanges_dark = "#fff7e8"
+  -- local fgGitSignsChanges_light = "#0042ff"
+  --
+  -- if vim.o.background == "light" then
+  --   hl(0, "GitSignsAddInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_light })
+  --   hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_light })
+  --   hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = fgGitSignsChanges_light })
+  -- elseif vim.o.background == "dark" then
+  --   hl(0, "GitSignsAddInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
+  --   hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
+  --   hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = fgGitSignsChanges_dark })
+  -- else
+  --   hl(0, "GitSignsAddInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
+  --   hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
+  --   hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = fgGitSignsChanges_dark })
+  -- end
 
-  if vim.o.background == "light" then
-    hl(0, "GitSignsAddInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_light })
-    hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_light })
-    hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = fgGitSignsChanges_light })
-  elseif vim.o.background == "dark" then
-    hl(0, "GitSignsAddInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
-    hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
-    hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = fgGitSignsChanges_dark })
-  else
-    hl(0, "GitSignsAddInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
-    hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
-    hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = fgGitSignsChanges_dark })
-  end
-
-  hl(0, "Comment", { fg = "#878787", italic = true })
+  hl(0, "Comment", { fg = "#9b8a72", italic = true })
   hl(0, "MiniDiffSignAdd", { link = "GitSignsAdd" })
   hl(0, "MiniDiffSignChange", { link = "GitSignsChange" })
   hl(0, "MiniDiffSignDelete", { link = "GitSignsDelete" })
@@ -213,9 +213,9 @@ local function override_highlights()
   for i, color in ipairs(project_colors) do
     hl(0, "TodoProject" .. i, { fg = color, bold = true })
   end
-  hl(0, "TodoPriorityA", { bg = "#e06c75", fg = "#ffffff", bold = true })
-  hl(0, "TodoPriorityB", { bg = "#d19a66", fg = "#ffffff", bold = true })
-  hl(0, "TodoPriorityC", { bg = "#98c379", fg = "#ffffff", bold = true })
+  hl(0, "TodoPriorityA", { bg = "#e06c75", fg = "#fff7e8", bold = true })
+  hl(0, "TodoPriorityB", { bg = "#d19a66", fg = "#fff7e8", bold = true })
+  hl(0, "TodoPriorityC", { bg = "#98c379", fg = "#fff7e8", bold = true })
   hl(0, "TodoDoneTask", { strikethrough = true })
 end
 

@@ -8,6 +8,7 @@ local grug_far = require "grug-far"
 local close_telescope = require "mappings.close_telescope"
 local close_zen = require "utils.close_zen"
 local is_normal_buffer = require "utils.is_normal_buffer"
+local notify = require "configs.notify"
 
 local ui_components_modes = { "n" }
 
@@ -181,21 +182,23 @@ map("n", "<leader>th", function()
 end, { desc = "Theme" })
 
 -- neotree
-local function workaround_neotree_focus(source, opts)
+local function workaround_neotree_focus(source, needs_reveal, opts)
   pcall(function()
     local focus_command = vim.tbl_extend("error", {
       action = "focus", -- Focus NeoTree
       source = source,
       position = "left", -- Or "left", "float"
     }, opts)
-    local reveal_command = vim.tbl_extend("error", {
-      action = "reveal", -- Focus NeoTree
-      source = source,
-      position = "left", -- Or "left", "float"
-    }, opts)
     neotree_command.execute(focus_command)
     vim.defer_fn(function()
-      neotree_command.execute(reveal_command)
+      if needs_reveal then
+        local reveal_command = vim.tbl_extend("error", {
+          action = "reveal", -- Focus NeoTree
+          source = source,
+          position = "left", -- Or "left", "float"
+        }, opts)
+        neotree_command.execute(reveal_command)
+      end
       neotree_command.execute(focus_command)
     end, 100)
   end)
@@ -204,14 +207,28 @@ end
 map(ui_components_modes, "<A-e>", function()
   local current_buf = vim.api.nvim_get_current_buf()
   local file_path = vim.api.nvim_buf_get_name(current_buf)
-  workaround_neotree_focus("filesystem", {
-    reveal_file = file_path, -- Auto-highlight the file
-    reveal_force_cwd = true, -- Ensure correct working dir
-  })
+  local empty_file_path = file_path == ""
+  local file_exists = false
+  if not empty_file_path then
+    local stat = vim.uv.fs_stat(file_path)
+    if not stat or stat.type ~= "file" then
+      notify.send("Neo-tree", "Current buffer has no file on disk to reveal", vim.log.levels.WARN)
+    end
+  end
+
+  local params = {}
+  if file_exists then
+    params = {
+      reveal_file = file_path, -- Auto-highlight the file
+      reveal_force_cwd = true, -- Ensure correct working dir only if real existing on disk file was asked
+    }
+  end
+
+  workaround_neotree_focus("filesystem", --[[ needs_reveal ==  ]] file_exists, params)
 end, { desc = "UI neotree files", silent = true })
 
 map(ui_components_modes, "<A-l>", function()
-  workaround_neotree_focus("document_symbols", {})
+  workaround_neotree_focus("document_symbols", true, {})
 end, { desc = "UI neotree structure" })
 
 -- map(ui_components_modes, "<A-k>", function()

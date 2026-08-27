@@ -15,6 +15,14 @@ map("n", "<leader>lr", function()
   }
 end, opts "find references (usages)")
 
+map("n", "<leader>lu", function()
+  close_trouble()
+  trouble.open {
+    mode = "lsp_references",
+    focus = true,
+  }
+end, opts "find references (usages)")
+
 map("n", "<leader>li", function()
   telescope_builtin.lsp_implementations { bufnr = 0 }
 end, opts "implementations")
@@ -34,6 +42,14 @@ end, opts "show incoming calls")
 map("n", "<leader>lco", function()
   telescope_builtin.lsp_outgoing_calls { bufnr = 0 }
 end, opts "show outcoming calls")
+
+map("n", "<leader>lhu", function()
+  vim.lsp.buf.typehierarchy("supertypes")
+end, opts "type hierarchy superclasses")
+
+map("n", "<leader>lhd", function()
+  vim.lsp.buf.typehierarchy("subtypes")
+end, opts "type hierarchy subclasses")
 
 map("n", "<leader>rn", function()
   vim.lsp.buf.rename()
