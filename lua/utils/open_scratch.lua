@@ -28,6 +28,17 @@ local function unique_name(name, buf)
   return name .. "-" .. i
 end
 
+---@param lines string[]|nil
+---@return string[]
+local function normalize_lines(lines)
+  local normalized = {}
+  for _, line in ipairs(lines or {}) do
+    line = tostring(line):gsub("\r\n", "\n")
+    vim.list_extend(normalized, vim.split(line, "\n", { plain = true, trimempty = false }))
+  end
+  return normalized
+end
+
 ---@class utils.OpenScratchOpts
 ---@field name string
 ---@field lines string[]
@@ -50,7 +61,7 @@ return function(opts)
   end
 
   vim.bo[buf].modifiable = true
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, opts.lines or {})
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, normalize_lines(opts.lines))
   vim.bo[buf].modified = false
   vim.bo[buf].modifiable = opts.modifiable == true
 

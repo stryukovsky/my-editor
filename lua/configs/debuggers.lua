@@ -1,10 +1,5 @@
 local dap = require "dap"
-local jdtlsnvim = require "jdtls.dap"
-jdtlsnvim.setup_dap {
-  config_overrides = { console = "" },
-}
 
-dap.defaults.fallback.autostart = 'echo "test"'
 local function inputCommand()
   return vim.fn.input "Command:"
 end

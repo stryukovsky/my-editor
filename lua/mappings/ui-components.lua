@@ -213,6 +213,8 @@ map(ui_components_modes, "<A-e>", function()
     local stat = vim.uv.fs_stat(file_path)
     if not stat or stat.type ~= "file" then
       notify.send("Neo-tree", "Current buffer has no file on disk to reveal", vim.log.levels.WARN)
+    else
+      file_exists = true
     end
   end
 

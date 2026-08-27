@@ -8,8 +8,8 @@ local notify = require "configs.notify"
 
 -- debugger
 map("n", "<leader>dd", function()
-  vim.cmd.DapNew()
-end, { desc = "debug start" })
+  debug_output.launch()
+end, { desc = "debug select and start" })
 
 map("n", "<A-n>", function()
   dap.continue()
