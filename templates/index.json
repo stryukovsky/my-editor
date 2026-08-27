@@ -22,5 +22,11 @@
     "path": "go-dap.json",
     "destination": ".vscode/launch.json",
     "kind": "dap"
+  },
+  {
+    "name": "java-dap",
+    "path": "java-dap.json",
+    "destination": ".vscode/launch.json",
+    "kind": "dap"
   }
 ]

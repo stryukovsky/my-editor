@@ -8,8 +8,53 @@ function M.setup()
       week_header = {
         enable = true,
       },
+      shortcut = {
+        {
+          icon = "󰜮 ",
+          desc = "Fetch",
+          group = "DashboardShortCut",
+          key = "f",
+          action = function()
+            local git_fetch = require "configs.periodic-git-fetch"
+            local notify = require "configs.notify"
+            if not git_fetch.is_git_repo() then
+              notify.send("Git fetch", "Not a git repository", vim.log.levels.WARN)
+              return
+            end
+            notify.replace("git-fetch", "Git fetch", "Fetching updates from remote...", vim.log.levels.WARN)
+            git_fetch.git_fetch(function(success)
+              vim.schedule(function()
+                local message = success and "Fetch completed" or "Fetch skipped or failed"
+                notify.replace("git-fetch", "Git fetch", message, success and vim.log.levels.INFO or vim.log.levels.WARN)
+              end)
+            end)
+          end,
+        },
+        {
+          icon = "󰜮 ",
+          desc = "Pull",
+          group = "DashboardShortCut",
+          key = "p",
+          action = function()
+            local git_fetch = require "configs.periodic-git-fetch"
+            local notify = require "configs.notify"
+            if not git_fetch.is_git_repo() then
+              notify.send("Git pull", "Not a git repository", vim.log.levels.WARN)
+              return
+            end
+            if git_fetch.is_git_operation_in_progress() then
+              notify.send("Git pull", "Another Git operation is in progress", vim.log.levels.WARN)
+              return
+            end
+            require("neogit").open { "pull" }
+          end,
+        },
+      },
       project = { enable = false },
       mru = { enable = false },
+      footer = {
+        "“The worker deserves his wages.” — Luke 10:7",
+      },
     },
   }
 end

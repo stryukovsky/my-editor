@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Java: current file",
+      "type": "java",
+      "request": "launch",
+      "mainClass": "${file}",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Java: choose main class",
+      "type": "java",
+      "request": "launch",
+      "mainClass": "",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Java: current file with arguments",
+      "type": "java",
+      "request": "launch",
+      "mainClass": "${file}",
+      "args": "${command:SpecifyProgramArgs}",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Java: attach JDWP (5005)",
+      "type": "java",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5005,
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

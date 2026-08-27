@@ -1,7 +1,6 @@
 -- Scratch log buffers for one DAP session's stdout/stderr.
 
 local map = require "mappings.map"
-local notify = require "configs.notify"
 local ansi = require "debug_output.ansi"
 local state = require "debug_output.state"
 
@@ -192,11 +191,7 @@ end
 --- Focus an existing log window or open a new split for this session.
 ---@param session_id integer
 function M.show_session(session_id)
-  local outputs = state.session_outputs[session_id]
-  if not outputs or #outputs == 0 then
-    notify.send("Debug Output", "No output for this session")
-    return
-  end
+  local outputs = state.session_outputs[session_id] or {}
 
   local existing_buf = M.find_buffer_for_session(session_id)
   if existing_buf then
@@ -223,6 +218,8 @@ function M.show_session(session_id)
   map("n", "q", function()
     vim.cmd "close"
   end, { buffer = buf, nowait = true, silent = true, desc = "Close DAP output window" })
+  -- Keep DAP logs out of Barbar and scope.nvim's listed-buffer cache.
+  vim.bo[buf].buflisted = false
   vim.bo[buf].modifiable = false
 
   vim.schedule(function()
