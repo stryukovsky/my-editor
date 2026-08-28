@@ -1,7 +1,7 @@
 local trouble = require "trouble.sources.telescope"
 local action_state = require "telescope.actions.state"
-local actions = require "telescope.actions"
 local close_trouble = require "utils.close_trouble"
+local ui_prevent_mess = require "utils.ui_prevent_mess"
 
 local function get_trouble_win()
   local trouble_win = nil
@@ -53,6 +53,7 @@ return function(mode)
       end
       local sort_disabler = 0
 
+      ui_prevent_mess()
       ---@diagnostic disable-next-line: missing-fields
       trouble.open(bufnr, {
         focus = false,

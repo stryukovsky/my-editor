@@ -166,6 +166,7 @@ local function sync_review_win()
 end
 
 local function open_review_view()
+  require("utils.ui_prevent_mess")()
   require("trouble").open { mode = "minidiff_review", focus = true }
   vim.schedule(sync_review_win)
 end

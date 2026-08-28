@@ -1,6 +1,7 @@
 ---@diagnostic disable: missing-fields
 local gitconflict = require "git-conflict"
 local close_trouble = require "utils.close_trouble"
+local ui_prevent_mess = require "utils.ui_prevent_mess"
 gitconflict.setup {
   default_mappings = {
     ours = "<leader>co",
@@ -16,6 +17,7 @@ gitconflict.setup {
     if not close_trouble() then
       return
     end
+    ui_prevent_mess()
     vim.cmd "Trouble qflist open focus=true"
   end, -- command or function to open the conflicts list
   highlights = { -- They must have background color, otherwise the default color will be used

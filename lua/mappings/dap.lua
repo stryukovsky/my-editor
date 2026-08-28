@@ -173,5 +173,6 @@ map("n", "<leader>dw", function()
 end, { desc = "debug go to stopped position" })
 
 map({ "n", "v" }, "<leader>db", function()
+  require("utils.ui_prevent_mess")()
   require("trouble").open { mode = "dap_breakpoints", focus = true }
 end, { desc = "debug list breakpoints" })

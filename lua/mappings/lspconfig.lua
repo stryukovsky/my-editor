@@ -1,6 +1,7 @@
 local map = require "mappings.map"
 local trouble = require "trouble"
 local close_trouble = require "utils/close_trouble"
+local ui_prevent_mess = require "utils.ui_prevent_mess"
 
 local telescope_builtin = require "telescope.builtin"
 local function opts(desc)
@@ -9,6 +10,7 @@ end
 
 map("n", "<leader>lr", function()
   close_trouble()
+  ui_prevent_mess()
   trouble.open {
     mode = "lsp_references",
     focus = true,
@@ -17,6 +19,7 @@ end, opts "find references (usages)")
 
 map("n", "<leader>lu", function()
   close_trouble()
+  ui_prevent_mess()
   trouble.open {
     mode = "lsp_references",
     focus = true,
