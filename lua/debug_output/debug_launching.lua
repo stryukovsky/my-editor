@@ -196,19 +196,13 @@ function M.setup()
 end
 
 function M.launch()
-  local dap = require "dap"
   local bufnr = vim.api.nvim_get_current_buf()
-
-  require("dap.async").run(function()
-    local entries = collect_configurations(bufnr)
-    if #entries == 0 then
-      notify.send("Debug", "No launch configurations found", vim.log.levels.WARN)
-      return
-    end
-    vim.schedule(function()
-      show_picker(entries)
-    end)
-  end)
+  local entries = collect_configurations(bufnr)
+  if #entries == 0 then
+    notify.send("Debug", "No launch configurations found", vim.log.levels.WARN)
+    return
+  end
+  show_picker(entries)
 end
 
 return M
