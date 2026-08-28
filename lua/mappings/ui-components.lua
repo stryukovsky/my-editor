@@ -113,7 +113,10 @@ local telescope_components = {
   },
 }
 
-map("n", "<leader>sa", "<cmd>Telescope spell_suggest theme=get_cursor<cr>", { desc = "Actions: spelling" })
+map("n", "<leader>sa", function()
+  ui_prevent_mess()
+  vim.cmd "Telescope spell_suggest theme=get_cursor"
+end, { desc = "Actions: spelling" })
 
 local function telescope_is_open()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -185,6 +188,7 @@ map("n", "_", function()
 end, { desc = "UI window width decrease" })
 
 map("n", "<leader>th", function()
+  ui_prevent_mess()
   vim.cmd "Telescope colorscheme"
 end, { desc = "Theme" })
 

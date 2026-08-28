@@ -109,6 +109,7 @@ local actions = {
 }
 
 function M.picker()
+  require("utils.ui_prevent_mess")()
   local pickers = require "telescope.pickers"
   local finders = require "telescope.finders"
   local conf = require("telescope.config").values

@@ -319,6 +319,7 @@ end
 ---@param matches table[]
 ---@param title string
 local function open_sg_picker(matches, title)
+  require("utils.ui_prevent_mess")()
   local pickers = require "telescope.pickers"
   local finders = require "telescope.finders"
   local conf = require("telescope.config").values

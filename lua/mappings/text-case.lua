@@ -1,2 +1,5 @@
 local map = require "mappings.map"
-map("n", "<leader>ta", "<cmd>TextCaseOpenTelescope<CR>", { desc = "Actions: text convert case" })
+map("n", "<leader>ta", function()
+  require("utils.ui_prevent_mess")()
+  vim.cmd "TextCaseOpenTelescope"
+end, { desc = "Actions: text convert case" })

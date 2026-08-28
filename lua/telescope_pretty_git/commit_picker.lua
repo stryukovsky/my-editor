@@ -61,6 +61,7 @@ local function pretty_git_commit_picker(opts)
     return
   end
 
+  require("utils.ui_prevent_mess")()
   local make_display = display.commit_displayer(display.commit_widths(commits))
 
   pickers

@@ -131,6 +131,7 @@ local function pretty_git_branch_picker(opts)
     return
   end
 
+  require("utils.ui_prevent_mess")()
   local make_display = display.branch_displayer(display.branch_widths(results))
 
   pickers

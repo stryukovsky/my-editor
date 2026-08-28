@@ -27,7 +27,12 @@ map("n", "<leader>lu", function()
 end, opts "find references (usages)")
 
 map("n", "<leader>li", function()
-  telescope_builtin.lsp_implementations { bufnr = 0 }
+  close_trouble()
+  ui_prevent_mess()
+  trouble.open {
+    mode = "lsp_implementations",
+    focus = true,
+  }
 end, opts "implementations")
 
 map("n", "<leader>ltd", function()
@@ -39,10 +44,12 @@ map("n", "<leader>ld", function()
 end, opts "definitions")
 
 map("n", "<leader>lci", function()
+  ui_prevent_mess()
   telescope_builtin.lsp_incoming_calls { bufnr = 0 }
 end, opts "show incoming calls")
 
 map("n", "<leader>lco", function()
+  ui_prevent_mess()
   telescope_builtin.lsp_outgoing_calls { bufnr = 0 }
 end, opts "show outcoming calls")
 
@@ -70,11 +77,8 @@ local function metals_opts(desc)
   return { desc = "Metals: " .. desc }
 end
 
-map("n", "<leader>me", function()
-  require("configs.scalametals").telescope_commands()
-end, metals_opts "commands")
-
 map("n", "<leader>mec", function()
+  ui_prevent_mess()
   require("configs.scalametals").telescope_commands()
 end, metals_opts "commands (Telescope)")
 

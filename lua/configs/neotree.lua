@@ -156,6 +156,7 @@ local config = {
       if node.type ~= "directory" then
         path = vim.fn.fnamemodify(path, ":h")
       end
+      require("utils.ui_prevent_mess")()
       telescope.find_files(getTelescopeOpts(state, path))
     end,
     ["telescope_grep"] = function(state)
@@ -164,6 +165,7 @@ local config = {
       if node.type ~= "directory" then
         path = vim.fn.fnamemodify(path, ":h")
       end
+      require("utils.ui_prevent_mess")()
       telescope.live_grep(getTelescopeOpts(state, path))
     end,
     ["create_fs_item"] = function(state)
