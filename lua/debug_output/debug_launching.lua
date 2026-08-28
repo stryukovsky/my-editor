@@ -1,19 +1,10 @@
 -- High-level DAP launch selection, argument prompts, and hidden terminals.
 
 local notify = require "configs.notify"
+local debug_output_settings = require "debug_output.config"
 local debug_output_policy = require "debug_output.debug_output_policy"
 
 local M = {}
-
-local LANGUAGE_BY_ADAPTER = {
-  java = "Java",
-  ["pwa-node"] = "JavaScript / TypeScript",
-  python = "Python",
-  debugpy = "Python",
-  go = "Go",
-  codelldb = "Rust",
-  scala = "Scala",
-}
 
 local function source_label(source)
   if source == "dap.configurations" then
@@ -28,7 +19,7 @@ end
 ---@param config table
 ---@return string
 local function language_label(config)
-  return LANGUAGE_BY_ADAPTER[config.type] or config.type or "Unknown"
+  return debug_output_settings.options.language_by_adapter[config.type] or config.type or "Unknown"
 end
 
 ---@param input string
@@ -97,8 +88,9 @@ local function resolve_program_arguments(config)
     return config
   end
 
-  config.args = arguments
-  return config
+  local resolved_config = vim.deepcopy(config)
+  resolved_config.args = arguments
+  return resolved_config
 end
 
 ---@param config table
@@ -164,12 +156,12 @@ local function show_picker(entries)
             value = entry,
             display = function()
               return displayer {
-                { entry.language, "TelescopeResultsIdentifier" },
-                { entry.source, "TelescopeResultsComment" },
                 { entry.config.name or "[unnamed]", "TelescopeResultsNormal" },
+                { entry.source, "TelescopeResultsComment" },
+                { entry.language, "TelescopeResultsIdentifier" },
               }
             end,
-            ordinal = table.concat({ entry.language, entry.source, entry.config.name or "" }, " "),
+            ordinal = table.concat({ entry.config.name or "", entry.source, entry.language }, " "),
           }
         end,
       },

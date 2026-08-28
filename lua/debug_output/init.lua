@@ -10,6 +10,7 @@
 local listeners = require "debug_output.listeners"
 local lualine = require "debug_output.lualine"
 local launching = require "debug_output.debug_launching"
+local config = require "debug_output.config"
 local output = require "debug_output.output"
 local picker = require "debug_output.picker"
 local session = require "debug_output.session"
@@ -18,7 +19,9 @@ local state = require "debug_output.state"
 local M = {}
 
 --- Install DAP listeners and start process / session-sync timers.
-function M.setup()
+---@param options? table
+function M.setup(options)
+  config.setup(options)
   listeners.setup()
   launching.setup()
 end
