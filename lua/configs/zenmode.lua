@@ -72,7 +72,7 @@ vim.api.nvim_create_autocmd("ColorScheme", {
 -- Close zen if a tab change would leave its floats behind.
 vim.api.nvim_create_autocmd("TabLeave", {
   callback = function()
-    require("utils.close_zen")()
+    require("utils.ui_prevent_mess")()
   end,
 })
 
@@ -80,13 +80,13 @@ vim.api.nvim_create_autocmd("TabLeave", {
 -- Registers dialog_component_callback_close so the next Telescope/UI key closes zen.
 function M.toggle_ui()
   local close_telescope = require "mappings.close_telescope"
-  local close_zen = require "utils.close_zen"
+  local ui_prevent_mess = require "utils.ui_prevent_mess"
   local had_telescope = close_telescope()
   local view_ok, view = pcall(require, "zen-mode.view")
   local zen_open = view_ok and view.is_open()
 
   if zen_open and not had_telescope then
-    close_zen()
+    ui_prevent_mess()
     _G.dialog_component_callback_close = function() end
     return
   end
@@ -100,7 +100,7 @@ function M.toggle_ui()
     zen_mode.open()
   end
   _G.dialog_component_callback_close = function()
-    close_zen()
+    ui_prevent_mess()
     _G.dialog_component_callback_close = function() end
   end
 end

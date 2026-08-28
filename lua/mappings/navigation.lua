@@ -1,7 +1,7 @@
 local map = require "mappings.map"
 local is_normal_buffer = require "utils.is_normal_buffer"
 local notify = require "configs.notify"
-local close_zen = require "utils.close_zen"
+local ui_prevent_mess = require "utils.ui_prevent_mess"
 
 local function toggle_wrap()
   local enabled = not vim.wo.wrap
@@ -68,10 +68,10 @@ map({ "n" }, "<A-.>", construct_handler "BufferNext", { desc = "Navigation next 
 
 -- tab navigation
 -- `<A->>` is not a valid keycode (`>` closes the notation). `>` / `<` are Shift+`.` / `,`.
--- zen-mode floats break on tab change; close them first.
+-- Zen-mode floats break on tab change; close conflicting UI first.
 local function tab_cmd(cmd)
   return function()
-    close_zen()
+    ui_prevent_mess()
     vim.cmd(cmd)
   end
 end

@@ -1,5 +1,5 @@
---- Close Zen mode and open the Neogit status view.
+--- Close conflicting UI and open the Neogit status view.
 return function()
-  require("utils.close_zen")()
+  require("utils.ui_prevent_mess")()
   require("neogit").open {}
 end

@@ -1,57 +1,68 @@
 local neogit = require "neogit"
 local map = require "mappings.map"
 local open_neogit_status = require "utils.open_neogit_status"
+local ui_prevent_mess = require "utils.ui_prevent_mess"
+
+local function open_neogit(args)
+  ui_prevent_mess()
+  neogit.open(args)
+end
+
+local function run_neogit_action(group, action, args)
+  ui_prevent_mess()
+  neogit.action(group, action, args)()
+end
 
 map("n", "<leader>gc", function()
-  neogit.open { "commit", kind = "split" }
+  open_neogit { "commit", kind = "split" }
 end, { desc = "git: commit" })
 
 map("n", "<leader>gPush", function()
-  neogit.open { "push" }
+  open_neogit { "push" }
 end, { desc = "git: push" })
 
 map("n", "<leader>gmerge", function()
-  neogit.open { "merge" }
+  open_neogit { "merge" }
 end, { desc = "git: merge" })
 
 map("n", "<leader>gMerge", function()
-  neogit.open { "merge" }
+  open_neogit { "merge" }
 end, { desc = "git: merge" })
 
 map("n", "<leader>gpush", function()
-  neogit.open { "push" }
+  open_neogit { "push" }
 end, { desc = "git: push" })
 
 map("n", "<leader>gFetch", function()
-  neogit.open { "fetch" }
+  open_neogit { "fetch" }
 end, { desc = "git: fetch" })
 
 map("n", "<leader>gfetch", function()
-  neogit.open { "fetch" }
+  open_neogit { "fetch" }
 end, { desc = "git: fetch" })
 
 map("n", "<leader>gpull", function()
-  neogit.open { "pull" }
+  open_neogit { "pull" }
 end, { desc = "git: pull" })
 
 map("n", "<leader>gd", function()
-  neogit.open { "diff" }
+  open_neogit { "diff" }
 end, { desc = "git: diff" })
 
 map("n", "<leader>gPull", function()
-  neogit.open { "pull" }
+  open_neogit { "pull" }
 end, { desc = "git: pull" })
 
 map("n", "<leader>gb", function()
-  neogit.open { "branch" }
+  open_neogit { "branch" }
 end, { desc = "git: branch" })
 
 map("n", "<leader>gl", function()
-  neogit.action("log", "log_current", { kind = "split", "--graph", "--decorate", "--topo-order", "--max-count=256" })()
+  run_neogit_action("log", "log_current", { kind = "split", "--graph", "--decorate", "--topo-order", "--max-count=256" })
 end, { desc = "git: current brach log" })
 
 map("n", "<leader>gL", function()
-  neogit.action("log", "log_other", { kind = "split", "--graph", "--decorate", "--topo-order", "--max-count=256" })()
+  run_neogit_action("log", "log_other", { kind = "split", "--graph", "--decorate", "--topo-order", "--max-count=256" })
 end, { desc = "git: select branch and log it" })
 
 map("n", "<A-k>", function()

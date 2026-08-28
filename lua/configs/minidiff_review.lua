@@ -183,7 +183,7 @@ local function focus_review_win()
 end
 
 function M.focus_list()
-  if require("utils.close_zen")() then
+  if require("utils.ui_prevent_mess")() then
     vim.defer_fn(function()
       if session then
         focus_review_win()

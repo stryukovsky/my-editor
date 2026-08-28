@@ -46,6 +46,7 @@ function M.setup()
               notify.send("Git pull", "Another Git operation is in progress", vim.log.levels.WARN)
               return
             end
+            require("utils.ui_prevent_mess")()
             require("neogit").open { "pull" }
           end,
         },
