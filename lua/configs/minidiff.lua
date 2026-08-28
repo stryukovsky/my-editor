@@ -128,7 +128,7 @@ function M.nav(direction)
         return
       end
       notify.send("MiniDiff", "It was last hunk, so neogit", vim.log.levels.INFO)
-      require("neogit").open {}
+      require("utils.open_neogit_status")()
       return
     end
   end

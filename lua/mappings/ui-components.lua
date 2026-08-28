@@ -97,7 +97,7 @@ local telescope_components = {
 
   {
     modes = ui_components_modes,
-    shortcut = "<A-z>",
+    shortcut = "<A-y>",
     command = function()
       vim.cmd "Telescope oldfiles"
     end,
@@ -152,20 +152,27 @@ for _, value in ipairs(telescope_components) do
   end, { desc = value.desc })
 end
 
--- Alt+Shift+z. Plain <A-z> is Telescope oldfiles.
-map(ui_components_modes, "<A-Z>", function()
+map(ui_components_modes, "<A-z>", function()
   require("configs.zenmode").toggle_ui()
 end, { desc = "UI zen mode" })
 
 map("n", "<A-o>", function()
+  close_zen()
   oil.toggle()
 end, { desc = "UI oil toggle file browser" })
 
 -- windows focus move
-map(ui_components_modes, "<A-a>", "<C-W>h", { desc = "UI switch window left" })
-map(ui_components_modes, "<A-d>", "<C-W>l", { desc = "UI switch window right" })
-map(ui_components_modes, "<A-s>", "<C-W>j", { desc = "UI switch window down" })
-map(ui_components_modes, "<A-w>", "<C-W>k", { desc = "UI switch window up" })
+local function close_zen_then(command)
+  return function()
+    close_zen()
+    vim.cmd(command)
+  end
+end
+
+map(ui_components_modes, "<A-a>", close_zen_then "wincmd h", { desc = "UI switch window left" })
+map(ui_components_modes, "<A-d>", close_zen_then "wincmd l", { desc = "UI switch window right" })
+map(ui_components_modes, "<A-s>", close_zen_then "wincmd j", { desc = "UI switch window down" })
+map(ui_components_modes, "<A-w>", close_zen_then "wincmd k", { desc = "UI switch window up" })
 map("n", "+", function()
   if not require("configs.zenmode").widen() then
     vim.cmd "wincmd 3>"
@@ -205,6 +212,7 @@ local function workaround_neotree_focus(source, needs_reveal, opts)
 end
 
 map(ui_components_modes, "<A-e>", function()
+  close_zen()
   local current_buf = vim.api.nvim_get_current_buf()
   local file_path = vim.api.nvim_buf_get_name(current_buf)
   local empty_file_path = file_path == ""
@@ -230,6 +238,7 @@ map(ui_components_modes, "<A-e>", function()
 end, { desc = "UI neotree files", silent = true })
 
 map(ui_components_modes, "<A-l>", function()
+  close_zen()
   workaround_neotree_focus("document_symbols", true, {})
 end, { desc = "UI neotree structure" })
 
@@ -247,6 +256,7 @@ local function close_grug_far()
 end
 
 map(ui_components_modes, "<A-R>", function()
+  close_zen()
   if is_normal_buffer() then
     if _G.bottom_component_callback_close() == false then
       return
@@ -259,6 +269,7 @@ end, { desc = "UI find and replace toggle" })
 -- neotest
 local neotest_summary_opened = false
 map(ui_components_modes, "<A-t>", function()
+  close_zen()
   if neotest_summary_opened then
     neotest.summary.close()
   else
@@ -274,6 +285,7 @@ end, { desc = "UI Test show summary" })
 
 local neotest_output_opened = false
 map(ui_components_modes, "<A-T>", function()
+  close_zen()
   if neotest_output_opened then
     neotest.output_panel.close()
   else
@@ -292,6 +304,7 @@ end, { desc = "UI Test show output" })
 -- trouble plugin
 -- "<cmd>Trouble diagnostics toggle focus=true<CR>"
 map(ui_components_modes, "<A-p>", function()
+  close_zen()
   local review = require "configs.minidiff_review"
   if trouble.is_open "minidiff_review" or review.session() then
     if not review.finish_review() then
@@ -326,6 +339,7 @@ end, { desc = "UI trouble diagnostics" })
 -- trouble plugin
 -- "<cmd>Trouble diagnostics toggle focus=true<CR>"
 map(ui_components_modes, "<A-i>", function()
+  close_zen()
   local review = require "configs.minidiff_review"
   if trouble.is_open "minidiff_review" or review.session() then
     if not review.finish_review() then

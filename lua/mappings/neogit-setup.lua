@@ -1,5 +1,6 @@
 local neogit = require "neogit"
 local map = require "mappings.map"
+local open_neogit_status = require "utils.open_neogit_status"
 
 map("n", "<leader>gc", function()
   neogit.open { "commit", kind = "split" }
@@ -54,11 +55,11 @@ map("n", "<leader>gL", function()
 end, { desc = "git: select branch and log it" })
 
 map("n", "<A-k>", function()
-  neogit.open {}
+  open_neogit_status()
 end, { desc = "git: status" })
 
 map("n", "<leader>gg", function()
-  neogit.open {}
+  open_neogit_status()
 end, { desc = "git: status" })
 
 -- Periodic git fetch controls
