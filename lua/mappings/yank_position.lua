@@ -96,7 +96,7 @@ map("n", "<leader>yF", function()
   end
 end, { desc = "yank absolute file path" })
 
-local TODO_PAT = "%f[%w]TODO%f[%W]"
+local TODO_PATTERN = "%f[%w]TODO%f[%W]"
 
 ---@return string|nil
 local function repo_root()
@@ -146,7 +146,7 @@ local function collect_diff_todos(diff, seen, items)
       if plus then
         new_lnum = tonumber((plus:match("^(%d+)")))
       elseif rel and new_lnum and line:sub(1, 1) == "+" and line:sub(1, 3) ~= "+++" then
-        if line:sub(2):find(TODO_PAT) then
+        if line:sub(2):find(TODO_PATTERN) then
           local key = string.format("%s:%d", rel, new_lnum)
           if not seen[key] then
             seen[key] = true
@@ -154,6 +154,35 @@ local function collect_diff_todos(diff, seen, items)
           end
         end
         new_lnum = new_lnum + 1
+      end
+    end
+  end
+end
+
+---@param root string
+---@param seen table<string, boolean>
+---@param items string[]
+local function collect_untracked_todos(root, seen, items)
+  local files = select(1, gitutils.run({ "ls-files", "--others", "--exclude-standard", "-z" }, root))
+  if not files then
+    return
+  end
+
+  for rel in vim.gsplit(files, "\0", { plain = true, trimempty = true }) do
+    local path = root .. "/" .. rel
+    local stat = vim.uv.fs_stat(path)
+    if stat and stat.type == "file" then
+      local readable, lines = pcall(vim.fn.readfile, path)
+      if readable then
+        for lnum, line in ipairs(lines) do
+          if line:find(TODO_PATTERN) then
+            local key = string.format("%s:%d", rel, lnum)
+            if not seen[key] then
+              seen[key] = true
+              items[#items + 1] = key
+            end
+          end
+        end
       end
     end
   end
@@ -172,6 +201,7 @@ local function todo_locations()
     seen,
     items
   )
+  collect_untracked_todos(root, seen, items)
   table.sort(items)
   return items
 end
