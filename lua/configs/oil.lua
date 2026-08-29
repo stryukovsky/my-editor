@@ -5,6 +5,7 @@ local system_file_explorer = require "utils.system_file_explorer"
 local compact_columns = { "icon" }
 local detail_columns = { "icon", "permissions", "size", "mtime" }
 local detail = true
+local oil_tabline
 
 local skip_preview_ext = {
   mp3 = true,
@@ -39,6 +40,31 @@ function _G.get_oil_winbar()
     return " Current location: " .. vim.fn.fnamemodify(dir, ":~")
   end
   return " Current location: " .. vim.api.nvim_buf_get_name(bufnr)
+end
+
+-- This replaces Barbar only while Oil is open. The expression is redrawn after
+-- resizes, so the repeated label always fills the current editor width.
+function _G.get_oil_tabline()
+  local label = "  OIL   "
+  return "%#TabLineSel#" .. string.rep(label, math.max(1, math.floor(vim.o.columns / 8)))
+end
+
+local function show_oil_tabline()
+  if oil_tabline == nil then
+    oil_tabline = vim.o.tabline
+  end
+  vim.o.tabline = "%!v:lua.get_oil_tabline()"
+end
+
+local function restore_tabline()
+  if oil_tabline == nil then
+    return
+  end
+  vim.o.tabline = oil_tabline
+  oil_tabline = nil
+  pcall(function()
+    require("barbar.ui.render").update()
+  end)
 end
 
 local function search_here()
@@ -106,6 +132,7 @@ function M.close()
     end
   end
   vim.g.state_oil_opened = false
+  restore_tabline()
 end
 
 function M.toggle()
@@ -121,6 +148,7 @@ function M.toggle()
   end
   vim.cmd "Neotree close"
   oil.open(vim.fn.getcwd(), { preview = { vertical = true } })
+  show_oil_tabline()
   vim.g.state_oil_opened = true
 end
 

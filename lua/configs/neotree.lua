@@ -11,6 +11,7 @@ local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
 local async = require "plenary.async"
 local notify = require "configs.notify"
+local script = require "utils.script"
 
 local open_files_do_not_replace_types = require "utils.technical_ui_filetypes"
 
@@ -116,6 +117,47 @@ local config = {
       async.run(function()
         commands.git_add_file(state)
       end, function() end)
+    end,
+    ["make_executable"] = function(state)
+      local node = state.tree:get_node()
+      if node.type == "directory" then
+        notify.send("Neo-tree", "Select a file to make it executable", vim.log.levels.WARN)
+        return
+      end
+
+      local path = node:get_id()
+      local executable, changed_or_error = script.ensure_user_executable(path)
+      if not executable then
+        notify.send("Neo-tree", "Cannot make executable: " .. changed_or_error, vim.log.levels.ERROR)
+        return
+      end
+      local message = changed_or_error and "Added owner-execute permission: " or "Already executable: "
+      notify.send("Neo-tree", message .. node.name, vim.log.levels.INFO)
+    end,
+    ["edit_mode"] = function(state)
+      local node = state.tree:get_node()
+      local path = node:get_id()
+      local current_mode, mode_error = script.mode_string(path)
+      if not current_mode then
+        notify.send("Neo-tree", "Cannot read mode: " .. mode_error, vim.log.levels.ERROR)
+        return
+      end
+
+      vim.ui.input({
+        prompt = "chmod " .. node.name .. ": ",
+        default = current_mode,
+      }, function(mode)
+        if not mode then
+          return
+        end
+        local success, changed_or_error = script.set_mode(path, vim.trim(mode))
+        if not success then
+          notify.send("Neo-tree", "Cannot change mode: " .. changed_or_error, vim.log.levels.ERROR)
+          return
+        end
+        local message = changed_or_error and "Mode updated: " or "Mode unchanged: "
+        notify.send("Neo-tree", message .. node.name, vim.log.levels.INFO)
+      end)
     end,
 
     ["system_open"] = function(state)
@@ -287,12 +329,12 @@ local config = {
         ["c"] = "copy_to_clipboard", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
         ["d"] = "delete",
         ["A"] = "add_directory", -- also accepts the config.show_path and config.insert_as options.
-        ["m"] = "move", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
+        ["m"] = "edit_mode",
         ["r"] = "rename",
         ["<leader>rn"] = "rename",
         ["p"] = "paste_from_clipboard",
         ["x"] = "cut_to_clipboard",
-        ["e"] = "toggle_auto_expand_width",
+        ["e"] = "make_executable",
         ["y"] = "copy_path",
       },
     },
