@@ -120,9 +120,9 @@ map("n", "<leader>ex", function()
     end
   end
 
-  local executable, changed_or_error = script.ensure_user_executable(path)
-  if not executable then
-    vim.notify("Cannot make script executable: " .. changed_or_error, vim.log.levels.ERROR)
+  local executable_error = script.ensure_user_executable(path)
+  if executable_error ~= "" then
+    vim.notify("Cannot make script executable: " .. executable_error, vim.log.levels.ERROR)
     return
   end
 
@@ -137,9 +137,6 @@ map("n", "<leader>ex", function()
     vim.fn.shellescape("./" .. filename)
   ))
 
-  if changed_or_error then
-    vim.notify("Added owner-execute permission to " .. filename, vim.log.levels.INFO)
-  end
 end, { desc = "Terminal: run current Bash or Python script" })
 
 map("n", "<Leader>tr", function()

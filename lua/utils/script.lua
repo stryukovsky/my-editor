@@ -80,28 +80,26 @@ end
 
 --- Ensure a regular file has owner-execute permission.
 ---@param path string
----@return boolean|nil success
----@return boolean|string changed_or_error
--- TODO: lets just return string, if it is empty then success otherwise, error msg is not empty
+---@return string error Empty on success.
 function M.ensure_user_executable(path)
   local stat = vim.uv.fs_stat(path)
   if not stat then
-    return nil, "File does not exist"
+    return "File does not exist"
   end
   if stat.type ~= "file" then
-    return nil, "Not a regular file"
+    return "Not a regular file"
   end
 
   local permissions = stat.mode % 512
   if permissions % 128 >= 64 then
-    return true, false
+    return ""
   end
 
   local ok, err = vim.uv.fs_chmod(path, permissions + 64)
   if not ok then
-    return nil, err or "Could not add owner-execute permission"
+    return err or "Could not add owner-execute permission"
   end
-  return true, true
+  return ""
 end
 
 return M

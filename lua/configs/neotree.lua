@@ -126,13 +126,12 @@ local config = {
       end
 
       local path = node:get_id()
-      local executable, changed_or_error = script.ensure_user_executable(path)
-      if not executable then
-        notify.send("Neo-tree", "Cannot make executable: " .. changed_or_error, vim.log.levels.ERROR)
+      local executable_error = script.ensure_user_executable(path)
+      if executable_error ~= "" then
+        notify.send("Neo-tree", "Cannot make executable: " .. executable_error, vim.log.levels.ERROR)
         return
       end
-      local message = changed_or_error and "Added owner-execute permission: " or "Already executable: "
-      notify.send("Neo-tree", message .. node.name, vim.log.levels.INFO)
+      notify.send("Neo-tree", "Executable: " .. node.name, vim.log.levels.INFO)
     end,
     ["edit_mode"] = function(state)
       local node = state.tree:get_node()

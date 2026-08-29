@@ -381,38 +381,35 @@ local function sg_search(patterns, lang, ext)
     return nil
   end
 
-  local cmd = { bin, "run", "-l", lang, "--json=compact", "--color", "never" }
-  if ext then
-    table.insert(cmd, "--globs")
-    table.insert(cmd, "*." .. ext)
-  end
+  local matches = {}
   for _, pattern in ipairs(patterns) do
-    table.insert(cmd, "-p")
-    table.insert(cmd, pattern)
-  end
-  table.insert(cmd, ".")
+    -- ast-grep accepts exactly one `--pattern` per invocation.
+    local cmd = { bin, "run", "-l", lang, "--json=compact", "--color", "never" }
+    if ext then
+      table.insert(cmd, "--globs")
+      table.insert(cmd, "*." .. ext)
+    end
+    vim.list_extend(cmd, { "-p", pattern, "." })
 
-  local result = vim.system(cmd, { text = true, cwd = vim.fn.getcwd() }):wait()
-  -- exit 1 = no matches for ast-grep
-  if result.code ~= 0 and result.code ~= 1 then
-    local err = vim.trim(result.stderr or result.stdout or "ast-grep failed")
-    notify.send("ripgrelsp", err, vim.log.levels.ERROR)
-    return nil
+    local result = vim.system(cmd, { text = true, cwd = vim.fn.getcwd() }):wait()
+    -- exit 1 = no matches for ast-grep
+    if result.code ~= 0 and result.code ~= 1 then
+      local err = vim.trim(result.stderr or result.stdout or "ast-grep failed")
+      notify.send("ripgrelsp", err, vim.log.levels.ERROR)
+      return nil
+    end
+
+    local stdout = vim.trim(result.stdout or "")
+    if stdout ~= "" then
+      local ok, decoded = pcall(vim.json.decode, stdout)
+      if not ok then
+        notify.send("ripgrelsp", "Failed to parse ast-grep JSON", vim.log.levels.ERROR)
+        return nil
+      end
+      vim.list_extend(matches, decoded)
+    end
   end
 
-  local stdout = vim.trim(result.stdout or "")
-  if stdout == "" then
-    return {}
-  end
-
-  local ok, decoded = pcall(vim.json.decode, stdout)
-  if not ok then
-    notify.send("ripgrelsp", "Failed to parse ast-grep JSON", vim.log.levels.ERROR)
-    return nil
-  end
-
-  ---@type table[]
-  local matches = decoded
   -- Deduplicate by file:line:col
   local seen = {}
   local unique = {}
