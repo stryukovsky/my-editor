@@ -1,5 +1,10 @@
 local builtin = require "statuscol.builtin"
 
+local function padded_lnum(args, segment)
+  local padded_args = vim.tbl_extend("force", {}, args, { nuw = math.max(4, args.nuw) })
+  return builtin.lnumfunc(padded_args, segment)
+end
+
 require("statuscol").setup {
   setopt = true, -- Whether to set the 'statuscolumn' option, may be set to false for those who
   -- want to use the click handlers in their own 'statuscolumn': _G.Sc[SFL]a().
@@ -19,7 +24,7 @@ require("statuscol").setup {
       -- auto = true,
     },
     {
-      text = { builtin.lnumfunc, " " },
+      text = { padded_lnum, " " },
       condition = { true, builtin.not_empty },
       click = "v:lua.ScLa",
       -- auto = true,
