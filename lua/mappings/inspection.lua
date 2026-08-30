@@ -33,11 +33,11 @@ end
 map("n", "]d", function()
   navigation_repeat.run(function()
     goto_diagnostic(1)
-  end)
+  end, "next diagnostic")
 end, { desc = "Next diagnostic (center + float)" })
 
 map("n", "[d", function()
   navigation_repeat.run(function()
     goto_diagnostic(-1)
-  end)
+  end, "prev diagnostic")
 end, { desc = "Prev diagnostic (center + float)" })

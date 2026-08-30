@@ -102,13 +102,13 @@ end
 map("n", "]s", function()
   navigation_repeat.run(function()
     goto_spell(1)
-  end)
+  end, "next spelling issue")
 end, { desc = "Next spelling issue" })
 
 map("n", "[s", function()
   navigation_repeat.run(function()
     goto_spell(-1)
-  end)
+  end, "prev spelling issue")
 end, { desc = "Prev spelling issue" })
 
 
