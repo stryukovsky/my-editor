@@ -1,6 +1,7 @@
 local map = require "mappings.map"
 local md_table_viewer = require "configs.md_table_viewer"
 local csv_table_viewer = require "configs.csv_table_viewer"
+local navigation_repeat = require "utils.navigation_repeat"
 
 map("n", "<A-i>", function()
   local ft = vim.bo.filetype
@@ -30,9 +31,13 @@ local function goto_diagnostic(direction)
 end
 
 map("n", "]d", function()
-  goto_diagnostic(1)
+  navigation_repeat.run(function()
+    goto_diagnostic(1)
+  end)
 end, { desc = "Next diagnostic (center + float)" })
 
 map("n", "[d", function()
-  goto_diagnostic(-1)
+  navigation_repeat.run(function()
+    goto_diagnostic(-1)
+  end)
 end, { desc = "Prev diagnostic (center + float)" })

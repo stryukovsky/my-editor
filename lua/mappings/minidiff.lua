@@ -1,5 +1,6 @@
 local map = require "mappings.map"
 local minidiff = require "configs.minidiff"
+local navigation_repeat = require "utils.navigation_repeat"
 
 map("n", "<leader>gr", minidiff.reset_hunk, { desc = "git hunk reset" })
 map("n", "<leader>gh", function()
@@ -13,11 +14,15 @@ map("n", "<leader>gS", function()
 end, { desc = "git stage all changes" })
 
 map("n", "]g", function()
-  minidiff.nav(1)
+  navigation_repeat.run(function()
+    minidiff.nav(1)
+  end)
 end, { desc = "Jump to next git hunk" })
 
 map("n", "[g", function()
-  minidiff.nav(-1)
+  navigation_repeat.run(function()
+    minidiff.nav(-1)
+  end)
 end, { desc = "Jump to prev git hunk" })
 
 map("n", "<A-h>", minidiff.toggle_overlay, { desc = "git toggle hunk overlay" })

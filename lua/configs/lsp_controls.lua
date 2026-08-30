@@ -62,7 +62,7 @@ function M.disable_session()
   notify.send("LSP", "Disabled for this session. Restart to enable again.")
 end
 
--- Open the LSP log file in a split.
+-- Open the LSP log file as a normal listed buffer.
 function M.show_logs()
   local path
   if vim.lsp.log and vim.lsp.log.get_filename then
@@ -70,7 +70,7 @@ function M.show_logs()
   else
     path = vim.fn.stdpath "log" .. "/lsp.log"
   end
-  vim.cmd("split " .. vim.fn.fnameescape(path))
+  vim.cmd("edit " .. vim.fn.fnameescape(path))
   vim.bo.filetype = "log"
 end
 

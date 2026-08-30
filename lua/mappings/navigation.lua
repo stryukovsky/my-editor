@@ -2,6 +2,7 @@ local map = require "mappings.map"
 local is_normal_buffer = require "utils.is_normal_buffer"
 local notify = require "configs.notify"
 local ui_prevent_mess = require "utils.ui_prevent_mess"
+local navigation_repeat = require "utils.navigation_repeat"
 
 local function toggle_wrap()
   local enabled = not vim.wo.wrap
@@ -92,6 +93,26 @@ map("n", "<leader>>", construct_handler "BufferMoveNext", { desc = "Navigation m
 
 map("n", "<A-space>", construct_handler "BufferPick", { desc = "Pick buffer" })
 map("n", "<leader>pin", construct_handler "BufferPin", { desc = "Navigation pin buffer" })
+
+local function goto_spell(direction)
+  local motion = direction > 0 and "]s" or "[s"
+  vim.cmd("normal! " .. vim.v.count1 .. motion)
+end
+
+map("n", "]s", function()
+  navigation_repeat.run(function()
+    goto_spell(1)
+  end)
+end, { desc = "Next spelling issue" })
+
+map("n", "[s", function()
+  navigation_repeat.run(function()
+    goto_spell(-1)
+  end)
+end, { desc = "Prev spelling issue" })
+
+
+map("n", "]]", navigation_repeat.repeat_last, { desc = "Repeat last navigation" })
 
 -- navigate in jumps
 map("n", "<A-[>", "<cmd>pop<cr>", { desc = "Navigation jump prev" })
