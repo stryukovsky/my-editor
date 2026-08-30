@@ -1,5 +1,5 @@
 local M = {}
-local notify = require("configs.notify")
+local notify = require "configs.notify"
 local last_navigation_name
 local last_navigation
 
@@ -13,8 +13,10 @@ end
 
 function M.repeat_last()
   if last_navigation then
-    notify.send("Navigation", "Repeat: " .. last_navigation_name, vim.log.levels.INFO)
+    notify.replace("navigation-repeat", "Navigation", "Repeat: " .. last_navigation_name, vim.log.levels.INFO)
     last_navigation()
+  else
+    notify.replace("navigation-repeat", "Navigation", "Nothing to repeat")
   end
 end
 
