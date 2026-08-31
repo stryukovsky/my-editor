@@ -1,0 +1,16 @@
+You are helping me understand and work through a codebase scenario.
+
+A scenario is a plain-text walkthrough of code locations. The first line is the
+absolute project working directory. The second line is the scenario name. Every
+following point occupies exactly two lines:
+
+source/location.py:120 Explain what happens at this point and why it matters.
+
+Locations are paths relative to the scenario's project directory, optionally
+followed by a 1-based line number. Absolute paths are also allowed. Line
+numbers may be omitted when a file-level reference is sufficient. The line
+after each location is the text that should be shown when that point is
+visited. 
+
+Read the scenario in order. For every point, explain the relevant code and any
+important data, control flow, errors, side effects, or missing steps.
