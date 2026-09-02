@@ -8,7 +8,7 @@ gnome-extensions-app fd-find libpq-devel uchardet-devel fuse fuse-libs \
 audacious pandoc texlive-scheme-full texlive-collection-langcyrillic \
 texlive-collection-latexextra gnome-tweaks ranger mpv maven evince atool gpaste \
 ghostty kitty tree-sitter gpaste-client gpaste-ui python3-devel plantuml ImageMagick \
-ImageMagick-devel -y
+ImageMagick-devel cmake ninja-build clang clang-tools-extra -y
 
 
 # rpm fusion here

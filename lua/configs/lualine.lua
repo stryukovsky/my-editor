@@ -88,6 +88,7 @@ local function get_lualine_theme()
       lualine_theme[k].c.fg = fg_color
     end
   end
+  lualine_theme.normal.a = { fg = "#fff7e8", bg = "#c49a2e", gui = "bold" }
   lualine_theme.replace.a = { fg = "#ffffff", bg = "#ff0000" }
   lualine_theme.replace.z = { fg = "#ffffff", bg = "#ff0000" }
   lualine_theme.visual.a = { fg = "#ffffff", bg = "#0000ff" }
