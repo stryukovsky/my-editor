@@ -138,6 +138,11 @@ local function select_scenario(scenario)
   M.last = scenario
   M.playback_index = 0
   notify.send("Scenarios", "Selected: " .. scenario.name)
+  local first_point = scenario.points[1]
+  if first_point and jump(scenario, first_point.position) then
+    M.playback_index = 1
+    show_description(first_point.description)
+  end
 end
 
 function M.create()
@@ -337,7 +342,9 @@ function M.yank_prompt()
   end
   local prompt = table.concat(vim.fn.readfile(path), "\n")
   if M.active then
-    prompt = ("%s\n\nWrite this scenario to file:\n%s"):format(prompt, M.active.path)
+    prompt = (
+      "%s\n\nCheck whether this file exists and contains content. If it does, clear the file, then write the scenario to it:\n%s"
+    ):format(prompt, M.active.path)
   end
   vim.fn.setreg("+", prompt)
   notify.send("Scenarios", "Scenario prompt copied to clipboard")

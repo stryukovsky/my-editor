@@ -2,7 +2,7 @@ local map = require "mappings.map"
 local async = require "plenary.async"
 local notify = require "configs.notify"
 
-map("n", "<leader>md", "<cmd>MarkdownPreviewToggle<CR>", { desc = "MarkdownPreview toggle" })
+map("n", "<leader>md", "<cmd>MarkdownPreview<CR>", { desc = "MarkdownPreview open" })
 
 map("n", "<leader>pdf", function()
   local source = vim.api.nvim_buf_get_name(0)

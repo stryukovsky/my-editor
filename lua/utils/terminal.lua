@@ -14,7 +14,7 @@ function M.is_kitty()
 end
 
 ---@param cwd string
----@param opts? { source?: string, tab_title?: string }
+---@param opts? { source?: string, tab_title?: string, argv?: string[] }
 ---@return boolean
 function M.open(cwd, opts)
   if not cwd or cwd == "" then
@@ -32,6 +32,9 @@ function M.open(cwd, opts)
       type = "tab",
       cwd = cwd,
       tab_title = opts and opts.tab_title,
+      -- Use an interactive login shell so aliases/functions from .zshrc resolve,
+      -- then retain a terminal after Neovim exits.
+      argv = opts and opts.argv or { "zsh", "--login", "-i", "-c", "nvim; exec zsh --login -i" },
     }
   end
 

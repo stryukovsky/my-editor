@@ -1,8 +1,25 @@
 local builtin = require "statuscol.builtin"
 
+-- Virtual lines belong to the cursor buffer line but are separate screen rows.
+-- Do not inherit the cursor-line status-column highlights for those rows.
+local function normal_virtual_line_args(args)
+  if args.virtnum == 0 then
+    return args
+  end
+  return vim.tbl_extend("force", {}, args, { cul = false, relnum = 1 })
+end
+
 local function padded_lnum(args, segment)
-  local padded_args = vim.tbl_extend("force", {}, args, { nuw = math.max(4, args.nuw) })
+  local padded_args = vim.tbl_extend("force", {}, normal_virtual_line_args(args), { nuw = math.max(4, args.nuw) })
   return builtin.lnumfunc(padded_args, segment)
+end
+
+local function foldfunc(args, segment)
+  return builtin.foldfunc(normal_virtual_line_args(args), segment)
+end
+
+local function signfunc(args, segment)
+  return builtin.signfunc(normal_virtual_line_args(args), segment)
 end
 
 require("statuscol").setup {
@@ -19,7 +36,7 @@ require("statuscol").setup {
   -- Default segments (fold -> sign -> line number + separator), explained below
   segments = {
     {
-      text = { builtin.foldfunc },
+      text = { foldfunc },
       click = "v:lua.ScFa",
       -- auto = true,
     },
@@ -34,6 +51,7 @@ require("statuscol").setup {
         namespace = { "MiniDiffViz" },
         wrap = true,
       },
+      text = { signfunc },
       click = "v:lua.ScSa",
     },
     {
@@ -42,6 +60,7 @@ require("statuscol").setup {
         namespace = { ".*" },
         wrap = false,
       },
+      text = { signfunc },
       click = "v:lua.ScSa",
     },
   },

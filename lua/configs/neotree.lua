@@ -67,6 +67,64 @@ local function getTelescopeOpts(state, path)
   }
 end
 
+local function add_to_gitignore(state)
+  local node = state.tree:get_node()
+  if not node or not node:get_id() then
+    notify.send("Neo-tree", "Select a file or directory to ignore", vim.log.levels.WARN)
+    return
+  end
+
+  local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":p"):gsub("/$", "")
+  local path = vim.fn.fnamemodify(node:get_id(), ":p"):gsub("/$", "")
+  local prefix = cwd .. "/"
+  if path:sub(1, #prefix) ~= prefix then
+    notify.send("Neo-tree", "Selected path is outside the current working directory", vim.log.levels.WARN)
+    return
+  end
+
+  local relative_path = path:sub(#prefix + 1)
+  if relative_path == "" then
+    notify.send("Neo-tree", "Cannot add the working directory itself to .gitignore", vim.log.levels.WARN)
+    return
+  end
+  local entry = relative_path
+  if node.type == "directory" then
+    entry = entry .. "/"
+  end
+
+  local gitignore = cwd .. "/.gitignore"
+  local lines = vim.fn.filereadable(gitignore) == 1 and vim.fn.readfile(gitignore) or {}
+  local updated_lines = {}
+  local found = false
+  for _, line in ipairs(lines) do
+    if vim.trim(line) == entry then
+      found = true
+    else
+      table.insert(updated_lines, line)
+    end
+  end
+
+  if found then
+    vim.fn.writefile(updated_lines, gitignore)
+    notify.send("Neo-tree", "Removed from .gitignore: " .. entry)
+    return
+  end
+
+  vim.fn.system({ "git", "-C", cwd, "check-ignore", "-q", "--", relative_path })
+  if vim.v.shell_error == 0 then
+    notify.send(
+      "Neo-tree",
+      "Cannot turn gitignore off: another ignore rule or parent directory ignores " .. entry,
+      vim.log.levels.WARN
+    )
+    return
+  end
+
+  table.insert(lines, entry)
+  vim.fn.writefile(lines, gitignore)
+  notify.send("Neo-tree", "Added to .gitignore: " .. entry)
+end
+
 ---@type neotree.Config.Base
 local config = {
   enable_git_status = true,
@@ -319,7 +377,9 @@ local config = {
         ["R"] = "replace_in_directory",
         ["<A-F>"] = "telescope_grep",
         ["<A-f>"] = "telescope_find",
+        ["<A-i>"] = "show_file_details",
         ["f"] = "telescope_find",
+        ["i"] = add_to_gitignore,
         ["<C-x>"] = "clear_filter",
         ["<C-c>"] = "clear_filter",
         ["s"] = "git_add_file",

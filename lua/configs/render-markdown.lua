@@ -2,6 +2,8 @@
 vim.treesitter.language.register("markdown", "todotxt-preview")
 
 require("render-markdown").setup {
+  -- Scrolling triggers both CursorMoved and WinScrolled; batch the viewport refreshes.
+  debounce = 230,
   completions = { lsp = { enabled = true } },
   file_types = { "markdown", "codecompanion", "todotxt-preview" },
   code = {
@@ -9,7 +11,10 @@ require("render-markdown").setup {
     enabled = true,
     language_icon = false,
     border = "thin",
-    language_left = "   ",
+    language_left = "",
+  },
+  latex = {
+    enabled = false,
   },
   heading = {
     enabled = true,
@@ -21,18 +26,18 @@ require("render-markdown").setup {
     backgrounds = {
       "RenderMarkdownH1Bg",
       "RenderMarkdownH2Bg",
-      "RenderMarkdownH2Bg",
-      "RenderMarkdownH2Bg",
-      "RenderMarkdownH2Bg",
-      "RenderMarkdownH2Bg",
+      "RenderMarkdownH3Bg",
+      "RenderMarkdownH4Bg",
+      "RenderMarkdownH5Bg",
+      "RenderMarkdownH6Bg",
     },
     foregrounds = {
       "RenderMarkdownH1",
       "RenderMarkdownH2",
-      "RenderMarkdownH2",
-      "RenderMarkdownH2",
-      "RenderMarkdownH2",
-      "RenderMarkdownH2",
+      "RenderMarkdownH3",
+      "RenderMarkdownH4",
+      "RenderMarkdownH5",
+      "RenderMarkdownH6",
     },
   },
   overrides = {
