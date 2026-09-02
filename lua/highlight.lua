@@ -62,6 +62,8 @@ local function override_highlights()
   hl(0, "NeoTreeTabSeparatorInactive", { bg = background, fg = background })
   hl(0, "NeoTreeTabSeparatorActive", { bg = background, fg = background })
   hl(0, "NeoTreeDirectoryIcon", { fg = "#c49a2e" })
+  hl(0, "NeoTreeDirectoryName", { fg = "#c49a2e" })
+  hl(0, "NeoTreeModified", { fg = "#c49a2e" })
 
   local current_buffer_bg = vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).bg
   local current_buffer_fg = vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).fg

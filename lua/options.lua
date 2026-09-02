@@ -189,6 +189,7 @@ vim.opt.fillchars = {
   diff = "╱",
   eob = " ",
   vert = "┊",
+  horiz = "─",
   foldclose = "",
   foldopen = "",
   foldsep = " ", -- Blank space for lines inside an open fold
