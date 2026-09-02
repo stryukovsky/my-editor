@@ -58,9 +58,10 @@ local function override_highlights()
   local foreground_inactive = vim.api.nvim_get_hl(0, { name = "Normal" }).fg
   local foreground_active = vim.api.nvim_get_hl(0, { name = "Title" }).fg
   hl(0, "NeoTreeTabInactive", { bg = background, fg = foreground_inactive })
-  hl(0, "NeoTreeTabActive", { bg = background, fg = foreground_active })
+  hl(0, "NeoTreeTabActive", { bg = background, fg = "#c49a2e", bold = true })
   hl(0, "NeoTreeTabSeparatorInactive", { bg = background, fg = background })
   hl(0, "NeoTreeTabSeparatorActive", { bg = background, fg = background })
+  hl(0, "NeoTreeDirectoryIcon", { fg = "#c49a2e" })
 
   local current_buffer_bg = vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).bg
   local current_buffer_fg = vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).fg
@@ -73,7 +74,8 @@ local function override_highlights()
   hl(0, "BufferVisibleMod", { bold = true, background = visible_buffer_bg })
 
   hl(0, "StatusLine", { bg = background })
-  hl(0, "VertSplit", { bg = background, fg = foreground_inactive })
+  hl(0, "VertSplit", { bg = background, fg = "#d8c8aa" })
+  hl(0, "WinSeparator", { bg = background, fg = "#d8c8aa" })
   hl(0, "FoldColumn", { bg = background, fg = "#c49a2e" })
   hl(0, "StatusColumnDivider", { bg = background, fg = "#d8c8aa" })
   hl(0, "NeoTreeNormal", { bg = background })
