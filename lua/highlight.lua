@@ -75,6 +75,7 @@ local function override_highlights()
   hl(0, "StatusLine", { bg = background })
   hl(0, "VertSplit", { bg = background, fg = foreground_inactive })
   hl(0, "FoldColumn", { bg = background, fg = "#c49a2e" })
+  hl(0, "StatusColumnDivider", { bg = background, fg = "#d8c8aa" })
   hl(0, "NeoTreeNormal", { bg = background })
   hl(0, "NeoTreeEndOfBuffer", { bg = background })
   -- Render Markdown: warm paper surfaces matching material-lighter.

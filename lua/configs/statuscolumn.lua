@@ -63,6 +63,10 @@ require("statuscol").setup {
       text = { signfunc },
       click = "v:lua.ScSa",
     },
+    {
+      text = { "┊" },
+      hl = "StatusColumnDivider",
+    },
   },
   clickmod = "c", -- modifier used for certain actions in the builtin clickhandlers:
   -- "a" for Alt, "c" for Ctrl and "m" for Meta.
