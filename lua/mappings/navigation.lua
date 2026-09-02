@@ -99,20 +99,73 @@ local function goto_spell(direction)
   vim.cmd("normal! " .. vim.v.count1 .. motion)
 end
 
-map("n", "]s", function()
-  navigation_repeat.run(function()
+local function navigate_spell(direction)
+  navigation_repeat.set(
+    function()
     goto_spell(1)
-  end, "next spelling issue")
+    end,
+    function()
+      goto_spell(-1)
+    end,
+    "spelling issue"
+  )
+  goto_spell(direction)
+end
+
+map("n", "]s", function()
+  navigate_spell(1)
 end, { desc = "Next spelling issue" })
 
 map("n", "[s", function()
-  navigation_repeat.run(function()
-    goto_spell(-1)
-  end, "prev spelling issue")
+  navigate_spell(-1)
 end, { desc = "Prev spelling issue" })
 
+local function is_fold_start(line)
+  return vim.fn.foldlevel(line) > vim.fn.foldlevel(line - 1)
+end
 
-map("n", "]]", navigation_repeat.repeat_last, { desc = "Repeat last navigation" })
+local function goto_fold(direction)
+  local line = vim.api.nvim_win_get_cursor(0)[1]
+  local remaining = vim.v.count1
+  while true do
+    line = line + direction
+    if line < 1 or line > vim.api.nvim_buf_line_count(0) then
+      notify.send("Navigation", "No " .. (direction > 0 and "next" or "previous") .. " fold", vim.log.levels.INFO)
+      return
+    end
+    if is_fold_start(line) then
+      remaining = remaining - 1
+      if remaining == 0 then
+        vim.api.nvim_win_set_cursor(0, { line, 0 })
+        vim.cmd "normal! zz"
+        return
+      end
+    end
+  end
+end
+
+local function navigate_fold(direction)
+  navigation_repeat.set(
+    function()
+      goto_fold(1)
+    end,
+    function()
+      goto_fold(-1)
+    end,
+    "fold"
+  )
+  goto_fold(direction)
+end
+
+map("n", "]f", function()
+  navigate_fold(1)
+end, { desc = "Next fold" })
+map("n", "[f", function()
+  navigate_fold(-1)
+end, { desc = "Previous fold" })
+
+map("n", "]]", navigation_repeat.repeat_next, { desc = "Repeat next navigation" })
+map("n", "[[", navigation_repeat.repeat_previous, { desc = "Repeat previous navigation" })
 
 -- navigate in jumps
 map("n", "<A-[>", "<cmd>pop<cr>", { desc = "Navigation jump prev" })

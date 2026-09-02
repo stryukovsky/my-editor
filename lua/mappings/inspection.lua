@@ -30,14 +30,23 @@ local function goto_diagnostic(direction)
   end)
 end
 
+local function navigate_diagnostic(direction)
+  navigation_repeat.set(
+    function()
+      goto_diagnostic(1)
+    end,
+    function()
+      goto_diagnostic(-1)
+    end,
+    "diagnostic"
+  )
+  goto_diagnostic(direction)
+end
+
 map("n", "]d", function()
-  navigation_repeat.run(function()
-    goto_diagnostic(1)
-  end, "next diagnostic")
+  navigate_diagnostic(1)
 end, { desc = "Next diagnostic (center + float)" })
 
 map("n", "[d", function()
-  navigation_repeat.run(function()
-    goto_diagnostic(-1)
-  end, "prev diagnostic")
+  navigate_diagnostic(-1)
 end, { desc = "Prev diagnostic (center + float)" })

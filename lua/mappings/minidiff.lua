@@ -13,17 +13,26 @@ map("n", "<leader>gS", function()
   vim.fn.system "git add ."
 end, { desc = "git stage all changes" })
 
+local function navigate_hunk(direction)
+  navigation_repeat.set(
+    function()
+      minidiff.nav(1)
+    end,
+    function()
+      minidiff.nav(-1)
+    end,
+    "git hunk"
+  )
+  minidiff.nav(direction)
+end
+
 map("n", "]g", function()
-  navigation_repeat.run(function()
-    minidiff.nav(1)
-  end, "next git hunk")
+  navigate_hunk(1)
 end, { desc = "Jump to next git hunk" })
 
 map("n", "[g", function()
-  navigation_repeat.run(function()
-    minidiff.nav(-1)
-  end, "prev git hunk")
-end, { desc = "Jump to prev git hunk" })
+  navigate_hunk(-1)
+end, { desc = "Jump to previous git hunk" })
 
 map("n", "<A-h>", minidiff.toggle_overlay, { desc = "git toggle hunk overlay" })
 
