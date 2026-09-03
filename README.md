@@ -47,7 +47,7 @@ cp setup/fedora/zshrc.sh ~/.zshrc
 mkdir -p ~/.config/ghostty/
 mkdir -p ~/.config/kitty/
 cp setup/fedora/ghostty ~/.config/ghostty/config
-cp setup/fedora/kitty ~/.config/kitty/kitty.conf
+cp setup/fedora/kitty.conf ~/.config/kitty/kitty.conf
 cp -r setup/fedora/ranger ~/.config/
 bash setup/common_tools/finalize.sh
 bash setup/common_tools/ai.sh
@@ -182,7 +182,7 @@ mkdir -p ~/.config/ghostty/
 cp setup/macos/ghostty ~/.config/ghostty/config
 
 mkdir -p ~/.config/kitty/
-cp setup/macos/kitty ~/.config/kitty/kitty.conf
+cp setup/macos/kitty.conf ~/.config/kitty/kitty.conf
 
 cp -r setup/macos/ranger ~/.config/
 bash setup/common_tools/finalize.sh
