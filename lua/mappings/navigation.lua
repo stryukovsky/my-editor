@@ -164,6 +164,84 @@ map("n", "[f", function()
   navigate_fold(-1)
 end, { desc = "Previous fold" })
 
+local function breakpoint_lines(bufnr)
+  local ok, breakpoints = pcall(require, "dap.breakpoints")
+  if not ok then
+    return nil
+  end
+  local buf_breakpoints = breakpoints.get(bufnr)[bufnr] or {}
+  local lines = {}
+  for _, bp in ipairs(buf_breakpoints) do
+    lines[#lines + 1] = bp.line
+  end
+  table.sort(lines)
+  return lines
+end
+
+local function goto_breakpoint(direction)
+  local bufnr = vim.api.nvim_get_current_buf()
+  local lines = breakpoint_lines(bufnr)
+  if lines == nil then
+    notify.send("Navigation", "DAP not available", vim.log.levels.WARN)
+    return
+  end
+  if #lines == 0 then
+    notify.send("Navigation", "No breakpoints in buffer", vim.log.levels.INFO)
+    return
+  end
+
+  local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
+  local remaining = vim.v.count1
+
+  if direction > 0 then
+    for _, line in ipairs(lines) do
+      if line > cursor_line then
+        remaining = remaining - 1
+        if remaining == 0 then
+          vim.api.nvim_win_set_cursor(0, { line, 0 })
+          vim.cmd "normal! zz"
+          return
+        end
+      end
+    end
+    notify.send("Navigation", "No next breakpoint", vim.log.levels.INFO)
+    return
+  end
+
+  for index = #lines, 1, -1 do
+    if lines[index] < cursor_line then
+      remaining = remaining - 1
+      if remaining == 0 then
+        vim.api.nvim_win_set_cursor(0, { lines[index], 0 })
+        vim.cmd "normal! zz"
+        return
+      end
+    end
+  end
+  notify.send("Navigation", "No previous breakpoint", vim.log.levels.INFO)
+end
+
+local function navigate_breakpoint(direction)
+  navigation_repeat.set(
+    function()
+      goto_breakpoint(1)
+    end,
+    function()
+      goto_breakpoint(-1)
+    end,
+    "breakpoint"
+  )
+  goto_breakpoint(direction)
+end
+
+map("n", "]b", function()
+  navigate_breakpoint(1)
+end, { desc = "Next breakpoint" })
+
+map("n", "[b", function()
+  navigate_breakpoint(-1)
+end, { desc = "Previous breakpoint" })
+
 map("n", "]]", navigation_repeat.repeat_next, { desc = "Repeat next navigation" })
 map("n", "[[", navigation_repeat.repeat_previous, { desc = "Repeat previous navigation" })
 
