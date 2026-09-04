@@ -30,7 +30,17 @@ end
 
 local function override_highlights()
   hl(0, "PreProc", { link = "Comment" })
-  hl(0, "Title", { fg = "#c49a2e", bold = true })
+  local medium_orange_fg = "#c49a2e"
+  local dark_orange_fg = { fg = "#c45a12" }
+
+  local background = vim.api.nvim_get_hl(0, { name = "Normal" }).bg
+  local foreground_inactive = vim.api.nvim_get_hl(0, { name = "Normal" }).fg
+  local foreground_active = vim.api.nvim_get_hl(0, { name = "Title" }).fg
+
+  hl(0, "Title", { fg = medium_orange_fg, bold = true })
+
+  hl(0, "DiagnosticWarn", dark_orange_fg)
+  hl(0, "WarningMsg", dark_orange_fg)
 
   -- Customize how cursors look.
   hl(0, "MultiCursorCursor", { link = "Cursor" })
@@ -55,20 +65,17 @@ local function override_highlights()
   hl(0, "DiffViewFilePanelTitle", { link = "Title" })
   hl(0, "DiffViewFilePanelFileName", { link = "Normal" })
 
-  local background = vim.api.nvim_get_hl(0, { name = "Normal" }).bg
-  local foreground_inactive = vim.api.nvim_get_hl(0, { name = "Normal" }).fg
-  local foreground_active = vim.api.nvim_get_hl(0, { name = "Title" }).fg
   hl(0, "NeoTreeTabInactive", { bg = background, fg = foreground_inactive })
-  hl(0, "NeoTreeTabActive", { bg = background, fg = "#c49a2e", bold = true })
+  hl(0, "NeoTreeTabActive", { bg = background, fg = medium_orange_fg, bold = true })
   hl(0, "NeoTreeTabSeparatorInactive", { bg = background, fg = background })
   hl(0, "NeoTreeTabSeparatorActive", { bg = background, fg = background })
-  hl(0, "NeoTreeDirectoryIcon", { fg = "#c49a2e" })
-  hl(0, "NeoTreeDirectoryName", { fg = "#c49a2e" })
-  hl(0, "NeoTreeModified", { fg = "#c49a2e" })
-  hl(0, "TroubleDirectory", { fg = "#c49a2e" })
-  hl(0, "TroubleIconDirectory", { fg = "#c49a2e" })
+  hl(0, "NeoTreeDirectoryIcon", { fg = medium_orange_fg })
+  hl(0, "NeoTreeDirectoryName", { fg = medium_orange_fg })
+  hl(0, "NeoTreeModified", { fg = medium_orange_fg })
+  hl(0, "TroubleDirectory", { fg = medium_orange_fg })
+  hl(0, "TroubleIconDirectory", { fg = medium_orange_fg })
   hl(0, "MiniDiffReviewModified", { bg = "#e5d5a6", fg = "#765613", bold = true })
-  hl(0, "OilCurrentDirectory", { bg = background, fg = "#c49a2e", bold = true })
+  hl(0, "OilCurrentDirectory", { bg = background, fg = medium_orange_fg, bold = true })
 
   local current_buffer_bg = vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).bg
   local current_buffer_fg = vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).fg
@@ -83,7 +90,7 @@ local function override_highlights()
   hl(0, "StatusLine", { bg = background })
   hl(0, "VertSplit", { bg = background, fg = "#d8c8aa" })
   hl(0, "WinSeparator", { bg = background, fg = "#d8c8aa" })
-  hl(0, "FoldColumn", { bg = background, fg = "#c49a2e" })
+  hl(0, "FoldColumn", { bg = background, fg = medium_orange_fg })
   hl(0, "StatusColumnDivider", { bg = background, fg = "#d8c8aa" })
   hl(0, "NeoTreeNormal", { bg = background })
   hl(0, "NeoTreeEndOfBuffer", { bg = background })
@@ -100,6 +107,13 @@ local function override_highlights()
   hl(0, "RenderMarkdownH4", { fg = "#5d5140", bold = true })
   hl(0, "RenderMarkdownH5", { fg = "#5d5140", bold = true })
   hl(0, "RenderMarkdownH6", { fg = "#5d5140", bold = true })
+  -- Pipe-table header cells use generic @markup.heading (not H1–H6).
+  hl(0, "@markup.heading", { fg = "#765613", bold = true })
+  hl(0, "@markup.heading.markdown", { fg = "#765613", bold = true })
+  hl(0, "@markup.title", { fg = "#765613", bold = true })
+  hl(0, "@text.title", { fg = "#765613", bold = true })
+  -- Raw `|` / delimiter symbols when the cursor is on the line (anti-conceal).
+  hl(0, "@punctuation.special.markdown", { fg = "#765613" })
   hl(0, "@markup.heading.1.markdown", { fg = "#765613", bold = true })
   hl(0, "@markup.heading.2.markdown", { fg = "#8c6a1b", bold = true })
   hl(0, "@markup.heading.3.markdown", { fg = "#a07a24", bold = true })
@@ -117,7 +131,7 @@ local function override_highlights()
   hl(0, "RenderMarkdownCodeBorder", { bg = "#fcf6e9", fg = "#d8c8aa" })
   hl(0, "RenderMarkdownCodeInfo", { bg = "#fcf6e9", fg = "#9b8a72" })
   hl(0, "RenderMarkdownCodeFallback", { bg = "#fcf6e9", fg = "#5d5140" })
-  hl(0, "RenderMarkdownTableHead", { bg = "#e5d5a6", fg = "#765613", bold = true })
+  hl(0, "RenderMarkdownTableHead", { fg = "#765613", bold = true })
   hl(0, "RenderMarkdownTableRow", { bg = "#fcf6e9", fg = "#5d5140" })
   hl(0, "NormalFloat", { bg = background })
   hl(0, "NotifyBackground", { bg = background })
@@ -142,23 +156,6 @@ local function override_highlights()
   hl(0, "NeogitDiffAddCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
   hl(0, "NeogitDiffDeleteCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
   hl(0, "NeogitDiffHeaderCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
-
-  -- local fgGitSignsChanges_dark = "#fff7e8"
-  -- local fgGitSignsChanges_light = "#0042ff"
-  --
-  -- if vim.o.background == "light" then
-  --   hl(0, "GitSignsAddInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_light })
-  --   hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_light })
-  --   hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = fgGitSignsChanges_light })
-  -- elseif vim.o.background == "dark" then
-  --   hl(0, "GitSignsAddInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
-  --   hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
-  --   hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = fgGitSignsChanges_dark })
-  -- else
-  --   hl(0, "GitSignsAddInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
-  --   hl(0, "GitSignsChangeInline", { bold = true, italic = true, underline = true, fg = fgGitSignsChanges_dark })
-  --   hl(0, "GitSignsDeleteInline", { bold = true, italic = true, strikethrough = true, fg = fgGitSignsChanges_dark })
-  -- end
 
   hl(0, "Comment", { fg = "#9b8a72", italic = true })
   hl(0, "MiniDiffSignAdd", { link = "GitSignsAdd" })
