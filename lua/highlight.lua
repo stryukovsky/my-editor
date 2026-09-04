@@ -30,6 +30,7 @@ end
 
 local function override_highlights()
   hl(0, "PreProc", { link = "Comment" })
+  hl(0, "Title", { fg = "#c49a2e", bold = true })
 
   -- Customize how cursors look.
   hl(0, "MultiCursorCursor", { link = "Cursor" })
@@ -64,6 +65,10 @@ local function override_highlights()
   hl(0, "NeoTreeDirectoryIcon", { fg = "#c49a2e" })
   hl(0, "NeoTreeDirectoryName", { fg = "#c49a2e" })
   hl(0, "NeoTreeModified", { fg = "#c49a2e" })
+  hl(0, "TroubleDirectory", { fg = "#c49a2e" })
+  hl(0, "TroubleIconDirectory", { fg = "#c49a2e" })
+  hl(0, "MiniDiffReviewModified", { bg = "#e5d5a6", fg = "#765613", bold = true })
+  hl(0, "OilCurrentDirectory", { bg = background, fg = "#c49a2e", bold = true })
 
   local current_buffer_bg = vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).bg
   local current_buffer_fg = vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).fg
