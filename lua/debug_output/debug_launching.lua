@@ -149,6 +149,7 @@ local function show_picker(entries)
   pickers
     .new({}, {
       prompt_title = "DAP Launch Configurations",
+      initial_mode = "normal",
       finder = finders.new_table {
         results = entries,
         entry_maker = function(entry)
