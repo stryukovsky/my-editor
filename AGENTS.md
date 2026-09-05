@@ -30,6 +30,7 @@ Usage: `map("n", "<leader>f", function() ..., { desc = "..." })`
 - `vim.fn.stdpath("data")` is monkey-patched to resolve to `~/.config/nvim/data/` (not the default `~/.local/share/nvim`)
 - Mason binaries are added to PATH via `vim.env.PATH = stdpath("data") .. "/mason/bin"`
 - State/cache/treesitter dirs are under `~/.config/nvim/data/`
+- Plugin installations (lazy) are stored in `~/.config/nvim/data/lazy/`
 
 ## Theme
 
