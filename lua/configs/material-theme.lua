@@ -58,7 +58,7 @@ require("material").setup {
     end
 
     -- Matte wheat paper: warm near-whites without reducing text contrast.
-    colors.main.white = "#fff7e8"
+    colors.main.yellow = "#c45a12"
     colors.editor.bg = "#f7f1e3"
     colors.editor.bg_alt = "#fcf6e9"
     colors.editor.white = "#fff7e8"
