@@ -242,8 +242,8 @@ map("n", "[b", function()
   navigate_breakpoint(-1)
 end, { desc = "Previous breakpoint" })
 
-map("n", "]]", navigation_repeat.repeat_next, { desc = "Repeat next navigation" })
-map("n", "[[", navigation_repeat.repeat_previous, { desc = "Repeat previous navigation" })
+map("n", ";", navigation_repeat.repeat_next, { desc = "Repeat next navigation" })
+map("n", "<A-;>", navigation_repeat.repeat_previous, { desc = "Repeat previous navigation" })
 
 -- navigate in jumps
 map("n", "<A-[>", "<cmd>pop<cr>", { desc = "Navigation jump prev" })

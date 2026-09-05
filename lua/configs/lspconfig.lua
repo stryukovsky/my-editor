@@ -67,13 +67,6 @@ vim.lsp.config("jdtls", {
   },
 })
 
-vim.api.nvim_create_autocmd("LspAttach", {
-  group = vim.api.nvim_create_augroup("LspNavigationMappingOverrides", { clear = true }),
-  callback = function(ev)
-    require("utils.clear_mappings_from_lsp").clear_mappings_from_lsp(ev.buf)
-  end,
-})
-
 for _, lsp_name in ipairs(M.servers) do
   vim.lsp.enable(lsp_name)
 end
