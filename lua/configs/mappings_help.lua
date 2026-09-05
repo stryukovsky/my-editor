@@ -33,7 +33,7 @@ local SECTIONS = {
       { "<A-l>", "document symbols" },
       { "<A-o>", "oil file browser" },
       { "<leader><leader>", "find files" },
-      { "<A-b>", "buffers" },
+      { "<A-b>", "buffers tree" },
       { "<A-P>", "projects" },
       { "<A-z>", "oldfiles" },
       { "<A-f>", "find in current buffer" },

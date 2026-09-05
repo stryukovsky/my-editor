@@ -47,14 +47,6 @@ local telescope_components = {
   },
   {
     modes = ui_components_modes,
-    shortcut = "<A-b>",
-    command = function()
-      vim.cmd "Telescope buffers"
-    end,
-    desc = "UI telescope buffers",
-  },
-  {
-    modes = ui_components_modes,
     shortcut = "<A-P>",
     command = function()
       -- Lists marked projects; [open] means a Kitty tab already exists (focus vs launch).
@@ -245,6 +237,11 @@ map(ui_components_modes, "<A-l>", function()
   ui_prevent_mess()
   workaround_neotree_focus("document_symbols", true, {})
 end, { desc = "UI neotree structure" })
+
+map(ui_components_modes, "<A-b>", function()
+  ui_prevent_mess()
+  workaround_neotree_focus("buffers", true, {})
+end, { desc = "UI neotree buffers" })
 
 -- map(ui_components_modes, "<A-k>", function()
 --   workaround_neotree_focus("git_status", {})
