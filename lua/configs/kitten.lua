@@ -34,8 +34,6 @@ M.type = "tab"
 ---@field type? string
 ---@field cwd? string
 ---@field location? string
----@field tab_title? string
----@field title? string
 ---@field keep_focus? boolean
 ---@field socket? string
 ---@field argv? string[]
@@ -89,12 +87,6 @@ function M.cmd(opts)
     args[#args + 1] = "--location=" .. opts.location
   end
 
-  if opts.tab_title and opts.tab_title ~= "" then
-    args[#args + 1] = "--tab-title=" .. opts.tab_title
-  end
-  if opts.title and opts.title ~= "" then
-    args[#args + 1] = "--title=" .. opts.title
-  end
   if opts.keep_focus then
     args[#args + 1] = "--keep-focus"
   end
@@ -150,7 +142,7 @@ end
 
 -- Flatten ls() into { id, title, cwd } per tab so projects can match by name/path.
 ---@return KittenTab[]
-function M.tabs()
+function M.get_neovim_tabs()
   local tree = M.ls()
   if not tree then
     return {}
@@ -158,20 +150,27 @@ function M.tabs()
   local tabs = {}
   for _, os_win in ipairs(tree) do
     for _, tab in ipairs(os_win.tabs or {}) do
-      -- Prefer the focused window's cwd; otherwise last window that has one.
       local cwd
+      local has_neovim = false
       for _, win in ipairs(tab.windows or {}) do
-        -- TODO: make safe win.foreground_processes[0].cwd check
-        local cwd_candidate = win.foreground_processes[0].cwd
-        if type(cwd_candidate) ~= "string" or cwd_candidate == "" then
-          cwd_candidate = win.env.PWD
-        end
-        cwd = cwd_candidate
-        if win.is_active or win.is_focused then
-          break
+        if #win.foreground_processes >= 1 then
+          local process = win.foreground_processes[1]
+          if process.cmdline and type(process.cmdline) == "table" and #process.cmdline >= 1 then
+            has_neovim = vim.endswith(process.cmdline[1], "nvim")
+          end
+          local cwd_candidate = process.cwd
+          if type(cwd_candidate) ~= "string" or cwd_candidate == "" then
+            cwd_candidate = win.env.PWD
+          end
+          cwd = cwd_candidate
+          if win.is_active or win.is_focused then
+            break
+          end
         end
       end
-      tabs[#tabs + 1] = { id = tab.id, title = tab.title or "", cwd = cwd }
+      if has_neovim then
+        tabs[#tabs + 1] = { id = tab.id, title = tab.title or "", cwd = cwd }
+      end
     end
   end
   return tabs

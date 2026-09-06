@@ -162,7 +162,7 @@ function M.kitty_tab(path, tabs)
   if not normalized then
     return nil
   end
-  for _, tab in ipairs(tabs or require("configs.kitten").tabs()) do
+  for _, tab in ipairs(tabs or require("configs.kitten").get_neovim_tabs()) do
     local tab_cwd = tab.cwd and M.normalize(tab.cwd) or nil
     if tab_cwd == normalized then
       return tab
@@ -349,7 +349,7 @@ local function open_picker(opts)
             M.unmark(selection.value.path)
             local picker = action_state.get_current_picker(prompt_bufnr)
             local next_items = {}
-            local tabs = require("configs.kitten").tabs()
+            local tabs = require("configs.kitten").get_neovim_tabs()
             for _, path in ipairs(M.load()) do
               next_items[#next_items + 1] = { path = path, tab = M.kitty_tab(path, tabs) }
             end
@@ -377,7 +377,7 @@ end
 -- <A-P>: one `kitten @ ls`, tag each saved project with its tab, then open the picker.
 function M.picker_all()
   local items = {}
-  local tabs = require("configs.kitten").tabs()
+  local tabs = require("configs.kitten").get_neovim_tabs()
   for _, path in ipairs(M.load()) do
     items[#items + 1] = { path = path, tab = M.kitty_tab(path, tabs) }
   end
