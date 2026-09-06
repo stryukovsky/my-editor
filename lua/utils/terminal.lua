@@ -31,6 +31,7 @@ function M.open(cwd, opts)
     return require("configs.kitten").launch {
       type = "tab",
       cwd = cwd,
+      location = "neighbor",
       tab_title = opts and opts.tab_title,
       -- Use an interactive login shell so aliases/functions from .zshrc resolve,
       -- then retain a terminal after Neovim exits.

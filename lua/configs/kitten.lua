@@ -33,6 +33,7 @@ M.type = "tab"
 ---@class KittenLaunchOpts
 ---@field type? string
 ---@field cwd? string
+---@field location? string
 ---@field tab_title? string
 ---@field title? string
 ---@field keep_focus? boolean
@@ -84,6 +85,10 @@ function M.cmd(opts)
   if opts.cwd and opts.cwd ~= "" then
     args[#args + 1] = "--cwd=" .. opts.cwd
   end
+  if opts.location and opts.location ~= "" then
+    args[#args + 1] = "--location=" .. opts.location
+  end
+
   if opts.tab_title and opts.tab_title ~= "" then
     args[#args + 1] = "--tab-title=" .. opts.tab_title
   end
@@ -156,11 +161,14 @@ function M.tabs()
       -- Prefer the focused window's cwd; otherwise last window that has one.
       local cwd
       for _, win in ipairs(tab.windows or {}) do
-        if type(win.cwd) == "string" and win.cwd ~= "" then
-          cwd = win.cwd
-          if win.is_active or win.is_focused then
-            break
-          end
+        -- TODO: make safe win.foreground_processes[0].cwd check
+        local cwd_candidate = win.foreground_processes[0].cwd
+        if type(cwd_candidate) ~= "string" or cwd_candidate == "" then
+          cwd_candidate = win.env.PWD
+        end
+        cwd = cwd_candidate
+        if win.is_active or win.is_focused then
+          break
         end
       end
       tabs[#tabs + 1] = { id = tab.id, title = tab.title or "", cwd = cwd }

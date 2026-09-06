@@ -4,12 +4,9 @@
 -- Mark with <leader>prj, pick with <A-P>.
 --
 -- Algorithm — is this project already open in Kitty?
---   Ask Kitty once for all tabs (`kitten @ ls` → id, title, cwd).
---   For each saved project path, pick the best tab:
---     1. title == folder name AND cwd == project path   (exact, stop)
---     2. title == folder name                           (we set --tab-title to the dirname)
---     3. cwd == project path                            (title drifted / never set)
---   Two folders with the same basename can collide on step 2.
+--   Ask Kitty once for all tabs (`kitten @ ls` → id, cwd).
+--   For each saved project path, check if any tab's cwd == project path.
+--   A project is open iff a Kitty tab has its working directory set to it.
 --
 -- Algorithm — open / focus:
 --   bump recency in projects.json
@@ -156,8 +153,7 @@ function M.apply_cwd(path)
   vim.t.project_path = normalized
 end
 
--- Match one project path against Kitty tabs. Pass `tabs` to reuse a single `ls`.
--- Returns the best tab (title+cwd, else title, else cwd) or nil.
+-- Match one project path against Kitty tabs by cwd only. Pass `tabs` to reuse a single `ls`.
 ---@param path string
 ---@param tabs? KittenTab[]
 ---@return KittenTab|nil
@@ -166,27 +162,13 @@ function M.kitty_tab(path, tabs)
   if not normalized then
     return nil
   end
-  local name = M.name(normalized)
-  ---@type KittenTab|nil
-  local named
-  ---@type KittenTab|nil
-  local cwd_match
   for _, tab in ipairs(tabs or require("configs.kitten").tabs()) do
     local tab_cwd = tab.cwd and M.normalize(tab.cwd) or nil
-    -- Title + cwd: unambiguous.
-    if tab.title == name and tab_cwd == normalized then
+    if tab_cwd == normalized then
       return tab
     end
-    -- Title only: we launched with --tab-title=<dirname>.
-    if tab.title == name then
-      named = named or tab
-    end
-    -- Cwd only: tab title drifted (nvim sets window title, user renamed, …).
-    if tab_cwd == normalized then
-      cwd_match = cwd_match or tab
-    end
   end
-  return named or cwd_match
+  return nil
 end
 
 -- In Kitty, focus an existing project tab or launch a new one. In Ghostty, launch a new window.

@@ -147,3 +147,7 @@ map("n", "<Leader>tr", function()
   local base = "  " .. vim.fn.input { prompt = "New buf name: " }
   set_terminal_name(0, base)
 end, { desc = "Terminal: rename buffer" })
+
+map("t", "<C-s>", function ()
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, true, true), "n", false)
+end, { desc = "Terminal: exit to normal mode" })
