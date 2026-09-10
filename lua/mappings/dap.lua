@@ -56,9 +56,32 @@ map("n", "<leader>dc", function()
   end
 end, { desc = "debug choose session" })
 
-map("n", "<leader>drf", function()
+map("n", "<leader>dr", function()
+  -- Same gate as the logs picker: one session restarts immediately; any extra
+  -- history (including already-dead debugees) opens Telescope. Dead entries
+  -- are shown but cannot be restarted.
+  if debug_output.get_total_sessions_count() > 1 then
+    debug_output.show_session_picker(function(_, meta, dap_session)
+      if not dap_session then
+        vim.notify("Cannot restart a dead debugee", vim.log.levels.WARN)
+        return
+      end
+      dap.restart()
+      notify.replace("dap.restart", "Debug", "Restarted " .. meta.name)
+    end, { notify_switch = false })
+  else
+    local session = debug_output.ensure_tab_session()
+    if not session then
+      vim.notify("No debug session in this tab", vim.log.levels.WARN)
+      return
+    end
+    dap.restart()
+  end
+end, { desc = "debug restart" })
+
+map("n", "<leader>dRf", function()
   dap.restart_frame()
-end, { desc = "debug restart current frame" })
+end, { desc = "debug Reset current frame" })
 
 map("n", "<leader>do", function()
   dap.step_over()

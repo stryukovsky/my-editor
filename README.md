@@ -46,8 +46,10 @@ bash setup/common_tools/commons.sh
 cp setup/fedora/zshrc.sh ~/.zshrc
 mkdir -p ~/.config/ghostty/
 mkdir -p ~/.config/kitty/
+mkdir -p ~/.config/bpytop/themes/
 cp setup/fedora/ghostty ~/.config/ghostty/config
 cp setup/fedora/kitty.conf ~/.config/kitty/kitty.conf
+cp setup/common_tools/bpytop/light.theme ~/.config/bpytop/themes/
 cp -r setup/fedora/ranger ~/.config/
 bash setup/common_tools/finalize.sh
 bash setup/common_tools/ai.sh
@@ -183,6 +185,9 @@ cp setup/macos/ghostty ~/.config/ghostty/config
 
 mkdir -p ~/.config/kitty/
 cp setup/macos/kitty.conf ~/.config/kitty/kitty.conf
+
+mkdir -p ~/.config/bpytop/themes/
+cp setup/common_tools/bpytop/light.theme ~/.config/bpytop/themes/
 
 cp -r setup/macos/ranger ~/.config/
 bash setup/common_tools/finalize.sh
