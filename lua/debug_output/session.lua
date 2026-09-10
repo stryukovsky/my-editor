@@ -74,12 +74,14 @@ function M.is_live(session)
   if not session or session.closed then
     return false
   end
+  -- A stopped thread means DAP still owns a real debuggee; trust that over
+  -- stale `meta.active` (e.g. after a bad sync of child session ids).
+  if session.stopped_thread_id then
+    return true
+  end
   local meta = state.session_metadata[session.id]
   if meta and not meta.active then
     return false
-  end
-  if session.stopped_thread_id then
-    return true
   end
   local has_children = false
   for _, child in pairs(session.children or {}) do
@@ -115,7 +117,11 @@ function M.live_roots_for_tab(tab)
     end
     local root = M.root(session)
     if M.is_live(root) then
-      roots[root.id] = root
+      if root then
+        roots[root.id] = root
+      else
+        vim.notify("Root is null", vim.log.levels.WARN)
+      end
     elseif M.is_live(session) then
       roots[session.id] = session
     end
@@ -299,17 +305,34 @@ function M.mark_ended(session)
 end
 
 --- Fallback: mark metadata inactive when DAP no longer lists the session.
+--- Must walk children too — `dap.sessions()` only returns roots, and adapters
+--- like pwa-node keep the real debuggee as a child. Syncing roots alone was
+--- marking child metas inactive every 5s while the Telescope picker (metadata)
+--- still showed them, so `<leader>dk` reported "No debug session in this tab".
 function M.sync()
   local actual_session_ids = {}
-  for _, session in pairs(require("dap").sessions()) do
-    actual_session_ids[session.id] = true
-  end
+  M.walk_through_each_dap_session(function(dap_session)
+    if not dap_session.closed then
+      actual_session_ids[dap_session.id] = true
+    end
+  end)
 
+  local process = require "debug_output.process"
   local changed = false
   for session_id, meta in pairs(state.session_metadata) do
-    if meta.active and not actual_session_ids[session_id] then
+    if actual_session_ids[session_id] then
+      -- Heal false negatives from older sync logic: still in DAP with a live PID.
+      if not meta.active then
+        local pid = state.session_pids[session_id]
+        if pid and process.is_running(pid) then
+          meta.active = true
+          meta.ended_at = nil
+          changed = true
+        end
+      end
+    elseif meta.active then
       meta.active = false
-      meta.ended_at = os.date "%Y-%m-%d %H:%M:%S"
+      meta.ended_at = string(os.date "%Y-%m-%d %H:%M:%S")
       state.session_pids[session_id] = nil
       changed = true
     end

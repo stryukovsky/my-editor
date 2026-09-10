@@ -768,3 +768,6 @@ filetype
 unnamedplus
 gpaste
 perl
+openapi
+kwargs
+ns
