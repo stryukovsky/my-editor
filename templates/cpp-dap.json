@@ -1,0 +1,34 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C++: current file binary (build/)",
+      "type": "codelldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/${fileBasenameNoExtension}",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "C++: a.out",
+      "type": "codelldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/a.out",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "C++: launch with args",
+      "type": "codelldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/${fileBasenameNoExtension}",
+      "cwd": "${workspaceFolder}",
+      "args": "${command:SpecifyProgramArgs}"
+    },
+    {
+      "name": "C++: attach local",
+      "type": "codelldb",
+      "request": "attach",
+      "pid": "${command:pickProcess}",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

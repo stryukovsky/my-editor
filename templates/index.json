@@ -28,5 +28,11 @@
     "path": "java-dap.json",
     "destination": ".vscode/launch.json",
     "kind": "dap"
+  },
+  {
+    "name": "cpp-dap",
+    "path": "cpp-dap.json",
+    "destination": ".vscode/launch.json",
+    "kind": "dap"
   }
 ]

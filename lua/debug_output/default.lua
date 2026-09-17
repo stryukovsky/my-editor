@@ -5,7 +5,7 @@ return {
     python = "Python",
     debugpy = "Python",
     go = "Go",
-    codelldb = "Rust",
+    codelldb = "C / C++ / Rust",
     scala = "Scala",
   },
   output_policy = {

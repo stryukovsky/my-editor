@@ -27,6 +27,38 @@ local function terminalwise_jump(view, ctx)
   end
 end
 
+-- `:e file:10:45` is not parsed by Neovim; edit the file, then set (1,0)-indexed pos.
+local function edit_item(view, ctx)
+  local prev_win = vim.fn.win_getid(vim.fn.winnr "#")
+  if prev_win ~= 0 and vim.api.nvim_win_is_valid(prev_win) then
+    local buf = vim.api.nvim_win_get_buf(prev_win)
+    if vim.bo[buf].buftype == "terminal" then
+      vim.notify("Switch away from terminal before jumping", vim.log.levels.WARN)
+      return
+    end
+  end
+
+  local item = ctx and ctx.item
+  if not item then
+    if ctx and ctx.node then
+      view:fold(ctx.node)
+    end
+    return
+  end
+  if not item.filename or item.filename == "" then
+    return
+  end
+
+  if prev_win ~= 0 and vim.api.nvim_win_is_valid(prev_win) then
+    vim.api.nvim_set_current_win(prev_win)
+  end
+
+  local line = item.pos and item.pos[1] or 1
+  local col = item.pos and item.pos[2] or 0
+  vim.cmd.edit(vim.fn.fnameescape(item.filename))
+  pcall(vim.api.nvim_win_set_cursor, 0, { line, col })
+end
+
 local function review_jump(view, ctx)
   local item = ctx and ctx.item
   if not item then
@@ -168,7 +200,7 @@ trouble.setup {
     q = "close",
     o = "jump_close",
     ["<esc>"] = "cancel",
-    ["<cr>"] = terminalwise_jump,
+    ["<cr>"] = edit_item,
     ["l"] = terminalwise_jump,
     ["h"] = "fold_close",
     ["<2-leftmouse>"] = terminalwise_jump,

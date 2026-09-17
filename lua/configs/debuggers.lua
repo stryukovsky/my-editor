@@ -4,6 +4,10 @@ local function inputCommand()
   return vim.fn.input "Command:"
 end
 
+local function inputExecutable()
+  return vim.fn.input("Executable: ", vim.fn.getcwd() .. "/", "file")
+end
+
 -- js/typescript adapter
 dap.adapters["pwa-node"] = {
   type = "server",
@@ -15,15 +19,15 @@ dap.adapters["pwa-node"] = {
   },
 }
 
--- dap.adapters.codelldb = {
---   type = "server",
---   host = "localhost",
---   port = "56790",
---   executable = {
---     command = "codelldb",
---     args = {  "--port", "56790" },
---   },
--- }
+dap.adapters.codelldb = {
+  type = "server",
+  host = "localhost",
+  port = "${port}",
+  executable = {
+    command = "codelldb",
+    args = { "--port", "${port}" },
+  },
+}
 
 -- javascript
 dap.configurations.javascript = {
@@ -87,3 +91,30 @@ dap.configurations.typescript = {
     skipFiles = { "${workspaceFolder}/node_modules/**" },
   },
 }
+
+-- c / c++
+dap.configurations.cpp = {
+  {
+    type = "codelldb",
+    request = "launch",
+    name = "Launch executable",
+    program = inputExecutable,
+    cwd = "${workspaceFolder}",
+  },
+  {
+    type = "codelldb",
+    request = "launch",
+    name = "Launch executable with args",
+    program = inputExecutable,
+    cwd = "${workspaceFolder}",
+    args = "${command:SpecifyProgramArgs}",
+  },
+  {
+    type = "codelldb",
+    request = "attach",
+    name = "Attach",
+    pid = require("dap.utils").pick_process,
+    cwd = "${workspaceFolder}",
+  },
+}
+dap.configurations.c = dap.configurations.cpp

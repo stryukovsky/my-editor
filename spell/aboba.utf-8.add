@@ -771,3 +771,15 @@ perl
 openapi
 kwargs
 ns
+cssls
+bashls
+basedpyright
+clangd
+texlab
+jdtls
+pwa
+stryukovsky
+codecompanion
+aidviser
+Statusline
+yanky
