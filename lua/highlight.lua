@@ -75,7 +75,11 @@ local function override_highlights()
   hl(0, "TroubleDirectory", { fg = medium_orange_fg })
   hl(0, "TroubleIconDirectory", { fg = medium_orange_fg })
   hl(0, "MiniDiffReviewModified", { bg = "#e5d5a6", fg = "#765613", bold = true })
-  hl(0, "OilCurrentDirectory", { bg = background, fg = medium_orange_fg, bold = true })
+  hl(0, "OilCurrentDirectory", { link = "WinBar" })
+  hl(0, "WinBar", { bg = background, fg = medium_orange_fg, bold = true })
+  hl(0, "WinBarNC", { bg = background, fg = medium_orange_fg, bold = true })
+  hl(0, "GrugFarHelpHeader", { link = "WinBar" })
+  hl(0, "GrugFarHelpHeaderKey", { link = "WinBar" })
 
   local current_buffer_bg = vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).bg
   local current_buffer_fg = vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).fg

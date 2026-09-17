@@ -2,7 +2,7 @@ local trouble_source = require "trouble.sources.telescope"
 local trouble_api = require "trouble"
 local action_state = require "telescope.actions.state"
 local actions = require "telescope.actions"
-local close_trouble = require "utils.close_trouble"
+local close_trouble_succeeded = require "utils.close_trouble_succeeded"
 local ui_prevent_mess = require "utils.ui_prevent_mess"
 
 ---@return string|nil, integer, integer
@@ -102,7 +102,7 @@ return function(mode)
     end
     local count = picker.manager:num_results()
     if count > 0 then
-      if not close_trouble() then
+      if not close_trouble_succeeded() then
         return
       end
       collect_telescope_items(picker)

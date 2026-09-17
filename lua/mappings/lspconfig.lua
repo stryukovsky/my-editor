@@ -1,6 +1,6 @@
 local map = require "mappings.map"
 local trouble = require "trouble"
-local close_trouble = require "utils/close_trouble"
+local close_trouble_succeeded = require "utils.close_trouble_succeeded"
 local ui_prevent_mess = require "utils.ui_prevent_mess"
 
 local telescope_builtin = require "telescope.builtin"
@@ -9,7 +9,7 @@ local function opts(desc)
 end
 
 map("n", "<leader>lr", function()
-  close_trouble()
+  close_trouble_succeeded()
   ui_prevent_mess()
   trouble.open {
     mode = "lsp_references",
@@ -18,7 +18,7 @@ map("n", "<leader>lr", function()
 end, opts "find references (usages)")
 
 map("n", "<leader>lu", function()
-  close_trouble()
+  close_trouble_succeeded()
   ui_prevent_mess()
   trouble.open {
     mode = "lsp_references",
@@ -27,7 +27,7 @@ map("n", "<leader>lu", function()
 end, opts "find references (usages)")
 
 map("n", "<leader>li", function()
-  close_trouble()
+  close_trouble_succeeded()
   ui_prevent_mess()
   trouble.open {
     mode = "lsp_implementations",

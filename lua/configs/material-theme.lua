@@ -90,6 +90,11 @@ require("material").setup {
       SpellCap = {},
       SpellLocal = {},
       SpellRare = {},
+      WinBar = { bg = colors.editor.bg, fg = colors.editor.accent, bold = true },
+      WinBarNC = { bg = colors.editor.bg, fg = colors.editor.accent, bold = true },
+      OilCurrentDirectory = { bg = colors.editor.bg, fg = colors.editor.accent, bold = true },
+      GrugFarHelpHeader = { bg = colors.editor.bg, fg = colors.editor.accent, bold = true },
+      GrugFarHelpHeaderKey = { bg = colors.editor.bg, fg = colors.editor.accent, bold = true },
     }
   end,
   lualine_style = "stealth", -- Lualine style ( can be 'stealth' or 'default' )

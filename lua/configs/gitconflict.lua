@@ -1,6 +1,6 @@
 ---@diagnostic disable: missing-fields
 local gitconflict = require "git-conflict"
-local close_trouble = require "utils.close_trouble"
+local close_trouble_succeeded = require "utils.close_trouble_succeeded"
 local ui_prevent_mess = require "utils.ui_prevent_mess"
 gitconflict.setup {
   default_mappings = {
@@ -14,7 +14,7 @@ gitconflict.setup {
   default_commands = true, -- disable commands created by this plugin
   disable_diagnostics = true, -- This will disable the diagnostics in a buffer whilst it is conflicted
   list_opener = function()
-    if not close_trouble() then
+    if not close_trouble_succeeded() then
       return
     end
     ui_prevent_mess()

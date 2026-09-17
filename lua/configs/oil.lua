@@ -37,9 +37,9 @@ function _G.get_oil_winbar()
   local bufnr = vim.api.nvim_win_get_buf(win)
   local dir = oil.get_current_dir(bufnr)
   if dir then
-    return "%#OilCurrentDirectory# Current location: " .. vim.fn.fnamemodify(dir, ":~")
+    return "%#WinBar# Current location: " .. vim.fn.fnamemodify(dir, ":~")
   end
-  return "%#OilCurrentDirectory# Current location: " .. vim.api.nvim_buf_get_name(bufnr)
+  return "%#WinBar# Current location: " .. vim.api.nvim_buf_get_name(bufnr)
 end
 
 -- This replaces Barbar only while Oil is open. The expression is redrawn after

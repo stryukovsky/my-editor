@@ -196,7 +196,7 @@ function M.focus_list()
 end
 
 local function close_review_view()
-  require("utils.close_trouble").close_mode "minidiff_review"
+  require("utils.close_trouble_succeeded").close_mode "minidiff_review"
 end
 
 local function wipe_buffers(buffers)
@@ -615,7 +615,7 @@ local function start_session(old_name, new_name, cwd)
   end
 
   M.finish_review { force = true }
-  require "utils.close_trouble"()
+  require "utils.close_trouble_succeeded"()
   if _G.bottom_component_callback_close then
     pcall(_G.bottom_component_callback_close)
   end
