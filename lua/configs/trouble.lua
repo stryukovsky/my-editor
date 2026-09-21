@@ -56,7 +56,9 @@ local function edit_item(view, ctx)
   local line = item.pos and item.pos[1] or 1
   local col = item.pos and item.pos[2] or 0
   vim.cmd.edit(vim.fn.fnameescape(item.filename))
-  pcall(vim.api.nvim_win_set_cursor, 0, { line, col })
+  vim.defer_fn(function()
+    pcall(vim.api.nvim_win_set_cursor, 0, { line, col })
+  end, 50)
 end
 
 local function review_jump(view, ctx)

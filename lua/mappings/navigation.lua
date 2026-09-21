@@ -242,6 +242,72 @@ map("n", "[b", function()
   navigate_breakpoint(-1)
 end, { desc = "Previous breakpoint" })
 
+local trouble_list_modes = {
+  "global_results",
+  "file_results",
+  "telescope_files",
+  "telescope",
+  "diagnostics",
+  "lsp",
+  "lsp_references",
+  "dap_breakpoints",
+  "qflist",
+  "quickfix",
+}
+
+local function open_trouble_mode()
+  local trouble = require "trouble"
+  for _, mode in ipairs(trouble_list_modes) do
+    if trouble.is_open(mode) then
+      return mode
+    end
+  end
+end
+
+local function goto_trouble_item(direction)
+  local trouble = require "trouble"
+  local mode = open_trouble_mode()
+  if not mode then
+    notify.send("Navigation", "No Trouble list open", vim.log.levels.INFO)
+    return
+  end
+  if vim.bo.buftype == "terminal" then
+    notify.send("Navigation", "Switch away from terminal before jumping", vim.log.levels.WARN)
+    return
+  end
+  local action = direction > 0 and trouble.next or trouble.prev
+  action { mode = mode, jump = true, refresh = false, focus = false }
+end
+
+local function navigate_trouble(direction)
+  navigation_repeat.set(
+    function()
+      goto_trouble_item(1)
+    end,
+    function()
+      goto_trouble_item(-1)
+    end,
+    "trouble item"
+  )
+  goto_trouble_item(direction)
+end
+
+map("n", "]t", function()
+  navigate_trouble(1)
+end, { desc = "Next Trouble item" })
+
+map("n", "[t", function()
+  navigate_trouble(-1)
+end, { desc = "Previous Trouble item" })
+
+map("n", "<leader>tp", function()
+  ui_prevent_mess()
+  local view = require("trouble").open { mode = "last", focus = true }
+  if not view then
+    notify.send("Navigation", "No last Trouble mode", vim.log.levels.INFO)
+  end
+end, { desc = "Open last Trouble mode" })
+
 map("n", ";", navigation_repeat.repeat_next, { desc = "Repeat next navigation" })
 map("n", "<A-;>", navigation_repeat.repeat_previous, { desc = "Repeat previous navigation" })
 

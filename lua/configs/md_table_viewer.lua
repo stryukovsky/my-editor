@@ -356,8 +356,12 @@ local function open_float(content, ctx)
     max_width = math.max(max_width, vim.fn.strdisplaywidth(line))
   end
 
-  local width = math.max(20, math.min(max_width + 2, math.floor(vim.o.columns * 0.8)))
-  local height = math.max(1, math.min(#content, math.floor(vim.o.lines * 0.6)))
+  local width = math.max(20, math.min(80, max_width, vim.o.columns - 4))
+  local wrapped_lines = 0
+  for _, line in ipairs(content) do
+    wrapped_lines = wrapped_lines + math.max(1, math.ceil(vim.fn.strdisplaywidth(line) / width))
+  end
+  local height = math.max(1, math.min(wrapped_lines, math.floor(vim.o.lines * 0.6)))
 
   local win = vim.api.nvim_open_win(buf, true, {
     relative = "cursor",
@@ -370,8 +374,9 @@ local function open_float(content, ctx)
     title = ctx.is_heading and "Headers of table" or "Table row",
     title_pos = "center",
   })
-  -- always wrap in table viewer
-  vim.wo.wrap = true
+  vim.wo[win].wrap = true
+  vim.wo[win].linebreak = true
+  vim.wo[win].breakindent = false
 
   local closed = false
 
