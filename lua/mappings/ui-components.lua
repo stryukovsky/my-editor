@@ -169,14 +169,10 @@ map(ui_components_modes, "<A-d>", prevent_ui_mess_then "wincmd l", { desc = "UI 
 map(ui_components_modes, "<A-s>", prevent_ui_mess_then "wincmd j", { desc = "UI switch window down" })
 map(ui_components_modes, "<A-w>", prevent_ui_mess_then "wincmd k", { desc = "UI switch window up" })
 map("n", "+", function()
-  if not require("configs.zenmode").widen() then
-    vim.cmd "wincmd 3>"
-  end
+  vim.cmd "wincmd 3>"
 end, { desc = "UI window width increase" })
 map("n", "_", function()
-  if not require("configs.zenmode").narrow() then
-    vim.cmd "wincmd 3<"
-  end
+  vim.cmd "wincmd 3<"
 end, { desc = "UI window width decrease" })
 
 map("n", "<leader>th", function()

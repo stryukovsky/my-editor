@@ -7,8 +7,6 @@ local zen_mode = require "zen-mode"
 -- BufWinEnter, so restore them after that runs.
 local STATUSCOL = "%{%v:lua.require('statuscol').get_statuscol_string()%}"
 local BACKDROP = 0.90
-local WIDTH_MIN = 40
-local WIDTH_STEP = 10
 
 -- zen-mode uses `highlight default ZenBg`, which is computed at setup() — before
 -- theme.lua — and then never updates. Force ZenBg from the current Normal bg.
@@ -38,7 +36,7 @@ end
 zen_mode.setup {
   window = {
     backdrop = BACKDROP,
-    width = 120,
+    width = 90,
     height = 1,
     options = {
       number = true,
@@ -103,35 +101,6 @@ function M.toggle_ui()
     ui_prevent_mess()
     _G.dialog_component_callback_close = function() end
   end
-end
-
--- Zen-mode has no public resize API. Mutate the live session opts and call
--- fix_layout(true) so the float is resized and recentered (unlike :wincmd >).
----@param delta integer columns to add (negative to shrink)
----@return boolean applied
---- NOTE: some internal stuff is used; maybe problems here
-function M.adjust_width(delta)
-  local ok, view = pcall(require, "zen-mode.view")
-  if not ok or not view.is_open() or not view.opts or not view.opts.window then
-    return false
-  end
-  local current_width = view.opts.window.width
-  if type(current_width) ~= "number" or current_width <= 1 then
-    current_width = vim.api.nvim_win_get_width(view.win)
-  end
-  local width = math.max(WIDTH_MIN, math.min(vim.o.columns, math.floor(current_width + delta)))
-  view.opts.window.width = width
-  view.fix_layout(true)
-  require("configs.notify").replace("zen.width", "Zen", "Width " .. tostring(width), vim.log.levels.INFO)
-  return true
-end
-
-function M.widen()
-  return M.adjust_width(WIDTH_STEP)
-end
-
-function M.narrow()
-  return M.adjust_width(-WIDTH_STEP)
 end
 
 return M
