@@ -37,4 +37,15 @@ function M.repeat_previous()
   repeat_navigation "previous"
 end
 
+---@return string|nil
+function M.name()
+  return last_navigation_name
+end
+
+function M.clear()
+  last_next = nil
+  last_previous = nil
+  last_navigation_name = nil
+end
+
 return M

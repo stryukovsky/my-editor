@@ -181,6 +181,15 @@ map("n", "<leader>th", function()
 end, { desc = "Theme" })
 
 -- neotree
+local function cursor_in_neotree()
+  local win = vim.api.nvim_get_current_win()
+  if not vim.api.nvim_win_is_valid(win) then
+    return false
+  end
+  local buf = vim.api.nvim_win_get_buf(win)
+  return vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "neo-tree"
+end
+
 local function workaround_neotree_focus(source, needs_reveal, opts)
   pcall(function()
     local focus_command = vim.tbl_extend("error", {
@@ -199,6 +208,11 @@ local function workaround_neotree_focus(source, needs_reveal, opts)
         neotree_command.execute(reveal_command)
       end
       neotree_command.execute(focus_command)
+      vim.defer_fn(function()
+        if not cursor_in_neotree() then
+          neotree_command.execute(focus_command)
+        end
+      end, 200)
     end, 100)
   end)
 end

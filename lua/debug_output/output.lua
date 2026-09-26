@@ -205,7 +205,7 @@ function M.show_session(session_id)
   local buf = vim.api.nvim_create_buf(false, true)
   vim.bo[buf].buftype = "nofile"
   vim.bo[buf].bufhidden = "wipe"
-  vim.bo[buf].filetype = "log"
+  vim.bo[buf].filetype = "debug_output"
 
   local content = vim.list_extend(header_lines(session_id), vim.tbl_map(ansi.strip, outputs))
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)

@@ -3,88 +3,16 @@ local is_normal_buffer = require "utils.is_normal_buffer"
 local is_buffer_terminal = require "utils.is_buffer_terminal"
 local is_initial_dashboard = require "utils.is_buffer_initial_dashboard"
 local script = require "utils.script"
+local terminal = require "configs.terminal"
 map("t", "<Esc>", "<C-\\><C-n>", { noremap = true, silent = true })
 map("t", "<A-a>", "<C-\\><C-n><C-w>h", { noremap = true, silent = true })
 map("t", "<A-s>", "<C-\\><C-n><C-w>j", { noremap = true, silent = true })
 map("t", "<A-w>", "<C-\\><C-n><C-w>k", { noremap = true, silent = true })
 map("t", "<A-d>", "<C-\\><C-n><C-w>l", { noremap = true, silent = true })
 
-local taken_names = {}
-
-local function unique_name(base)
-  if not taken_names[base] then
-    taken_names[base] = true
-    return base
-  end
-  local i = 1
-  while true do
-    local candidate = base .. " (" .. i .. ")"
-    if not taken_names[candidate] then
-      taken_names[candidate] = true
-      return candidate
-    end
-    i = i + 1
-  end
-end
-
-local function set_terminal_name(buf, base)
-  local name = unique_name(base)
-  vim.api.nvim_buf_set_name(buf, name)
-  vim.b[buf].terminal_unique_name = name
-end
-
-vim.api.nvim_create_autocmd("BufWipeout", {
-  group = vim.api.nvim_create_augroup("TerminalUniqueNames", { clear = true }),
-  callback = function(event)
-    local name = vim.b[event.buf].terminal_unique_name
-    if name then
-      taken_names[name] = nil
-    end
-  end,
-})
-
-local function random_char()
-  math.randomseed(os.time())
-
-  local chars = {
-    "",
-    "",
-    "",
-    "󱜿",
-    "󱦡",
-    "󰟻",
-    "󰨶",
-    "󱗫",
-    "󰉀",
-    "󱠂",
-    "󱩡",
-    "󱀆",
-    "󰏖",
-    "󱗃",
-    "󰢗",
-    "󱒕",
-    "",
-    "󰚆",
-    "󰭥",
-    "",
-    "󰊘",
-    "",
-    "",
-    "󱁏",
-    "",
-    "",
-    "",
-    "󰀸",
-  }
-  return chars[math.random(#chars)]
-end
-
 map("n", "<Leader>tn", function()
   if is_buffer_terminal() or is_normal_buffer() or is_initial_dashboard() then
-    vim.cmd.terminal()
-    vim.cmd.BufferPin()
-    local base = "  " .. random_char() .. " "
-    set_terminal_name(0, base)
+    terminal.open_new()
   else
     vim.notify("Cannot start terminal from non-normal buffer", vim.diagnostic.severity.WARN, { timeout = 3000 })
   end
@@ -130,7 +58,7 @@ map("n", "<leader>ex", function()
   local filename = vim.fn.fnamemodify(path, ":t")
   vim.cmd.terminal()
   vim.cmd.BufferPin()
-  set_terminal_name(0, "  Run " .. filename)
+  terminal.set_name(0, "  Run " .. filename)
   vim.api.nvim_chan_send(vim.b.terminal_job_id, ("cd -- %s && %s -- %s\n"):format(
     vim.fn.shellescape(directory),
     interpreter,
@@ -140,12 +68,9 @@ map("n", "<leader>ex", function()
 end, { desc = "Terminal: run current Bash or Python script" })
 
 map("n", "<Leader>tr", function()
-  local old = vim.b.terminal_unique_name
-  if old then
-    taken_names[old] = nil
-  end
+  terminal.release_name(vim.b.terminal_unique_name)
   local base = "  " .. vim.fn.input { prompt = "New buf name: " }
-  set_terminal_name(0, base)
+  terminal.set_name(0, base)
 end, { desc = "Terminal: rename buffer" })
 
 map("t", "<C-s>", function ()

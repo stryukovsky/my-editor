@@ -1,3 +1,8 @@
+local todotxt_utils = require "utils.todotxt_utils"
+if not todotxt_utils.enabled() then
+  return
+end
+
 local map = require "mappings.map"
 local todotxt = require "todotxt"
 local notify = require "configs.notify"
@@ -33,6 +38,7 @@ end
 
 map("n", "<leader>jv", function()
   vim.cmd("edit" .. todotxt.config.todotxt)
+  require("configs.zenmode").open_todotxt_file()
 end, { desc = "Work: open file with todos" })
 
 map("n", "<leader>js+", function()

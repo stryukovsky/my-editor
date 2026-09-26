@@ -171,6 +171,23 @@ local config = {
       local path = node:get_id()
       require("utils.terminal").open(path, { source = "Neo-tree" })
     end,
+    ["open_new_terminal"] = function(state)
+      local node = state.tree:get_node()
+      if not node or not node:get_id() then
+        notify.send("Neo-tree", "Select a file or directory first", vim.log.levels.WARN)
+        return
+      end
+      local path = node:get_id()
+      if node.type ~= "directory" then
+        path = vim.fn.fnamemodify(path, ":h")
+      end
+      local winid, is_neo_tree_window = neotree_utils.get_appropriate_window(state)
+      vim.api.nvim_set_current_win(winid)
+      if is_neo_tree_window then
+        vim.cmd "vsplit"
+      end
+      require("configs.terminal").open_new(path)
+    end,
     ["my_git_add_file"] = function(state)
       async.run(function()
         commands.git_add_file(state)
@@ -371,6 +388,7 @@ local config = {
         ["h"] = "go_shallow",
         ["l"] = "go_deep",
         ["oo"] = "open_new_window",
+        ["<leader>tn"] = "open_new_terminal",
         ["<leader>rr"] = "refresh",
         ["O"] = "open_parent_folder",
         ["F"] = "telescope_grep",

@@ -27,4 +27,6 @@ return {
   "codecompanion",
   "neotest-summary",
   "zenmode-bg",
+  "debug_output",
+  "dap-terminal",
 }

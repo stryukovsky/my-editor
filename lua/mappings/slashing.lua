@@ -1,15 +1,10 @@
 local map = require "mappings.map"
+local navigation_repeat = require "utils.navigation_repeat"
+local slashing = require "configs.slashing"
 
 local function leave_visual()
   vim.cmd "nohlsearch"
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "x", false)
-end
-
-local function search_jump(key)
-  local ok = pcall(vim.cmd, "normal! " .. vim.v.count1 .. key)
-  if ok then
-    require("hlslens").start()
-  end
 end
 
 map("n", "/", function()
@@ -44,24 +39,25 @@ map("v", "<A-q>", function()
   end)
 end, { desc = "Search in visual selection" })
 
-map({ "n", "x" }, "n", function()
-  search_jump "n"
-end, { desc = "Next search match" })
-
-map({ "n", "x" }, "N", function()
-  search_jump "N"
-end, { desc = "Previous search match" })
+map({ "n", "x" }, "n", navigation_repeat.repeat_next, { desc = "Repeat next navigation" })
+map({ "n", "x" }, "N", navigation_repeat.repeat_previous, { desc = "Repeat previous navigation" })
 
 map("n", "*", function()
-  search_jump "*"
+  if slashing.jump "*" then
+    slashing.activate()
+  end
 end, { desc = "Search word forward" })
 
 map("n", "g*", function()
-  search_jump "g*"
+  if slashing.jump "g*" then
+    slashing.activate()
+  end
 end, { desc = "Search word forward (no bounds)" })
 
 map("n", "g#", function()
-  search_jump "g#"
+  if slashing.jump "g#" then
+    slashing.activate()
+  end
 end, { desc = "Search word backward (no bounds)" })
 
 -- map("n", "<leader>rr", function()

@@ -308,8 +308,8 @@ map("n", "<leader>tp", function()
   end
 end, { desc = "Open last Trouble mode" })
 
-map("n", ";", navigation_repeat.repeat_next, { desc = "Repeat next navigation" })
-map("n", "<A-;>", navigation_repeat.repeat_previous, { desc = "Repeat previous navigation" })
+map({ "n", "x" }, ";", navigation_repeat.repeat_next, { desc = "Repeat next navigation" })
+map({ "n", "x" }, "<A-;>", navigation_repeat.repeat_previous, { desc = "Repeat previous navigation" })
 
 -- navigate in jumps
 map("n", "<A-[>", "<cmd>pop<cr>", { desc = "Navigation jump prev" })

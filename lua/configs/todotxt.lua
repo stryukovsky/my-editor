@@ -1,19 +1,16 @@
 ---@diagnostic disable: missing-fields
-local function directory_for_todotxt()
-  local home = vim.env.HOME
-  local work_dir = home .. "/Work/my-vault/"
+local todotxt_utils = require "utils.todotxt_utils"
 
-  if vim.fn.isdirectory(work_dir) == 1 then
-    return work_dir
-  else
-    return home .. "/Documents/"
-  end
+if not todotxt_utils.enabled() then
+  return
 end
+
+local paths = todotxt_utils.paths()
 
 require("todotxt").setup {
   lsp = true,
-  todotxt = directory_for_todotxt() .. "todo.todotxt",
-  donetxt = directory_for_todotxt() .. "done.todotxt",
+  todotxt = paths.todotxt,
+  donetxt = paths.donetxt,
   max_priority = "C",
   metadata = {
     tag = { sort = "asc" },

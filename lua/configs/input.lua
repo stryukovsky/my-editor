@@ -63,6 +63,19 @@ local function mode_title(prompt)
   }
 end
 
+---Esc in insert leaves insert; Esc/q in normal cancel; CR submits.
+---@param buf integer
+---@param opts { submit: fun(), cancel: fun(), submit_modes?: string|string[] }
+function M.bind_float_keys(buf, opts)
+  pcall(vim.keymap.del, "i", "<Esc>", { buffer = buf })
+  map("i", "<Esc>", function()
+    vim.cmd "stopinsert"
+  end, { buffer = buf, nowait = true })
+  map("n", "<Esc>", opts.cancel, { buffer = buf, nowait = true })
+  map("n", "q", opts.cancel, { buffer = buf, nowait = true })
+  map(opts.submit_modes or { "i", "n" }, "<CR>", opts.submit, { buffer = buf, nowait = true })
+end
+
 ---Restore editor mode captured before the float opened.
 ---@param mode string from nvim_get_mode().mode
 local function restore_mode(mode)
@@ -176,11 +189,12 @@ function M.setup()
       callback = cancel,
     })
 
-    map({ "i", "n" }, "<CR>", function()
-      finish(vim.api.nvim_get_current_line())
-    end, { buffer = buffer, nowait = true })
-    map("n", "q", cancel, { buffer = buffer, nowait = true })
-    map("n", "<Esc>", cancel, { buffer = buffer, nowait = true })
+    M.bind_float_keys(buffer, {
+      submit = function()
+        finish(vim.api.nvim_get_current_line())
+      end,
+      cancel = cancel,
+    })
 
     vim.cmd "startinsert"
     -- startinsert is async w.r.t. mode; refresh once insert is active.
