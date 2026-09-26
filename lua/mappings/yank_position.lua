@@ -96,6 +96,62 @@ map("n", "<leader>yF", function()
   end
 end, { desc = "yank absolute file path" })
 
+local SEVERITY_LABEL = {
+  [vim.diagnostic.severity.ERROR] = "Error",
+  [vim.diagnostic.severity.WARN] = "Warn",
+  [vim.diagnostic.severity.INFO] = "Info",
+  [vim.diagnostic.severity.HINT] = "Hint",
+}
+
+---@param severity integer|nil
+---@param empty_msg string
+local function yank_buffer_diagnostics(severity, empty_msg)
+  local buf = vim.api.nvim_get_current_buf()
+  local diags = vim.diagnostic.get(buf, severity and { severity = severity } or nil)
+  if #diags == 0 then
+    notify.send("Yank", empty_msg, vim.log.levels.INFO)
+    return
+  end
+  table.sort(diags, function(a, b)
+    if a.lnum ~= b.lnum then
+      return a.lnum < b.lnum
+    end
+    return a.col < b.col
+  end)
+  local file = current_file(buf)
+  local path = (file and (file.rel or file.abs)) or vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":.")
+  if path == "" then
+    path = "[buffer]"
+  end
+  local lines = {}
+  for _, d in ipairs(diags) do
+    local label = SEVERITY_LABEL[d.severity] or "Other"
+    local message = (d.message or ""):gsub("\n", " ")
+    lines[#lines + 1] = string.format("%s:%d:%d: %s: %s", path, d.lnum + 1, d.col + 1, label, message)
+  end
+  yank(table.concat(lines, "\n"))
+end
+
+map("n", "<leader>yda", function()
+  yank_buffer_diagnostics(nil, "No diagnostics in this buffer")
+end, { desc = "yank buffer all diagnostics" })
+
+map("n", "<leader>yde", function()
+  yank_buffer_diagnostics(vim.diagnostic.severity.ERROR, "No errors in this buffer")
+end, { desc = "yank buffer errors" })
+
+map("n", "<leader>ydw", function()
+  yank_buffer_diagnostics(vim.diagnostic.severity.WARN, "No warnings in this buffer")
+end, { desc = "yank buffer warnings" })
+
+map("n", "<leader>ydi", function()
+  yank_buffer_diagnostics(vim.diagnostic.severity.INFO, "No info diagnostics in this buffer")
+end, { desc = "yank buffer info diagnostics" })
+
+map("n", "<leader>ydh", function()
+  yank_buffer_diagnostics(vim.diagnostic.severity.HINT, "No hints in this buffer")
+end, { desc = "yank buffer hints" })
+
 local TODO_PATTERN = "%f[%w]TODO%f[%W]"
 
 ---@return string|nil
