@@ -81,7 +81,7 @@ local SECTIONS = {
       { "H", "LSP hover" },
       { "K", "LSP signature" },
       { "<leader>x", "close buffer" },
-      { "<leader>X", "close other buffers" },
+      { "<leader>X", "close unpinned saved buffers" },
       { "<A-space>", "pick buffer" },
     },
   },
