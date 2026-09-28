@@ -18,6 +18,10 @@ map("n", "<C-c>", function()
   end
 end, { desc = "Copy whole file if buffer is editable" })
 
+-- Same as i<space><Esc>l: insert a space at the cursor, stay in normal mode, move right.
+map("n", "1", "i <Esc>l", { desc = "Insert space at cursor" })
+map("n", "<C-space>", "i <Esc>l", { desc = "Insert space at cursor" })
+
 local termux_version = os.getenv "TERMUX_VERSION"
 if not termux_version then
   require "mappings.yanky"

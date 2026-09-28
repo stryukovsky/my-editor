@@ -3,7 +3,6 @@ local filesystem = require "neo-tree.sources.filesystem"
 local clear_selections = require "utils.clear_selections"
 local renderer = require "neo-tree.ui.renderer"
 local telescope = require "telescope.builtin"
-local cmds = require "neo-tree.sources.filesystem.commands"
 local commands = require "neo-tree.sources.common.commands"
 local grug_far = require "grug-far"
 local system_file_explorer = require "utils.system_file_explorer"
@@ -15,33 +14,7 @@ local script = require "utils.script"
 
 local open_files_do_not_replace_types = require "utils.technical_ui_filetypes"
 
-local function open_single_child_dir_recursively(state)
-  local node = state.tree:get_node()
-  if node.type ~= "directory" then
-    cmds.open(state)
-    return
-  end
-
-  local function focus_first_child()
-    local children = node:get_child_ids()
-    if #children == 0 then
-      return
-    end
-
-    renderer.focus_node(state, children[1])
-    if #children == 1 and state.tree:get_node().type == "directory" then
-      open_single_child_dir_recursively(state)
-    end
-  end
-
-  if node:is_expanded() then
-    focus_first_child()
-  else
-    filesystem.toggle_directory(state, node, nil, nil, nil, focus_first_child)
-  end
-end
-
-local function getTelescopeOpts(state, path)
+local function telescope_scope_opts(path)
   local relative_path = vim.fn.fnamemodify(path, ":.")
   return {
     cwd = path,
@@ -49,22 +22,18 @@ local function getTelescopeOpts(state, path)
     prompt_title = " Search in " .. relative_path,
     results_title = " Results in " .. relative_path,
     preview_title = "󰈙 Preview in " .. relative_path,
-    attach_mappings = function(prompt_bufnr, map)
-      local actions = require "telescope.actions"
-      actions.select_default:replace(function()
-        actions.close(prompt_bufnr)
-        local action_state = require "telescope.actions.state"
-        local selection = action_state.get_selected_entry()
-        local filename = selection.filename
-        if filename == nil then
-          filename = selection[1]
-        end
-        -- any way to open the file without triggering auto-close event of neo-tree?
-        require("neo-tree.sources.filesystem").navigate(state, state.path, filename)
-      end)
-      return true
-    end,
   }
+end
+
+local function getTelescopeOpts(state, path)
+  local opts = telescope_scope_opts(path)
+  opts.attach_mappings = function(_, map)
+    local maps = require("mappings.telescope.neotree_fs")(state)
+    map("n", "<cr>", maps.n["<cr>"])
+    map("i", "<cr>", maps.i["<cr>"])
+    return true
+  end
+  return opts
 end
 
 local function add_to_gitignore(state)
@@ -257,7 +226,7 @@ local config = {
       local path = node:get_id()
       system_file_explorer(path)
     end,
-    ["go_deep"] = open_single_child_dir_recursively,
+    ["go_deep"] = require("utils.neotree_utils").go_deep,
     ["go_shallow"] = function(state)
       local node = state.tree:get_node()
       if node.type == "directory" and node:is_expanded() then
@@ -273,7 +242,9 @@ local config = {
         path = vim.fn.fnamemodify(path, ":h")
       end
       require("utils.ui_prevent_mess")()
-      telescope.find_files(getTelescopeOpts(state, path))
+      local opts = telescope_scope_opts(path)
+      opts.neotree_state = state
+      require("telescope_neotree_fs")(opts)
     end,
     ["telescope_grep"] = function(state)
       local node = state.tree:get_node()

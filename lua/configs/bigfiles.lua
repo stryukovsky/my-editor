@@ -36,7 +36,21 @@ end
 ---@param buf integer
 ---@return boolean
 local function heuristic_skip(buf)
-  return vim.b[buf].large_file == true or vim.api.nvim_buf_line_count(buf) > max_lines
+  if vim.b[buf].large_file == true then
+    return true
+  end
+  if vim.api.nvim_buf_line_count(buf) > max_lines then
+    return true
+  end
+  local name = vim.api.nvim_buf_get_name(buf)
+  if name ~= "" then
+    local ok, stats = pcall(vim.uv.fs_stat, name)
+    if ok and stats and stats.size > max_filesize then
+      vim.b[buf].large_file = true
+      return true
+    end
+  end
+  return false
 end
 
 ---Read skip flag; initialize from heuristic when unset.
@@ -49,6 +63,8 @@ local function is_skipping(buf)
   end
   return vim.b[buf].skip_heavy_operations == true
 end
+
+M.is_skipping = is_skipping
 
 ---@param buf? integer
 ---@param value boolean
@@ -268,9 +284,20 @@ vim.api.nvim_create_autocmd({ "BufEnter", "BufReadPost" }, {
 vim.api.nvim_create_autocmd("LspAttach", {
   group = big_file_lsp_group,
   callback = function(args)
-    if is_skipping(args.buf) then
-      vim.lsp.buf_detach_client(args.buf, args.data.client_id)
+    if not is_skipping(args.buf) then
+      return
     end
+    local id = args.data and args.data.client_id
+    if not id then
+      return
+    end
+    -- sqls (and others) finish initialize after FileType; detach on the next tick.
+    vim.schedule(function()
+      if not vim.api.nvim_buf_is_valid(args.buf) or not is_skipping(args.buf) then
+        return
+      end
+      pcall(vim.lsp.buf_detach_client, args.buf, id)
+    end)
   end,
 })
 

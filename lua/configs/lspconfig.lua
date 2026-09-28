@@ -6,7 +6,14 @@ local function skip_buffer(bufnr)
   if not bufnr or bufnr == 0 then
     bufnr = vim.api.nvim_get_current_buf()
   end
-  return vim.b[bufnr].minidiff_review == true or vim.b[bufnr].large_hunk_viewer == true
+  if vim.b[bufnr].minidiff_review == true or vim.b[bufnr].large_hunk_viewer == true then
+    return true
+  end
+  if vim.b[bufnr].lsp_disabled == true then
+    return true
+  end
+  local ok, bigfiles = pcall(require, "configs.bigfiles")
+  return ok and bigfiles.is_skipping(bufnr)
 end
 
 local start = vim.lsp.start
