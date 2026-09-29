@@ -1,65 +1,96 @@
--- LSP session actions. <leader>lsp opens a Telescope picker.
--- Disable is this Neovim process only (vim.g.lsp_disabled); Restart turns it back on.
+-- LSP actions for the buffer that opened the Telescope picker.
+-- Disable is that buffer only (vim.b.lsp_disabled); Restart turns it back on.
 
 local notify = require "configs.notify"
 
 local M = {}
 
-local function configured_servers()
-  local ok, lspconfig = pcall(require, "configs.lspconfig")
-  if ok and type(lspconfig.servers) == "table" then
-    return lspconfig.servers
-  end
-  return {}
+---@param bufnr integer
+---@return vim.lsp.Client[]
+local function buffer_clients(bufnr)
+  return vim.lsp.get_clients { bufnr = bufnr }
 end
 
-local function client_ids()
-  local ids = {}
-  for _, client in ipairs(vim.lsp.get_clients()) do
-    ids[#ids + 1] = client.id
-  end
-  return ids
-end
-
-local function client_names()
+---@param bufnr integer
+---@return string[]
+local function client_names_for(bufnr)
   local names = {}
-  for _, client in ipairs(vim.lsp.get_clients()) do
+  for _, client in ipairs(buffer_clients(bufnr)) do
     names[#names + 1] = client.name
   end
   table.sort(names)
   return names
 end
 
-local function stop_all_clients()
-  local ids = client_ids()
-  if #ids > 0 then
-    vim.lsp.stop_client(ids, true)
+---@param names string[]
+---@return string
+local function names_label(names)
+  if #names == 0 then
+    return "(none)"
   end
+  return table.concat(names, ", ")
 end
 
--- Stop every running client, then enable configured servers and start for this buffer.
-function M.restart()
-  vim.g.lsp_disabled = false
-  stop_all_clients()
-  for _, name in ipairs(configured_servers()) do
-    pcall(vim.lsp.enable, name, true)
+---@param client vim.lsp.Client
+---@param bufnr integer
+---@return boolean
+local function attached_elsewhere(client, bufnr)
+  for buf in pairs(client.attached_buffers) do
+    if buf ~= bufnr then
+      return true
+    end
   end
+  return false
+end
+
+-- Detach clients from this buffer; stop a client only if nothing else uses it.
+---@param bufnr integer
+---@return string[] names
+local function stop_buffer_clients(bufnr)
+  local names = {}
+  for _, client in ipairs(buffer_clients(bufnr)) do
+    names[#names + 1] = client.name
+    local keep = attached_elsewhere(client, bufnr)
+    pcall(vim.lsp.buf_detach_client, bufnr, client.id)
+    if not keep then
+      pcall(function()
+        client:stop(true)
+      end)
+    end
+  end
+  table.sort(names)
+  return names
+end
+
+-- Stop this buffer's clients, then start LSP again for it.
+---@param bufnr integer
+function M.restart(bufnr)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+  vim.b[bufnr].lsp_disabled = false
+  stop_buffer_clients(bufnr)
   vim.defer_fn(function()
-    pcall(vim.cmd, "lsp start")
-    local names = client_names()
-    local msg = #names == 0 and "Restarted (waiting for clients)" or ("Restarted: " .. table.concat(names, ", "))
+    if not vim.api.nvim_buf_is_valid(bufnr) then
+      return
+    end
+    vim.api.nvim_buf_call(bufnr, function()
+      pcall(function()
+        vim.cmd "lsp start"
+      end)
+    end)
+    local names = client_names_for(bufnr)
+    local msg = #names == 0 and "Restarted (waiting for clients)" or ("Restarted: " .. names_label(names))
     notify.send("LSP", msg)
   end, 200)
 end
 
--- Stop clients and prevent auto-start until this Neovim exits (or Restart).
-function M.disable_session()
-  vim.g.lsp_disabled = true
-  for _, name in ipairs(configured_servers()) do
-    pcall(vim.lsp.enable, name, false)
-  end
-  stop_all_clients()
-  notify.send("LSP", "Disabled for this session. Restart to enable again.")
+-- Detach this buffer's clients and block auto-start on it until Restart.
+---@param bufnr integer
+function M.disable_session(bufnr)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+  vim.b[bufnr].lsp_disabled = true
+  local names = stop_buffer_clients(bufnr)
+  local msg = #names == 0 and "No clients on this buffer" or ("Disabled: " .. names_label(names))
+  notify.send("LSP", msg)
 end
 
 -- Open the LSP log file as a normal listed buffer.
@@ -76,39 +107,55 @@ end
 
 -- :checkhealth vim.lsp (falls back to lspconfig if that file is missing).
 function M.show_health()
-  if not pcall(vim.cmd, "checkhealth vim.lsp") then
+  if
+    not pcall(function()
+      vim.cmd "checkhealth vim.lsp"
+    end)
+  then
     vim.cmd "checkhealth lspconfig"
   end
 end
 
-local actions = {
-  {
-    id = "restart",
-    name = "Restart",
-    desc = "Stop all clients, then start again for this buffer",
-    run = M.restart,
-  },
-  {
-    id = "disable",
-    name = "Disable",
-    desc = "Stop LSP and keep it off until this Neovim exits",
-    run = M.disable_session,
-  },
-  {
-    id = "logs",
-    name = "Show logs",
-    desc = "Open the LSP log file",
-    run = M.show_logs,
-  },
-  {
-    id = "health",
-    name = "Show health",
-    desc = "Run :checkhealth vim.lsp",
-    run = M.show_health,
-  },
-}
+---@param bufnr integer
+local function actions_for(bufnr)
+  local names = names_label(client_names_for(bufnr))
+  return {
+    {
+      id = "restart",
+      name = "Restart",
+      desc = names,
+      preview_desc = "Stop these clients on this buffer, then start again",
+      run = function()
+        M.restart(bufnr)
+      end,
+    },
+    {
+      id = "disable",
+      name = "Disable",
+      desc = names,
+      preview_desc = "Stop these clients on this buffer and keep them off until Restart",
+      run = function()
+        M.disable_session(bufnr)
+      end,
+    },
+    {
+      id = "logs",
+      name = "Show logs",
+      desc = "Open the LSP log file",
+      run = M.show_logs,
+    },
+    {
+      id = "health",
+      name = "Show health",
+      desc = "Run :checkhealth vim.lsp",
+      run = M.show_health,
+    },
+  }
+end
 
-function M.picker()
+---@param bufnr? integer
+function M.picker(bufnr)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
   require("utils.ui_prevent_mess")()
   local pickers = require "telescope.pickers"
   local finders = require "telescope.finders"
@@ -132,7 +179,7 @@ function M.picker()
     }, {
       prompt_title = "LSP",
       finder = finders.new_table {
-        results = actions,
+        results = actions_for(bufnr),
         entry_maker = function(item)
           return {
             value = item,
@@ -151,14 +198,14 @@ function M.picker()
         title = "LSP",
         define_preview = function(self, entry)
           local item = entry.value
-          local names = client_names()
+          local names = client_names_for(bufnr)
           local lines = {
             item.name,
             "",
-            item.desc,
+            item.preview_desc or item.desc,
             "",
-            "Disabled this session: " .. (vim.g.lsp_disabled and "yes" or "no"),
-            "Active clients: " .. (#names == 0 and "(none)" or table.concat(names, ", ")),
+            "Disabled this buffer: " .. (vim.b[bufnr].lsp_disabled and "yes" or "no"),
+            "Clients on this buffer: " .. names_label(names),
           }
           vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
         end,
@@ -182,7 +229,7 @@ function M.setup()
   vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("lsp_controls_session", { clear = true }),
     callback = function(ev)
-      if not vim.g.lsp_disabled then
+      if not vim.b[ev.buf].lsp_disabled then
         return
       end
       local id = ev.data and ev.data.client_id
@@ -190,7 +237,6 @@ function M.setup()
         return
       end
       pcall(vim.lsp.buf_detach_client, ev.buf, id)
-      pcall(vim.lsp.stop_client, id, true)
     end,
   })
 end
