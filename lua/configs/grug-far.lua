@@ -14,7 +14,7 @@ local keymaps = {
   openLocation = { n = "<leader>ro" },
   openNextLocation = { n = "<down>" },
   openPrevLocation = { n = "<up>" },
-  gotoLocation = { n = "<enter>" },
+  gotoLocation = false,
   pickHistoryEntry = { n = "<enter>" },
   toggleShowCommand = { n = "<leader>rw" },
   swapEngine = { n = "<leader>re" },
@@ -52,7 +52,7 @@ end
 local function mapping_header()
   local parts = {}
   for _, action in ipairs(header_actions) do
-    local lhs = keymap_lhs(keymaps[action.key])
+    local lhs = action.key == "gotoLocation" and "<enter>" or keymap_lhs(keymaps[action.key])
     if lhs then
       lhs = lhs:gsub("%%", "%%%%")
       parts[#parts + 1] = action.label .. " " .. lhs
@@ -98,6 +98,7 @@ require("grug-far").setup {
   helpLine = { enabled = false },
 
   -- No maplocalleader in this config; use leader for buffer actions.
+  -- <CR> Goto is overridden in mappings/grug-far.lua
   keymaps = keymaps,
 
   engines = {
