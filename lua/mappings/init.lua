@@ -18,9 +18,9 @@ map("n", "<C-c>", function()
   end
 end, { desc = "Copy whole file if buffer is editable" })
 
-map("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
-map("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
-map("n", "p", "P", { desc = "override paste" })
+-- Same as i<space><Esc>l: insert a space at the cursor, stay in normal mode, move right.
+map("n", "1", "i <Esc>l", { desc = "Insert space at cursor" })
+map("n", "<C-space>", "i <Esc>l", { desc = "Insert space at cursor" })
 
 local termux_version = os.getenv "TERMUX_VERSION"
 if not termux_version then
@@ -31,13 +31,21 @@ end
 -- require "mappings.dap"
 require "mappings.ui-components"
 require "mappings.search"
-require "mappings.gitsigns"
+require "mappings.minidiff"
+require "mappings.yank_position"
 require "mappings.multicursor"
 require "mappings.navigation"
+require "mappings.projects"
+require "mappings.tine-code-action"
 require "mappings.ui-components"
-require "mappings.substitute"
+require "mappings.markdownpreview"
+require "mappings.inspection"
+require "mappings.ripgreplsp"
+require "mappings.neotest"
 require "mappings.text-case"
 require "mappings.neogit-setup"
+require "mappings.lsp_controls"
+require "mappings.llm"
 require "mappings.snippet"
 require "mappings.logviewer"
 require "mappings.grapple"
@@ -45,7 +53,21 @@ require "mappings.treesj"
 require "mappings.disable_macros"
 require "mappings.flash"
 require "mappings.substitute"
+require "mappings.grug-far"
 require "mappings.slashing"
 require "mappings.terminal"
 require "mappings.override_operators"
 require "mappings.ghosttycompat"
+require "mappings.neovide"
+require "mappings.http-runner"
+require "mappings.templates"
+require "mappings.plantuml"
+require "mappings.todotxt"
+require "mappings.todo"
+require "mappings.macros"
+require "mappings.scenarios_of_codebase"
+require "mappings.notify"
+require "mappings.csv"
+require "mappings.bigfiles"
+require "mappings.zenmode"
+require "mappings.help"

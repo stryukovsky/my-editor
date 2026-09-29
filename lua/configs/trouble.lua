@@ -10,23 +10,145 @@ local function toggle_severity(view)
   })
 end
 
+local function terminalwise_jump(view, ctx)
+  local prev_win = vim.fn.win_getid(vim.fn.winnr "#")
+  if prev_win ~= 0 and vim.api.nvim_win_is_valid(prev_win) then
+    local buf = vim.api.nvim_win_get_buf(prev_win)
+    if vim.bo[buf].buftype == "terminal" then
+      vim.notify("Switch away from terminal before jumping", vim.log.levels.WARN)
+      return
+    end
+  end
+
+  if ctx and ctx.item then
+    view:jump(ctx.item)
+  elseif ctx and ctx.node then
+    view:fold(ctx.node)
+  end
+end
+
+-- `:e file:10:45` is not parsed by Neovim; edit the file, then set (1,0)-indexed pos.
+local function edit_item(view, ctx)
+  local prev_win = vim.fn.win_getid(vim.fn.winnr "#")
+  if prev_win ~= 0 and vim.api.nvim_win_is_valid(prev_win) then
+    local buf = vim.api.nvim_win_get_buf(prev_win)
+    if vim.bo[buf].buftype == "terminal" then
+      vim.notify("Switch away from terminal before jumping", vim.log.levels.WARN)
+      return
+    end
+  end
+
+  local item = ctx and ctx.item
+  if not item then
+    if ctx and ctx.node then
+      view:fold(ctx.node)
+    end
+    return
+  end
+  if not item.filename or item.filename == "" then
+    return
+  end
+
+  if prev_win ~= 0 and vim.api.nvim_win_is_valid(prev_win) then
+    vim.api.nvim_set_current_win(prev_win)
+  end
+
+  local line = item.pos and item.pos[1] or 1
+  local col = item.pos and item.pos[2] or 0
+  vim.cmd.edit(vim.fn.fnameescape(item.filename))
+  vim.defer_fn(function()
+    pcall(vim.api.nvim_win_set_cursor, 0, { line, col })
+  end, 50)
+end
+
+local function review_jump(view, ctx)
+  local item = ctx and ctx.item
+  if not item then
+    return
+  end
+  require("configs.minidiff_review").jump(view, item)
+end
+
+local function review_next_file(view)
+  local win = view.win and view.win.win
+  if not win or not vim.api.nvim_win_is_valid(win) then
+    return
+  end
+  local before = vim.api.nvim_win_get_cursor(win)
+  view:move { down = vim.v.count1 }
+  local after = vim.api.nvim_win_get_cursor(win)
+  if before[1] == after[1] then
+    require("configs.notify").send("MiniDiff review", "Last file in review list", vim.log.levels.INFO)
+    return
+  end
+  local at = view:at()
+  if at and at.item then
+    require("configs.minidiff_review").jump(view, at.item)
+  end
+end
+
+local function review_noop() end
+
 ---@diagnostic disable-next-line: missing-fields
 trouble.setup {
   warn_no_results = false, -- show a warning when there are no results
   open_no_results = false, -- open the trouble window when there are no results
+  auto_preview = false,
   modes = {
     global_results = {
       desc = "Search results with file and position",
       source = "telescope",
       title = "{hl:Title} Search Results{hl}    {count} entries found ",
       format = "{padded_filename} {padded_pos}   {text:ts}",
+      auto_preview = false,
+      auto_refresh = false,
     },
 
+    telescope_files = {
+      desc = "Files found by name",
+      source = "telescope",
+      title = "{hl:Title} Files{hl}    {count} entries found ",
+      format = "{file_icon} {padded_filename}",
+      auto_preview = false,
+      auto_refresh = false,
+    },
     file_results = {
       desc = "File results with just position",
       source = "telescope",
       title = "{hl:Title} Search Results{hl}    {count} entries found ",
       format = "{padded_pos}   {text:ts}",
+      auto_preview = false,
+      auto_refresh = false,
+    },
+    lsp_references = {
+      desc = "Frozen LSP references",
+      auto_refresh = false,
+      follow = true,
+    },
+    minidiff_review = {
+      desc = "MiniDiff review files",
+      source = "minidiff_review",
+      title = "{hl:Title} Review{hl}  {review_range}  {count} files",
+      format = "{review_status} {review_path} {review_stats}",
+      auto_preview = false,
+      auto_refresh = false,
+      follow = false,
+      focus = true,
+      max_items = 2000,
+      keys = {
+        ["<cr>"] = review_jump,
+        l = review_jump,
+        o = review_jump,
+        ["<2-leftmouse>"] = review_jump,
+        ["<c-s>"] = review_jump,
+        ["<c-v>"] = review_jump,
+        ["]g"] = review_next_file,
+        p = review_noop,
+        P = review_noop,
+        q = function()
+          require("configs.minidiff_review").finish_review { force = true }
+        end,
+      },
     },
   },
   formatters = {
@@ -42,6 +164,36 @@ trouble.setup {
         text = string.format("%-6s", pos),
       }
     end,
+    review_range = function()
+      local current = require("configs.minidiff_review").session()
+      if not current then
+        return { text = "" }
+      end
+      return { text = current.old_name .. " → " .. current.new_name, hl = "Comment" }
+    end,
+    review_status = function(ctx)
+      local file = ctx.item.item or {}
+      local hl = ({
+        A = "DiffAdd",
+        D = "DiffDelete",
+        M = "DiffChange",
+        T = "DiffChange",
+        R = "Comment",
+        C = "Comment",
+      })[file.kind] or "Normal"
+      return { text = string.format("%-5s", file.status or ""), hl = hl }
+    end,
+    review_path = function(ctx)
+      local file = ctx.item.item or {}
+      return {
+        text = file.label or ctx.item.filename,
+        hl = file.clickable and "TroubleText" or "Comment",
+      }
+    end,
+    review_stats = function(ctx)
+      local file = ctx.item.item or {}
+      return { text = file.stats or "", hl = "Comment" }
+    end,
   },
   keys = {
     ["?"] = "help",
@@ -50,10 +202,10 @@ trouble.setup {
     q = "close",
     o = "jump_close",
     ["<esc>"] = "cancel",
-    ["<cr>"] = "jump",
-    ["l"] = "jump",
+    ["<cr>"] = edit_item,
+    ["l"] = terminalwise_jump,
     ["h"] = "fold_close",
-    ["<2-leftmouse>"] = "jump",
+    ["<2-leftmouse>"] = terminalwise_jump,
     ["<c-s>"] = "jump_split",
     ["<c-v>"] = "jump_vsplit",
     -- go down to next item (accepts count)

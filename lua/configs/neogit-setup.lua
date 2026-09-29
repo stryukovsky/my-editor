@@ -6,11 +6,12 @@ neogit.setup {
   -- Floating window style
   floating = {
     relative = "editor",
-    width = 0.8,
-    height = 0.7,
+    width = 0.85,
+    height = 0.85,
     style = "minimal",
     border = "rounded",
   },
+  sections = { recent = { hidden = true, folded = false } },
   -- Disable line numbers
   disable_line_numbers = true,
   -- Disable relative line numbers
@@ -23,7 +24,7 @@ neogit.setup {
   auto_close_console = true,
   commit_editor = {
     kind = "split",
-    show_staged_diff = true,
+    show_staged_diff = false,
     -- Accepted values:
     -- "split" to show the staged diff below the commit editor
     -- "vsplit" to show it to the right
@@ -34,7 +35,7 @@ neogit.setup {
     spell_check = true,
   },
   commit_select_view = {
-    kind = "floating",
+    kind = "split",
   },
   commit_view = {
     kind = "split",
@@ -44,26 +45,27 @@ neogit.setup {
     kind = "split",
   },
   rebase_editor = {
-    kind = "floating",
+    kind = "split",
   },
   reflog_view = {
-    kind = "floating",
+    kind = "split",
   },
   merge_editor = {
-    kind = "floating",
+    kind = "split",
   },
   preview_buffer = {
-    kind = "floating",
+    kind = "split",
   },
   popup = {
-    kind = "floating",
+    kind = "split",
   },
   stash = {
-    kind = "floating",
+    kind = "split",
   },
   refs_view = {
-    kind = "floating",
+    kind = "split",
   },
+  diff_viewer = "diffview",
   -- Each Integration is auto-detected through plugin presence, however, it can be disabled by setting to `false`
   integrations = {
     -- If enabled, use telescope for menu selection rather than vim.ui.select.
@@ -73,7 +75,7 @@ neogit.setup {
     -- The diffview integration enables the diff popup.
     --
     -- Requires you to have `sindrets/diffview.nvim` installed.
-    diffview = false,
+    diffview = true,
 
     -- If enabled, uses fzf-lua for menu selection. If the telescope integration
     -- is also selected then telescope is used instead
@@ -93,8 +95,10 @@ neogit.setup {
   mappings = {
     status = {
       ["<Esc>"] = "Close",
+      ["<A-k>"] = "Close",
       ["<Tab>"] = function() end,
       ["o"] = "GoToFile",
+      ["<cr>"] = "GoToFile",
       ["[g"] = "GoToPreviousHunkHeader",
       ["]g"] = "GoToNextHunkHeader",
     },

@@ -7,7 +7,7 @@ https://github.com/neovim/neovim/releases/latest
 - Place appimage in `bin/` of this directory  
 - Rename it to `nvim.appimage`
 
-## Start 
+# Start 
 Clone this repository:
 
 ```sh 
@@ -18,7 +18,7 @@ In `~/.config/nvim/` you need to run setup scripts:
 
 Install basics with script on every platform  
 
-### Fedora / Asahi Fedora linux:  
+# Fedora / Asahi Fedora linux:  
 
 Important stuff with root password  
 
@@ -42,22 +42,19 @@ Execute every line separately!!!
 ```sh
 chmod 700 bin/nvim.appimage
 sudo bash setup/fedora/setup.sh 
-bash setup/fedora/pyenv.sh
-bash setup/commons.sh
-cp setup/fedora/zsh.sh ~/.zshrc
+bash setup/common_tools/commons.sh
+cp setup/fedora/zshrc.sh ~/.zshrc
 mkdir -p ~/.config/ghostty/
+mkdir -p ~/.config/kitty/
+mkdir -p ~/.config/bpytop/themes/
 cp setup/fedora/ghostty ~/.config/ghostty/config
-cp -r setup/ranger ~/.config/
-bash setup/finalize.sh
-bash setup/ai.sh
+cp setup/fedora/kitty.conf ~/.config/kitty/kitty.conf
+cp setup/common_tools/bpytop/light.theme ~/.config/bpytop/themes/
+cp -r setup/fedora/ranger ~/.config/
+bash setup/common_tools/finalize.sh
+bash setup/common_tools/ai.sh
+bash setup/common_tools/git.sh
 
-```
-
-Install plugins in tmux (`<prefix>I`).  
-Then copy theme for tmux-powerline.  
-
-```sh
-cp setup/tmux/my-theme.sh ~/.tmux/plugins/tmux-powerline/themes/
 ```
 
 **Note**: read all stuff related to fedora below. Especially drivers and root password
@@ -65,20 +62,20 @@ cp setup/tmux/my-theme.sh ~/.tmux/plugins/tmux-powerline/themes/
 # Neovim preparations
 After installation of basics, open neovim and run command
 ```
-MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server basedpyright goimports prettier clangd black gofumpt vscode-solidity-server texlab jdtls xmlformatter
+MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server basedpyright goimports prettier clangd black gofumpt vscode-solidity-server texlab jdtls xmlformatter java-debug-adapter 
 ```
 
 ## Debugger for java 
 
 In `data` directory of neovim clone stuff and build jar
 
-```
+```sh
 git clone https://github.com/microsoft/java-debug data/java-debug
 cd data/java-debug
 mvn clean install
 ```
 
-# Install vllm
+## Install vllm
 
 ```sh
 rm -rf ~/vllm
@@ -87,7 +84,7 @@ cd ~/vllm
 bash ~/.config/nvim/setup/fedora/vllm.sh
 ```
 
-# Other Fedora stuff
+## Other Fedora stuff
 
 Note: NVIDIA may not work until secure boot is not configured properly.  
 Note: [RPM Fusion](https://rpmfusion.org/Howto)
@@ -170,6 +167,32 @@ Setup the environment:
 
 bash setup/termux/setup.sh
 cp setup/zshrc.sh ~/.zshrc
+```
+
+# MACOS
+Install brew https://brew.sh/ 
+Install neovim from releases https://github.com/neovim/neovim/releases   
+Unzip it to ~/Tools/nvim
+Execute every line  
+
+```sh
+sudo bash setup/macos/setup.sh 
+bash setup/common_tools/commons.sh
+cp setup/macos/zshrc.sh ~/.zshrc
+
+mkdir -p ~/.config/ghostty/
+cp setup/macos/ghostty ~/.config/ghostty/config
+
+mkdir -p ~/.config/kitty/
+cp setup/macos/kitty.conf ~/.config/kitty/kitty.conf
+
+mkdir -p ~/.config/bpytop/themes/
+cp setup/common_tools/bpytop/light.theme ~/.config/bpytop/themes/
+
+cp -r setup/macos/ranger ~/.config/
+bash setup/common_tools/finalize.sh
+bash setup/common_tools/ai.sh
+bash setup/common_tools/git.sh
 ```
 
 # Links 

@@ -20,6 +20,22 @@ local function entry_for_filesearch(entry)
   return original_entry
 end
 
+-- `name.ext path/to/name.ext` — filename first, then the full relative path.
+local function lsp_location_path_display(_, path)
+  local rel = vim.fn.fnamemodify(path, ":.")
+  return rel
+end
+
+local function lsp_location_picker()
+  return {
+    wrap_results = true,
+    initial_mode = "normal",
+    show_line = false,
+    path_display = lsp_location_path_display,
+    mappings = require "mappings.telescope.lsp",
+  }
+end
+
 require("telescope").setup {
   -- the rest of your telescope config goes here
   defaults = {
@@ -64,13 +80,11 @@ require("telescope").setup {
     },
   },
   pickers = {
-    git_branches = {
-      wrap_results = true,
-      initial_mode = "normal",
-      mappings = require "mappings.telescope.git_branches",
-    },
     live_grep = {
       wrap_results = true,
+      prompt_title = " Global search in project ",
+      results_title = " Results accross all project",
+      preview_title = "󰈙 Preview ",
       mappings = require "mappings.telescope.live_grep",
       entry_maker = entry_for_filesearch,
     },
@@ -78,32 +92,18 @@ require("telescope").setup {
       wrap_results = true,
       mappings = require "mappings.telescope.current_buffer_fuzzy",
     },
-    lsp_references = {
-      wrap_results = true,
-      initial_mode = "normal",
-      mappings = require "mappings.telescope.lsp",
-    },
-    lsp_implementations = {
-      wrap_results = true,
-      initial_mode = "normal",
-      mappings = require "mappings.telescope.lsp",
-    },
-    lsp_definitions = {
-      wrap_results = true,
-      initial_mode = "normal",
-      mappings = require "mappings.telescope.lsp",
-    },
-    lsp_type_definitions = {
-      wrap_results = true,
-      initial_mode = "normal",
-      mappings = require "mappings.telescope.lsp",
-    },
+    lsp_references = lsp_location_picker(),
+    lsp_implementations = lsp_location_picker(),
+    lsp_definitions = lsp_location_picker(),
+    lsp_type_definitions = lsp_location_picker(),
     git_commits = {
       wrap_results = true,
       initial_mode = "normal",
     },
     find_files = {
       hidden = true,
+      wrap_results = true,
+      mappings = require "mappings.telescope.find_files",
     },
     -- yank history ignores this config, so it is moved to mapping which triggers telescope window to open
     -- yank_history = {
@@ -114,3 +114,4 @@ require("telescope").setup {
 require("telescope").load_extension "ui-select"
 require("telescope").load_extension "grapple"
 require("telescope").load_extension "yank_history"
+require("telescope").load_extension "neotree_fs"

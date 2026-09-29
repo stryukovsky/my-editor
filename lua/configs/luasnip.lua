@@ -1,5 +1,9 @@
 -- vscode format
 require("luasnip.loaders.from_vscode").lazy_load()
+local config_dir = vim.fn.stdpath "config"
+local snippets_dir = vim.fn.expand(config_dir .. "/snippets")
+
+require("luasnip.loaders.from_vscode").lazy_load { paths = snippets_dir }
 
 -- snipmate format
 require("luasnip.loaders.from_snipmate").load()

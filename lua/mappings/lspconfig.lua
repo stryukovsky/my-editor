@@ -1,44 +1,94 @@
 local map = require "mappings.map"
+local trouble = require "trouble"
+local close_trouble_succeeded = require "utils.close_trouble_succeeded"
+local ui_prevent_mess = require "utils.ui_prevent_mess"
+
 local telescope_builtin = require "telescope.builtin"
 local function opts(desc)
   return { desc = "LSP " .. desc }
 end
 
 map("n", "<leader>lr", function()
-  telescope_builtin.lsp_references { bufnr = 0 }
-end, opts "references (usages)")
+  close_trouble_succeeded()
+  ui_prevent_mess()
+  trouble.open {
+    mode = "lsp_references",
+    focus = true,
+  }
+end, opts "find references (usages)")
+
+map("n", "<leader>lu", function()
+  close_trouble_succeeded()
+  ui_prevent_mess()
+  trouble.open {
+    mode = "lsp_references",
+    focus = true,
+  }
+end, opts "find references (usages)")
 
 map("n", "<leader>li", function()
-  telescope_builtin.lsp_implementations { bufnr = 0 }
+  close_trouble_succeeded()
+  ui_prevent_mess()
+  trouble.open {
+    mode = "lsp_implementations",
+    focus = true,
+  }
 end, opts "implementations")
 
 map("n", "<leader>ltd", function()
-  telescope_builtin.lsp_type_definitions { bufnr = 0 }
+  require("lspeek").peek_type_definition()
 end, opts "type definitions")
 
 map("n", "<leader>ld", function()
-  telescope_builtin.lsp_definitions { bufnr = 0 }
+  require("lspeek").peek_definition()
 end, opts "definitions")
 
 map("n", "<leader>lci", function()
+  ui_prevent_mess()
   telescope_builtin.lsp_incoming_calls { bufnr = 0 }
 end, opts "show incoming calls")
 
 map("n", "<leader>lco", function()
+  ui_prevent_mess()
   telescope_builtin.lsp_outgoing_calls { bufnr = 0 }
 end, opts "show outcoming calls")
+
+map("n", "<leader>lhu", function()
+  vim.lsp.buf.typehierarchy("supertypes")
+end, opts "type hierarchy superclasses")
+
+map("n", "<leader>lhd", function()
+  vim.lsp.buf.typehierarchy("subtypes")
+end, opts "type hierarchy subclasses")
 
 map("n", "<leader>rn", function()
   vim.lsp.buf.rename()
 end, opts "renamer")
 
-map("n", "<leader>ps", function()
-  local path = "python"
-  vim.fn.system(path .. " -m pip install pydebug debugpy")
-  vim.cmd("LspPyrightSetPythonPath " .. path)
-  require("dap-python").setup(path)
-  vim.print "Python env setup completed"
+map("n", "<leader>py", function()
+  require("configs.python").setup()
 end, opts "Python: setup")
+
+map("n", "<leader>scala", function()
+  require("configs.scalametals").enable()
+end, opts "Scala: enable Metals")
+
+local function metals_opts(desc)
+  return { desc = "Metals: " .. desc }
+end
+
+map("n", "<leader>mec", function()
+  ui_prevent_mess()
+  require("configs.scalametals").telescope_commands()
+end, metals_opts "commands (Telescope)")
+
+map("n", "<leader>mel", function()
+  require("configs.scalametals").show_logs()
+end, metals_opts "open logs")
+
+map("n", "<leader>med", function()
+  require("configs.scalametals").run_doctor()
+end, metals_opts "open doctor")
 
 map("n", "K", function()
   vim.lsp.buf.signature_help()

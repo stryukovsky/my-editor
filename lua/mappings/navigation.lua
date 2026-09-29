@@ -1,20 +1,38 @@
 local map = require "mappings.map"
 local is_normal_buffer = require "utils.is_normal_buffer"
+local notify = require "configs.notify"
+local ui_prevent_mess = require "utils.ui_prevent_mess"
+local navigation_repeat = require "utils.navigation_repeat"
+
+local function toggle_wrap()
+  local enabled = not vim.wo.wrap
+  vim.g.wrap = enabled
+  vim.wo.wrap = enabled
+  vim.wo.linebreak = enabled
+  vim.wo.breakindent = false
+  local msg = enabled and "Wrap is toggled on" or "Wrap is toggled off"
+  notify.replace("navigation.wrap", "Navigation", msg, vim.log.levels.INFO)
+end
+map("n", "<A-W>", toggle_wrap, { desc = "Navigation toggle wrap in window" })
+map("n", "<A-r>", toggle_wrap, { desc = "Navigation toggle wrap in window" })
 
 -- toggle numbering
-local is_relative = false
 map("n", "<A-1>", function()
   if is_normal_buffer() then
-    is_relative = not is_relative
-    if is_relative then
-      vim.opt.number = true
-      vim.opt.relativenumber = false
-    else
-      vim.opt.number = true
-      vim.opt.relativenumber = true
-    end
+    local relative = not vim.opt.relativenumber:get()
+    vim.opt.number = true
+    vim.opt.relativenumber = relative
+    local msg = relative and "Relative line numbering" or "Absolute line numbering"
+    notify.replace("navigation.numbering", "Navigation", msg, vim.log.levels.INFO)
   end
 end, { desc = "Navigation toggle relative numbering" })
+
+map("n", "<A-G>", function()
+  vim.g.grammar_strict = not vim.g.grammar_strict
+  require("configs.strict_grammar").apply_spellbad()
+  local msg = vim.g.grammar_strict and "Grammar-strict on" or "Grammar-strict off"
+  notify.replace("spell.grammar_strict", "Spell", msg, vim.log.levels.INFO)
+end, { desc = "Toggle grammar-strict spell highlight" })
 
 local virtual_lines_diagnostic_counter = 4
 map("n", "<A-v>", function()
@@ -25,7 +43,7 @@ map("n", "<A-v>", function()
     vim.diagnostic.config {
       virtual_lines = false,
     }
-    vim.print "Virtual lines disabled"
+    notify.replace("navigation.virtual_lines", "Navigation", "Virtual lines disabled", vim.log.levels.INFO)
     return
   end
   vim.diagnostic.config {
@@ -36,22 +54,265 @@ map("n", "<A-v>", function()
     },
   }
 
-  vim.print("Virtual lines enabled: " .. vim.diagnostic.severity[virtual_lines_diagnostic_counter])
+  local msg = "Virtual lines enabled: " .. vim.diagnostic.severity[virtual_lines_diagnostic_counter]
+  notify.replace("navigation.virtual_lines", "Navigation", msg, vim.log.levels.INFO)
 end, { desc = "Navigation filter virtual diagnostics" })
 
--- tabs navigation
-map({ "n" }, "<A-,>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
-map({ "n" }, "<A-<>", "<CMD>BufferPrevious<CR>", { desc = "Navigation prev buffer" })
-map({ "n" }, "<A->>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
-map({ "n" }, "<A-.>", "<CMD>BufferNext<CR>", { desc = "Navigation next buffer" })
+local function construct_handler(cmd)
+  return function()
+    vim.cmd(cmd)
+  end
+end
+-- buffer navigation
+map({ "n" }, "<A-,>", construct_handler "BufferPrevious", { desc = "Navigation prev buffer" })
+map({ "n" }, "<A-.>", construct_handler "BufferNext", { desc = "Navigation next buffer" })
 
-map("n", "<leader>x", "<CMD>BufferClose!<CR>", { desc = "Navigation close buffer" })
-map("n", "<leader>X", "<CMD>silent BufferCloseAllButCurrentOrPinned<CR>", { desc = "Navigation close other buffers" })
+-- tab navigation
+-- `<A->>` is not a valid keycode (`>` closes the notation). `>` / `<` are Shift+`.` / `,`.
+-- Zen-mode floats break on tab change; close conflicting UI first.
+local function tab_cmd(cmd)
+  return function()
+    ui_prevent_mess()
+    vim.cmd(cmd)
+  end
+end
+map({ "n" }, "<A-<>", tab_cmd "tabprevious", { desc = "Navigation prev tab" })
+map({ "n" }, "<A-S-,>", tab_cmd "tabprevious", { desc = "Navigation prev tab" })
+map({ "n" }, "<A-S-.>", tab_cmd "tabnext", { desc = "Navigation next tab" })
+-- <A-S-,> / <A-S-.> still walk Neovim tabs (leftover). New workspaces are Kitty tabs:
+-- <leader>tab → kitten @ launch --type=tab (cwd inherited). Projects go through configs.projects.
+map("n", "<leader>tab", function()
+  require("configs.kitten").launch { type = "tab" }
+end, { desc = "Navigation new kitty tab" })
+map("n", "<leader>x", construct_handler "BufferClose!", { desc = "Navigation close buffer" })
+map("n", "<leader>X", function()
+  require("configs.barbar_api").close_unprotected()
+end, { desc = "Navigation close other buffers" })
+map("n", "<leader>,", construct_handler "BufferMovePrevious", { desc = "Navigation move buffer left" })
+map("n", "<leader>.", construct_handler "BufferMoveNext", { desc = "Navigation move buffer right" })
+map("n", "<leader><", construct_handler "BufferMovePrevious", { desc = "Navigation move buffer left" })
+map("n", "<leader>>", construct_handler "BufferMoveNext", { desc = "Navigation move buffer right" })
 
-map("n", "<leader>,", "<CMD>BufferMovePrevious<CR>", { desc = "Navigation move buffer left" })
-map("n", "<leader>.", "<CMD>BufferMoveNext<CR>", { desc = "Navigation move buffer right" })
-map("n", "<leader>pb", "<CMD>BufferPick<CR>", { desc = "Pick buffer" })
-map("n", "<leader>pin", "<CMD>BufferPin<CR>", { desc = "Navigation pin buffer" })
+map("n", "<A-space>", construct_handler "BufferPick", { desc = "Pick buffer" })
+map("n", "<leader>pin", construct_handler "BufferPin", { desc = "Navigation pin buffer" })
+
+local function goto_spell(direction)
+  local motion = direction > 0 and "]s" or "[s"
+  vim.cmd("normal! " .. vim.v.count1 .. motion)
+end
+
+local function navigate_spell(direction)
+  navigation_repeat.set(
+    function()
+    goto_spell(1)
+    end,
+    function()
+      goto_spell(-1)
+    end,
+    "spelling issue"
+  )
+  goto_spell(direction)
+end
+
+map("n", "]s", function()
+  navigate_spell(1)
+end, { desc = "Next spelling issue" })
+
+map("n", "[s", function()
+  navigate_spell(-1)
+end, { desc = "Prev spelling issue" })
+
+local function is_fold_start(line)
+  return vim.fn.foldlevel(line) > vim.fn.foldlevel(line - 1)
+end
+
+local function goto_fold(direction)
+  local line = vim.api.nvim_win_get_cursor(0)[1]
+  local remaining = vim.v.count1
+  while true do
+    line = line + direction
+    if line < 1 or line > vim.api.nvim_buf_line_count(0) then
+      notify.send("Navigation", "No " .. (direction > 0 and "next" or "previous") .. " fold", vim.log.levels.INFO)
+      return
+    end
+    if is_fold_start(line) then
+      remaining = remaining - 1
+      if remaining == 0 then
+        vim.api.nvim_win_set_cursor(0, { line, 0 })
+        vim.cmd "normal! zz"
+        return
+      end
+    end
+  end
+end
+
+local function navigate_fold(direction)
+  navigation_repeat.set(
+    function()
+      goto_fold(1)
+    end,
+    function()
+      goto_fold(-1)
+    end,
+    "fold"
+  )
+  goto_fold(direction)
+end
+
+map("n", "]f", function()
+  navigate_fold(1)
+end, { desc = "Next fold" })
+map("n", "[f", function()
+  navigate_fold(-1)
+end, { desc = "Previous fold" })
+
+local function breakpoint_lines(bufnr)
+  local ok, breakpoints = pcall(require, "dap.breakpoints")
+  if not ok then
+    return nil
+  end
+  local buf_breakpoints = breakpoints.get(bufnr)[bufnr] or {}
+  local lines = {}
+  for _, bp in ipairs(buf_breakpoints) do
+    lines[#lines + 1] = bp.line
+  end
+  table.sort(lines)
+  return lines
+end
+
+local function goto_breakpoint(direction)
+  local bufnr = vim.api.nvim_get_current_buf()
+  local lines = breakpoint_lines(bufnr)
+  if lines == nil then
+    notify.send("Navigation", "DAP not available", vim.log.levels.WARN)
+    return
+  end
+  if #lines == 0 then
+    notify.send("Navigation", "No breakpoints in buffer", vim.log.levels.INFO)
+    return
+  end
+
+  local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
+  local remaining = vim.v.count1
+
+  if direction > 0 then
+    for _, line in ipairs(lines) do
+      if line > cursor_line then
+        remaining = remaining - 1
+        if remaining == 0 then
+          vim.api.nvim_win_set_cursor(0, { line, 0 })
+          vim.cmd "normal! zz"
+          return
+        end
+      end
+    end
+    notify.send("Navigation", "No next breakpoint", vim.log.levels.INFO)
+    return
+  end
+
+  for index = #lines, 1, -1 do
+    if lines[index] < cursor_line then
+      remaining = remaining - 1
+      if remaining == 0 then
+        vim.api.nvim_win_set_cursor(0, { lines[index], 0 })
+        vim.cmd "normal! zz"
+        return
+      end
+    end
+  end
+  notify.send("Navigation", "No previous breakpoint", vim.log.levels.INFO)
+end
+
+local function navigate_breakpoint(direction)
+  navigation_repeat.set(
+    function()
+      goto_breakpoint(1)
+    end,
+    function()
+      goto_breakpoint(-1)
+    end,
+    "breakpoint"
+  )
+  goto_breakpoint(direction)
+end
+
+map("n", "]b", function()
+  navigate_breakpoint(1)
+end, { desc = "Next breakpoint" })
+
+map("n", "[b", function()
+  navigate_breakpoint(-1)
+end, { desc = "Previous breakpoint" })
+
+local trouble_list_modes = {
+  "global_results",
+  "file_results",
+  "telescope_files",
+  "telescope",
+  "diagnostics",
+  "lsp",
+  "lsp_references",
+  "dap_breakpoints",
+  "qflist",
+  "quickfix",
+}
+
+local function open_trouble_mode()
+  local trouble = require "trouble"
+  for _, mode in ipairs(trouble_list_modes) do
+    if trouble.is_open(mode) then
+      return mode
+    end
+  end
+end
+
+local function goto_trouble_item(direction)
+  local trouble = require "trouble"
+  local mode = open_trouble_mode()
+  if not mode then
+    notify.send("Navigation", "No Trouble list open", vim.log.levels.INFO)
+    return
+  end
+  if vim.bo.buftype == "terminal" then
+    notify.send("Navigation", "Switch away from terminal before jumping", vim.log.levels.WARN)
+    return
+  end
+  local action = direction > 0 and trouble.next or trouble.prev
+  action { mode = mode, jump = true, refresh = false, focus = false }
+end
+
+local function navigate_trouble(direction)
+  navigation_repeat.set(
+    function()
+      goto_trouble_item(1)
+    end,
+    function()
+      goto_trouble_item(-1)
+    end,
+    "trouble item"
+  )
+  goto_trouble_item(direction)
+end
+
+map("n", "]t", function()
+  navigate_trouble(1)
+end, { desc = "Next Trouble item" })
+
+map("n", "[t", function()
+  navigate_trouble(-1)
+end, { desc = "Previous Trouble item" })
+
+map("n", "<leader>tp", function()
+  ui_prevent_mess()
+  local view = require("trouble").open { mode = "last", focus = true }
+  if not view then
+    notify.send("Navigation", "No last Trouble mode", vim.log.levels.INFO)
+  end
+end, { desc = "Open last Trouble mode" })
+
+map({ "n", "x" }, ";", navigation_repeat.repeat_next, { desc = "Repeat next navigation" })
+map({ "n", "x" }, "<A-;>", navigation_repeat.repeat_previous, { desc = "Repeat previous navigation" })
+
 -- navigate in jumps
 map("n", "<A-[>", "<cmd>pop<cr>", { desc = "Navigation jump prev" })
 map("n", "<A-]>", "<cmd>tag<cr>", { desc = "Navigation jump next" })
@@ -59,7 +320,7 @@ map("n", "<A-]>", "<cmd>tag<cr>", { desc = "Navigation jump next" })
 map({ "n", "v" }, "<leader>fm", function()
   require("conform").format({ lsp_fallback = true, async = true }, function(err, _did_edit)
     if err then
-      vim.print(err)
+      notify.send("Conform", err, vim.log.levels.ERROR)
     else
       vim.defer_fn(function()
         vim.cmd "silent! w"
@@ -78,3 +339,10 @@ map("x", "<C-H>", "<Plug>GoVSMLeft", {})
 map("x", "<C-J>", "<Plug>GoVSMDown", {})
 map("x", "<C-K>", "<Plug>GoVSMUp", {})
 map("x", "<C-L>", "<Plug>GoVSMRight", {})
+
+map("n", "zZ", "zszH", { desc = "Center cursor horizontally" })
+
+map({ "x", "n" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
+map({ "x", "n" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+map("n", "p", "P", { desc = "override paste" })
+

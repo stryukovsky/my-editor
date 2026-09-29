@@ -67,4 +67,9 @@ treesitter.install {
   "sql", -- SQL
   "regex", -- Regular expressions
   "comment", -- For comment-based features
+
+  "todotxt",
+  "csv",
+
+  "diff",
 }

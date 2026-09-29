@@ -14,5 +14,6 @@ uv
 gvfs-metadata
 recently-used.xbel
 bin/nvim.appimage
+kulala-core/
 pnpm/
 nvim.log

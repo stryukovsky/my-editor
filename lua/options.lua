@@ -3,29 +3,30 @@ local o = vim.o
 local g = vim.g
 -------------------------------------- options ------------------------------------------
 o.laststatus = 3
+o.showtabline = 2
 o.showmode = false
 vim.opt.title = true
 vim.opt.titlestring = [[nvim | %{fnamemodify(getcwd(), ":~")}]]
-
+vim.opt.foldcolumn = "1"
 o.clipboard = "unnamedplus"
 local handle = io.popen "which gpaste-client 2>/dev/null"
-local result = handle:read "*a"
-handle:close()
-
-if result ~= "" then
-  vim.g.clipboard = {
-    name = "gpaste",
-    copy = {
-      ["+"] = { "gpaste-client" },
-      ["*"] = { "gpaste-client" },
-    },
-    paste = {
-      ["+"] = { "gpaste-client", "--use-index", "get", "0" },
-      ["*"] = { "gpaste-client", "--use-index", "get", "0" },
-    },
-  }
+if handle ~= nil then
+  local result = handle:read "*a"
+  handle:close()
+  if result ~= "" then
+    vim.g.clipboard = {
+      name = "gpaste",
+      copy = {
+        ["+"] = { "gpaste-client" },
+        ["*"] = { "gpaste-client" },
+      },
+      paste = {
+        ["+"] = { "gpaste-client", "--use-index", "get", "0" },
+        ["*"] = { "gpaste-client", "--use-index", "get", "0" },
+      },
+    }
+  end
 end
-
 o.cursorline = true
 o.cursorlineopt = "number"
 o.winborder = "rounded"
@@ -38,18 +39,19 @@ o.softtabstop = 1
 
 g.matchparen_disable_cursor_hl = 1
 g.enabled_virtual_lines = true
-opt.fillchars = { eob = " " }
+g.grammar_strict = false
 o.ignorecase = true
 o.smartcase = true
 o.mouse = "a"
-o.statuscolumn = "%s%2l"
 -- Numbers
 o.number = true
 o.numberwidth = 2
 o.ruler = true
 
 -- Get all .add files from the spell directory
-local spell_dir = vim.fn.expand "~/.config/nvim/spell"
+local config_dir = vim.fn.stdpath "config"
+--
+local spell_dir = vim.fn.expand(config_dir .. "/spell")
 -- local spell_files = vim.fn.glob(spell_dir .. '/*', false, true)
 local spell_files = vim.fn.glob(spell_dir .. "/*.add", false, true)
 
@@ -68,13 +70,20 @@ o.splitright = true
 o.timeoutlen = 400
 o.undofile = true
 o.swapfile = false
--- interval for writing swap file to disk, also used by gitsigns
+-- interval for writing swap file to disk, also used by CursorHold
 o.updatetime = 250
 
 opt.foldlevel = 9900
 -- go to previous/next line with h,l,left arrow and right arrow
 -- when cursor reaches end/beginning of line
 opt.whichwrap:append "<>[]hl"
+
+-- `vim.g.wrap` is the shared preference for <A-W>/<A-r>.
+-- Normal windows stay nowrap until toggled; linebreak applies when wrap is on.
+g.wrap = true
+o.wrap = false
+o.linebreak = true
+o.breakindent = false
 
 o.winborder = "rounded"
 -- disable some default providers
@@ -110,6 +119,9 @@ local ft_string_groups = {
 
 vim.api.nvim_create_autocmd("BufWinEnter", {
   callback = function()
+    if vim.api.nvim_buf_line_count(0) > 10000 or vim.fn.getfsize(vim.api.nvim_buf_get_name(0)) > 10240 then
+      return
+    end
     o.spell = true
     vim.o.spelloptions = "camel,noplainbuffer"
 
@@ -136,17 +148,18 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 
 vim.api.nvim_create_autocmd({ "FileType" }, {
   callback = function()
-    -- check if treesitter has parser
-    -- if require("nvim-treesitter.parsers").has_parser() then
-    -- use treesitter folding
-    vim.opt.foldmethod = "expr"
-    vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
-    vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+    if vim.api.nvim_buf_line_count(0) > 10000 or vim.fn.getfsize(vim.api.nvim_buf_get_name(0)) > 10240 then
+      return
+    end
+    -- Wait until Neovim is idle and the Tree-sitter parser is actually ready
+    vim.schedule(function()
+      -- Ensure the buffer still exists before applying options
+      if vim.api.nvim_buf_is_valid(0) then
+        vim.opt_local.foldmethod = "expr"
+        vim.opt_local.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+      end
+    end)
     vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-    -- else
-    --   -- use alternative foldmethod
-    --   vim.opt.foldmethod = "syntax"
-    -- end
   end,
 })
 
@@ -171,3 +184,46 @@ vim.opt.langmap = vim.fn.join({
   escape(ru_shift) .. ";" .. escape(en_shift),
   escape(ru) .. ";" .. escape(en),
 }, ",")
+
+vim.opt.fillchars = {
+  diff = "╱",
+  eob = " ",
+  vert = "┊",
+  horiz = "─",
+  foldclose = "",
+  foldopen = "",
+  foldsep = " ", -- Blank space for lines inside an open fold
+}
+
+vim.filetype.add {
+  filename = {
+    ["todo.todotxt"] = "todotxt",
+    ["done.todotxt"] = "todotxt",
+  },
+}
+
+vim.opt.diffopt = {
+  "internal",
+  "filler",
+  "closeoff",
+  "context:12",
+  "algorithm:histogram",
+  "linematch:200",
+  "indent-heuristic",
+}
+
+if vim.g.neovide then
+  -- 0.13+ string enum: "both" | "only_left" | "only_right" | "none".
+  -- The old boolean vim.g.neovide_input_macos_alt_is_meta is a no-op in 0.16.x.
+  local function apply_option_as_meta()
+    vim.g.neovide_input_macos_option_key_is_meta = "both"
+  end
+  apply_option_as_meta()
+  -- Re-apply after the GUI window exists so winit actually gets OptionAsAlt::Both.
+  vim.api.nvim_create_autocmd("UIEnter", {
+    once = true,
+    callback = apply_option_as_meta,
+  })
+  -- fonts/AdwaitaMono (must also be installed for Core Text, e.g. ~/Library/Fonts).
+  vim.opt.guifont = "AdwaitaMono Nerd Font:h14"
+end

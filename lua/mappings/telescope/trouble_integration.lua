@@ -1,20 +1,91 @@
-local trouble = require "trouble.sources.telescope"
+local trouble_source = require "trouble.sources.telescope"
+local trouble_api = require "trouble"
 local action_state = require "telescope.actions.state"
 local actions = require "telescope.actions"
-local close_trouble = require "utils.close_trouble"
+local close_trouble_succeeded = require "utils.close_trouble_succeeded"
+local ui_prevent_mess = require "utils.ui_prevent_mess"
 
-local function is_terminal_buf(bufnr)
-  return vim.bo[bufnr].buftype == "terminal"
+---@return string|nil, integer, integer
+local function selection_location(selection)
+  local filename = selection.path or selection.filename or selection.value
+  if selection.filename and selection.cwd and not selection.path then
+    filename = selection.cwd .. "/" .. selection.filename
+  end
+  if type(filename) ~= "string" or filename == "" then
+    return nil, 1, 0
+  end
+
+  local line, col = 1, 0
+  if selection.pos then
+    line = selection.pos[1] or 1
+    col = selection.pos[2] or 0
+  elseif selection.lnum then
+    line = selection.lnum
+    -- Telescope col is 1-based; nvim_win_set_cursor is (1,0)-indexed.
+    col = selection.col and math.max(selection.col - 1, 0) or 0
+  end
+  return filename, line, col
 end
 
-local function get_non_terminal_win()
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    if not is_terminal_buf(buf) then
-      return win
+-- No terminal check: if `:e` works, the window is a usable editor.
+---@return boolean
+local function edit_selection(selection)
+  local filename, line, col = selection_location(selection)
+  if not filename then
+    return false
+  end
+
+  local ok = pcall(vim.cmd.edit, vim.fn.fnameescape(filename))
+  if not ok then
+    return false
+  end
+  pcall(vim.api.nvim_win_set_cursor, 0, { line, col })
+  return true
+end
+
+local function collect_telescope_items(picker)
+  trouble_source.items = {}
+  if #picker:get_multi_selection() > 0 then
+    for _, item in ipairs(picker:get_multi_selection()) do
+      table.insert(trouble_source.items, trouble_source.item(item))
+    end
+  else
+    for item in picker.manager:iter() do
+      table.insert(trouble_source.items, trouble_source.item(item))
     end
   end
-  return nil
+end
+
+---@param item trouble.Item|nil
+---@param wanted trouble.Item|nil
+---@return boolean
+local function same_item(item, wanted)
+  if not item or not wanted then
+    return false
+  end
+  if item.filename ~= wanted.filename then
+    return false
+  end
+  local a, b = item.pos or { 1, 0 }, wanted.pos or { 1, 0 }
+  return a[1] == b[1] and a[2] == b[2]
+end
+
+-- Set Trouble's current item via that window's cursor. Does not focus Trouble.
+local function select_picker_item(view, wanted)
+  if not view or not wanted then
+    return
+  end
+  local win = view.win and view.win.win
+  if not win or not vim.api.nvim_win_is_valid(win) then
+    return
+  end
+  for row, loc in pairs(view.renderer._locations) do
+    if loc.item and loc.first_line and same_item(loc.item, wanted) then
+      vim.wo[win].cursorline = true
+      vim.api.nvim_win_set_cursor(win, { row, 0 })
+      return
+    end
+  end
 end
 
 -- this outer function is kinda builder, depending on mode of trouble items to be shown when telescope window is closed
@@ -30,59 +101,37 @@ return function(mode)
       return
     end
     local count = picker.manager:num_results()
-    if count > 1 then
-      close_trouble()
+    if count > 0 then
+      if not close_trouble_succeeded() then
+        return
+      end
+      collect_telescope_items(picker)
+      local wanted = trouble_source.item(selection)
+
+      ui_prevent_mess()
+      actions.close(bufnr)
+      if not edit_selection(selection) then
+        return
+      end
+
       local sort_disabler = 0
       ---@diagnostic disable-next-line: missing-fields
-      trouble.open(bufnr, {
-        focus = true,
+      local view = trouble_api.open {
+        focus = false,
         mode = mode,
+        follow = false,
+        restore = false,
         sorters = {},
         sort = function(_)
           sort_disabler = sort_disabler + 1
           return sort_disabler
         end,
-      })
-      local index = 2 + picker:get_selection_row()
-      vim.defer_fn(function()
-        -- find the trouble window specifically, not just current window
-        local trouble_win = nil
-        for _, win in ipairs(vim.api.nvim_list_wins()) do
-          local buf = vim.api.nvim_win_get_buf(win)
-          local ft = vim.bo[buf].filetype
-          if ft == "trouble" then
-            trouble_win = win
-            break
-          end
-        end
-        local target_win = trouble_win or get_non_terminal_win()
-        if target_win then
-          vim.api.nvim_set_current_win(target_win)
-          local line_count = vim.api.nvim_buf_line_count(vim.api.nvim_win_get_buf(target_win))
-          local safe_index = math.min(index, line_count)
-          vim.api.nvim_win_set_cursor(target_win, { safe_index, 0 })
-        end
-      end, 400)
-    else
-      actions.select_default(bufnr)
-      vim.defer_fn(function()
-        local cur_win = vim.api.nvim_get_current_win()
-        local cur_buf = vim.api.nvim_win_get_buf(cur_win)
-        -- if we landed on a terminal, find a real window
-        if is_terminal_buf(cur_buf) then
-          local win = get_non_terminal_win()
-          if win then
-            vim.api.nvim_set_current_win(win)
-          end
-          return
-        end
-        if selection.lnum then
-          local line_count = vim.api.nvim_buf_line_count(cur_buf)
-          local safe_lnum = math.min(selection.lnum, line_count)
-          local safe_col = selection.col or 0
-          vim.api.nvim_win_set_cursor(cur_win, { safe_lnum, safe_col })
-        end
-      end, 400)
+      }
+      if view then
+        view:wait(function()
+          select_picker_item(view, wanted)
+        end)
+      end
     end
   end
 end

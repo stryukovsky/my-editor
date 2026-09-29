@@ -3,83 +3,103 @@ local filesystem = require "neo-tree.sources.filesystem"
 local clear_selections = require "utils.clear_selections"
 local renderer = require "neo-tree.ui.renderer"
 local telescope = require "telescope.builtin"
-local cmds = require "neo-tree.sources.filesystem.commands"
 local commands = require "neo-tree.sources.common.commands"
-local spectre = require "spectre"
+local grug_far = require "grug-far"
 local system_file_explorer = require "utils.system_file_explorer"
 local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
+local async = require "plenary.async"
+local notify = require "configs.notify"
+local script = require "utils.script"
 
-local open_files_do_not_replace_types = {
-  "Trouble",
-  "qf",
-  "edgy",
-  "NeogitStatus",
-  "NeogitPopup",
-  "NeogitCommitView",
-  "NeogitCommitSelectView",
-  "NeogitLogView",
-  "NeogitDiffView",
-  "NeogitRefsView",
-  "NeogitReflogView",
-  "NeogitStashView",
-  "NeogitConsole",
-  "NeogitGitCommandHistory",
-  "spectre_panel",
-  "nofile",
-}
+local open_files_do_not_replace_types = require "utils.technical_ui_filetypes"
 
-local function open_single_child_dir_recursively(state)
-  local node = state.tree:get_node()
-  if node.type == "directory" then
-    if not node:is_expanded() then
-      filesystem.toggle_directory(state, node, nil, nil, nil, function()
-        local children_count = #node:get_child_ids()
-        if children_count >= 1 then
-          renderer.focus_node(state, node:get_child_ids()[1])
-        end
-        if children_count == 1 then
-          local first_child_node = state.tree:get_node()
-          if first_child_node.type == "directory" then
-            open_single_child_dir_recursively(state)
-          end
-        end
-      end)
-    elseif node:has_children() then
-      renderer.focus_node(state, node:get_child_ids()[1])
-    end
-  else
-    -- if file, open it
-    cmds.open(state)
-    vim.cmd "normal! :q<CR>" -- This will close the current window (the old terminal)
-    -- cmds.clear_filter(state)
-  end
-end
-
-local function getTelescopeOpts(state, path)
+local function telescope_scope_opts(path)
+  local relative_path = vim.fn.fnamemodify(path, ":.")
   return {
     cwd = path,
     search_dirs = { path },
-    attach_mappings = function(prompt_bufnr, map)
-      local actions = require "telescope.actions"
-      actions.select_default:replace(function()
-        actions.close(prompt_bufnr)
-        local action_state = require "telescope.actions.state"
-        local selection = action_state.get_selected_entry()
-        local filename = selection.filename
-        if filename == nil then
-          filename = selection[1]
-        end
-        -- any way to open the file without triggering auto-close event of neo-tree?
-        require("neo-tree.sources.filesystem").navigate(state, state.path, filename)
-      end)
-      return true
-    end,
+    prompt_title = " Search in " .. relative_path,
+    results_title = " Results in " .. relative_path,
+    preview_title = "󰈙 Preview in " .. relative_path,
   }
+end
+
+local function getTelescopeOpts(state, path)
+  local opts = telescope_scope_opts(path)
+  opts.attach_mappings = function(_, map)
+    local maps = require("mappings.telescope.neotree_fs")(state)
+    map("n", "<cr>", maps.n["<cr>"])
+    map("i", "<cr>", maps.i["<cr>"])
+    return true
+  end
+  return opts
+end
+
+local function add_to_gitignore(state)
+  local node = state.tree:get_node()
+  if not node or not node:get_id() then
+    notify.send("Neo-tree", "Select a file or directory to ignore", vim.log.levels.WARN)
+    return
+  end
+
+  local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":p"):gsub("/$", "")
+  local path = vim.fn.fnamemodify(node:get_id(), ":p"):gsub("/$", "")
+  local prefix = cwd .. "/"
+  if path:sub(1, #prefix) ~= prefix then
+    notify.send("Neo-tree", "Selected path is outside the current working directory", vim.log.levels.WARN)
+    return
+  end
+
+  local relative_path = path:sub(#prefix + 1)
+  if relative_path == "" then
+    notify.send("Neo-tree", "Cannot add the working directory itself to .gitignore", vim.log.levels.WARN)
+    return
+  end
+  local entry = relative_path
+  if node.type == "directory" then
+    entry = entry .. "/"
+  end
+
+  local gitignore = cwd .. "/.gitignore"
+  local lines = vim.fn.filereadable(gitignore) == 1 and vim.fn.readfile(gitignore) or {}
+  local updated_lines = {}
+  local found = false
+  for _, line in ipairs(lines) do
+    if vim.trim(line) == entry then
+      found = true
+    else
+      table.insert(updated_lines, line)
+    end
+  end
+
+  if found then
+    vim.fn.writefile(updated_lines, gitignore)
+    notify.send("Neo-tree", "Removed from .gitignore: " .. entry)
+    return
+  end
+
+  vim.fn.system({ "git", "-C", cwd, "check-ignore", "-q", "--", relative_path })
+  if vim.v.shell_error == 0 then
+    notify.send(
+      "Neo-tree",
+      "Cannot turn gitignore off: another ignore rule or parent directory ignores " .. entry,
+      vim.log.levels.WARN
+    )
+    return
+  end
+
+  table.insert(lines, entry)
+  vim.fn.writefile(lines, gitignore)
+  notify.send("Neo-tree", "Added to .gitignore: " .. entry)
 end
 
 ---@type neotree.Config.Base
 local config = {
+  enable_git_status = true,
+  git_status_async = true, -- <-- this is the new setting
+  consider_untracked_as_git_change = true,
+  use_popups_for_input = false,
   -- when opening files, do not use windows containing these filetypes or buftypes
   open_files_do_not_replace_types = open_files_do_not_replace_types,
   -- If a user has a sources list it will replace this one.
@@ -88,11 +108,12 @@ local config = {
   -- The name used here must be the same name you would use in a require() call.
   sources = {
     "filesystem",
+    "buffers",
     "document_symbols",
   },
   default_source = "filesystem", -- you can choose a specific source `last` here which indicates the last used source
   enable_diagnostics = false,
-  enable_cursor_hijack = true, -- If enabled neotree will keep the cursor on the first letter of the filename when moving in the tree.
+  enable_cursor_hijack = false, -- If enabled neotree will keep the cursor on the first letter of the filename when moving in the tree.
   hide_root_node = false, -- Hide the root node.
 
   retain_hidden_root_indent = false, -- IF the root node is hidden, keep the indentation anyhow.
@@ -109,7 +130,7 @@ local config = {
     -- of the top visible node when scrolled down.
     sources = {
       { source = "filesystem" },
-      { source = "git_status" },
+      { source = "buffers" },
       { source = "document_symbols" },
     },
   },
@@ -117,8 +138,71 @@ local config = {
     ["open_new_window"] = function(state)
       local node = state.tree:get_node()
       local path = node:get_id()
-      vim.fn.jobstart({ "ghostty", "--working-directory=" .. path }, { detach = true })
+      require("utils.terminal").open(path, { source = "Neo-tree" })
     end,
+    ["open_new_terminal"] = function(state)
+      local node = state.tree:get_node()
+      if not node or not node:get_id() then
+        notify.send("Neo-tree", "Select a file or directory first", vim.log.levels.WARN)
+        return
+      end
+      local path = node:get_id()
+      if node.type ~= "directory" then
+        path = vim.fn.fnamemodify(path, ":h")
+      end
+      local winid, is_neo_tree_window = neotree_utils.get_appropriate_window(state)
+      vim.api.nvim_set_current_win(winid)
+      if is_neo_tree_window then
+        vim.cmd "vsplit"
+      end
+      require("configs.terminal").open_new(path)
+    end,
+    ["my_git_add_file"] = function(state)
+      async.run(function()
+        commands.git_add_file(state)
+      end, function() end)
+    end,
+    ["make_executable"] = function(state)
+      local node = state.tree:get_node()
+      if node.type == "directory" then
+        notify.send("Neo-tree", "Select a file to make it executable", vim.log.levels.WARN)
+        return
+      end
+
+      local path = node:get_id()
+      local executable_error = script.ensure_user_executable(path)
+      if executable_error ~= "" then
+        notify.send("Neo-tree", "Cannot make executable: " .. executable_error, vim.log.levels.ERROR)
+        return
+      end
+      notify.send("Neo-tree", "Executable: " .. node.name, vim.log.levels.INFO)
+    end,
+    ["edit_mode"] = function(state)
+      local node = state.tree:get_node()
+      local path = node:get_id()
+      local current_mode, mode_error = script.mode_string(path)
+      if not current_mode then
+        notify.send("Neo-tree", "Cannot read mode: " .. mode_error, vim.log.levels.ERROR)
+        return
+      end
+
+      vim.ui.input({
+        prompt = "chmod " .. node.name .. ": ",
+        default = current_mode,
+      }, function(mode)
+        if not mode then
+          return
+        end
+        local success, changed_or_error = script.set_mode(path, vim.trim(mode))
+        if not success then
+          notify.send("Neo-tree", "Cannot change mode: " .. changed_or_error, vim.log.levels.ERROR)
+          return
+        end
+        local message = changed_or_error and "Mode updated: " or "Mode unchanged: "
+        notify.send("Neo-tree", message .. node.name, vim.log.levels.INFO)
+      end)
+    end,
+
     ["system_open"] = function(state)
       local node = state.tree:get_node()
       local path = node:get_id()
@@ -134,20 +218,15 @@ local config = {
     end,
     ["replace_in_directory"] = function(state)
       local node = state.tree:get_node()
-      local abs_path = node:get_id()
-      local from_cwd_path = vim.fn.fnamemodify(abs_path, ":.")
-      if vim.g.spectre_opened then
-        spectre.close()
-      end
-      vim.g.spectre_opened = true
-      spectre.open { path = from_cwd_path }
+      local path = node:get_id()
+      grug_far.open { prefills = { paths = path } }
     end,
     ["open_parent_folder"] = function(state)
       local node = state.tree:get_node()
       local path = node:get_id()
       system_file_explorer(path)
     end,
-    ["go_deep"] = open_single_child_dir_recursively,
+    ["go_deep"] = require("utils.neotree_utils").go_deep,
     ["go_shallow"] = function(state)
       local node = state.tree:get_node()
       if node.type == "directory" and node:is_expanded() then
@@ -162,7 +241,10 @@ local config = {
       if node.type ~= "directory" then
         path = vim.fn.fnamemodify(path, ":h")
       end
-      telescope.find_files(getTelescopeOpts(state, path))
+      require("utils.ui_prevent_mess")()
+      local opts = telescope_scope_opts(path)
+      opts.neotree_state = state
+      require("telescope_neotree_fs")(opts)
     end,
     ["telescope_grep"] = function(state)
       local node = state.tree:get_node()
@@ -170,6 +252,7 @@ local config = {
       if node.type ~= "directory" then
         path = vim.fn.fnamemodify(path, ":h")
       end
+      require("utils.ui_prevent_mess")()
       telescope.live_grep(getTelescopeOpts(state, path))
     end,
     ["create_fs_item"] = function(state)
@@ -190,8 +273,8 @@ local config = {
       local modify = vim.fn.fnamemodify
 
       local results = {
-        filepath,
         modify(filepath, ":."),
+        filepath,
         modify(filepath, ":~"),
         filename,
         modify(filename, ":r"),
@@ -199,8 +282,8 @@ local config = {
       }
 
       vim.ui.select({
-        "1. Absolute path: " .. results[1],
-        "2. Path relative to CWD: " .. results[2],
+        "1. Path relative to CWD: " .. results[1],
+        "2. Absolute path: " .. results[2],
         "3. Path relative to HOME: " .. results[3],
         "4. Filename: " .. results[4],
         "5. Filename without extension: " .. results[5],
@@ -211,7 +294,7 @@ local config = {
           if i then
             local result = results[i]
             vim.fn.setreg("+", result)
-            vim.notify("Copied: " .. result)
+            notify.send("Neotree", "Copied: " .. result, vim.log.levels.INFO)
           else
             vim.notify "Invalid selection"
           end
@@ -234,7 +317,6 @@ local config = {
     mappings = {
       ["<space>"] = "noop",
       ["/"] = "noop",
-      ["<A-q>"] = function() end,
       -- ["<esc>"] = "cancel", -- close preview or floating neo-tree window
       ["<esc>"] = function(state)
         commands.cancel(state)
@@ -244,8 +326,7 @@ local config = {
         "toggle_preview",
         config = {
           use_float = true,
-          use_image_nvim = false,
-          -- title = "Neo-tree Preview", -- You can define a custom title for the preview floating window.
+          title = "Neo-tree Preview", -- You can define a custom title for the preview floating window.
         },
       },
       -- ["<C-f>"] = { "scroll_preview", config = {direction = -10} },
@@ -265,24 +346,29 @@ local config = {
       ["W"] = "expand_all_subnodes",
       -- ["q"] = "close_window",
       ["?"] = "show_help",
-      ["<"] = "prev_source",
-      [">"] = "next_source",
+      ["<A-,>"] = "prev_source",
+      ["<A-.>"] = "next_source",
+
     },
   },
   filesystem = {
+    hijack_netrw_behavior = "disabled",
     window = {
       mappings = {
         ["<cr>"] = "go_deep", -- expand nested file takes precedence
         ["h"] = "go_shallow",
         ["l"] = "go_deep",
         ["oo"] = "open_new_window",
+        ["<leader>tn"] = "open_new_terminal",
         ["<leader>rr"] = "refresh",
         ["O"] = "open_parent_folder",
         ["F"] = "telescope_grep",
         ["R"] = "replace_in_directory",
         ["<A-F>"] = "telescope_grep",
         ["<A-f>"] = "telescope_find",
+        ["<A-i>"] = "show_file_details",
         ["f"] = "telescope_find",
+        ["i"] = add_to_gitignore,
         ["<C-x>"] = "clear_filter",
         ["<C-c>"] = "clear_filter",
         ["s"] = "git_add_file",
@@ -291,12 +377,12 @@ local config = {
         ["c"] = "copy_to_clipboard", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
         ["d"] = "delete",
         ["A"] = "add_directory", -- also accepts the config.show_path and config.insert_as options.
-        ["m"] = "move", -- takes text input for destination, also accepts the config.show_path and config.insert_as options
+        ["m"] = "edit_mode",
         ["r"] = "rename",
         ["<leader>rn"] = "rename",
         ["p"] = "paste_from_clipboard",
         ["x"] = "cut_to_clipboard",
-        ["e"] = "toggle_auto_expand_width",
+        ["e"] = "make_executable",
         ["y"] = "copy_path",
       },
     },
@@ -314,7 +400,35 @@ local config = {
       },
     },
   },
+  git_status = {
+    window = {
+      mappings = {
+        ["l"] = "open",
+        ["S"] = "git_add_all",
+        ["s"] = "my_git_add_file",
+        ["u"] = "git_unstage_file",
+        ["x"] = "git_revert_file",
+        ["c"] = "git_commit",
+        ["gp"] = "git_push",
+        ["gg"] = "git_commit_and_push",
+      },
+    },
+  },
+
   document_symbols = {
+    renderers = {
+      root = {
+        { "indent" },
+        { "icon", default = "C" },
+        { "name", zindex = 10 },
+      },
+      -- Icon + name only (no "Function" / "Constant" kind_name column).
+      symbol = {
+        { "indent", with_expanders = true },
+        { "kind_icon", default = "?" },
+        { "name", zindex = 10 },
+      },
+    },
     window = {
       mappings = {
         ["<l>"] = "toggle_node",

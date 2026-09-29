@@ -3,6 +3,7 @@ return {
     "folke/flash.nvim",
     event = "VeryLazy",
   },
+  { "kevinhwang91/nvim-hlslens" },
   {
     "stryukovsky/neogit",
     branch = "log-view-fix-open-commit-link",
@@ -20,7 +21,9 @@ return {
     dependencies = { { "nvim-tree/nvim-web-devicons" } },
   },
   {
-    "saadparwaiz1/cmp_luasnip",
+    "L3MON4D3/LuaSnip",
+    version = "v2.*", -- Follow latest release
+    build = "make install_jsregexp", -- Optional but recommended for regex snippets
   },
   {
     "Wansmer/treesj",
@@ -32,7 +35,7 @@ return {
   {
     "saghen/blink.cmp",
     -- optional: provides snippets for the snippet source
-    dependencies = { "rafamadriz/friendly-snippets" },
+    dependencies = { "rafamadriz/friendly-snippets", "L3MON4D3/LuaSnip" },
 
     -- use a release tag to download pre-built binaries
     -- version = "1.*",
@@ -57,7 +60,6 @@ return {
     -- event = 'BufWritePre', -- uncomment for format on save
     opts = require "configs.conform",
   },
-  { "nvim-pack/nvim-spectre" },
   {
     "nvim-lualine/lualine.nvim",
   },
@@ -78,19 +80,17 @@ return {
     "romgrk/barbar.nvim",
   },
   {
-    "nvim-neo-tree/neo-tree.nvim",
-    branch = "v3.x",
+    "tiagovla/scope.nvim",
+  },
+  {
+    "stryukovsky/neo-tree.nvim",
+    branch = "option-consider-untracked-as-git-change",
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
       "MunifTanjim/nui.nvim",
-      -- {"3rd/image.nvim", opts = {}}, -- Optional image support in preview window: See `# Preview Mode` for more information
     },
     lazy = false, -- neo-tree will lazily load itself
-  },
-
-  {
-    "lewis6991/gitsigns.nvim",
   },
 
   {
@@ -138,20 +138,15 @@ return {
     "jake-stewart/multicursor.nvim",
     branch = "1.0",
   },
-  {
-    "johmsalas/text-case.nvim",
-    config = function()
-      require("textcase").setup {}
-    end,
-  },
+  { "johmsalas/text-case.nvim" },
   {
     "MeanderingProgrammer/render-markdown.nvim",
     -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
     opts = {
-      file_types = { "markdown", "Avante" },
+      file_types = { "markdown", "codecompanion", "todotxt-preview" },
     },
-    ft = { "markdown", "codecompanion" },
+    ft = { "markdown", "codecompanion", "todotxt-preview" },
     lazy = true,
   },
   { "stryukovsky/git-conflict.nvim", branch = "main" },
@@ -173,5 +168,19 @@ return {
         { path = "${3rd}/luv/library", words = { "vim%.uv" } },
       },
     },
+  },
+  {
+    "luukvbaal/statuscol.nvim",
+    config = function()
+      -- local builtin = require("statuscol.builtin")
+    end,
+  },
+  { "phrmendes/todotxt.nvim" },
+  {
+    "rcarriga/nvim-notify",
+  },
+  { "MagicDuck/grug-far.nvim" },
+  {
+    "folke/zen-mode.nvim",
   },
 }

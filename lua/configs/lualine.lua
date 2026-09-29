@@ -1,7 +1,8 @@
 local trouble = require "trouble"
 local is_ollama_installed = require "utils.is_ollama_installed"
-local dap_output = require "configs.debug_output"
+local dap_output = require "debug_output"
 local git_fetch = require "configs.periodic-git-fetch"
+local is_it_merge = require "configs.is_it_merge"
 local symbols = trouble.statusline {
   mode = "lsp_document_symbols",
   groups = {},
@@ -12,12 +13,53 @@ local symbols = trouble.statusline {
   -- Set it to the lualine section you want to use
   hl_group = "lualine_c_normal",
 }
+local function get_neotree_path()
+  -- Safely check if neo-tree manager is loaded
+  local status, manager = pcall(require, "neo-tree.sources.manager")
+  if not status then
+    return ""
+  end
+
+  -- Get current state of the filesystem source
+  local state = manager.get_state "filesystem"
+  if not state or not state.tree then
+    return ""
+  end
+
+  -- Get the node under the cursor
+  local node = state.tree:get_node()
+  if not node then
+    return ""
+  end
+
+  -- Format the node absolute path relative to the current CWD
+  return vim.fn.fnamemodify(node:get_id(), ":.")
+end
 
 local function to_hex_color(color)
   return "#" .. string.format("%x", color)
 end
 
-local defaults_for_x_component = { "lsp_status", "filetype" }
+local function hl_fg(name, default)
+  local hl = vim.api.nvim_get_hl(0, { name = name })
+  return hl and hl.fg and to_hex_color(hl.fg) or default
+end
+
+local defaults_for_x_component = {
+  {
+    "diagnostics",
+    diagnostics_color = {
+      error = { fg = hl_fg("Red", "#ec5f67") },
+      warn = { fg = hl_fg("Orange", "#ff9e64") },
+      info = { fg = hl_fg("Blue", "#00bfff") },
+      hint = { fg = hl_fg("Green", "#10b981") },
+    },
+  },
+
+  "lsp_status",
+  "filetype",
+}
+
 local function lualine_x_component()
   if not is_ollama_installed() then
     return defaults_for_x_component
@@ -37,16 +79,21 @@ end
 local function get_lualine_theme()
   local bg_color = to_hex_color(vim.api.nvim_get_hl(0, { name = "Normal" }).bg)
   local fg_color = to_hex_color(vim.api.nvim_get_hl(0, { name = "Normal" }).fg)
-  local lualine_theme = require "lualine.themes.auto"
-  -- lualine_theme.normal.c.bg = bg_color
-  -- lualine_theme.normal.b.bg = bg_color
+  local lualine_theme = require "lualine.themes.material-nvim"
   for k, _ in pairs(lualine_theme) do
     lualine_theme[k].b.bg = bg_color
-    lualine_theme[k].c.bg = bg_color
     lualine_theme[k].b.fg = fg_color
-    lualine_theme[k].c.fg = fg_color
-
+    if lualine_theme[k]["c"] ~= nil then
+      lualine_theme[k].c.bg = bg_color
+      lualine_theme[k].c.fg = fg_color
+    end
   end
+  lualine_theme.normal.a = { fg = "#fff7e8", bg = "#c49a2e", gui = "bold" }
+  lualine_theme.replace.a = { fg = "#ffffff", bg = "#ff0000" }
+  lualine_theme.replace.z = { fg = "#ffffff", bg = "#ff0000" }
+  lualine_theme.visual.a = { fg = "#ffffff", bg = "#0000ff" }
+  lualine_theme.visual.z = { fg = "#ffffff", bg = "#0000ff" }
+
   return lualine_theme
 end
 
@@ -65,10 +112,30 @@ require("lualine").setup {
   options = {
     theme = get_lualine_theme(),
     globalstatus = true,
+    refresh = {
+      events = {
+        "WinEnter",
+        "BufEnter",
+        "BufWritePost",
+        "SessionLoadPost",
+        "FileChangedShellPost",
+        "VimResized",
+        "Filetype",
+        "CursorMoved",
+        "CursorMovedI",
+        "ModeChanged",
+        "TabEnter",
+      },
+    },
   },
   sections = {
     lualine_a = { "mode" },
-    lualine_b = { git_fetch.lualine_component(), "branch" },
+    lualine_b = {
+      git_fetch.lualine_component(),
+      "branch",
+      is_it_merge.lualine_component(),
+      require("configs.minidiff").lualine_hunks,
+    },
     lualine_c = {
       {
         "filename",
@@ -102,7 +169,7 @@ require("lualine").setup {
     --       return "󰛢"
     --     end,
     --     cond = function()
-    --       return package.loaded["grapple"] and require("grapple").exists()
+    --       return packafge.loaded["grapple"] and require("grapple").exists()
     --     end,
     --   },
     -- },
@@ -112,5 +179,22 @@ require("lualine").setup {
   tabline = {},
   winbar = {},
   inactive_winbar = {},
-  extensions = {},
+  extensions = {
+    {
+      sections = {
+        lualine_a = {
+          function()
+            return "NEO-TREE"
+          end,
+        },
+        lualine_c = { get_neotree_path }, -- Displays relative path from CWD
+      },
+      filetypes = { "neo-tree" },
+    },
+  },
+  "trouble",
+  "oil",
+  "toggleterm",
+  "lazy",
+  "mason",
 }

@@ -2,14 +2,15 @@
 local map = require "mappings.map"
 local widgets = require "dap.ui.widgets"
 local dap = require "dap"
-local debug_output = require "configs.debug_output"
-debug_output.setup()
+local debug_output = require "debug_output"
+local notify = require "configs.notify"
+local ui_prevent_mess = require "utils.ui_prevent_mess"
 -- local trouble = require "trouble"
 
 -- debugger
 map("n", "<leader>dd", function()
-  vim.cmd.DapNew()
-end, { desc = "debug start" })
+  debug_output.launch()
+end, { desc = "debug select and start" })
 
 map("n", "<A-n>", function()
   dap.continue()
@@ -19,13 +20,14 @@ map("n", "<leader>dp", function()
   if debug_output.get_active_sessions_count() > 1 then
     debug_output.show_session_picker(function(_, meta, dap_session)
       if dap_session then
-        vim.notify("Pausing " .. meta.name)
         dap.pause()
-        vim.notify("Paused " .. meta.name)
+        notify.replace("dap.pause", "Debug", "Paused " .. meta.name)
       end
-    end)
-  else
+    end, { live_only = true, notify_switch = false })
+  elseif debug_output.ensure_tab_session() then
     dap.pause()
+  else
+    vim.notify("No debug session in this tab", vim.log.levels.WARN)
   end
 end, { desc = "debug pause" })
 
@@ -33,13 +35,14 @@ map("n", "<leader>dk", function()
   if debug_output.get_active_sessions_count() > 1 then
     debug_output.show_session_picker(function(_, meta, dap_session)
       if dap_session then
-        vim.notify("Killing " .. meta.name)
         dap.terminate()
-        vim.notify("Killed " .. meta.name)
+        notify.replace("dap.kill", "Debug", "Killed " .. meta.name)
       end
-    end)
-  else
+    end, { live_only = true, notify_switch = false })
+  elseif debug_output.ensure_tab_session() then
     dap.terminate()
+  else
+    vim.notify("No debug session in this tab", vim.log.levels.WARN)
   end
 end, { desc = "debug kill" })
 
@@ -47,15 +50,38 @@ map("n", "<leader>dc", function()
   if debug_output.get_active_sessions_count() > 1 then
     debug_output.show_session_picker(function(_, meta, dap_session)
       if dap_session then
-        vim.notify("Chosen " .. meta.name)
+        notify.replace("dap.choose", "Debug", "Chosen " .. meta.name)
       end
-    end)
+    end, { live_only = true })
   end
 end, { desc = "debug choose session" })
 
-map("n", "<leader>drf", function()
+map("n", "<leader>dr", function()
+  -- Same gate as the logs picker: one session restarts immediately; any extra
+  -- history (including already-dead debugees) opens Telescope. Dead entries
+  -- are shown but cannot be restarted.
+  if debug_output.get_total_sessions_count() > 1 then
+    debug_output.show_session_picker(function(_, meta, dap_session)
+      if not dap_session then
+        vim.notify("Cannot restart a dead debugee", vim.log.levels.WARN)
+        return
+      end
+      dap.restart()
+      notify.replace("dap.restart", "Debug", "Restarted " .. meta.name)
+    end, { notify_switch = false })
+  else
+    local session = debug_output.ensure_tab_session()
+    if not session then
+      vim.notify("No debug session in this tab", vim.log.levels.WARN)
+      return
+    end
+    dap.restart()
+  end
+end, { desc = "debug restart" })
+
+map("n", "<leader>dRf", function()
   dap.restart_frame()
-end, { desc = "debug restart current frame" })
+end, { desc = "debug Reset current frame" })
 
 map("n", "<leader>do", function()
   dap.step_over()
@@ -72,6 +98,15 @@ end, { desc = "debug step out" })
 map("n", "<leader>b", function()
   dap.toggle_breakpoint()
 end, { desc = "debug toggle breakpoint" })
+
+map("n", "<leader>B", function()
+  vim.ui.input({ prompt = "Breakpoint condition: " }, function(cond)
+    if not cond or cond == "" then
+      return
+    end
+    dap.set_breakpoint(cond)
+  end)
+end, { desc = "debug conditional breakpoint" })
 
 local function widgets_mappings(toggling_mapping)
   vim.schedule(function()
@@ -99,56 +134,128 @@ end
 
 local widgets_common_title_part = " 'a' to see commands  '<CR>' to expand items  'q' to exit"
 map("n", "<leader>dv", function()
+  ui_prevent_mess()
   widgets.centered_float(widgets.scopes, { title = "  Variables " .. widgets_common_title_part })
   widgets_mappings "<leader>dv"
 end, { desc = "debug variables" })
 
 -- the same stuff lol
 map("n", "<leader>ds", function()
+  ui_prevent_mess()
   widgets.centered_float(widgets.scopes, { title = "  Scopes " .. widgets_common_title_part })
   widgets_mappings "<leader>ds"
 end, { desc = "debug scopes" })
 
 map("n", "<leader>df", function()
+  ui_prevent_mess()
   widgets.centered_float(widgets.frames, { title = "  Frames " .. widgets_common_title_part })
   widgets_mappings "<leader>df"
 end, { desc = "debug frames" })
 
 map("n", "<leader>dl", function()
+  ui_prevent_mess()
   debug_output.show_output()
 end, { desc = "debug show process log" })
 
 map("n", "<leader>dt", function()
+  ui_prevent_mess()
   widgets.centered_float(widgets.threads, { title = "  Threads " .. widgets_common_title_part })
   widgets_mappings "<leader>dt"
 end, { desc = "debug threads" })
 
 -- debug evaluation
 map({ "n", "v" }, "<leader>dec", function()
+  ui_prevent_mess()
   widgets.hover()
   widgets_mappings { "<leader>dec", "<A-x>" }
 end, { desc = "debug evaluate on caret" })
 
 map({ "n", "v" }, "<A-x>", function()
+  ui_prevent_mess()
   widgets.hover()
   widgets_mappings { "<leader>dec", "<A-x>" }
 end, { desc = "debug evaluate on caret" })
 
-map({ "n", "v" }, "<leader>dei", function()
-  widgets.hover(function()
-    return vim.fn.input "  What's evaluatin'?: "
-  end)
-  widgets_mappings { "<leader>dei", "<A-X>" }
-end, { desc = "debug evaluate input" })
+local evaluation_history = {}
+local max_evaluation_history = 20
 
-map({ "n", "v" }, "<A-X>", function()
+local function evaluate_expression(expression)
   widgets.hover(function()
-    return vim.fn.input "  What's evaluatin'?: "
+    return expression
   end)
   widgets_mappings { "<leader>dei", "<A-X>" }
-end, { desc = "debug evaluate input" })
+end
+
+local function remember_expression(expression)
+  for index, previous in ipairs(evaluation_history) do
+    if previous == expression then
+      table.remove(evaluation_history, index)
+      break
+    end
+  end
+
+  table.insert(evaluation_history, 1, expression)
+  if #evaluation_history > max_evaluation_history then
+    table.remove(evaluation_history)
+  end
+end
+
+local function request_new_expression()
+  vim.ui.input({ prompt = "  What's evaluatin'?: " }, function(expression)
+    if not expression or expression == "" then
+      return
+    end
+
+    remember_expression(expression)
+    evaluate_expression(expression)
+  end)
+end
+
+local function show_evaluation_picker()
+  ui_prevent_mess()
+
+  if #evaluation_history == 0 then
+    request_new_expression()
+    return
+  end
+
+  local choices = { "<new expression>" }
+  vim.list_extend(choices, evaluation_history)
+  vim.ui.select(choices, {
+    prompt = "  Evaluate",
+    format_item = function(choice)
+      if choice == "<new expression>" then
+        return "New expression"
+      end
+      return choice
+    end,
+  }, function(choice)
+    if choice == "<new expression>" then
+      request_new_expression()
+    elseif choice then
+      remember_expression(choice)
+      evaluate_expression(choice)
+    end
+  end)
+end
+
+map({ "n", "v" }, "<leader>dei", show_evaluation_picker, { desc = "debug evaluate input" })
+map({ "n", "v" }, "<A-X>", show_evaluation_picker, { desc = "debug evaluate input" })
+
+map("n", "<leader>dw", function()
+  local session = debug_output.ensure_tab_session()
+  if not session then
+    vim.notify("No debug session in this tab", vim.log.levels.WARN)
+    return
+  end
+  if not session.stopped_thread_id and not session.current_frame then
+    vim.notify("Debuggee is not stopped", vim.log.levels.INFO)
+    return
+  end
+  dap.focus_frame()
+end, { desc = "debug go to stopped position" })
 
 map({ "n", "v" }, "<leader>db", function()
-  dap.list_breakpoints()
-  vim.cmd.Trouble("qflist", "open", "focus=true")
+  ui_prevent_mess()
+  require("trouble").open { mode = "dap_breakpoints", focus = true }
 end, { desc = "debug list breakpoints" })

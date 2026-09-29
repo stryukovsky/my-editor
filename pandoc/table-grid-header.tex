@@ -1,0 +1,16 @@
+\usepackage{array}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.25}
+
+% Pandoc maps #### to \paragraph, which is run-in by default — tables then
+% sit beside the heading and overflow the page. Make it a normal display heading.
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+  {3.25ex \@plus1ex \@minus.2ex}%
+  {0.8em}%
+  {\normalfont\normalsize\bfseries}}
+\renewcommand\subparagraph{\@startsection{subparagraph}{5}{\z@}%
+  {3.25ex \@plus1ex \@minus.2ex}%
+  {0.8em}%
+  {\normalfont\normalsize\bfseries}}
+\makeatother

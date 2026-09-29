@@ -1,12 +1,11 @@
 local dap = require "dap"
-local jdtlsnvim = require "jdtls.dap"
-jdtlsnvim.setup_dap {
-  config_overrides = { console = "" },
-}
 
-dap.defaults.fallback.autostart = 'echo "test"'
 local function inputCommand()
   return vim.fn.input "Command:"
+end
+
+local function inputExecutable()
+  return vim.fn.input("Executable: ", vim.fn.getcwd() .. "/", "file")
 end
 
 -- js/typescript adapter
@@ -20,15 +19,15 @@ dap.adapters["pwa-node"] = {
   },
 }
 
--- dap.adapters.codelldb = {
---   type = "server",
---   host = "localhost",
---   port = "56790",
---   executable = {
---     command = "codelldb",
---     args = {  "--port", "56790" },
---   },
--- }
+dap.adapters.codelldb = {
+  type = "server",
+  host = "localhost",
+  port = "${port}",
+  executable = {
+    command = "codelldb",
+    args = { "--port", "${port}" },
+  },
+}
 
 -- javascript
 dap.configurations.javascript = {
@@ -93,47 +92,29 @@ dap.configurations.typescript = {
   },
 }
 
--- scala
-dap.configurations.scala = {
+-- c / c++
+dap.configurations.cpp = {
   {
-    type = "scala",
+    type = "codelldb",
     request = "launch",
-    name = "RunOrTest",
-    metals = {
-      runType = "runOrTestFile",
-      --args = { "firstArg", "secondArg", "thirdArg" }, -- here just as an example
-    },
+    name = "Launch executable",
+    program = inputExecutable,
+    cwd = "${workspaceFolder}",
   },
   {
-    type = "scala",
+    type = "codelldb",
     request = "launch",
-    name = "Test Target",
-    metals = {
-      runType = "testTarget",
-    },
+    name = "Launch executable with args",
+    program = inputExecutable,
+    cwd = "${workspaceFolder}",
+    args = "${command:SpecifyProgramArgs}",
   },
   {
-    type = "scala",
-    request = "launch",
-    name = "Sbt run",
-    metals = {
-      shellCommand = "sbt run",
-    },
+    type = "codelldb",
+    request = "attach",
+    name = "Attach",
+    pid = require("dap.utils").pick_process,
+    cwd = "${workspaceFolder}",
   },
 }
-
-dap.configurations.python = {
-  {
-    type = "python",
-    request = "launch",
-    name = "Run Command",
-    program = "${file}",
-    runtimeExecutable = inputCommand,
-  },
-  {
-    type = "python",
-    request = "launch",
-    name = "Run file",
-    program = "${file}",
-  },
-}
+dap.configurations.c = dap.configurations.cpp

@@ -1,0 +1,38 @@
+[
+  {
+    "name": "python-dap",
+    "path": "python-dap.json",
+    "destination": ".vscode/launch.json",
+    "kind": "dap"
+  },
+  {
+    "name": "python-dap-command",
+    "path": "python-dap-command.json",
+    "destination": ".vscode/launch.json",
+    "kind": "dap"
+  },
+  {
+    "name": "node-dap",
+    "path": "node-dap.json",
+    "destination": ".vscode/launch.json",
+    "kind": "dap"
+  },
+  {
+    "name": "go-dap",
+    "path": "go-dap.json",
+    "destination": ".vscode/launch.json",
+    "kind": "dap"
+  },
+  {
+    "name": "java-dap",
+    "path": "java-dap.json",
+    "destination": ".vscode/launch.json",
+    "kind": "dap"
+  },
+  {
+    "name": "cpp-dap",
+    "path": "cpp-dap.json",
+    "destination": ".vscode/launch.json",
+    "kind": "dap"
+  }
+]

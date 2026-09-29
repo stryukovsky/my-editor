@@ -1,0 +1,36 @@
+{
+  "GET request with query params": {
+    "prefix": "get",
+    "body": [
+      "### ${1:Request description}",
+      "GET http://${2:localhost:8080}/${3:path}",
+      "",
+      "${4:param1}=${5:1000}",
+      "$0"
+    ]
+  },
+  "POST JSON request": {
+    "prefix": "postj",
+    "body": [
+      "### ${1:Request description}",
+      "POST http://${2:localhost:8080}/${3:path}",
+      "Content-Type: application/json",
+      "",
+      "{",
+      "${4:yourobject}",
+      "}",
+      "$0"
+    ],
+    "description": "POST-запрос с JSON телом"
+  },
+  "POST Form request": {
+    "prefix": "postf",
+    "body": [
+      "### ${1:Request description}",
+      "POST http://${2:localhost:8080}/${3:path}",
+      "",
+      "${4:param1}=${5:1000}",
+      "$0"
+    ]
+  }
+}

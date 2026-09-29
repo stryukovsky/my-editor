@@ -10,13 +10,12 @@ zstyle ':omz:update' mode disabled  # disable automatic updates
 # zstyle ':omz:update' mode auto      # update automatically without asking
 # zstyle ':omz:update' mode reminder  # just remind me to update when it's time
 
-# setup pyenv before zsh plugins loaded 
 COMPLETION_WAITING_DOTS="%F{yellow}waiting...%f"
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init --path)"
+# export PYENV_ROOT="$HOME/.pyenv"
+# export PATH="$PYENV_ROOT/bin:$PATH"
+# eval "$(pyenv init --path)"
 
-plugins=(git docker dnf docker-compose golang pip pyenv python rust sbt scala zsh-interactive-cd)
+plugins=(git docker dnf docker-compose golang pip python rust sbt scala zsh-interactive-cd)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -60,8 +59,12 @@ export FZF_DEFAULT_OPTS='--height 40% --tmux center,40% --layout reverse --borde
 alias top="bpytop"
 alias ff="ranger"
 alias mc="ranger"
+alias o="xdg-open"
 
-function vllm() {
+# opencode
+export PATH=/home/dmitry/.opencode/bin:$PATH
+
+function start_vllm() {
     # Set the path to the virtual environment and the launch script
     VLLM_DIR="$HOME/vllm"
     LAUNCH_SCRIPT="$VLLM_DIR/launch.sh"
@@ -85,7 +88,7 @@ function vllm() {
     fi
 
     # Activate the virtual environment
-    source "$VLLM_DIR/bin/activate"
+    source "$VLLM_DIR/.venv/bin/activate"
     echo "Activated venv: $VLLM_DIR"
 
     # Execute the launch script
@@ -93,7 +96,26 @@ function vllm() {
     bash "$LAUNCH_SCRIPT"
 }
 
+function vpn_on_hiddify() {
+    export http_proxy="http://127.0.0.1:12334"
+    export https_proxy="http://127.0.0.1:12334"
+    export HTTP_PROXY="http://127.0.0.1:12334"
+    export HTTPS_PROXY="http://127.0.0.1:12334"
+}
+
+function vpn_off_hiddify() {
+    unset http_proxy
+    unset https_proxy
+    unset HTTP_PROXY
+    unset HTTPS_PROXY
+}
+
 alias activ="source .venv/bin/activate"
+
+export COURSIER_BIN_DIR="$HOME/Tools/coursier/bin"
+export PATH="$COURSIER_BIN_DIR:$PATH"
+
 alias nvim="~/.config/nvim/bin/nvim.appimage"
 alias vim="~/.config/nvim/bin/nvim.appimage"
+
 

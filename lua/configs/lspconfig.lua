@@ -1,4 +1,41 @@
-local lsp_with_default_conf = {
+local M = {}
+
+---@param bufnr? integer
+---@return boolean
+local function skip_buffer(bufnr)
+  if not bufnr or bufnr == 0 then
+    bufnr = vim.api.nvim_get_current_buf()
+  end
+  if vim.b[bufnr].minidiff_review == true or vim.b[bufnr].large_hunk_viewer == true then
+    return true
+  end
+  if vim.b[bufnr].lsp_disabled == true then
+    return true
+  end
+  local ok, bigfiles = pcall(require, "configs.bigfiles")
+  return ok and bigfiles.is_skipping(bufnr)
+end
+
+local start = vim.lsp.start
+---@diagnostic disable-next-line: duplicate-set-field
+function vim.lsp.start(config, opts)
+  opts = opts or {}
+  if skip_buffer(opts.bufnr) then
+    return nil
+  end
+  return start(config, opts)
+end
+
+local attach = vim.lsp.buf_attach_client
+---@diagnostic disable-next-line: duplicate-set-field
+function vim.lsp.buf_attach_client(bufnr, client_id)
+  if skip_buffer(bufnr) then
+    return false
+  end
+  return attach(bufnr, client_id)
+end
+
+M.servers = {
   "html",
   "cssls",
   "ts_ls",
@@ -11,6 +48,7 @@ local lsp_with_default_conf = {
   "solidity_ls",
   "texlab",
   "jdtls",
+  "move_analyzer",
 }
 
 vim.lsp.config("solidity_ls", {
@@ -36,6 +74,8 @@ vim.lsp.config("jdtls", {
   },
 })
 
-for _, lsp_name in ipairs(lsp_with_default_conf) do
+for _, lsp_name in ipairs(M.servers) do
   vim.lsp.enable(lsp_name)
 end
+
+return M

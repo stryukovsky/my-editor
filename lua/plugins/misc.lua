@@ -10,12 +10,6 @@ return {
     ft = { "markdown" },
   },
   {
-    "mistweaverco/kulala.nvim",
-    keys = {},
-    ft = { "http", "rest" },
-    opts = {},
-  },
-  {
     "RRethy/vim-illuminate",
   },
   {
@@ -36,5 +30,18 @@ return {
     "fei6409/log-highlight.nvim",
     opts = {},
   },
-  { "sethen/line-number-change-mode.nvim" },
+  {
+    "rcarriga/nvim-notify",
+    lazy = false,
+    config = function()
+      require("configs.notify").setup()
+    end,
+  },
+  { "chrisgrieser/nvim-recorder" },
+  {
+    "hat0uma/csvview.nvim",
+    opts = require "configs.csv",
+    cmd = { "CsvViewEnable", "CsvViewDisable", "CsvViewToggle" },
+  },
+  { "stryukovsky/lspeek.nvim", branch = "feature/add-fragile-mode" },
 }

@@ -1,5 +1,4 @@
 local map = require "mappings.map"
-local telescope = require "telescope"
 local get_visual_selection = require "utils.get_visual_selection"
 
 -- search and replace
@@ -9,6 +8,7 @@ map("n", "<leader>fw", function()
     vim.notify("No word under cursor", vim.log.levels.WARN)
     return
   end
+  require("utils.ui_prevent_mess")()
   require("telescope.builtin").current_buffer_fuzzy_find {
     default_text = word,
     initial_mode = "normal",
@@ -21,14 +21,20 @@ map("x", "<leader>fw", function()
     vim.notify("No selection under cursor", vim.log.levels.WARN)
     return
   end
+  require("utils.ui_prevent_mess")()
   require("telescope.builtin").current_buffer_fuzzy_find {
     default_text = word,
     initial_mode = "normal",
   }
 end, { desc = "telescope search selection in current buffer" })
 
-map("n", "<leader>fb", "<cmd>Telescope buffers<CR>", { desc = "telescope find buffers" })
-map("n", "<leader>fh", "<cmd>Telescope oldfiles<CR>", { desc = "telescope find oldfiles" })
-map("n", "<leader>fc", "<cmd>Telescope current_buffer_fuzzy_find<CR>", { desc = "telescope find in current buffer" })
-map("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "telescope find files" })
-map("n", "<leader>fa", "<cmd>Telescope find_files follow=true no_ignore=true hidden=true<CR>", { desc = "telescope find all files" })
+map("n", "<leader>fall", function()
+  require("utils.ui_prevent_mess")()
+  require("telescope.builtin").find_files {
+    hidden = true,
+    no_ignore = true,
+    no_ignore_parent = true,
+    follow = true,
+    prompt_title = "Find all files",
+  }
+end, { desc = "telescope find all files including ignored" })
