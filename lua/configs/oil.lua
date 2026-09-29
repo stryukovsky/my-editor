@@ -68,7 +68,7 @@ local function restore_tabline()
 end
 
 local function search_here()
-  require("searchbox").incsearch()
+  require("configs.slashing").prompt()
 end
 
 local M = {}

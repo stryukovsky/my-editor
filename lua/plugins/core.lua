@@ -3,10 +3,6 @@ return {
     "folke/flash.nvim",
     event = "VeryLazy",
   },
-  {
-    "VonHeikemen/searchbox.nvim",
-    dependencies = { "MunifTanjim/nui.nvim" },
-  },
   { "kevinhwang91/nvim-hlslens" },
   {
     "stryukovsky/neogit",

@@ -93,6 +93,7 @@ local function restore_mode(mode)
   end
 end
 
+---Float input. `opts.on_input(value)` runs on each edit, before confirm.
 function M.setup()
   vim.ui.input = function(opts, on_confirm)
     opts = opts or {}
@@ -100,6 +101,7 @@ function M.setup()
     -- Capture before opening the float / startinsert.
     local prev_mode = vim.api.nvim_get_mode().mode
     local prev_win = vim.api.nvim_get_current_win()
+    local prev_view = vim.fn.winsaveview()
     local prompt = opts.prompt or "Input"
     local default = opts.default == nil and "" or tostring(opts.default)
     local max_width = math.max(1, vim.o.columns - 4)
@@ -168,8 +170,26 @@ function M.setup()
 
       vim.schedule(function()
         restore_prev_win()
+        local function restore_view()
+          if not vim.api.nvim_win_is_valid(prev_win) then
+            return
+          end
+          pcall(vim.api.nvim_win_call, prev_win, function()
+            vim.fn.winrestview(prev_view)
+          end)
+        end
+        -- Leaving insert moves the cursor back one column, after confirm.
+        if vim.fn.mode():find "^[iR]" and not prev_mode:find "^[iR]" then
+          vim.api.nvim_create_autocmd("InsertLeave", {
+            once = true,
+            callback = restore_view,
+          })
+        end
         restore_mode(prev_mode)
-        on_confirm(value)
+        vim.schedule(function()
+          restore_view()
+          on_confirm(value)
+        end)
       end)
     end
 
@@ -195,6 +215,18 @@ function M.setup()
       end,
       cancel = cancel,
     })
+
+    if type(opts.on_input) == "function" then
+      vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
+        buffer = buffer,
+        callback = function()
+          if completed then
+            return
+          end
+          pcall(opts.on_input, vim.api.nvim_get_current_line())
+        end,
+      })
+    end
 
     vim.cmd "startinsert"
     -- startinsert is async w.r.t. mode; refresh once insert is active.

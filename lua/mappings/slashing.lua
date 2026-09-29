@@ -2,40 +2,32 @@ local map = require "mappings.map"
 local navigation_repeat = require "utils.navigation_repeat"
 local slashing = require "configs.slashing"
 
-local function leave_visual()
-  vim.cmd "nohlsearch"
+local function exit_visual_then(fn)
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "x", false)
+  vim.schedule(fn)
 end
 
 map("n", "/", function()
-  require("searchbox").incsearch()
+  slashing.prompt()
 end, { desc = "Search forward" })
 
 map("n", "<A-q>", function()
-  require("searchbox").incsearch()
+  slashing.prompt()
 end, { desc = "Search forward" })
 
 map("n", "<A-Q>", function()
-  require("searchbox").incsearch { reverse = true, title = " Search back " }
+  slashing.prompt { prompt = "Search back" }
 end, { desc = "Search backward" })
 
 map("v", "/", function()
-  leave_visual()
-  vim.schedule(function()
-    require("searchbox").incsearch {
-      visual_mode = true,
-      title = " Search in selection ",
-    }
+  exit_visual_then(function()
+    slashing.prompt { prompt = "Search in selection", visual = true }
   end)
 end, { desc = "Search in visual selection" })
 
 map("v", "<A-q>", function()
-  leave_visual()
-  vim.schedule(function()
-    require("searchbox").incsearch {
-      visual_mode = true,
-      title = " Search in selection ",
-    }
+  exit_visual_then(function()
+    slashing.prompt { prompt = "Search in selection", visual = true }
   end)
 end, { desc = "Search in visual selection" })
 
