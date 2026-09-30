@@ -34,6 +34,28 @@ map("n", "[g", function()
   navigate_hunk(-1)
 end, { desc = "Jump to previous git hunk" })
 
+local function navigate_conflict(direction)
+  local gitconflict = require "git-conflict"
+  navigation_repeat.set(function()
+    gitconflict.find_next "ours"
+  end, function()
+    gitconflict.find_prev "ours"
+  end, "git conflict")
+  if direction > 0 then
+    gitconflict.find_next "ours"
+  else
+    gitconflict.find_prev "ours"
+  end
+end
+
+map("n", "]x", function()
+  navigate_conflict(1)
+end, { desc = "Jump to next git conflict" })
+
+map("n", "[x", function()
+  navigate_conflict(-1)
+end, { desc = "Jump to previous git conflict" })
+
 map("n", "<A-h>", minidiff.toggle_overlay, { desc = "git toggle hunk overlay" })
 
 map("n", "<leader>gC", function()

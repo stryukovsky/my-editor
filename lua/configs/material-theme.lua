@@ -95,6 +95,13 @@ require("material").setup {
       OilCurrentDirectory = { bg = colors.editor.bg, fg = colors.editor.accent, bold = true },
       GrugFarHelpHeader = { bg = colors.editor.bg, fg = colors.editor.accent, bold = true },
       GrugFarHelpHeaderKey = { bg = colors.editor.bg, fg = colors.editor.accent, bold = true },
+      -- Wheat conflict hunks. Labels are a step darker than the body.
+      GitConflictCurrent = { bg = "#e5d5a6", fg = "#5d5140" },
+      GitConflictCurrentLabel = { bg = "#d4c08a", fg = "#765613", bold = true },
+      GitConflictIncoming = { bg = "#e7efe0", fg = "#5d5140" },
+      GitConflictIncomingLabel = { bg = "#c5d4b4", fg = "#4a5c3a", bold = true },
+      GitConflictAncestor = { bg = "#eee4ce", fg = "#8b7d6d" },
+      GitConflictAncestorLabel = { bg = "#e0d2b4", fg = "#765613", bold = true },
     }
   end,
   lualine_style = "stealth", -- Lualine style ( can be 'stealth' or 'default' )

@@ -162,6 +162,14 @@ local function override_highlights()
   hl(0, "NeogitDiffHeaderCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
 
   hl(0, "Comment", { fg = "#9b8a72", italic = true })
+  -- git-conflict.nvim repaints these on ColorScheme with default=true, so this pass wins.
+  hl(0, "GitConflictCurrent", { bg = "#e5d5a6", fg = "#5d5140" })
+  hl(0, "GitConflictCurrentLabel", { bg = "#d4c08a", fg = "#765613", bold = true })
+  hl(0, "GitConflictIncoming", { bg = "#e7efe0", fg = "#5d5140" })
+  hl(0, "GitConflictIncomingLabel", { bg = "#c5d4b4", fg = "#4a5c3a", bold = true })
+  hl(0, "GitConflictAncestor", { bg = "#eee4ce", fg = "#8b7d6d" })
+  hl(0, "GitConflictAncestorLabel", { bg = "#e0d2b4", fg = "#765613", bold = true })
+
   hl(0, "MiniDiffSignAdd", { link = "GitSignsAdd" })
   hl(0, "MiniDiffSignChange", { link = "GitSignsChange" })
   hl(0, "MiniDiffSignDelete", { link = "GitSignsDelete" })

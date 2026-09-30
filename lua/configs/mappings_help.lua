@@ -59,6 +59,8 @@ local SECTIONS = {
     items = {
       { "]g", "next git hunk" },
       { "[g", "prev git hunk" },
+      { "]x", "next git conflict" },
+      { "[x", "prev git conflict" },
       { "]d", "next diagnostic" },
       { "[d", "prev diagnostic" },
       { "]t", "next Trouble item" },
