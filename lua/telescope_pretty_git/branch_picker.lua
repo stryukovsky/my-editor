@@ -5,13 +5,16 @@ local display = require "telescope_pretty_git.display"
 local git = require "configs.gitutils"
 local git_preview = require "telescope_pretty_git.preview"
 local actions = require "telescope.actions"
+local action_state = require "telescope.actions.state"
 local wrap_telescope_action = require "mappings.telescope_action_wrapper"
+local notify = require "configs.notify"
 
 local HINTS = {
   { "<cr>", "switch to this picked branch" },
   { "m", "merge this picked branch into current git branch" },
   { "d", "delete branch" },
   { "r", "rebase current git branch on top of this picked branch" },
+  { "y", "yank branch name" },
   { "?", "toggle this help off" },
 }
 
@@ -159,6 +162,16 @@ local function pretty_git_branch_picker(opts)
         map("n", "?", help)
         map("n", "d", wrap_telescope_action(actions.git_delete_branch))
         map("n", "m", wrap_telescope_action(actions.git_merge_branch))
+        map("n", "y", function()
+          local selection = action_state.get_selected_entry()
+          local name = selection and (selection.name or selection.value)
+          if type(name) ~= "string" or name == "" then
+            return
+          end
+          vim.fn.setreg("+", name)
+          vim.fn.setreg('"', name)
+          notify.replace("pretty_git.yank_branch", "Git", "Copied: " .. name)
+        end)
         map("n", "r", wrap_telescope_action(actions.git_rebase_branch))
         return true
       end,
