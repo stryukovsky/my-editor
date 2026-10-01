@@ -115,6 +115,41 @@ local function enable_minidiff(buf)
 end
 
 ---@param buf integer
+---@param enabled boolean
+local function set_illuminate(buf, enabled)
+  local ok, engine = pcall(require, "illuminate.engine")
+  if not ok then
+    return
+  end
+  if enabled then
+    engine.resume_buf(buf)
+  else
+    engine.pause_buf(buf)
+  end
+  -- pause_buf refreshes the current window; clear the target buffer itself.
+  pcall(engine.refresh_references, buf)
+end
+
+---@param buf integer
+---@param enabled boolean
+local function set_rainbow(buf, enabled)
+  local ok, rainbow = pcall(require, "rainbow-delimiters")
+  if not ok then
+    return
+  end
+  if not enabled then
+    rainbow.disable(buf)
+    return
+  end
+  local conf = vim.g.rainbow_delimiters
+  if conf and type(conf.condition) == "function" and not conf.condition(buf) then
+    rainbow.disable(buf)
+    return
+  end
+  rainbow.enable(buf)
+end
+
+---@param buf integer
 local function apply_hex_syntax(buf)
   local groups = ft_string_groups[vim.bo[buf].filetype]
   if not groups then
@@ -139,6 +174,8 @@ end
 ---@param opts? { clear_filetype?: boolean, disable_swap_undo?: boolean }
 local function disable_heavy(buf, opts)
   opts = opts or {}
+  set_rainbow(buf, false)
+  set_illuminate(buf, false)
   pcall(vim.treesitter.stop, buf)
   vim.bo[buf].syntax = "OFF"
   vim.bo[buf].indentexpr = ""
@@ -182,6 +219,8 @@ local function enable_heavy(buf)
     pcall(vim.cmd, "LspStart")
   end)
   enable_minidiff(buf)
+  set_illuminate(buf, true)
+  set_rainbow(buf, true)
 end
 
 ---@param buf? integer
