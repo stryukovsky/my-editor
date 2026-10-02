@@ -17,3 +17,4 @@ bin/nvim.appimage
 kulala-core/
 pnpm/
 nvim.log
+bin/coursier/
