@@ -18,9 +18,6 @@ curl -s "https://get.sdkman.io" | bash
 
 curl -L https://foundry.paradigm.xyz | bash
 
-# old tmux stuff
-# git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
-
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"

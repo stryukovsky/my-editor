@@ -112,6 +112,7 @@ Install plugins
 - https://extensions.gnome.org/extension/1460/vitals/
 - https://extensions.gnome.org/extension/1160/dash-to-panel/
 - https://extensions.gnome.org/extension/6994/keyboard-reset/
+- https://extensions.gnome.org/extension/1007/window-is-ready-notification-remover/
 After installed, configure it:  
 
 ```sh 

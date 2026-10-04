@@ -18,3 +18,4 @@ kulala-core/
 pnpm/
 nvim.log
 bin/coursier/
+wget/.wget-hsts
