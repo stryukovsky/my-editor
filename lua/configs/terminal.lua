@@ -1,6 +1,8 @@
 local M = {}
 
 local taken_names = {}
+---@type boolean|nil
+local zsh_available
 
 local function unique_name(base)
   if not taken_names[base] then
@@ -95,7 +97,10 @@ function M.open_new(cwd)
     end
     vim.cmd("lcd " .. vim.fn.fnameescape(cwd))
   end
-  vim.cmd.terminal()
+  if zsh_available == nil then
+    zsh_available = vim.fn.executable "zsh" == 1
+  end
+  vim.cmd.terminal(zsh_available and "zsh" or "bash")
   vim.cmd.BufferPin()
   M.set_name(0, "  " .. random_char() .. " ")
   return true

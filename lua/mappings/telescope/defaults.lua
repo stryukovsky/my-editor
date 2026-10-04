@@ -1,4 +1,5 @@
-local wrap_telescope_action = require("mappings.telescope_action_wrapper")
+local wrap_telescope_action = require "mappings.telescope_action_wrapper"
+local yank_selection = require("mappings.telescope.yank").yank_selection
 
 local function focus_preview(prompt_bufnr)
   local action_state = require "telescope.actions.state"
@@ -16,10 +17,10 @@ local function focus_preview(prompt_bufnr)
       vim.cmd(string.format("noautocmd lua vim.api.nvim_set_current_win(%s)", prompt_win))
     end, { buffer = bufnr })
 
-    vim.keymap.set({"n", "i", "v", "x"}, "<A-w>", function() end, { buffer = bufnr })
-    vim.keymap.set({"n", "i", "v", "x"}, "<A-a>", function() end, { buffer = bufnr })
-    vim.keymap.set({"n", "i", "v", "x"}, "<A-s>", function() end, { buffer = bufnr })
-    vim.keymap.set({"n", "i", "v", "x"}, "<A-d>", function() end, { buffer = bufnr })
+    vim.keymap.set({ "n", "i", "v", "x" }, "<A-w>", function() end, { buffer = bufnr })
+    vim.keymap.set({ "n", "i", "v", "x" }, "<A-a>", function() end, { buffer = bufnr })
+    vim.keymap.set({ "n", "i", "v", "x" }, "<A-s>", function() end, { buffer = bufnr })
+    vim.keymap.set({ "n", "i", "v", "x" }, "<A-d>", function() end, { buffer = bufnr })
 
     vim.cmd(string.format("noautocmd lua vim.api.nvim_set_current_win(%s)", winid))
   end
@@ -31,6 +32,7 @@ return {
   n = {
     ["<Esc>"] = actions.close,
     ["q"] = actions.close,
+    ["y"] = yank_selection,
     ["<C-h>"] = actions.results_scrolling_left,
     ["<C-l>"] = actions.results_scrolling_right,
     ["<C-j>"] = actions.results_scrolling_down,
