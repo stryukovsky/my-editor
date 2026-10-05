@@ -26,11 +26,29 @@ function M.activate()
   end, "search match")
 end
 
+--- Jump to the first match of `query` from the saved view (like `/` / `?`).
+---@param win integer
+---@param view table
+---@param query string
+---@param backward boolean
+local function goto_first_match(win, view, query, backward)
+  if not vim.api.nvim_win_is_valid(win) then
+    return
+  end
+  pcall(vim.api.nvim_win_call, win, function()
+    vim.fn.winrestview(view)
+    vim.v.searchforward = backward and 0 or 1
+    -- `c`: accept match at cursor (same as `/` / `?`).
+    pcall(vim.fn.search, query, (backward and "bc" or "c"))
+  end)
+end
+
 ---Ask for a pattern in the float input. Highlight while typing, do not move.
----`<CR>` keeps the highlight and the cursor. `<Esc>` drops this search.
----@param opts? { prompt?: string, visual?: boolean }
+---`<CR>` jumps to the first match. `<Esc>` drops this search.
+---@param opts? { prompt?: string, visual?: boolean, backward?: boolean }
 function M.prompt(opts)
   opts = opts or {}
+  local backward = opts.backward == true
   local win = vim.api.nvim_get_current_win()
   local view = vim.fn.winsaveview()
   local prev_reg = vim.fn.getreg "/"
@@ -119,9 +137,11 @@ function M.prompt(opts)
     vim.o.hlsearch = true
     vim.v.hlsearch = 1
     clear_live()
-    restore_place()
-    M.activate()
-    restore_place()
+    -- Defer past input's view restore / InsertLeave so the jump sticks.
+    vim.schedule(function()
+      goto_first_match(win, view, query, backward)
+      M.activate()
+    end)
   end)
 end
 

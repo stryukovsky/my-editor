@@ -104,6 +104,7 @@ local SECTIONS = {
     items = {
       { "<leader>gg", "status (also <A-k>)" },
       { "<leader>gc", "commit" },
+      { "<leader>gC", "commit checkpoint" },
       { "<leader>gpush", "push" },
       { "<leader>gpull", "pull" },
       { "<leader>gfetch", "fetch" },

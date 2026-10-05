@@ -9,10 +9,16 @@ local M = {}
 M.ELLIPSIS = "…"
 M.COMMIT_SUBJECT_MAX = 40
 
-local SLASH_SHORTEN = {
-  [0] = { n = 35, keep = 16 },
-  [1] = { n = 30, keep = 8 },
-  [2] = { n = 15, keep = 4 },
+-- Reference: 3-segment names (`origin/release/v1.3.0-zksync`) budget the column.
+-- Per-component `n` is derived so (segments * n + slashes) <= BRANCH_NAME_MAX.
+local REF_SEGMENTS = 3
+local REF_SEGMENT_MAX = 15
+M.BRANCH_NAME_MAX = REF_SEGMENTS * REF_SEGMENT_MAX + (REF_SEGMENTS - 1) -- 47
+
+local KEEP_BY_SLASH = {
+  [0] = 16,
+  [1] = 8,
+  [2] = 4,
 }
 
 ---@param name string
@@ -40,22 +46,66 @@ end
 ---@param slash_count integer
 ---@return { n: integer, keep: integer }
 local function slash_shorten_rule(slash_count)
-  return SLASH_SHORTEN[slash_count] or { n = 9, keep = 2 }
+  local segments = slash_count + 1
+  local n = math.floor((M.BRANCH_NAME_MAX - slash_count) / segments)
+  local keep = KEEP_BY_SLASH[slash_count] or 2
+  return { n = n, keep = keep }
 end
 
 ---@param component string
----@param n integer
----@param keep integer
+---@param n integer max allowed length
+---@param keep integer head/tail chars to preserve when ellipsizing
 ---@return string
 local function shorten_slash_component(component, n, keep)
   local len = vim.fn.strchars(component)
   if len <= n then
     return component
   end
-  return vim.fn.strcharpart(component, 0, keep) .. M.ELLIPSIS .. vim.fn.strcharpart(component, len - keep, keep)
+  -- Shortened form is keep + ellipsis + keep; shrink keep until it fits `n`.
+  keep = math.min(keep, math.floor((n - 1) / 2))
+  local out
+  if keep < 1 then
+    out = vim.fn.strcharpart(component, 0, n)
+  else
+    out = vim.fn.strcharpart(component, 0, keep) .. M.ELLIPSIS .. vim.fn.strcharpart(component, len - keep, keep)
+  end
+  -- Post-check: component must be short enough for its budget.
+  if vim.fn.strchars(out) > n then
+    return vim.fn.strcharpart(out, 0, n)
+  end
+  return out
+end
+
+--- Final column trim: keep leading `some/name/` segments, end with a single `…`.
+---@param name string
+---@param max integer display-width budget (column size minus padding)
+---@return string
+local function trim_branch_column(name, max)
+  local strings = require "plenary.strings"
+  if strings.strdisplaywidth(name) <= max then
+    return name
+  end
+  local parts = vim.split(name, "/", { plain = true })
+  for keep = #parts - 1, 1, -1 do
+    local candidate = table.concat(parts, "/", 1, keep) .. "/" .. M.ELLIPSIS
+    if strings.strdisplaywidth(candidate) <= max then
+      return candidate
+    end
+  end
+  if max <= 1 then
+    return M.ELLIPSIS
+  end
+  -- No slash prefix fits: hard-trim the start and append `…`.
+  local out = name
+  while strings.strdisplaywidth(out) > max - 1 and vim.fn.strchars(out) > 0 do
+    out = vim.fn.strcharpart(out, 0, vim.fn.strchars(out) - 1)
+  end
+  return out .. M.ELLIPSIS
 end
 
 -- Shorten each `/` segment of a local or remote branch name.
+-- Full name is post-checked against BRANCH_NAME_MAX (3-segment budget),
+-- then finally trimmed to column size minus 2 (padding).
 ---@param name string
 ---@return string
 function M.shorten_branch_name(name)
@@ -64,11 +114,26 @@ function M.shorten_branch_name(name)
   end
   local slash_count = select(2, name:gsub("/", ""))
   local rule = slash_shorten_rule(slash_count)
-  local parts = vim.split(name, "/", { plain = true })
-  for i, part in ipairs(parts) do
-    parts[i] = shorten_slash_component(part, rule.n, rule.keep)
+  local originals = vim.split(name, "/", { plain = true })
+  local n = rule.n
+
+  local function apply(seg_max)
+    local parts = {}
+    for i, part in ipairs(originals) do
+      parts[i] = shorten_slash_component(part, seg_max, rule.keep)
+    end
+    return table.concat(parts, "/")
   end
-  return table.concat(parts, "/")
+
+  local result = apply(n)
+  -- Post-check: whole branch name must fit the 3-segment column budget.
+  -- Re-apply from originals with a tighter per-segment cap if needed.
+  while vim.fn.strchars(result) > M.BRANCH_NAME_MAX and n > 1 do
+    n = n - 1
+    result = apply(n)
+  end
+  -- Final check: leave 2 columns of padding.
+  return trim_branch_column(result, M.BRANCH_NAME_MAX - 2)
 end
 
 ---@param subject string

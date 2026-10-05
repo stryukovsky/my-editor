@@ -1,5 +1,7 @@
+local async = require "plenary.async"
 local neogit = require "neogit"
 local map = require "mappings.map"
+local notify = require "configs.notify"
 local open_neogit_status = require "utils.open_neogit_status"
 local ui_prevent_mess = require "utils.ui_prevent_mess"
 
@@ -16,6 +18,37 @@ end
 map("n", "<leader>gc", function()
   open_neogit { "commit", kind = "split" }
 end, { desc = "git: commit" })
+
+map("n", "<leader>gC", function()
+  async.run(function()
+    local git = require "neogit.lib.git"
+    if not git.status.is_dirty() then
+      async.util.scheduler()
+      notify.send("Git", "Nothing to checkpoint", vim.log.levels.WARN)
+      return
+    end
+
+    local staged = git.cli.add.all.call { hidden = true }
+    if not staged:success() then
+      async.util.scheduler()
+      local err = staged.stderr and table.concat(staged.stderr, "\n") or ""
+      notify.send("Git", err ~= "" and err or "Failed to stage changes", vim.log.levels.ERROR)
+      return
+    end
+
+    local branch = git.branch.current() or "HEAD"
+    local msg = ("chore(%s): checkpoint %s"):format(branch, os.date "%H:%M")
+    local result = git.cli.commit.message(msg).call { hidden = true }
+    async.util.scheduler()
+    if result:success() then
+      notify.send("Git", msg)
+      neogit.dispatch_refresh()
+    else
+      local err = result.stderr and table.concat(result.stderr, "\n") or ""
+      notify.send("Git", err ~= "" and err or "Checkpoint commit failed", vim.log.levels.ERROR)
+    end
+  end)
+end, { desc = "git: commit checkpoint" })
 
 map("n", "<leader>gPush", function()
   open_neogit { "push" }

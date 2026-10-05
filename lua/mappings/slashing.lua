@@ -16,7 +16,7 @@ map("n", "<A-q>", function()
 end, { desc = "Search forward" })
 
 map("n", "<A-Q>", function()
-  slashing.prompt { prompt = "Search back" }
+  slashing.prompt { prompt = "Search back", backward = true }
 end, { desc = "Search backward" })
 
 map("v", "/", function()
