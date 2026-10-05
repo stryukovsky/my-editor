@@ -110,6 +110,17 @@ function vpn_off_hiddify() {
     unset HTTPS_PROXY
 }
 
+function cursor() {
+    vpn_on_hiddify && cursor-agent
+}
+
+function opencode() {
+    vpn_on_hiddify && opencode
+}
+
+# Guarantee global git hooks stay disabled in every new shell
+git config --global core.hooksPath /dev/null
+
 alias activ="source .venv/bin/activate"
 
 export COURSIER_BIN_DIR="$HOME/Tools/coursier/bin"
