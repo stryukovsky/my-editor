@@ -112,7 +112,7 @@ local SECTIONS = {
       { "<leader>gb", "branch" },
       { "<leader>gl", "log current branch" },
       { "<leader>gL", "log other branch" },
-      { "<leader>gC", "review source into target" },
+      { "<leader>gcmp", "review source into target" },
       { "<leader>gH", "review branch history" },
       { "<leader>gh", "view hunk" },
       { "<leader>gv", "select hunk" },
