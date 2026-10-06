@@ -7,3 +7,5 @@ gsettings set org.gnome.desktop.interface clock-format '24h'
 gsettings set org.gnome.desktop.peripherals.touchpad tap-to-click false
 gsettings set org.gnome.GPaste save-history false
 gsettings set org.gnome.desktop.interface enable-hot-corners false
+
+gsettings set org.gnome.desktop.sound allow-volume-above-100-percent 'true'
