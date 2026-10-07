@@ -277,9 +277,7 @@ map(ui_components_modes, "<A-e>", function()
   local file_exists = false
   if not empty_file_path then
     local stat = vim.uv.fs_stat(file_path)
-    if not stat or stat.type ~= "file" then
-      notify.send("Neo-tree", "Current buffer has no file on disk to reveal", vim.log.levels.WARN)
-    else
+    if stat and stat.type == "file" then
       file_exists = true
     end
   end

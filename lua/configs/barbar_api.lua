@@ -46,7 +46,9 @@ function M.close_buffers(buffers)
     return
   end
   for _, buffer_number in pairs(valid) do
-    bdelete(true, buffer_number)
+    pcall(function()
+      bdelete(true, buffer_number)
+    end)
   end
   render.update()
 end
