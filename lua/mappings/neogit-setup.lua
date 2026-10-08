@@ -43,6 +43,7 @@ map("n", "<leader>gC", function()
     if result:success() then
       notify.send("Git", msg)
       neogit.dispatch_refresh()
+      open_neogit_status()
     else
       local err = result.stderr and table.concat(result.stderr, "\n") or ""
       notify.send("Git", err ~= "" and err or "Checkpoint commit failed", vim.log.levels.ERROR)

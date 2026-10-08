@@ -1,6 +1,7 @@
 local M = {}
 
 local taken_names = {}
+local taken_icons = {}
 ---@type boolean|nil
 local zsh_available
 
@@ -20,26 +21,42 @@ local function unique_name(base)
   end
 end
 
-local function set_terminal_name(buf, base)
+local function release_terminal_identity(buf)
+  local name = vim.b[buf].terminal_unique_name
+  if name then
+    taken_names[name] = nil
+    vim.b[buf].terminal_unique_name = nil
+  end
+
+  local icon = vim.b[buf].terminal_icon
+  if icon then
+    taken_icons[icon] = nil
+    vim.b[buf].terminal_icon = nil
+  end
+end
+
+local function set_terminal_name(buf, base, icon)
+  release_terminal_identity(buf)
   local name = unique_name(base)
   vim.api.nvim_buf_set_name(buf, name)
   vim.b[buf].terminal_unique_name = name
+  if icon then
+    taken_icons[icon] = true
+    vim.b[buf].terminal_icon = icon
+  end
 end
 
 vim.api.nvim_create_autocmd("BufWipeout", {
   group = vim.api.nvim_create_augroup("TerminalUniqueNames", { clear = true }),
   callback = function(event)
-    local name = vim.b[event.buf].terminal_unique_name
-    if name then
-      taken_names[name] = nil
-    end
+    release_terminal_identity(event.buf)
   end,
 })
 
-local function random_char()
-  math.randomseed(os.time())
+math.randomseed(vim.uv.hrtime())
 
-  local chars = {
+local function random_icon()
+  local icons = {
     "",
     "",
     "",
@@ -69,13 +86,23 @@ local function random_char()
     "",
     "󰀸",
   }
-  return chars[math.random(#chars)]
+  local available = {}
+  for _, icon in ipairs(icons) do
+    if not taken_icons[icon] then
+      table.insert(available, icon)
+    end
+  end
+  if #available == 0 then
+    return nil
+  end
+  return available[math.random(#available)]
 end
 
 ---@param buf integer
 ---@param base string
-function M.set_name(buf, base)
-  set_terminal_name(buf, base)
+---@param icon? string
+function M.set_name(buf, base, icon)
+  set_terminal_name(buf, base, icon)
 end
 
 ---@param name? string
@@ -102,7 +129,8 @@ function M.open_new(cwd)
   end
   vim.cmd.terminal(zsh_available and "zsh" or "bash")
   vim.cmd.BufferPin()
-  M.set_name(0, "  " .. random_char() .. " ")
+  local icon = random_icon()
+  M.set_name(0, icon and ("  " .. icon .. " ") or "  ", icon)
   return true
 end
 
