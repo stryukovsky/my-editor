@@ -14,6 +14,17 @@ M.default_interval = 600000
 -- Store last successful fetch timestamp
 M.last_fetch_timestamp = nil
 
+-- Commits the local branch is ahead of (↑) or behind (↓) its upstream.
+-- Refreshed asynchronously; the statusline only reads this table.
+M.sync_state = {
+  ahead = nil,
+  behind = nil,
+  cwd = nil,
+  at = 0,
+  pending = false,
+}
+M.sync_ttl = 2
+
 local log = require("plenary.log").new {
   plugin = "periodic-git-fetch",
   level = "debug", -- trace, debug, info, warn, error, fatal
@@ -83,6 +94,9 @@ function M.git_fetch(callback)
     if result and result:success() then
       -- Update last fetch timestamp
       M.last_fetch_timestamp = os.time()
+      vim.schedule(function()
+        M.refresh_sync_state(vim.fn.getcwd(), true)
+      end)
       return true
     else
       local error_msg = result and result.stderr and table.concat(result.stderr, "\n") or "Unknown error"
@@ -187,30 +201,75 @@ function M.setup()
   })
 end
 
+local function format_ago(timestamp)
+  local diff = os.time() - timestamp
+  local minutes = math.floor(diff / 60)
+  local hours = math.floor(minutes / 60)
+  if minutes == 0 then
+    return "now"
+  elseif hours > 0 then
+    return hours .. "h ago"
+  else
+    return minutes .. "m ago"
+  end
+end
+
+-- left = commits only on HEAD (local is ahead), right = commits only on upstream.
+function M.refresh_sync_state(cwd, force)
+  local state = M.sync_state
+  if state.pending then
+    return
+  end
+  local now = os.time()
+  if not force and state.cwd == cwd and (now - state.at) < M.sync_ttl then
+    return
+  end
+  state.pending = true
+  vim.system({ "git", "rev-list", "--left-right", "--count", "HEAD...@{upstream}" }, { cwd = cwd, text = true }, function(obj)
+    vim.schedule(function()
+      state.pending = false
+      if vim.fn.getcwd() ~= cwd then
+        state.at = 0
+        return
+      end
+      state.cwd = cwd
+      state.at = os.time()
+      local ahead, behind = nil, nil
+      if obj.code == 0 and obj.stdout then
+        ahead, behind = obj.stdout:match "(%d+)%s+(%d+)"
+        ahead, behind = tonumber(ahead), tonumber(behind)
+      end
+      state.ahead = ahead
+      state.behind = behind
+    end)
+  end)
+end
+
 function M.lualine_component()
   return function()
-    local last_fetch = M.last_fetch_timestamp
+    local cwd = vim.fn.getcwd()
+    M.refresh_sync_state(cwd, false)
 
-    if not last_fetch then
+    local parts = {}
+    local ahead, behind = M.sync_state.ahead, M.sync_state.behind
+    if M.sync_state.cwd == cwd then
+      if ahead and ahead > 0 then
+        parts[#parts + 1] = ahead .. " ↑"
+      end
+      if behind and behind > 0 then
+        parts[#parts + 1] = behind .. " ↓"
+      end
+    end
+
+    local last_fetch = M.last_fetch_timestamp
+    if last_fetch then
+      parts[#parts + 1] = "fetched " .. format_ago(last_fetch)
+    end
+
+    if #parts == 0 then
       return ""
     end
-
-    local now = os.time()
-    local diff = now - last_fetch
-    local minutes = math.floor(diff / 60)
-    local hours = math.floor(minutes / 60)
-
-    local result = "  fetched "
-
-    if minutes == 0 then
-      result = result .. "now"
-    elseif hours > 0 then
-      result = result .. hours .. "h ago"
-    else
-      result = result .. minutes .. "m ago"
-    end
-
-    return result
+    return "  " .. table.concat(parts, " ")
   end
 end
 

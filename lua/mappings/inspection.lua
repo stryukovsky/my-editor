@@ -6,6 +6,12 @@ local navigation_repeat = require "utils.navigation_repeat"
 map("n", "<A-i>", function()
   local ft = vim.bo.filetype
   if ft == "markdown" then
+    local mermaid = require "configs.mermaid"
+    local fence = mermaid.fence_at_cursor()
+    if fence then
+      mermaid.visualize(fence)
+      return
+    end
     md_table_viewer.view_row()
   elseif ft == "csv" or ft == "tsv" then
     csv_table_viewer.view_row()
@@ -31,15 +37,11 @@ local function goto_diagnostic(direction)
 end
 
 local function navigate_diagnostic(direction)
-  navigation_repeat.set(
-    function()
-      goto_diagnostic(1)
-    end,
-    function()
-      goto_diagnostic(-1)
-    end,
-    "diagnostic"
-  )
+  navigation_repeat.set(function()
+    goto_diagnostic(1)
+  end, function()
+    goto_diagnostic(-1)
+  end, "diagnostic")
   goto_diagnostic(direction)
 end
 

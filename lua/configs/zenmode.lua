@@ -54,6 +54,32 @@ local function apply_statuscol(win)
   wo.fillchars = vim.go.fillchars
 end
 
+-- Full-width marks (headings, code blocks) are sized from the window that
+-- rendered them. Zen opens a new window and close returns to the old one;
+-- neither is a WinResized, and render-markdown drops a second update while
+-- its debounce timer is running. Refresh once that timer has elapsed.
+local function refresh_render_markdown(win)
+  if not win or not vim.api.nvim_win_is_valid(win) then
+    return
+  end
+  local ok, render_md = pcall(require, "render-markdown")
+  if not ok then
+    return
+  end
+  local buf = vim.api.nvim_win_get_buf(win)
+  local state = require "render-markdown.state"
+  if not vim.tbl_contains(state.file_types, vim.bo[buf].filetype) then
+    return
+  end
+  local delay = state.get(buf).debounce + 40
+  vim.defer_fn(function()
+    if not vim.api.nvim_win_is_valid(win) or vim.api.nvim_win_get_buf(win) ~= buf then
+      return
+    end
+    render_md.render { buf = buf, win = win }
+  end, delay)
+end
+
 zen_mode.setup {
   window = {
     backdrop = BACKDROP,
@@ -73,6 +99,7 @@ zen_mode.setup {
     if is_current_session_todotxt_file then
       apply_todotxt_file_wrap(win)
     end
+    refresh_render_markdown(win)
     vim.api.nvim_create_autocmd("BufWinEnter", {
       group = vim.api.nvim_create_augroup("ZenStatusCol", { clear = true }),
       callback = function()
@@ -84,7 +111,10 @@ zen_mode.setup {
   end,
   on_close = function()
     pcall(vim.api.nvim_del_augroup_by_name, "ZenStatusCol")
+    local view_ok, view = pcall(require, "zen-mode.view")
+    local parent = view_ok and view.parent or nil
     disable_todotxt_file_wrap()
+    refresh_render_markdown(parent)
   end,
 }
 

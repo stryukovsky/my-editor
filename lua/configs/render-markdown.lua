@@ -6,6 +6,16 @@ require("render-markdown").setup {
   debounce = 230,
   completions = { lsp = { enabled = true } },
   file_types = { "markdown", "codecompanion", "todotxt-preview" },
+  -- Normal mode keeps the rendered line, including wrapped table rows.
+  -- Insert mode still reveals source on the cursor line.
+  anti_conceal = {
+    disabled_modes = { "n" },
+  },
+  win_options = {
+    concealcursor = {
+      rendered = "n",
+    },
+  },
   code = {
     -- Turn on / off code block & inline code rendering.
     enabled = true,
