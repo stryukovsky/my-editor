@@ -7,6 +7,13 @@ local cache = {}
 local cache_order = {}
 local MAX_CACHE = 10
 
+---Drop CSI color codes so the preview buffer stays plain text.
+---@param text string
+---@return string
+local function strip_ansi(text)
+  return (text:gsub("\27%[[%d;]*m", ""))
+end
+
 local function hash_input(lines)
   local str = table.concat(lines, "\n")
   local h = 0
@@ -98,6 +105,8 @@ function M.visualize(lines)
   run({ bin, "-f", "-" }, {
     text = true,
     stdin = table.concat(lines, "\n") .. "\n",
+    -- gookit/color skips ANSI when NO_COLOR is set, including on a TTY.
+    env = { NO_COLOR = "1" },
   }, function(result)
     if result.code ~= 0 then
       notify.send("Mermaid", "Rendering failed: " .. ((result.stderr or "exit code ") .. result.code), vim.log.levels.ERROR)
@@ -108,7 +117,7 @@ function M.visualize(lines)
       return
     end
 
-    local out_lines = vim.split(result.stdout, "\n", { plain = true })
+    local out_lines = vim.split(strip_ansi(result.stdout), "\n", { plain = true })
     if #cache_order >= MAX_CACHE then
       local oldest = table.remove(cache_order, 1)
       cache[oldest] = nil

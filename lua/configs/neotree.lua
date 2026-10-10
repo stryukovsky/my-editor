@@ -137,7 +137,14 @@ local config = {
   commands = {
     ["open_new_window"] = function(state)
       local node = state.tree:get_node()
+      if not node or not node:get_id() then
+        notify.send("Neo-tree", "Select a file or directory first", vim.log.levels.WARN)
+        return
+      end
       local path = node:get_id()
+      if node.type ~= "directory" then
+        path = vim.fn.fnamemodify(path, ":h")
+      end
       require("utils.terminal").open(path, { source = "Neo-tree" })
     end,
     ["open_new_terminal"] = function(state)

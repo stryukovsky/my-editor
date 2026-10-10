@@ -19,3 +19,4 @@ pnpm/
 nvim.log
 bin/coursier/
 wget/.wget-hsts
+**/**/*.pyc

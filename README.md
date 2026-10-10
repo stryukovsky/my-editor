@@ -43,14 +43,17 @@ Execute every line separately!!!
 chmod 700 bin/nvim.appimage
 sudo bash setup/fedora/setup.sh 
 bash setup/common_tools/commons.sh
+
 cp setup/fedora/zshrc.sh ~/.zshrc
-mkdir -p ~/.config/ghostty/
+
+mkdir -p ~/.config/btop/
+ln -sfr setup/common_tools/btop/btop.conf ~/.config/btop/btop.conf
 mkdir -p ~/.config/kitty/
-mkdir -p ~/.config/bpytop/themes/
-cp setup/fedora/ghostty ~/.config/ghostty/config
-cp setup/fedora/kitty.conf ~/.config/kitty/kitty.conf
-cp setup/common_tools/bpytop/light.theme ~/.config/bpytop/themes/
-cp -r setup/fedora/ranger ~/.config/
+ln -sfr setup/fedora/kitty.conf ~/.config/kitty/kitty.conf
+
+mkdir -p ~/.config/ranger/
+ln -sfr setup/fedora/ranger/* ~/.config/ranger/
+
 bash setup/common_tools/finalize.sh
 bash setup/common_tools/ai.sh
 bash setup/common_tools/git.sh
