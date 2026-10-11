@@ -1,7 +1,9 @@
 from ranger.api.commands import Command
 import os
+import shlex
 import stat
 import subprocess
+import tempfile
 from pathlib import Path
 
 
@@ -112,69 +114,71 @@ def _copy_to_clipboard(text):
 
 
 class fzf_files(Command):
-    """
-    `:fzf_mark` refer from `:fzf_select`  (But Just in `Current directory and Not Recursion`)
-        so just `find` is enough instead of `fdfind`)
-
-    `:fzf_mark` can One/Multi/All Selected & Marked files of current dir that filterd by `fzf extended-search mode`
-        fzf extended-search mode: https://github.com/junegunn/fzf#search-syntax
-        eg:    py    'py    .py    ^he    py$    !py    !^py
-    In addition:
-        there is a delay in using `get_executables` (So I didn't use it)
-        so there is no compatible alias.
-        but find is builtin command, so you just consider your `fzf` name
-    Usage
-        :fzf_mark
-
-        shortcut in fzf_mark:
-            <CTRL-a>      : select all
-            <CTRL-e>      : deselect all
-            <TAB>         : multiple select
-            <SHIFT+TAB>   : reverse multiple select
-            ...           : and some remap <Alt-key> for movement
-    """
+    """Jump within the current directory listing. Enter moves the cursor only."""
 
     def execute(self):
-        scope = _scope_directory(self.fm)
-        only_directories = "-type d" if self.quantifier else r"\( -type d -o -type f -o -type l \)"
-        fzf_default_command = (
-            "find -L . -mindepth 1 "
-            r"\( -name .git -o -name .DS_Store -o -iname thumbs.db \) -prune -o "
-            f"{only_directories} -print | cut -b3-"
-        )
-
-        env = os.environ.copy()
-        env["FZF_DEFAULT_COMMAND"] = fzf_default_command
-        env["FZF_DEFAULT_OPTS"] = (
-            "\
-        --multi \
-        --reverse \
-        --bind ctrl-a:select-all,ctrl-e:deselect-all,alt-n:down,alt-p:up,alt-o:backward-delete-char,alt-h:beginning-of-line,alt-l:end-of-line,alt-j:backward-char,alt-k:forward-char,alt-b:backward-word,alt-f:forward-word \
-        --height 95% \
-        --layout reverse \
-        --border \
-        --preview \"cat {}  | head -n 100\""
-        )
-
-        fzf = self.fm.execute_command(
-            "fzf",
-            env=env,
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-            cwd=scope,
-        )
-        stdout, _ = fzf.communicate()
-
-        if fzf.returncode != 0:
+        directory = self.fm.thisdir
+        if directory is None:
+            return
+        directory.load_content(schedule=False)
+        files = list(directory.files or [])
+        if not files:
+            self.fm.notify("Nothing to jump to", bad=True)
             return
 
-        filename_list = [line for line in stdout.splitlines() if line]
-        abs_paths = [_path_in_scope(scope, name) for name in filename_list]
-        if len(abs_paths) == 1 and os.path.isdir(abs_paths[0]):
-            self.fm.cd(abs_paths[0])
-        else:
-            for path in abs_paths:
-                self.fm.select_file(path)
+        labels = []
+        paths = {}
+        for fobj in files:
+            label = fobj.basename + ("/" if fobj.is_directory else "")
+            labels.append(label)
+            paths[label] = fobj.path
+
+        # Ranger waits for the child to exit before the caller can write stdin.
+        # A tty with no FZF_DEFAULT_COMMAND makes fzf walk the filesystem, so
+        # the picker reads this listing from a file instead.
+        list_path = None
+        stdout = ""
+        code = 1
+        try:
+            with tempfile.NamedTemporaryFile(
+                "w", prefix="ranger-fzf-", delete=False, encoding="utf-8"
+            ) as handle:
+                list_path = handle.name
+                handle.write("\n".join(labels) + "\n")
+
+            env = os.environ.copy()
+            env.pop("FZF_DEFAULT_OPTS_FILE", None)
+            env["FZF_DEFAULT_COMMAND"] = "cat " + shlex.quote(list_path)
+            env["FZF_DEFAULT_OPTS"] = (
+                "--height 95% "
+                "--layout reverse "
+                "--border "
+                "--prompt 'Navigate ' "
+                "--tiebreak=index "
+                "--bind alt-n:down,alt-p:up,alt-o:backward-delete-char,alt-h:beginning-of-line,alt-l:end-of-line,alt-j:backward-char,alt-k:forward-char,alt-b:backward-word,alt-f:forward-word"
+            )
+            fzf = self.fm.execute_command(
+                ["fzf"],
+                env=env,
+                universal_newlines=True,
+                stdout=subprocess.PIPE,
+                cwd=directory.path,
+            )
+            if fzf:
+                stdout, _ = fzf.communicate()
+                code = fzf.returncode
+        finally:
+            if list_path:
+                try:
+                    os.unlink(list_path)
+                except OSError:
+                    pass
+
+        if code != 0 or not stdout:
+            return
+        path = paths.get(stdout.splitlines()[0])
+        if path:
+            directory.move_to_obj(path)
 
 
 class fzf_rg(Command):
