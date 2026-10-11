@@ -617,9 +617,15 @@ class clear_all_selections(Command):
         self.fm.copy_buffer = set()
         self.fm.do_cut = False
         for directory in self.fm.directories.values():
+            # Unloaded directories keep files as None; mark_all would iterate it.
+            if directory.files is None:
+                directory.marked_items.clear()
+                continue
             directory.mark_all(False)
         self.fm.settings.preview_files = False
-        self.fm.ui.redraw_main_column()
+        column = getattr(getattr(self.fm.ui, "browser", None), "main_column", None)
+        if column is not None:
+            column.need_redraw = True
 
 
 class open_in_file_manager(Command):

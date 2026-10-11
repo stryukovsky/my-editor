@@ -53,6 +53,7 @@ ln -sfr setup/fedora/kitty.conf ~/.config/kitty/kitty.conf
 
 mkdir -p ~/.config/ranger/
 ln -sfr setup/fedora/ranger/* ~/.config/ranger/
+ln -sfr setup/fedora/ranger/colorschemes ~/.config/ranger/colorschemes
 
 bash setup/common_tools/finalize.sh
 bash setup/common_tools/ai.sh
