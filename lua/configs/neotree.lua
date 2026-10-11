@@ -243,15 +243,7 @@ local config = {
       end
     end,
     ["telescope_find"] = function(state)
-      local node = state.tree:get_node()
-      local path = node:get_id()
-      if node.type ~= "directory" then
-        path = vim.fn.fnamemodify(path, ":h")
-      end
-      require("utils.ui_prevent_mess")()
-      local opts = telescope_scope_opts(path)
-      opts.neotree_state = state
-      require("telescope_neotree_fs")(opts)
+      require("telescope_pretty_picker").show_visible { state = state }
     end,
     ["telescope_grep"] = function(state)
       local node = state.tree:get_node()

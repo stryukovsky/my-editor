@@ -1,9 +1,9 @@
 -- Custom git-branch picker (does not replace telescope.builtin.git_branches).
 -- List rows: display. Preview: preview.branch_log (or opts.previewer).
 
-local display = require "telescope_pretty_git.display"
+local display = require "telescope_pretty_picker.display"
 local git = require "configs.gitutils"
-local git_preview = require "telescope_pretty_git.preview"
+local git_preview = require "telescope_pretty_picker.preview"
 local actions = require "telescope.actions"
 local wrap_telescope_action = require "mappings.telescope_action_wrapper"
 
@@ -70,7 +70,7 @@ local function help()
     noautocmd = true,
   })
 
-  local ns = vim.api.nvim_create_namespace "telescope_pretty_git_branch_help"
+  local ns = vim.api.nvim_create_namespace "telescope_pretty_picker_branch_help"
   for i, row in ipairs(HINTS) do
     pcall(vim.hl.range, buf, ns, "TelescopeResultsIdentifier", { i - 1, 1 }, { i - 1, 1 + #row[1] })
   end

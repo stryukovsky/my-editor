@@ -85,7 +85,7 @@ local telescope_components = {
     modes = ui_components_modes,
     shortcut = "<A-c>",
     command = function()
-      require("telescope_pretty_git").show_commits()
+      require("telescope_pretty_picker").show_commits()
     end,
     desc = "UI telescope git commits",
   },
@@ -93,7 +93,7 @@ local telescope_components = {
     modes = ui_components_modes,
     shortcut = "<A-g>",
     command = function()
-      require("telescope_pretty_git").show_branches()
+      require("telescope_pretty_picker").show_branches()
     end,
     desc = "UI telescope git branches",
   },

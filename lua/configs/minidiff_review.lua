@@ -810,7 +810,7 @@ local function pick_ref(title, cwd, on_pick)
         end,
       },
       sorter = conf.generic_sorter {},
-      previewer = require("telescope_pretty_git").preview.oneline_log { cwd = cwd },
+      previewer = require("telescope_pretty_picker").preview.oneline_log { cwd = cwd },
       attach_mappings = function(prompt_bufnr)
         actions.select_default:replace(function()
           local selection = action_state.get_selected_entry()

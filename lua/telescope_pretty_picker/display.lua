@@ -1,5 +1,5 @@
 -- Shared git *result row* formatting for Telescope pickers (left-hand list).
--- Preview pane rendering is `telescope_pretty_git.preview`.
+-- Preview pane rendering is `telescope_pretty_picker.preview`.
 
 local pretty_date = require "utils.pretty_date"
 local git = require "configs.gitutils"
@@ -163,7 +163,7 @@ function M.tracking_display(upstream, trackshort, remotename)
   return "=> " .. upstream, "TelescopeResultsIdentifier"
 end
 
----@class telescope_pretty_git.display.Branch
+---@class telescope_pretty_picker.display.Branch
 ---@field head string
 ---@field name string
 ---@field display_name string
@@ -177,7 +177,7 @@ end
 
 ---@param cwd? string
 ---@param opts? { pattern?: string, show_remote_tracking_branches?: boolean }
----@return telescope_pretty_git.display.Branch[]
+---@return telescope_pretty_picker.display.Branch[]
 ---@return string|nil err
 function M.list_branches(cwd, opts)
   opts = opts or {}
@@ -236,7 +236,7 @@ function M.list_branches(cwd, opts)
   return results, nil
 end
 
----@param results telescope_pretty_git.display.Branch[]
+---@param results telescope_pretty_picker.display.Branch[]
 ---@return table<string, integer>
 function M.branch_widths(results)
   local strings = require "plenary.strings"
@@ -255,7 +255,7 @@ function M.branch_widths(results)
   return widths
 end
 
----@class telescope_pretty_git.display.Commit
+---@class telescope_pretty_picker.display.Commit
 ---@field value string
 ---@field short string
 ---@field author string
@@ -266,7 +266,7 @@ end
 
 ---@param cwd? string
 ---@param opts? { ref?: string, limit?: integer }
----@return telescope_pretty_git.display.Commit[]
+---@return telescope_pretty_picker.display.Commit[]
 ---@return string|nil err
 function M.list_commits(cwd, opts)
   opts = opts or {}
@@ -305,7 +305,7 @@ function M.list_commits(cwd, opts)
   return commits, nil
 end
 
----@param commits telescope_pretty_git.display.Commit[]
+---@param commits telescope_pretty_picker.display.Commit[]
 ---@return table<string, integer>
 function M.commit_widths(commits)
   local strings = require "plenary.strings"
@@ -319,7 +319,7 @@ function M.commit_widths(commits)
 end
 
 ---@param widths table<string, integer>
----@return fun(entry: telescope_pretty_git.display.Commit): table
+---@return fun(entry: telescope_pretty_picker.display.Commit): table
 function M.commit_displayer(widths)
   local entry_display = require "telescope.pickers.entry_display"
   local displayer = entry_display.create {
@@ -342,7 +342,7 @@ function M.commit_displayer(widths)
 end
 
 ---@param widths table<string, integer>
----@return fun(entry: telescope_pretty_git.display.Branch): table
+---@return fun(entry: telescope_pretty_picker.display.Branch): table
 function M.branch_displayer(widths)
   local entry_display = require "telescope.pickers.entry_display"
   local displayer = entry_display.create {

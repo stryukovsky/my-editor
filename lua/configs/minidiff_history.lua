@@ -1,9 +1,9 @@
 -- MiniDiff history: pick a branch, then N commits, open their merged tree diff.
--- Reuses telescope_pretty_git pickers (list rows + preview). Only mappings differ.
+-- Reuses telescope_pretty_picker pickers (list rows + preview). Only mappings differ.
 
 local git = require "configs.gitutils"
-local telescope_pretty_git = require "telescope_pretty_git"
-local git_preview = telescope_pretty_git.preview
+local telescope_pretty_picker = require "telescope_pretty_picker"
+local git_preview = telescope_pretty_picker.preview
 local notify = require "configs.notify"
 local review = require "configs.minidiff_review"
 
@@ -22,7 +22,7 @@ local function git_run(cwd, args)
 end
 
 ---@param picker table
----@return telescope_pretty_git.display.Commit[]
+---@return telescope_pretty_picker.display.Commit[]
 local function selected_commits(picker)
   local multi = picker:get_multi_selection()
   if #multi > 0 then
@@ -37,7 +37,7 @@ end
 
 ---@param cwd string
 ---@param branch string
----@param commits telescope_pretty_git.display.Commit[]
+---@param commits telescope_pretty_picker.display.Commit[]
 local function open_merged_review(cwd, branch, commits)
   if #commits == 0 then
     notify.send(TITLE, "No commits selected", vim.log.levels.WARN)
@@ -72,7 +72,7 @@ local function pick_commits(cwd, branch)
   local action_state = require "telescope.actions.state"
 
   -- Pretty commit list + git_preview.commit_diff; <CR> starts a merged review.
-  telescope_pretty_git.show_commits {
+  telescope_pretty_picker.show_commits {
     cwd = cwd,
     ref = branch,
     limit = COMMIT_LIMIT,
@@ -128,7 +128,7 @@ local function pick_branch(cwd)
 
   -- Pretty branch UI, but preview the tip patch (not the graph log) and
   -- <CR> opens the commit picker instead of switching branch.
-  telescope_pretty_git.show_branches {
+  telescope_pretty_picker.show_branches {
     cwd = cwd,
     prompt_title = "select a branch where to see commits changes",
     previewer = git_preview.commit_diff { cwd = cwd },

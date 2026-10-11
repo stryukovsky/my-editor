@@ -10,7 +10,7 @@ if not termux_version then
   require "configs.yanky"
 end
 
-require "configs.telescope_pretty_git"
+require "configs.telescope_pretty_picker"
 require "configs.marks"
 require "configs.barbar"
 require "configs.scope"
