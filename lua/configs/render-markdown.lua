@@ -2,6 +2,7 @@
 vim.treesitter.language.register("markdown", "todotxt-preview")
 
 require("render-markdown").setup {
+  enabled = true,
   -- Scrolling triggers both CursorMoved and WinScrolled; batch the viewport refreshes.
   debounce = 230,
   completions = { lsp = { enabled = true } },

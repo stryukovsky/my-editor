@@ -8,8 +8,8 @@ local function inputExecutable()
   return vim.fn.input("Executable: ", vim.fn.getcwd() .. "/", "file")
 end
 
--- js/typescript adapter
-dap.adapters["pwa-node"] = {
+-- js-debug. `node` is the current launch.json type; `pwa-node` is the old name for the same server.
+local js_debug = {
   type = "server",
   host = "localhost",
   port = "${port}",
@@ -18,6 +18,8 @@ dap.adapters["pwa-node"] = {
     args = { "${port}" },
   },
 }
+dap.adapters["pwa-node"] = js_debug
+dap.adapters.node = js_debug
 
 dap.adapters.codelldb = {
   type = "server",

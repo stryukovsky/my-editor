@@ -2,6 +2,7 @@ return {
   language_by_adapter = {
     java = "Java",
     ["pwa-node"] = "JavaScript / TypeScript",
+    node = "JavaScript / TypeScript",
     python = "Python",
     debugpy = "Python",
     go = "Go",
@@ -15,6 +16,9 @@ return {
     },
     ["pwa-node"] = {
       -- js-debug: console destination; `std` captures process stdout/stderr.
+      defaults = { console = "internalConsole", outputCapture = "std" },
+    },
+    node = {
       defaults = { console = "internalConsole", outputCapture = "std" },
     },
     python = {

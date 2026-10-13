@@ -7,7 +7,11 @@ unset("i", "<S-Tab>")
 unset("s", "<S-Tab>")
 
 local map = require "mappings.map"
-map("n", "<Esc>", clear_selections, { desc = "general clear highlights" })
+map("n", "<Esc>", function()
+  -- nvim-notify has no public "is anything visible?" check (pending() is the queue).
+  require("notify").dismiss { silent = true, pending = true }
+  clear_selections()
+end, { desc = "clear highlights and notifications" })
 
 map("n", "<C-c>", function()
   if vim.bo.modifiable then

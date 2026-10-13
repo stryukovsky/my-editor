@@ -11,6 +11,9 @@ local function should_keep(buf)
   if not vim.api.nvim_buf_is_valid(buf) then
     return true
   end
+  if buf == vim.api.nvim_get_current_buf() then
+    return true
+  end
   if state.is_pinned(buf) then
     return true
   end

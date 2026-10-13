@@ -246,7 +246,11 @@ function M.refresh_sync_state(cwd, force)
 end
 
 function M.lualine_component()
-  return function()
+  return function(self)
+    if not self.behind_hl then
+      self.behind_hl = self:create_hl({ fg = "#ec5f67", gui = "bold" }, "behind")
+    end
+
     local cwd = vim.fn.getcwd()
     M.refresh_sync_state(cwd, false)
 
@@ -257,7 +261,7 @@ function M.lualine_component()
         parts[#parts + 1] = ahead .. " ↑"
       end
       if behind and behind > 0 then
-        parts[#parts + 1] = behind .. " ↓"
+        parts[#parts + 1] = self:format_hl(self.behind_hl) .. behind .. " ↓" .. self:get_default_hl()
       end
     end
 
