@@ -130,4 +130,11 @@ git config --global core.hooksPath /dev/null
 export GIT_CONFIG_COUNT=1
 export GIT_CONFIG_KEY_0=core.hooksPath
 export GIT_CONFIG_VALUE_0=/dev/null
+#
+# Pick an installed app. The launch command is left on the prompt; Enter runs it here.
+runapp() {
+  local cmd
+  cmd=$(python3 "$HOME/.config/nvim/setup/fedora/runapp.py") || return
+  [[ -n $cmd ]] && print -z -- "$cmd"
+}
 

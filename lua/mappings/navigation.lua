@@ -66,20 +66,10 @@ end
 -- buffer navigation
 map({ "n" }, "<A-,>", construct_handler "BufferPrevious", { desc = "Navigation prev buffer" })
 map({ "n" }, "<A-.>", construct_handler "BufferNext", { desc = "Navigation next buffer" })
-
--- tab navigation
 -- `<A->>` is not a valid keycode (`>` closes the notation). `>` / `<` are Shift+`.` / `,`.
--- Zen-mode floats break on tab change; close conflicting UI first.
-local function tab_cmd(cmd)
-  return function()
-    ui_prevent_mess()
-    vim.cmd(cmd)
-  end
-end
-map({ "n" }, "<A-<>", tab_cmd "tabprevious", { desc = "Navigation prev tab" })
-map({ "n" }, "<A-S-,>", tab_cmd "tabprevious", { desc = "Navigation prev tab" })
-map({ "n" }, "<A-S-.>", tab_cmd "tabnext", { desc = "Navigation next tab" })
--- <A-S-,> / <A-S-.> still walk Neovim tabs (leftover). New workspaces are Kitty tabs:
+map({ "n" }, "<A-<>", construct_handler "bprevious", { desc = "Navigation bprevious" })
+map({ "n" }, "<A-S-,>", construct_handler "bprevious", { desc = "Navigation bprevious" })
+map({ "n" }, "<A-S-.>", construct_handler "bnext", { desc = "Navigation bnext" })
 -- <leader>tab → kitten @ launch --type=tab (cwd inherited). Projects go through configs.projects.
 map("n", "<leader>tab", function()
   require("configs.kitten").launch { type = "tab" }
