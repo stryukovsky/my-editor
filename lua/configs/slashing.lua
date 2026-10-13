@@ -80,11 +80,24 @@ function M.prompt(opts)
     match_id = nil
   end
 
-  local function query_for(value)
-    if opts.visual then
-      return "\\%V" .. value
+  -- matchadd ignores 'ignorecase'/'smartcase'. \c / \C make the preview, the
+  -- jump, and n/N agree: lowercase ignores case, any uppercase matches case.
+  local function with_smartcase(pattern)
+    if pattern:find "\\[cC]" then
+      return pattern
     end
-    return value
+    if vim.fn.match(pattern, [[\u]]) >= 0 then
+      return "\\C" .. pattern
+    end
+    return "\\c" .. pattern
+  end
+
+  local function query_for(value)
+    local pattern = with_smartcase(value)
+    if opts.visual then
+      return "\\%V" .. pattern
+    end
+    return pattern
   end
 
   local function restore_prev()
@@ -137,11 +150,8 @@ function M.prompt(opts)
     vim.o.hlsearch = true
     vim.v.hlsearch = 1
     clear_live()
-    -- Defer past input's view restore / InsertLeave so the jump sticks.
-    vim.schedule(function()
-      goto_first_match(win, view, query, backward)
-      M.activate()
-    end)
+    goto_first_match(win, view, query, backward)
+    M.activate()
   end)
 end
 

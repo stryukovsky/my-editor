@@ -11,6 +11,10 @@ map("n", "/", function()
   slashing.prompt()
 end, { desc = "Search forward" })
 
+map("n", "<A-f>", function()
+  slashing.prompt()
+end, { desc = "Search forward" })
+
 map("n", "<A-q>", function()
   slashing.prompt()
 end, { desc = "Search forward" })

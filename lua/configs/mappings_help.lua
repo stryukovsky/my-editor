@@ -36,7 +36,7 @@ local SECTIONS = {
       { "<A-b>", "buffers tree" },
       { "<A-P>", "projects" },
       { "<A-z>", "oldfiles" },
-      { "<A-f>", "find in current buffer" },
+      { "<A-f>", "search forward" },
       { "<A-F>", "live grep" },
       { "<A-c>", "git commits" },
       { "<A-g>", "git branches" },

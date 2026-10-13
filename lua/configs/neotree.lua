@@ -242,8 +242,8 @@ local config = {
         renderer.focus_node(state, node:get_parent_id())
       end
     end,
-    ["telescope_find"] = function(state)
-      require("telescope_pretty_picker").show_visible { state = state }
+    ["slash_search"] = function()
+      require("configs.slashing").prompt()
     end,
     ["telescope_grep"] = function(state)
       local node = state.tree:get_node()
@@ -364,9 +364,9 @@ local config = {
         ["F"] = "telescope_grep",
         ["R"] = "replace_in_directory",
         ["<A-F>"] = "telescope_grep",
-        ["<A-f>"] = "telescope_find",
+        ["<A-f>"] = "slash_search",
         ["<A-i>"] = "show_file_details",
-        ["f"] = "telescope_find",
+        ["f"] = "slash_search",
         ["i"] = add_to_gitignore,
         ["<C-x>"] = "clear_filter",
         ["<C-c>"] = "clear_filter",

@@ -118,9 +118,6 @@ function opencode() {
     vpn_on_hiddify && opencode
 }
 
-# Guarantee global git hooks stay disabled in every new shell
-git config --global core.hooksPath /dev/null
-
 alias activ="source .venv/bin/activate"
 
 export COURSIER_BIN_DIR="$HOME/Tools/coursier/bin"
@@ -129,4 +126,8 @@ export PATH="$COURSIER_BIN_DIR:$PATH"
 alias nvim="~/.config/nvim/bin/nvim.appimage"
 alias vim="~/.config/nvim/bin/nvim.appimage"
 
+git config --global core.hooksPath /dev/null
+export GIT_CONFIG_COUNT=1
+export GIT_CONFIG_KEY_0=core.hooksPath
+export GIT_CONFIG_VALUE_0=/dev/null
 

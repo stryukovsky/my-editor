@@ -178,18 +178,25 @@ function M.setup()
             vim.fn.winrestview(prev_view)
           end)
         end
-        -- Leaving insert moves the cursor back one column, after confirm.
+        -- stopinsert shifts the cursor one column later, on InsertLeave.
+        -- Restore the view there, then confirm. A pending InsertLeave must not
+        -- run after on_confirm, or it puts the cursor back and drops the jump.
+        local function deliver()
+          restore_view()
+          on_confirm(value)
+        end
         if vim.fn.mode():find "^[iR]" and not prev_mode:find "^[iR]" then
           vim.api.nvim_create_autocmd("InsertLeave", {
             once = true,
-            callback = restore_view,
+            callback = function()
+              vim.schedule(deliver)
+            end,
           })
+          restore_mode(prev_mode)
+        else
+          restore_mode(prev_mode)
+          vim.schedule(deliver)
         end
-        restore_mode(prev_mode)
-        vim.schedule(function()
-          restore_view()
-          on_confirm(value)
-        end)
       end)
     end
 
