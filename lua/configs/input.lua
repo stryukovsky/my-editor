@@ -37,6 +37,30 @@ local function display_width(text)
   return vim.fn.strdisplaywidth(text)
 end
 
+-- `opts.virtual_text_mode`. Slash search is the only value for now.
+local VIRTUAL_TEXT_SLASH_SEARCH = "slash_search"
+local VIRT_NS = vim.api.nvim_create_namespace "input_float_virtual_text"
+
+---`found: N` inline, so it stays beside the text in insert mode.
+---@param buf integer
+---@param line string
+---@param count integer
+---@param capped boolean
+local function show_slash_count(buf, line, count, capped)
+  local label = " found: " .. count .. (capped and "+" or "")
+  vim.api.nvim_buf_set_extmark(buf, VIRT_NS, 0, #line, {
+    id = 1,
+    virt_text = { { label, "Comment" } },
+    virt_text_pos = "inline",
+    right_gravity = true,
+  })
+end
+
+---@param buf integer
+local function clear_slash_count(buf)
+  pcall(vim.api.nvim_buf_del_extmark, buf, VIRT_NS, 1)
+end
+
 ---Sync InputFloatMode from lualine mode colors (same source as highlight.lua CursorLineNr).
 local function sync_mode_hl()
   local mode_name = MODE_TO_LUALINE[vim.fn.mode()] or "normal"
@@ -94,6 +118,9 @@ local function restore_mode(mode)
 end
 
 ---Float input. `opts.on_input(value)` runs on each edit, before confirm.
+---`opts.virtual_text_mode = "slash_search"`: `on_input` may return a match
+---count (and `true` when that count is capped). The float draws `found: N`
+---beside the text, including while insert mode is active.
 function M.setup()
   vim.ui.input = function(opts, on_confirm)
     opts = opts or {}
@@ -117,6 +144,8 @@ function M.setup()
     vim.bo[buffer].bufhidden = "wipe"
     vim.bo[buffer].buftype = "nofile"
     vim.bo[buffer].swapfile = false
+    -- blink.cmp: vim.b.completion == false disables suggestions on this buffer.
+    vim.b[buffer].completion = false
     vim.api.nvim_buf_set_lines(buffer, 0, -1, false, { default })
 
     local window = vim.api.nvim_open_win(buffer, true, {
@@ -223,6 +252,13 @@ function M.setup()
       cancel = cancel,
     })
 
+    local virtual_text_mode = opts.virtual_text_mode
+    if virtual_text_mode == VIRTUAL_TEXT_SLASH_SEARCH and vim.api.nvim_win_is_valid(window) then
+      -- Room to the right of the cursor so `found: N` is not scrolled off in insert.
+      vim.wo[window].wrap = false
+      vim.wo[window].sidescrolloff = 16
+    end
+
     if type(opts.on_input) == "function" then
       vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
         buffer = buffer,
@@ -230,7 +266,16 @@ function M.setup()
           if completed then
             return
           end
-          pcall(opts.on_input, vim.api.nvim_get_current_line())
+          local line = vim.api.nvim_get_current_line()
+          local ok, count, capped = pcall(opts.on_input, line)
+          if virtual_text_mode ~= VIRTUAL_TEXT_SLASH_SEARCH or not vim.api.nvim_buf_is_valid(buffer) then
+            return
+          end
+          if ok and type(count) == "number" then
+            show_slash_count(buffer, line, count, capped == true)
+          else
+            clear_slash_count(buffer)
+          end
         end,
       })
     end

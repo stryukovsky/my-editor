@@ -160,7 +160,7 @@ function M.tracking_display(upstream, trackshort, remotename)
     local remote = remotename ~= "" and remotename or (upstream:match "^([^/]+)" or upstream)
     return "= " .. remote, "TelescopeResultsComment"
   end
-  return "=> " .. upstream, "TelescopeResultsIdentifier"
+  return "=> " .. M.shorten_branch_name(upstream), "TelescopeResultsIdentifier"
 end
 
 ---@class telescope_pretty_picker.display.Branch

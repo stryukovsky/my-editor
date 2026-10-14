@@ -45,6 +45,7 @@ end
 
 ---Ask for a pattern in the float input. Highlight while typing, do not move.
 ---`<CR>` jumps to the first match. `<Esc>` drops this search.
+---The float shows `found: N` beside the pattern while typing.
 ---@param opts? { prompt?: string, visual?: boolean, backward?: boolean }
 function M.prompt(opts)
   opts = opts or {}
@@ -112,6 +113,29 @@ function M.prompt(opts)
     restore_place()
   end
 
+  ---@return integer? count
+  ---@return boolean? capped true when the scan hit its limit
+  local function match_count(query)
+    if not vim.api.nvim_win_is_valid(win) then
+      return nil
+    end
+    local ok, result = pcall(vim.api.nvim_win_call, win, function()
+      return vim.fn.searchcount {
+        pattern = query,
+        recompute = true,
+        maxcount = 999,
+        timeout = 60,
+      }
+    end)
+    if not ok or type(result) ~= "table" then
+      return nil
+    end
+    return result.total or 0, result.incomplete ~= 0
+  end
+
+  ---@param value string
+  ---@return integer? count
+  ---@return boolean? capped
   local function highlight(value)
     clear_live()
     if value == "" then
@@ -133,12 +157,15 @@ function M.prompt(opts)
       end
     end)
     vim.o.eventignore = eventignore
+    local count, capped = match_count(query)
     restore_place()
+    return count, capped
   end
 
   vim.ui.input({
     prompt = opts.prompt or "Search",
     on_input = highlight,
+    virtual_text_mode = "slash_search",
   }, function(value)
     if value == nil or value == "" then
       restore_prev()

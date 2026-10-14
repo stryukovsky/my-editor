@@ -141,9 +141,10 @@ return {
   },
   { "johmsalas/text-case.nvim" },
   {
-    "MeanderingProgrammer/render-markdown.nvim",
+    "stryukovsky/render-markdown.nvim",
     -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
+    branch = "fix/anti-conceal-in-wrapped-table",
     opts = {
       file_types = { "markdown", "codecompanion", "todotxt-preview" },
     },

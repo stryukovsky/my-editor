@@ -5,6 +5,9 @@ gsettings set org.gnome.desktop.wm.keybindings close "['<Alt>F4','<Super>q']"
 gsettings set org.gnome.desktop.interface clock-format '24h'
 
 gsettings set org.gnome.desktop.peripherals.touchpad tap-to-click false
+gsettings set org.gnome.desktop.peripherals.pointingstick scroll-method 'on-button-down'
+gsettings set org.gnome.desktop.peripherals.pointingstick accel-profile 'flat'
+gsettings set org.gnome.desktop.peripherals.pointingstick speed -1.0
 gsettings set org.gnome.GPaste save-history false
 gsettings set org.gnome.desktop.interface enable-hot-corners false
 
