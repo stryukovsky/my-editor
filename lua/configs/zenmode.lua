@@ -58,6 +58,7 @@ end
 -- rendered them. Zen opens a new window and close returns to the old one;
 -- neither is a WinResized, and render-markdown drops a second update while
 -- its debounce timer is running. Refresh once that timer has elapsed.
+-- TODO: remove it
 local function refresh_render_markdown(win)
   if not win or not vim.api.nvim_win_is_valid(win) then
     return
@@ -83,12 +84,11 @@ end
 zen_mode.setup {
   window = {
     backdrop = BACKDROP,
-    width = 90,
+    width = 100,
     height = 1,
     options = {
-      number = true,
-      relativenumber = true,
-      foldcolumn = "1",
+      number = false,
+      relativenumber = false,
       cursorcolumn = false,
       list = false,
     },
