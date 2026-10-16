@@ -3,15 +3,24 @@ local async = require "plenary.async"
 local notify = require "configs.notify"
 
 map("n", "<leader>mdr", function()
-  require("render-markdown").toggle()
-end, { desc = "Markdown render toggle" })
+  require("render-markdown").preview()
+end, { desc = "Markdown render" })
 
-map("n", "<leader>mdp", "<cmd>MarkdownPreview<CR>", { desc = "MarkdownPreview open" })
+map(
+  "n",
+  "<leader>mdp",
+  "<cmd>MarkdownPreview<CR>",
+  { desc = "MarkdownPreview open" }
+)
 
 map("n", "<leader>pdf", function()
   local source = vim.api.nvim_buf_get_name(0)
   if source == "" then
-    notify.send("Markdown PDF", "Save the Markdown file before exporting it", vim.log.levels.ERROR)
+    notify.send(
+      "Markdown PDF",
+      "Save the Markdown file before exporting it",
+      vim.log.levels.ERROR
+    )
     return
   end
   if vim.fn.executable "pandoc" == 0 then
@@ -19,14 +28,22 @@ map("n", "<leader>pdf", function()
     return
   end
   if vim.fn.executable "xelatex" == 0 then
-    notify.send("Markdown PDF", "xelatex is not installed", vim.log.levels.ERROR)
+    notify.send(
+      "Markdown PDF",
+      "xelatex is not installed",
+      vim.log.levels.ERROR
+    )
     return
   end
 
   if vim.bo.modified then
     local ok, err = pcall(vim.cmd, "write")
     if not ok then
-      notify.send("Markdown PDF", "Could not save Markdown file: " .. err, vim.log.levels.ERROR)
+      notify.send(
+        "Markdown PDF",
+        "Could not save Markdown file: " .. err,
+        vim.log.levels.ERROR
+      )
       return
     end
   end
@@ -61,7 +78,11 @@ map("n", "<leader>pdf", function()
       if result.code == 0 then
         notify.send("Markdown PDF", "Created: " .. output)
       else
-        notify.send("Markdown PDF", "Generation failed: " .. (result.stderr or "unknown error"), vim.log.levels.ERROR)
+        notify.send(
+          "Markdown PDF",
+          "Generation failed: " .. (result.stderr or "unknown error"),
+          vim.log.levels.ERROR
+        )
       end
     end)
   end, function() end)

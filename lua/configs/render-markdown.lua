@@ -2,7 +2,7 @@
 vim.treesitter.language.register("markdown", "todotxt-preview")
 
 require("render-markdown").setup {
-  enabled = true,
+  enabled = false,
   -- Scrolling triggers both CursorMoved and WinScrolled; batch the viewport refreshes.
   debounce = 230,
   completions = { lsp = { enabled = true } },
@@ -10,11 +10,11 @@ require("render-markdown").setup {
   -- Normal mode keeps the rendered line, including wrapped table rows.
   -- Insert mode still reveals source on the cursor line.
   anti_conceal = {
-    disabled_modes = { "n" },
+    disabled_modes = { "n", "x", },
   },
   win_options = {
     concealcursor = {
-      rendered = "n",
+      rendered = "nv",
     },
   },
   code = {
@@ -23,6 +23,8 @@ require("render-markdown").setup {
     language_icon = false,
     border = "thin",
     language_left = "",
+    inline_left = " ",
+    inline_right = " ",
   },
   latex = {
     enabled = false,
