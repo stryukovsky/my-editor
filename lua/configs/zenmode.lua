@@ -84,7 +84,7 @@ end
 zen_mode.setup {
   window = {
     backdrop = BACKDROP,
-    width = 100,
+    width = 110,
     height = 1,
     options = {
       number = false,
