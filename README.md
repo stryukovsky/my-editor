@@ -31,6 +31,7 @@ And then reboot
 Firstly make sure system is up-to-date:  
 
 ```
+sudo dnf config-manager disable fedora-cisco-openh264
 sudo dnf upgrade -y
 ```
 
