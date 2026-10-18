@@ -95,6 +95,12 @@ bash ~/.config/nvim/setup/fedora/vllm.sh
 Note: NVIDIA may not work until secure boot is not configured properly.  
 Note: [RPM Fusion](https://rpmfusion.org/Howto)
 
+RPM Fusion metalinks often hand out mirrors that time out from Russia. Pin them to RU mirrors. `rpmfusion-*-release` updates restore the stock `.repo` files, so run this again after those packages update. The `/country=/!` guard skips lines that already have a country, so a second run does not append `&country=RU` twice.
+
+```sh
+sudo sed -i.bak '/country=/!s|\(^metalink=.*basearch\)|\1\&country=RU|' /etc/yum.repos.d/rpmfusion-*.repo
+```
+
 ## AWG
 
 Setup using awg-quick  
