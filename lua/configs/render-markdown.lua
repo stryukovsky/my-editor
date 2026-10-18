@@ -6,7 +6,7 @@ require("render-markdown").setup {
   -- Scrolling triggers both CursorMoved and WinScrolled; batch the viewport refreshes.
   debounce = 230,
   completions = { lsp = { enabled = true } },
-  file_types = { "markdown", "codecompanion", "todotxt-preview" },
+  file_types = { "markdown", "todotxt-preview" },
   -- Normal mode keeps the rendered line, including wrapped table rows.
   -- Insert mode still reveals source on the cursor line.
   anti_conceal = {

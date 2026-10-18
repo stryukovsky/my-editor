@@ -146,9 +146,9 @@ return {
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
     branch = "fix/anti-conceal-in-wrapped-table",
     opts = {
-      file_types = { "markdown", "codecompanion", "todotxt-preview" },
+      file_types = { "markdown", "todotxt-preview" },
     },
-    ft = { "markdown", "codecompanion", "todotxt-preview" },
+    ft = { "markdown", "todotxt-preview" },
     lazy = true,
   },
   { "stryukovsky/git-conflict.nvim", branch = "main" },

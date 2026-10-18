@@ -126,7 +126,6 @@ bash setup/fedora/gnome.sh
 ```
 
 ## Cuda NVIDIA & ollama 
-Avante needs llama to be launched: 
 
 ```sh
 curl -fsSL https://ollama.com/install.sh | sh

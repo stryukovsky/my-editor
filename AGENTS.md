@@ -27,8 +27,7 @@ Personal Neovim configuration managed by
 - `lua/configs/init.lua` orchestrates ~50 plugin setup modules — add new plugin
   configs here
 - `lua/mappings/init.lua` loads all keymap modules — add new bindings here
-- Plugin specs live in `lua/plugins/` (core.lua, mason.lua, ai.lua, misc.lua,
-  web.lua)
+- Plugin specs live in `lua/plugins/` (core.lua, mason.lua, misc.lua, web.lua)
 
 ## Keymap Convention (Critical)
 
@@ -102,16 +101,15 @@ parens).
 
 ## Notable Plugins
 
-- **Completion**: blink.cmp (with minuet-ai.nvim inline completion)
+- **Completion**: blink.cmp
 - **Git**: neogit (fork at stryukovsky/neogit, `log-view-fix-open-commit-link`
   branch), gitsigns, git-conflict.nvim (stryukovsky fork)
-- **AI**: codecompanion.nvim, minuet-ai.nvim, aidviser.nvim (stryukovsky)
 - **File tree**: neo-tree.nvim, oil.nvim
 - **Statusline**: lualine.nvim (theme sets `lualine_style = "stealth"`)
 - **Search**: telescope.nvim + fzf-native, flash.nvim, spectre.nvim
 - **Misc**: yanky.nvim, marks.nvim, nvim-surround, nvim-gomove, treesj,
-  Comment.nvim, todo-comments.nvim, refactoring.nvim, render-markdown.nvim (for
-  md + Avante), rainbow-delimiters.nvim (stryukovsky fork), grapple.nvim,
+  Comment.nvim, todo-comments.nvim, refactoring.nvim, render-markdown.nvim,
+  rainbow-delimiters.nvim (stryukovsky fork), grapple.nvim,
   trouble.nvim
 
 ## Other Conventions
@@ -136,10 +134,9 @@ conflicts:
 | Plugin         | File                                                 | Key                                | Neutralization                                                                          |
 | -------------- | ---------------------------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------- |
 | oil.nvim | `lua/configs/oil.lua:280-283` | `<A-e>`, `<A-l>`, `<A-b>`, `<A-k>` | No-op `function(_) end` in oil keymaps table (buffer-local to oil buffers only) |
-| minuet-ai.nvim | `data/lazy/minuet-ai.nvim/lua/minuet/config.lua:247` | `<A-e>` (dismiss) | `dismiss = nil` in default config — not enabled. Even if set, would be insert-mode only |
 
-No global conflicts exist currently — oil's neutralization is buffer-local,
-minuet's is nil/insert-mode. When adding a new neo-tree source mapping, check if
+No global conflicts exist currently — oil's neutralization is buffer-local.
+When adding a new neo-tree source mapping, check if
 any plugin binds the same `<A->` key and add a no-op where needed.
 
 Pin updates via `lazy-lock.json`. Do not edit manually.

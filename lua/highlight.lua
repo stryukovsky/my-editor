@@ -142,8 +142,6 @@ local function override_highlights()
 
   hl(0, "MarkSignHL", { fg = "#bb0000" })
 
-  hl(0, "CodeCompanionInlineDiffHint", { bg = background, fg = foreground_active })
-
   hl(0, "FlashLabelOverriden", { bg = background, fg = foreground_active })
   hl(0, "HlSearchLensNear", { link = "Title" })
   hl(0, "HlSearchLens", { link = "Comment" })

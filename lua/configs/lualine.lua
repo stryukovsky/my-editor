@@ -1,5 +1,4 @@
 local trouble = require "trouble"
-local is_ollama_installed = require "utils.is_ollama_installed"
 local dap_output = require "debug_output"
 local git_fetch = require "configs.periodic-git-fetch"
 local is_it_merge = require "configs.is_it_merge"
@@ -59,22 +58,6 @@ local defaults_for_x_component = {
   "lsp_status",
   "filetype",
 }
-
-local function lualine_x_component()
-  if not is_ollama_installed() then
-    return defaults_for_x_component
-  end
-  local success, config = pcall(function()
-    return vim.list_extend({
-      require "minuet.lualine",
-    }, defaults_for_x_component)
-  end)
-  if success then
-    return config
-  else
-    return defaults_for_x_component
-  end
-end
 
 local function get_lualine_theme()
   local bg_color = to_hex_color(vim.api.nvim_get_hl(0, { name = "Normal" }).bg)
@@ -162,7 +145,7 @@ require("lualine").setup {
       },
     },
 
-    lualine_x = lualine_x_component(),
+    lualine_x = defaults_for_x_component,
     -- lualine_y = {
     --   {
     --     function()

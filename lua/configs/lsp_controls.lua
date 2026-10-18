@@ -62,25 +62,42 @@ local function stop_buffer_clients(bufnr)
   return names
 end
 
--- Stop this buffer's clients, then start LSP again for it.
+-- Stop this buffer's clients, then start each one again.
 ---@param bufnr integer
 function M.restart(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
   vim.b[bufnr].lsp_disabled = false
-  stop_buffer_clients(bufnr)
-  vim.defer_fn(function()
-    if not vim.api.nvim_buf_is_valid(bufnr) then
-      return
-    end
-    vim.api.nvim_buf_call(bufnr, function()
-      pcall(function()
-        vim.cmd "lsp start"
+
+  local connected = client_names_for(bufnr)
+  if not vim.api.nvim_buf_is_valid(bufnr) then
+    return
+  end
+
+  for _, lsp_client in ipairs(connected) do
+    local escaped = vim.fn.escape(lsp_client, " \\")
+    -- stop client
+    vim.defer_fn(function()
+      if not vim.api.nvim_buf_is_valid(bufnr) then
+        return
+      end
+      vim.api.nvim_buf_call(bufnr, function()
+        if #vim.lsp.get_clients { name = lsp_client } > 0 then
+          pcall(vim.cmd, "lsp stop " .. escaped)
+        end
       end)
-    end)
-    local names = client_names_for(bufnr)
-    local msg = #names == 0 and "Restarted (waiting for clients)" or ("Restarted: " .. names_label(names))
-    notify.send("LSP", msg)
-  end, 200)
+    end, 50)
+
+    -- start client
+    vim.defer_fn(function()
+      if not vim.api.nvim_buf_is_valid(bufnr) then
+        return
+      end
+      vim.api.nvim_buf_call(bufnr, function()
+        pcall(vim.cmd, "lsp enable " .. escaped)
+      end)
+      notify.send("LSP", "Restarted " .. lsp_client)
+    end, 100)
+  end
 end
 
 -- Detach this buffer's clients and block auto-start on it until Restart.
@@ -89,7 +106,8 @@ function M.disable_session(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
   vim.b[bufnr].lsp_disabled = true
   local names = stop_buffer_clients(bufnr)
-  local msg = #names == 0 and "No clients on this buffer" or ("Disabled: " .. names_label(names))
+  local msg = #names == 0 and "No clients on this buffer"
+    or ("Disabled: " .. names_label(names))
   notify.send("LSP", msg)
 end
 
@@ -107,11 +125,9 @@ end
 
 -- :checkhealth vim.lsp (falls back to lspconfig if that file is missing).
 function M.show_health()
-  if
-    not pcall(function()
-      vim.cmd "checkhealth vim.lsp"
-    end)
-  then
+  if not pcall(function()
+    vim.cmd "checkhealth vim.lsp"
+  end) then
     vim.cmd "checkhealth lspconfig"
   end
 end
@@ -156,7 +172,7 @@ end
 ---@param bufnr? integer
 function M.picker(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
-  require("utils.ui_prevent_mess")()
+  require "utils.ui_prevent_mess"()
   local pickers = require "telescope.pickers"
   local finders = require "telescope.finders"
   local conf = require("telescope.config").values
@@ -204,7 +220,8 @@ function M.picker(bufnr)
             "",
             item.preview_desc or item.desc,
             "",
-            "Disabled this buffer: " .. (vim.b[bufnr].lsp_disabled and "yes" or "no"),
+            "Disabled this buffer: "
+              .. (vim.b[bufnr].lsp_disabled and "yes" or "no"),
             "Clients on this buffer: " .. names_label(names),
           }
           vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
@@ -227,7 +244,10 @@ end
 
 function M.setup()
   vim.api.nvim_create_autocmd("LspAttach", {
-    group = vim.api.nvim_create_augroup("lsp_controls_session", { clear = true }),
+    group = vim.api.nvim_create_augroup(
+      "lsp_controls_session",
+      { clear = true }
+    ),
     callback = function(ev)
       if not vim.b[ev.buf].lsp_disabled then
         return

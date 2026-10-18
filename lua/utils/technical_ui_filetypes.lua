@@ -24,7 +24,6 @@ return {
   "trouble",
   "grug-far",
   "grapple",
-  "codecompanion",
   "neotest-summary",
   "zenmode-bg",
   "debug_output",
