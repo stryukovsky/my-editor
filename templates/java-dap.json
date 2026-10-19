@@ -6,14 +6,16 @@
       "type": "java",
       "request": "launch",
       "mainClass": "${file}",
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "Java: choose main class",
       "type": "java",
       "request": "launch",
       "mainClass": "",
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "Java: current file with arguments",
@@ -21,7 +23,8 @@
       "request": "launch",
       "mainClass": "${file}",
       "args": "${command:SpecifyProgramArgs}",
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "Java: attach JDWP (5005)",

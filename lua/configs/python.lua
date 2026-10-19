@@ -34,6 +34,7 @@ function M.apply(python)
       name = "Run Command",
       program = "${file}",
       cwd = "${workspaceFolder}",
+      envFile = "${workspaceFolder}/.env",
       runtimeExecutable = function()
         return vim.fn.input "Command:"
       end,
@@ -44,6 +45,7 @@ function M.apply(python)
       name = "Run file",
       program = "${file}",
       cwd = "${workspaceFolder}",
+      envFile = "${workspaceFolder}/.env",
     },
   }
   vim.fn.system { python, "-m", "pip", "install", "debugpy" }

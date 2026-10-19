@@ -49,6 +49,7 @@ M.servers = {
   "texlab",
   "jdtls",
   "move_analyzer",
+  "jsonls",
 }
 
 vim.lsp.config("solidity_ls", {
@@ -62,6 +63,26 @@ vim.lsp.config("solidity_ls", {
 
 local pattern_for_jars_for_java_debugger = "/mason/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar"
 local bundles = vim.fn.glob(vim.fn.stdpath "data" .. pattern_for_jars_for_java_debugger, true, true)
+
+-- Completion for launch.json uses the VS Code debugger schemas in schemas/launch.json.
+-- Property names there are copied from each debugger's configurationAttributes, not invented.
+local launch_schema = vim.fn.stdpath("config") .. "/schemas/launch.json"
+vim.lsp.config("jsonls", {
+  init_options = {
+    provideFormatter = false,
+  },
+  settings = {
+    json = {
+      validate = { enable = true },
+      schemas = {
+        {
+          fileMatch = { "launch.json", "*-dap.json" },
+          url = vim.uri_from_fname(launch_schema),
+        },
+      },
+    },
+  },
+})
 
 vim.lsp.config("jdtls", {
   settings = {

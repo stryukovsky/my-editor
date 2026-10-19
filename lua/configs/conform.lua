@@ -5,6 +5,7 @@ local options = {
     markdown = { "prettier_markdown" },
     html = { "prettier" },
     json = { "prettier" },
+    jsonc = { "prettier" },
     scala = { "scalafmt" },
     typescript = { "prettier" },
     javascript = { "prettier" },

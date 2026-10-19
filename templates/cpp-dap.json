@@ -6,14 +6,16 @@
       "type": "codelldb",
       "request": "launch",
       "program": "${workspaceFolder}/build/${fileBasenameNoExtension}",
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "C++: a.out",
       "type": "codelldb",
       "request": "launch",
       "program": "${workspaceFolder}/a.out",
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "C++: launch with args",
@@ -21,6 +23,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/build/${fileBasenameNoExtension}",
       "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env",
       "args": "${command:SpecifyProgramArgs}"
     },
     {

@@ -7,7 +7,8 @@
       "request": "launch",
       "mode": "debug",
       "program": "${workspaceFolder}",
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "Go: current file",
@@ -15,7 +16,8 @@
       "request": "launch",
       "mode": "debug",
       "program": "${file}",
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "Go: current directory",
@@ -23,7 +25,8 @@
       "request": "launch",
       "mode": "debug",
       "program": "${fileDirname}",
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "Go: package with args",
@@ -32,6 +35,7 @@
       "mode": "debug",
       "program": "${workspaceFolder}",
       "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env",
       "args": []
     },
     {
@@ -40,7 +44,8 @@
       "request": "launch",
       "mode": "test",
       "program": "${file}",
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "Go: test package",
@@ -48,7 +53,8 @@
       "request": "launch",
       "mode": "test",
       "program": "${fileDirname}",
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "Go: test workspace",
@@ -56,7 +62,8 @@
       "request": "launch",
       "mode": "test",
       "program": "${workspaceFolder}",
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "Go: attach local",

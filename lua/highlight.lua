@@ -22,9 +22,17 @@ local function sync_cursorline_nr()
   local hl_data = vim.api.nvim_get_hl(0, { name = "lualine_a_" .. mode_name })
   if hl_data and hl_data.bg then
     local fg = hl_data.fg or "NONE"
-    vim.api.nvim_set_hl(0, "CursorLineNr", { bg = hl_data.bg, fg = fg, bold = true })
+    vim.api.nvim_set_hl(
+      0,
+      "CursorLineNr",
+      { bg = hl_data.bg, fg = fg, bold = true }
+    )
     vim.api.nvim_set_hl(0, "CursorLineSign", { bg = hl_data.bg, fg = fg })
-    vim.api.nvim_set_hl(0, "CursorLineFold", { bg = hl_data.bg, fg = fg, bold = true })
+    vim.api.nvim_set_hl(
+      0,
+      "CursorLineFold",
+      { bg = hl_data.bg, fg = fg, bold = true }
+    )
   end
 end
 
@@ -66,7 +74,11 @@ local function override_highlights()
   hl(0, "DiffViewFilePanelFileName", { link = "Normal" })
 
   hl(0, "NeoTreeTabInactive", { bg = background, fg = foreground_inactive })
-  hl(0, "NeoTreeTabActive", { bg = background, fg = medium_orange_fg, bold = true })
+  hl(
+    0,
+    "NeoTreeTabActive",
+    { bg = background, fg = medium_orange_fg, bold = true }
+  )
   hl(0, "NeoTreeTabSeparatorInactive", { bg = background, fg = background })
   hl(0, "NeoTreeTabSeparatorActive", { bg = background, fg = background })
   hl(0, "NeoTreeDirectoryIcon", { fg = medium_orange_fg })
@@ -74,21 +86,38 @@ local function override_highlights()
   hl(0, "NeoTreeModified", { fg = medium_orange_fg })
   hl(0, "TroubleDirectory", { fg = medium_orange_fg })
   hl(0, "TroubleIconDirectory", { fg = medium_orange_fg })
-  hl(0, "MiniDiffReviewModified", { bg = "#e5d5a6", fg = "#765613", bold = true })
+  hl(
+    0,
+    "MiniDiffReviewModified",
+    { bg = "#e5d5a6", fg = "#765613", bold = true }
+  )
   hl(0, "OilCurrentDirectory", { link = "WinBar" })
   hl(0, "WinBar", { bg = background, fg = medium_orange_fg, bold = true })
   hl(0, "WinBarNC", { bg = background, fg = medium_orange_fg, bold = true })
   hl(0, "GrugFarHelpHeader", { link = "WinBar" })
   hl(0, "GrugFarHelpHeaderKey", { link = "WinBar" })
 
-  local current_buffer_bg = vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).bg
-  local current_buffer_fg = vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).fg
-  hl(0, "BufferCurrentMod", { bold = true, background = current_buffer_bg, foreground = current_buffer_fg })
-  local alternate_buffer_bg = vim.api.nvim_get_hl(0, { name = "BufferDefaultAlternate" }).bg
+  local current_buffer_bg =
+    vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).bg
+  local current_buffer_fg =
+    vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).fg
+  hl(
+    0,
+    "BufferCurrentMod",
+    {
+      bold = true,
+      background = current_buffer_bg,
+      foreground = current_buffer_fg,
+    }
+  )
+  local alternate_buffer_bg =
+    vim.api.nvim_get_hl(0, { name = "BufferDefaultAlternate" }).bg
   hl(0, "BufferAlternateMod", { bold = true, background = alternate_buffer_bg })
-  local inactive_buffer_bg = vim.api.nvim_get_hl(0, { name = "BufferDefaultInactive" }).bg
+  local inactive_buffer_bg =
+    vim.api.nvim_get_hl(0, { name = "BufferDefaultInactive" }).bg
   hl(0, "BufferInactiveMod", { bold = true, background = inactive_buffer_bg })
-  local visible_buffer_bg = vim.api.nvim_get_hl(0, { name = "BufferDefaultVisible" }).bg
+  local visible_buffer_bg =
+    vim.api.nvim_get_hl(0, { name = "BufferDefaultVisible" }).bg
   hl(0, "BufferVisibleMod", { bold = true, background = visible_buffer_bg })
 
   hl(0, "StatusLine", { bg = background })
@@ -152,28 +181,60 @@ local function override_highlights()
   -- move to default cursor
   local neogit_cursor_bg = vim.api.nvim_get_hl(0, { name = "NeogitCursor" }).bg
   local neogit_cursor_fg = vim.api.nvim_get_hl(0, { name = "NeogitCursor" }).fg
-  hl(0, "NeogitHunkHeaderCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
+  hl(
+    0,
+    "NeogitHunkHeaderCursor",
+    { bg = neogit_cursor_bg, fg = neogit_cursor_fg }
+  )
   hl(0, "NeogitBranchHead", { fg = foreground_active })
-  hl(0, "NeogitDiffContextCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
+  hl(
+    0,
+    "NeogitDiffContextCursor",
+    { bg = neogit_cursor_bg, fg = neogit_cursor_fg }
+  )
   hl(0, "NeogitDiffAddCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
-  hl(0, "NeogitDiffDeleteCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
-  hl(0, "NeogitDiffHeaderCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
+  hl(
+    0,
+    "NeogitDiffDeleteCursor",
+    { bg = neogit_cursor_bg, fg = neogit_cursor_fg }
+  )
+  hl(
+    0,
+    "NeogitDiffHeaderCursor",
+    { bg = neogit_cursor_bg, fg = neogit_cursor_fg }
+  )
 
   hl(0, "Comment", { fg = "#9b8a72", italic = true })
   -- git-conflict.nvim repaints these on ColorScheme with default=true, so this pass wins.
   hl(0, "GitConflictCurrent", { bg = "#e5d5a6", fg = "#5d5140" })
-  hl(0, "GitConflictCurrentLabel", { bg = "#d4c08a", fg = "#765613", bold = true })
+  hl(
+    0,
+    "GitConflictCurrentLabel",
+    { bg = "#d4c08a", fg = "#765613", bold = true }
+  )
   hl(0, "GitConflictIncoming", { bg = "#e7efe0", fg = "#5d5140" })
-  hl(0, "GitConflictIncomingLabel", { bg = "#c5d4b4", fg = "#4a5c3a", bold = true })
+  hl(
+    0,
+    "GitConflictIncomingLabel",
+    { bg = "#c5d4b4", fg = "#4a5c3a", bold = true }
+  )
   hl(0, "GitConflictAncestor", { bg = "#eee4ce", fg = "#8b7d6d" })
-  hl(0, "GitConflictAncestorLabel", { bg = "#e0d2b4", fg = "#765613", bold = true })
+  hl(
+    0,
+    "GitConflictAncestorLabel",
+    { bg = "#e0d2b4", fg = "#765613", bold = true }
+  )
+  -- periodic-git-fetch: white-on-red heading when upstream has unmerged commits.
+  hl(0, "GitRemoteBehind", { fg = "#ffffff", bg = "#ff1744", bold = true })
 
   hl(0, "MiniDiffSignAdd", { link = "GitSignsAdd" })
   hl(0, "MiniDiffSignChange", { link = "GitSignsChange" })
   hl(0, "MiniDiffSignDelete", { link = "GitSignsDelete" })
 
   local function rgb_parts(color)
-    return math.floor(color / 65536) % 256, math.floor(color / 256) % 256, color % 256
+    return math.floor(color / 65536) % 256,
+      math.floor(color / 256) % 256,
+      color % 256
   end
 
   local function rgb_join(r, g, b)
@@ -183,16 +244,23 @@ local function override_highlights()
   local function mix_rgb(from, toward, amount)
     local r1, g1, b1 = rgb_parts(from)
     local r2, g2, b2 = rgb_parts(toward)
-    return rgb_join(r1 + (r2 - r1) * amount, g1 + (g2 - g1) * amount, b1 + (b2 - b1) * amount)
+    return rgb_join(
+      r1 + (r2 - r1) * amount,
+      g1 + (g2 - g1) * amount,
+      b1 + (b2 - b1) * amount
+    )
   end
 
   local function overlay_bg(src, mix_amount)
     local src_hl = vim.api.nvim_get_hl(0, { name = src, link = false })
-    local fallback = src == "DiffDelete" and (vim.o.background == "light" and 0xe53935 or 0xf07178)
+    local fallback = src == "DiffDelete"
+        and (vim.o.background == "light" and 0xe53935 or 0xf07178)
       or (vim.o.background == "light" and 0x91b859 or 0xc3e88d)
     local base = src_hl.bg
     if not base then
-      base = type(background) == "number" and mix_rgb(background, fallback, 0.22) or fallback
+      base = type(background) == "number"
+          and mix_rgb(background, fallback, 0.22)
+        or fallback
     end
     if mix_amount then
       return { bg = mix_rgb(base, fallback, mix_amount) }
@@ -237,10 +305,19 @@ local function override_highlights()
         })
       end
     elseif mode_key ~= "c" then
-      vim.api.nvim_set_hl(0, "Cursor" .. mode_key:upper(), { reverse = true, bold = true })
+      vim.api.nvim_set_hl(
+        0,
+        "Cursor" .. mode_key:upper(),
+        { reverse = true, bold = true }
+      )
     end
-    local blink = (mode_key == "n" or mode_key == "t" or mode_key == "c") and "-blinkwait700-blinkoff400-blinkon250" or ""
-    table.insert(cursor_parts, mode_key .. ":block-Cursor" .. mode_key:upper() .. blink)
+    local blink = (mode_key == "n" or mode_key == "t" or mode_key == "c")
+        and "-blinkwait700-blinkoff400-blinkon250"
+      or ""
+    table.insert(
+      cursor_parts,
+      mode_key .. ":block-Cursor" .. mode_key:upper() .. blink
+    )
   end
   vim.opt.guicursor = table.concat(cursor_parts, ",")
 
@@ -282,7 +359,19 @@ vim.api.nvim_create_autocmd("ModeChanged", {
   callback = sync_cursorline_nr,
 })
 
-vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "ErrorMsg", linehl = "", numhl = "" })
-vim.fn.sign_define("DapBreakpointCondition", { text = "", texthl = "ErrorMsg", linehl = "", numhl = "" })
-vim.fn.sign_define("DapStopped", { text = "", texthl = "ErrorMsg", linehl = "", numhl = "" })
-vim.fn.sign_define("DapBreakpointRejected", { text = "", texthl = "WarningMsg", linehl = "", numhl = "" })
+vim.fn.sign_define(
+  "DapBreakpoint",
+  { text = "", texthl = "ErrorMsg", linehl = "", numhl = "" }
+)
+vim.fn.sign_define(
+  "DapBreakpointCondition",
+  { text = "", texthl = "ErrorMsg", linehl = "", numhl = "" }
+)
+vim.fn.sign_define(
+  "DapStopped",
+  { text = "", texthl = "ErrorMsg", linehl = "", numhl = "" }
+)
+vim.fn.sign_define(
+  "DapBreakpointRejected",
+  { text = "", texthl = "WarningMsg", linehl = "", numhl = "" }
+)

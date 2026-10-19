@@ -199,6 +199,8 @@ vim.filetype.add {
   filename = {
     ["todo.todotxt"] = "todotxt",
     ["done.todotxt"] = "todotxt",
+    -- VS Code launch.json allows comments and trailing commas.
+    ["launch.json"] = "jsonc",
   },
 }
 

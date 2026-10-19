@@ -7,7 +7,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/.venv/bin/langgraph",
       "cwd": "${workspaceFolder}",
-      "args": ["dev"]
+      "args": ["dev"],
+      "envFile": "${workspaceFolder}/.env"
     }
   ]
 }
