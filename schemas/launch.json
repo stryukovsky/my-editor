@@ -1,0 +1,314 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "version": {
+            "type": "string",
+            "enum": [
+                "0.2.0"
+            ]
+        },
+        "configurations": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name for the configuration entry"
+                    },
+                    "type": {
+                        "description": "Debug adapter to use for this configuration",
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "enum": [
+                                    "java",
+                                    "debugpy",
+                                    "gdb"
+                                ]
+                            }
+                        ]
+                    },
+                    "request": {
+                        "type": "string",
+                        "enum": [
+                            "launch",
+                            "attach"
+                        ]
+                    },
+                    "noDebug": {
+                        "type": "boolean",
+                        "default": false
+                    }
+                },
+                "allOf": [
+                    {
+                        "if": {
+                            "properties": {
+                                "type": {
+                                    "const": "java"
+                                },
+                                "request": {
+                                    "const": "launch"
+                                }
+                            }
+                        },
+                        "then": {
+                            "properties": {
+                                "args": {
+                                    "type": "string",
+                                    "description": "Arguments to pass to the application as string"
+                                },
+                                "vmArgs": {
+                                    "type": "string",
+                                    "description": "System properties for the JVM"
+                                },
+                                "mainClass": {
+                                    "type": "string",
+                                    "description": "Fully qualified name of the class containing the main method"
+                                },
+                                "console": {
+                                    "type": "string",
+                                    "enum": [
+                                        "internalConsole",
+                                        "integratedTerminal",
+                                        "externalTerminal"
+                                    ]
+                                },
+                                "projectName": {
+                                    "type": "string",
+                                    "description": "The project in which the debugger searches for classes. Required if the workspace has multiple java projects."
+                                },
+                                "env": {
+                                    "type": "object",
+                                    "description": "Extra environment variables"
+                                },
+                                "stopOnEntry": {
+                                    "type": "boolean"
+                                },
+                                "stepFilters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "skipClasses": {
+                                            "type": "array",
+                                            "items": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "enum": [
+                                                            "$JDK",
+                                                            "$Libraries",
+                                                            "java.lang.ClassLoader"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "skipSynthetics": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "if": {
+                            "properties": {
+                                "type": {
+                                    "const": "java"
+                                },
+                                "request": {
+                                    "const": "attach"
+                                }
+                            }
+                        },
+                        "then": {
+                            "properties": {
+                                "hostName": {
+                                    "type": "string"
+                                },
+                                "port": {
+                                    "type": "number"
+                                },
+                                "processId": {
+                                    "type": "number"
+                                },
+                                "projectName": {
+                                    "type": "string",
+                                    "description": "The project in which the debugger searches for classes. Required if the workspace has multiple java projects."
+                                },
+                                "stepFilters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "skipClasses": {
+                                            "type": "array",
+                                            "items": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "enum": [
+                                                            "$JDK",
+                                                            "$Libraries",
+                                                            "java.lang.ClassLoader"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "skipSynthetics": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "if": {
+                            "properties": {
+                                "type": {
+                                    "const": "debugpy"
+                                }
+                            }
+                        },
+                        "then": {
+                            "properties": {
+                                "module": {
+                                    "type": "string",
+                                    "description": "Name of the module to be debugged"
+                                },
+                                "program": {
+                                    "type": "string",
+                                    "description": "Absolute path to the program"
+                                },
+                                "code": {
+                                    "type": "string",
+                                    "description": "Code to execute in string form"
+                                },
+                                "args": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Command line arguments passed to the program"
+                                },
+                                "console": {
+                                    "enum": [
+                                        "internalConsole",
+                                        "integratedTerminal",
+                                        "externalTerminal"
+                                    ],
+                                    "default": "integratedTerminal"
+                                },
+                                "cwd": {
+                                    "type": "string",
+                                    "description": "Absolute path to the working directory of the program being debugged"
+                                },
+                                "env": {
+                                    "type": "object",
+                                    "description": "Environment variables defined as a key value pair"
+                                },
+                                "django": {
+                                    "type": "boolean",
+                                    "description": "When true enables Django templates.",
+                                    "default": false
+                                },
+                                "gevent": {
+                                    "type": "boolean",
+                                    "description": "When true enables debugging of gevent monkey-patched code",
+                                    "default": false
+                                },
+                                "jinja": {
+                                    "type": "boolean",
+                                    "description": "When true enables Jinja2 template debugging (e.g. Flask)",
+                                    "default": false
+                                },
+                                "justMyCode": {
+                                    "type": "boolean",
+                                    "description": "When true debug only user-written code",
+                                    "default": true
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "if": {
+                            "properties": {
+                                "type": {
+                                    "const": "gdb"
+                                }
+                            }
+                        },
+                        "then": {
+                            "properties": {
+                                "args": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "description": "Command line arguments passed to the program"
+                                },
+                                "cwd": {
+                                    "type": "string",
+                                    "description": "Absolute path to the working directory of the program being debugged"
+                                },
+                                "env": {
+                                    "type": "object",
+                                    "description": "Environment variables defined as a key value pair"
+                                },
+                                "program": {
+                                    "type": "string",
+                                    "description": "Absolute path to the program"
+                                },
+                                "stopAtBeginningOfMainSubprogram": {
+                                    "type": "boolean",
+                                    "description": "When ‘True’, GDB will set a temporary breakpoint at the program’s main procedure, using the same approach as the start command"
+                                },
+                                "stopOnEntry": {
+                                    "type": "boolean",
+                                    "description": "When ‘True’, GDB will set a temporary breakpoint at the program’s first instruction, using the same approach as the starti command"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "if": {
+                            "properties": {
+                                "type": {
+                                    "const": "gdb"
+                                },
+                                "request": {
+                                    "const": "attach"
+                                }
+                            }
+                        },
+                        "then": {
+                            "properties": {
+                                "pid": {
+                                    "type": "number",
+                                    "description": "Process ID to which GDB should attach"
+                                },
+                                "target": {
+                                    "type": "string",
+                                    "description": "target to which GDB should connect. This is a string and is passed to the `target remote` command. See https://sourceware.org/gdb/current/onlinedocs/gdb#Connecting"
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "required": [
+        "version",
+        "configurations"
+    ]
+}
