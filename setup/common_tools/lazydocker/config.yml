@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=https://json.schemastore.org/lazydocker.json
+#
+# Symlinked from ~/.config/lazydocker/config.yml
+# Lazydocker has no custom keybindings. On a container or service: c, then Enter
+# runs the first command here (yank log path).
+
+gui:
+  returnImmediately: true
+  expandFocusedSidePanel: true
+  sidePanelWidth: 0.3
+  containerStatusHealthStyle: icon
+  scrollHeight: 4
+  theme:
+    activeBorderColor:
+      - yellow
+      - bold
+    inactiveBorderColor:
+      - default
+    selectedLineBgColor:
+      - reverse
+    optionsTextColor:
+      - yellow
+
+logs:
+  timestamps: true
+
+customCommands:
+  containers:
+    - name: yank log path
+      attach: false
+      shell: false
+      command: "sh -c '$HOME/.config/nvim/setup/common_tools/lazydocker/yank-logs.sh \"{{ .Container.Name }}\" -- docker logs --timestamps --tail 2000 \"{{ .Container.ID }}\"'"
+      serviceNames: []
+  services:
+    - name: yank log path
+      attach: false
+      shell: false
+      command: "sh -c '$HOME/.config/nvim/setup/common_tools/lazydocker/yank-logs.sh \"{{ .Service.Name }}\" -- {{ .DockerCompose }} logs --no-color --timestamps --tail 2000 \"{{ .Service.Name }}\"'"
+      serviceNames: []
+    - name: yank project log path
+      attach: false
+      shell: false
+      command: "sh -c '$HOME/.config/nvim/setup/common_tools/lazydocker/yank-logs.sh project -- {{ .DockerCompose }} logs --no-color --timestamps --tail 400'"
+      serviceNames: []
+
+bulkCommands:
+  containers:
+    - name: yank all log paths
+      attach: false
+      shell: false
+      command: "sh -c '$HOME/.config/nvim/setup/common_tools/lazydocker/yank-logs.sh --all-containers'"
+      serviceNames: []

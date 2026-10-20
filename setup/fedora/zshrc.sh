@@ -138,3 +138,12 @@ runapp() {
   [[ -n $cmd ]] && print -z -- "$cmd"
 }
 
+# Pick an installed app and open its .desktop file in $EDITOR.
+# A system entry is copied to ~/.local/share/applications first.
+configureapp() {
+  local file
+  file=$(python3 "$HOME/.config/nvim/setup/fedora/runapp.py" --path) || return
+  # eval so EDITOR=nvim still hits the nvim alias (the appimage).
+  [[ -n $file ]] && eval "${EDITOR:-nvim} ${(q)file}"
+}
+
