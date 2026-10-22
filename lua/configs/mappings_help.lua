@@ -85,6 +85,7 @@ local SECTIONS = {
       { "H", "LSP hover" },
       { "K", "LSP signature" },
       { "<leader>x", "close buffer" },
+      { "<leader>rr", "refresh buffer" },
       { "<leader>X", "close unpinned saved buffers" },
       { "<A-space>", "pick buffer" },
     },
@@ -265,7 +266,10 @@ function M.toggle()
     max_row_width = math.max(max_row_width, w)
   end
 
-  local width = math.min(vim.o.columns - 2, math.max(max_row_width + 2, math.floor(vim.o.columns * 0.92)))
+  local width = math.min(
+    vim.o.columns - 2,
+    math.max(max_row_width + 2, math.floor(vim.o.columns * 0.92))
+  )
   local inner = width - 2
   for _, row in ipairs(grid) do
     local used = COL_GAP * math.max(#row - 1, 0)
@@ -327,9 +331,11 @@ function M.toggle()
   lines[#lines + 1] = ""
   local footer = "  q  Esc  ?  <A-?>   close"
   lines[#lines + 1] = footer
-  highlights[#highlights + 1] = { line = #lines - 1, col = 2, end_col = #footer, hl = "Comment" }
+  highlights[#highlights + 1] =
+    { line = #lines - 1, col = 2, end_col = #footer, hl = "Comment" }
 
-  local height = math.min(vim.o.lines - 3, math.max(#lines, math.floor(vim.o.lines * 0.88)))
+  local height =
+    math.min(vim.o.lines - 3, math.max(#lines, math.floor(vim.o.lines * 0.88)))
 
   local buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
@@ -366,7 +372,8 @@ function M.toggle()
     pcall(vim.hl.range, buf, ns, h.hl, { h.line, h.col }, { h.line, h.end_col })
   end
 
-  local opts = { buffer = buf, silent = true, nowait = true, desc = "Close mappings help" }
+  local opts =
+    { buffer = buf, silent = true, nowait = true, desc = "Close mappings help" }
   map("n", "q", M.close, opts)
   map("n", "<Esc>", M.close, opts)
   map("n", "?", M.close, opts)

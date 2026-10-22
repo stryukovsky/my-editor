@@ -111,7 +111,7 @@ function vpn_off_hiddify() {
 }
 
 function cursor() {
-    vpn_on_hiddify && cursor-agent
+    vpn_on_hiddify && caveman run -- cursor-agent
 }
 
 function opencode() {

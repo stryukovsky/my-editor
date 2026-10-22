@@ -209,18 +209,21 @@ function M.setup()
     end,
   })
 
-  vim.api.nvim_create_autocmd({ "WinEnter", "BufWinEnter", "DirChanged" }, {
-    group = vim.api.nvim_create_augroup(
-      "PeriodicGitFetchBehindBanner",
-      { clear = true }
-    ),
-    callback = function()
-      if vim.v.event and vim.v.event.scope then
-        M.refresh_sync_state(vim.fn.getcwd(), true)
-      end
-      M.apply_behind_banner()
-    end,
-  })
+  vim.api.nvim_create_autocmd(
+    { "WinEnter", "BufWinEnter", "DirChanged", "VimResized" },
+    {
+      group = vim.api.nvim_create_augroup(
+        "PeriodicGitFetchBehindBanner",
+        { clear = true }
+      ),
+      callback = function()
+        if vim.v.event and vim.v.event.scope then
+          M.refresh_sync_state(vim.fn.getcwd(), true)
+        end
+        M.apply_behind_banner()
+      end,
+    }
+  )
 end
 
 local function format_ago(timestamp)
@@ -268,13 +271,18 @@ function M.refresh_sync_state(cwd, force)
         state.ahead = ahead
         state.behind = behind
         M.apply_behind_banner()
-        vim.cmd "redrawstatus"
+        if package.loaded["lualine"] then
+          require("lualine").refresh()
+        end
       end)
     end
   )
 end
 
-local BANNER_EXPR = "%!v:lua.require'configs.periodic-git-fetch'.winbar()"
+-- Static winbar text. A `%!` expression is painted into the statusline on redraw.
+local function is_our_banner(bar)
+  return bar:find("^%%#GitRemoteBehind#", 1) ~= nil
+end
 
 local skip_banner_ft = {
   dashboard = true,
@@ -308,14 +316,15 @@ function M.behind_count()
   return behind
 end
 
-function M.winbar()
+---@param win? integer
+function M.winbar(win)
   local behind = M.behind_count()
   if not behind then
     return ""
   end
   local noun = behind == 1 and "COMMIT" or "COMMITS"
   local label = " REMOTE HAS " .. behind .. " " .. noun .. " "
-  local win = vim.g.statusline_winid
+  win = win or vim.g.statusline_winid
   local width = 0
   if win and vim.api.nvim_win_is_valid(win) then
     width = vim.api.nvim_win_get_width(win)
@@ -342,7 +351,7 @@ local function is_code_window(win)
     return false
   end
   local bar = vim.wo[win].winbar
-  return bar == "" or bar == BANNER_EXPR
+  return bar == "" or is_our_banner(bar)
 end
 
 -- Full-width white-on-red heading on ordinary code windows while behind > 0.
@@ -352,14 +361,16 @@ function M.apply_behind_banner()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     if is_code_window(win) then
       local bar = vim.wo[win].winbar
-      if show and bar ~= BANNER_EXPR then
-        vim.wo[win].winbar = BANNER_EXPR
-      elseif not show and bar == BANNER_EXPR then
+      if show then
+        local text = M.winbar(win)
+        if bar ~= text then
+          vim.wo[win].winbar = text
+        end
+      elseif is_our_banner(bar) then
         vim.wo[win].winbar = ""
       end
     end
   end
-  pcall(vim.api.nvim__redraw, { winbar = true })
 end
 
 function M.lualine_component()

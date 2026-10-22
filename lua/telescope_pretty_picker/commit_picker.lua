@@ -4,9 +4,80 @@
 local display = require "telescope_pretty_picker.display"
 local git = require "configs.gitutils"
 local git_preview = require "telescope_pretty_picker.preview"
+local actions = require "telescope.actions"
+local action_state = require "telescope.actions.state"
+local commons = require "telescope_pretty_picker.commons"
 local wrap_telescope_action = require "mappings.telescope_action_wrapper"
 
 local COMMIT_LIMIT = 1000
+local tell = commons.notifier "Git commits"
+
+---@param prompt_bufnr integer
+---@return table|nil selection
+---@return string|nil cwd
+local function selected(prompt_bufnr)
+  local selection = action_state.get_selected_entry()
+  if selection == nil then
+    tell("Nothing currently selected", vim.log.levels.WARN)
+    return nil, nil
+  end
+  return selection, action_state.get_current_picker(prompt_bufnr).cwd
+end
+
+---@param prompt_bufnr integer
+local function git_checkout(prompt_bufnr)
+  local selection, cwd = selected(prompt_bufnr)
+  if not selection then
+    return
+  end
+  actions.close(prompt_bufnr)
+  local _, err = git.run({ "checkout", selection.value }, cwd)
+  if not err then
+    tell(string.format("Checked out: %s", selection.value))
+    vim.cmd "checktime"
+  else
+    tell(
+      string.format(
+        "Error when checking out: %s. Git returned: '%s'",
+        selection.value,
+        err
+      ),
+      vim.log.levels.ERROR
+    )
+  end
+end
+
+---@param mode "--mixed"|"--soft"|"--hard"
+---@return fun(prompt_bufnr: integer)
+local function git_reset(mode)
+  local label = mode:sub(3)
+  return function(prompt_bufnr)
+    local selection, cwd = selected(prompt_bufnr)
+    if not selection then
+      return
+    end
+    local question =
+      string.format("Do you really want to %s reset to %s?", label, selection.value)
+    if not commons.confirmed(question) then
+      tell "action canceled"
+      return
+    end
+    actions.close(prompt_bufnr)
+    local _, err = git.run({ "reset", mode, selection.value }, cwd)
+    if not err then
+      tell(string.format("Reset to: '%s'", selection.value))
+    else
+      tell(
+        string.format(
+          "Error when resetting to: %s. Git returned: '%s'",
+          selection.value,
+          err
+        ),
+        vim.log.levels.ERROR
+      )
+    end
+  end
+end
 
 ---@param opts? table
 local function pretty_git_commit_picker(opts)
@@ -26,12 +97,10 @@ local function pretty_git_commit_picker(opts)
   local finders = require "telescope.finders"
   local make_entry = require "telescope.make_entry"
   local conf = require("telescope.config").values
-  local actions = require "telescope.actions"
-  local utils = require "telescope.utils"
 
   local cwd, root_err = git.root(opts.cwd)
   if not cwd then
-    utils.notify("pretty_git_commit_picker", { msg = root_err or "Not a git repository", level = "ERROR" })
+    tell(root_err or "Not a git repository", vim.log.levels.ERROR)
     return
   end
   opts.cwd = cwd
@@ -54,7 +123,7 @@ local function pretty_git_commit_picker(opts)
     limit = limit,
   })
   if err then
-    utils.notify("pretty_git_commit_picker", { msg = err, level = "ERROR" })
+    tell(err, vim.log.levels.ERROR)
     return
   end
   if #commits == 0 then
@@ -84,10 +153,10 @@ local function pretty_git_commit_picker(opts)
           return custom_attach(prompt_bufnr, map)
         end
         -- override mappings of telescope only this way :(
-        map("n", "<cr>", wrap_telescope_action(actions.git_checkout))
-        map("n", "m", wrap_telescope_action(actions.git_reset_mixed))
-        map("n", "s", wrap_telescope_action(actions.git_reset_soft))
-        map("n", "h", wrap_telescope_action(actions.git_reset_hard))
+        map("n", "<cr>", wrap_telescope_action(git_checkout))
+        map("n", "m", wrap_telescope_action(git_reset "--mixed"))
+        map("n", "s", wrap_telescope_action(git_reset "--soft"))
+        map("n", "h", wrap_telescope_action(git_reset "--hard"))
         return true
       end,
     })

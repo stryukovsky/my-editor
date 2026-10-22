@@ -3,7 +3,7 @@ local M = {}
 function M.setup()
   require("dashboard").setup {
     theme = "hyper",
-    hide = { statusline = true, tabline = false },
+    hide = { statusline = false, tabline = false },
     config = {
       week_header = {
         enable = true,

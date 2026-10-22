@@ -302,6 +302,21 @@ local config = {
         end
       end)
     end,
+    -- Visual-line `y`: filenames only. The buffer line also has indent, icons, git marks.
+    ["copy_path_visual"] = function(_, selected_nodes)
+      local names = {}
+      for _, node in ipairs(selected_nodes or {}) do
+        if node.type ~= "message" and type(node.name) == "string" and node.name ~= "" then
+          names[#names + 1] = node.name
+        end
+      end
+      if #names == 0 then
+        return
+      end
+      local text = table.concat(names, "\n")
+      vim.fn.setreg("+", text, #names > 1 and "l" or "c")
+      notify.replace("neotree.yank", "Neotree", text)
+    end,
   }, -- A list of functions
   window = { -- see https://github.com/MunifTanjim/nui.nvim/tree/main/lua/nui/popup for
     auto_expand_width = false, -- expand the window when file exceeds the window width. does not work with position = "float"

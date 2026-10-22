@@ -6,8 +6,10 @@ local git = require "configs.gitutils"
 local git_preview = require "telescope_pretty_picker.preview"
 local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
-local utils = require "telescope.utils"
+local commons = require "telescope_pretty_picker.commons"
 local wrap_telescope_action = require "mappings.telescope_action_wrapper"
+
+local tell = commons.notifier "Git branches"
 
 local HINTS = {
   { "<cr>", "switch to this picked branch" },
@@ -91,117 +93,126 @@ local function help()
   })
 end
 
----Same Yes/No dialog as neo-tree delete (`vim.fn.confirm`).
----@param message string
----@return boolean
-local function confirmed(message)
-  return vim.fn.confirm(message, "&Yes\n&No") == 1
+local function notify_canceled()
+  tell "action canceled"
 end
 
----@param action_name string
-local function notify_canceled(action_name)
-  utils.notify(action_name, {
-    msg = "action canceled",
-    level = "INFO",
-  })
+local function warn_no_selection()
+  tell("Nothing currently selected", vim.log.levels.WARN)
 end
 
 ---Telescope `actions.git_delete_branch`, with `vim.fn.confirm`.
 ---@param prompt_bufnr integer
 local function git_delete_branch(prompt_bufnr)
-  local action_name = "actions.git_delete_branch"
-  if not confirmed "Do you really want to delete the selected branches?" then
-    notify_canceled(action_name)
+  if not commons.confirmed "Do you really want to delete the selected branches?" then
+    notify_canceled()
     return
   end
 
   local picker = action_state.get_current_picker(prompt_bufnr)
   picker:delete_selection(function(selection)
     local branch = selection.value
-    print("Deleting branch " .. branch)
-    local _, ret, stderr = utils.get_os_command_output({
-      "git",
-      "branch",
-      "-D",
-      branch,
-    }, picker.cwd)
-    if ret == 0 then
-      utils.notify(action_name, {
-        msg = string.format("Deleted branch: %s", branch),
-        level = "INFO",
-      })
-    else
-      utils.notify(action_name, {
-        msg = string.format(
-          "Error when deleting branch: %s. Git returned: '%s'",
-          branch,
-          table.concat(stderr, " ")
-        ),
-        level = "ERROR",
-      })
-    end
-    return ret == 0
+    local _, err = git.run({ "branch", "-D", branch }, picker.cwd)
+    local ok = err == nil
+    -- After the picker refreshes, so the toast is not opened during the redraw.
+    vim.schedule(function()
+      if ok then
+        tell(string.format("Deleted branch: %s", branch))
+      else
+        tell(
+          string.format(
+            "Error when deleting branch: %s. Git returned: '%s'",
+            branch,
+            err
+          ),
+          vim.log.levels.ERROR
+        )
+      end
+    end)
+    return ok
   end)
 end
 
 ---Telescope `make_git_branch_action` for merge/rebase, with `vim.fn.confirm`.
----@param opts { action_name: string, confirmation_question: string, success_message: string, error_message: string, command: fun(branch_name: string): string[] }
+---@param opts { confirmation_question: string, success_message: string, error_message: string, command: fun(branch_name: string): string[] }
 ---@return fun(prompt_bufnr: integer)
 local function make_git_branch_action(opts)
   return function(prompt_bufnr)
     local cwd = action_state.get_current_picker(prompt_bufnr).cwd
     local selection = action_state.get_selected_entry()
     if selection == nil then
-      utils.__warn_no_selection(opts.action_name)
+      warn_no_selection()
       return
     end
 
     local question = string.format(opts.confirmation_question, selection.value)
-    if not confirmed(question) then
-      notify_canceled(opts.action_name)
+    if not commons.confirmed(question) then
+      notify_canceled()
       return
     end
 
     actions.close(prompt_bufnr)
-    local _, ret, stderr =
-      utils.get_os_command_output(opts.command(selection.value), cwd)
-    if ret == 0 then
-      utils.notify(opts.action_name, {
-        msg = string.format(opts.success_message, selection.value),
-        level = "INFO",
-      })
+    local _, err = git.run(opts.command(selection.value), cwd)
+    if not err then
+      tell(string.format(opts.success_message, selection.value))
     else
-      utils.notify(opts.action_name, {
-        msg = string.format(
-          opts.error_message,
-          selection.value,
-          table.concat(stderr, " ")
-        ),
-        level = "ERROR",
-      })
+      tell(
+        string.format(opts.error_message, selection.value, err),
+        vim.log.levels.ERROR
+      )
     end
   end
 end
 
 local git_merge_branch = make_git_branch_action {
-  action_name = "actions.git_merge_branch",
   confirmation_question = "Do you really want to merge branch %s?",
   success_message = "Merged branch: %s",
   error_message = "Error when merging branch: %s. Git returned: '%s'",
   command = function(branch_name)
-    return { "git", "merge", branch_name }
+    return { "merge", branch_name }
   end,
 }
 
 local git_rebase_branch = make_git_branch_action {
-  action_name = "actions.git_rebase_branch",
   confirmation_question = "Do you really want to rebase branch %s?",
   success_message = "Rebased branch: %s",
   error_message = "Error when rebasing branch: %s. Git returned: '%s'",
   command = function(branch_name)
-    return { "git", "rebase", branch_name }
+    return { "rebase", branch_name }
   end,
 }
+
+---Local branch, or `git switch` onto a remote-only ref (strip `refs/remotes/<remote>/`).
+---@param prompt_bufnr integer
+local function git_switch_branch(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+  if selection == nil then
+    warn_no_selection()
+    return
+  end
+
+  actions.close(prompt_bufnr)
+  local branch = selection.value
+  local refname = selection.refname
+  if type(refname) == "string" and refname:match "^refs/remotes/%w+/" then
+    branch = refname:gsub("^refs/remotes/%w+/", "")
+  end
+
+  local _, err = git.run({ "switch", branch }, cwd)
+  if not err then
+    tell(string.format("Switched to: '%s'", branch))
+  else
+    tell(
+      string.format(
+        "Error when switching to: %s. Git returned: '%s'",
+        selection.value,
+        err
+      ),
+      vim.log.levels.ERROR
+    )
+  end
+end
 
 ---@param opts? table
 local function pretty_git_branch_picker(opts)
@@ -224,10 +235,7 @@ local function pretty_git_branch_picker(opts)
 
   local cwd, root_err = git.root(opts.cwd)
   if not cwd then
-    utils.notify(
-      "pretty_git_branch_picker",
-      { msg = root_err or "Not a git repository", level = "ERROR" }
-    )
+    tell(root_err or "Not a git repository", vim.log.levels.ERROR)
     return
   end
   opts.cwd = cwd
@@ -248,7 +256,7 @@ local function pretty_git_branch_picker(opts)
     show_remote_tracking_branches = opts.show_remote_tracking_branches,
   })
   if err then
-    utils.notify("pretty_git_branch_picker", { msg = err, level = "ERROR" })
+    tell(err, vim.log.levels.ERROR)
     return
   end
   if #results == 0 then
@@ -279,7 +287,7 @@ local function pretty_git_branch_picker(opts)
           return custom_attach(prompt_bufnr, map)
         end
         -- override mappings of telescope only this way :(
-        map("n", "<cr>", actions.git_switch_branch)
+        map("n", "<cr>", wrap_telescope_action(git_switch_branch))
         map("n", "?", help)
         map("n", "d", wrap_telescope_action(git_delete_branch))
         map("n", "m", wrap_telescope_action(git_merge_branch))

@@ -1,6 +1,7 @@
 local trouble = require "trouble"
 local dap_output = require "debug_output"
 local git_fetch = require "configs.periodic-git-fetch"
+local git_branch = require "configs.lualine_branch"
 local is_it_merge = require "configs.is_it_merge"
 local symbols = trouble.statusline {
   mode = "lsp_document_symbols",
@@ -55,7 +56,14 @@ local defaults_for_x_component = {
     },
   },
 
-  "lsp_status",
+  -- Progress spinner rewrites the whole bar when a completion request starts.
+  {
+    "lsp_status",
+    symbols = {
+      spinner = { "" },
+      done = "",
+    },
+  },
   "filetype",
 }
 
@@ -80,10 +88,17 @@ local function get_lualine_theme()
   return lualine_theme
 end
 
+local function setup_lualine(opts)
+  local lualine = require "lualine"
+  lualine.setup(opts)
+  -- setup() leaves a blank statusline until the refresh timer. Paint it now.
+  lualine.refresh { force = true }
+end
+
 vim.api.nvim_create_autocmd({ "ColorScheme" }, {
   pattern = "*",
   callback = function()
-    require("lualine").setup {
+    setup_lualine {
       options = {
         theme = get_lualine_theme(),
       },
@@ -91,10 +106,17 @@ vim.api.nvim_create_autocmd({ "ColorScheme" }, {
   end,
 })
 
-require("lualine").setup {
+setup_lualine {
   options = {
     theme = get_lualine_theme(),
     globalstatus = true,
+    -- Opening the menu sets its filetype while that float is current, and the
+    -- FileType refresh would paint the menu buffer into the global statusline.
+    ignore_focus = {
+      "blink-cmp-menu",
+      "blink-cmp-documentation",
+      "blink-cmp-signature",
+    },
     refresh = {
       events = {
         "WinEnter",
@@ -103,7 +125,6 @@ require("lualine").setup {
         "SessionLoadPost",
         "FileChangedShellPost",
         "VimResized",
-        "Filetype",
         "CursorMoved",
         "CursorMovedI",
         "ModeChanged",
@@ -115,7 +136,7 @@ require("lualine").setup {
     lualine_a = { "mode" },
     lualine_b = {
       git_fetch.lualine_component(),
-      "branch",
+      git_branch.lualine_component(),
       is_it_merge.lualine_component(),
       require("configs.minidiff").lualine_hunks,
     },
@@ -170,6 +191,7 @@ require("lualine").setup {
             return "NEO-TREE"
           end,
         },
+        lualine_b = { git_branch.lualine_component() },
         lualine_c = { get_neotree_path }, -- Displays relative path from CWD
       },
       filetypes = { "neo-tree" },
@@ -181,3 +203,27 @@ require("lualine").setup {
   "lazy",
   "mason",
 }
+
+local blink_statusline_ft = {
+  ["blink-cmp-menu"] = true,
+  ["blink-cmp-documentation"] = true,
+  ["blink-cmp-signature"] = true,
+}
+
+-- FileType is not a lualine refresh event: blink sets it on the menu float
+-- while that window is current, and a refresh then swaps the global statusline.
+vim.api.nvim_create_autocmd("FileType", {
+  callback = function()
+    if blink_statusline_ft[vim.bo.filetype] then
+      local prev = vim.fn.win_getid(vim.fn.winnr "#")
+      if prev ~= 0 and vim.api.nvim_win_is_valid(prev) then
+        local stl = vim.wo[prev].statusline
+        if stl ~= "" then
+          vim.wo.statusline = stl
+        end
+      end
+      return
+    end
+    require("lualine").refresh()
+  end,
+})
