@@ -23,7 +23,8 @@ dap.adapters.node = js_debug
 
 dap.adapters.codelldb = {
   type = "server",
-  host = "localhost",
+  -- CodeLLDB listens on IPv4; localhost can resolve to ::1 first.
+  host = "127.0.0.1",
   port = "${port}",
   executable = {
     command = "codelldb",
