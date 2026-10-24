@@ -5,7 +5,7 @@ local is_normal_buffer = require "utils.is_normal_buffer"
 local M = {}
 local notify = require "configs.notify"
 
-local DEFINITION_KEYWORDS = "var|val|const|let|class|function|func|def"
+local DEFINITION_KEYWORDS = "struct|var|val|const|let|class|function|func|def|fn|trait|interface|message"
 
 ---@param word? string
 ---@return string|nil

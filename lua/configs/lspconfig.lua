@@ -45,20 +45,25 @@ M.servers = {
   "basedpyright",
   "gopls",
   "clangd",
-  "solidity_ls",
+  "forge",
   "texlab",
   "jdtls",
   "move_analyzer",
   "jsonls",
 }
 
-vim.lsp.config("solidity_ls", {
-  settings = {
-    solidity = {
-      enabledSolhint = false,
-      enabledSolium = false,
-    },
-  },
+vim.lsp.config("clangd", {
+  filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
+})
+
+vim.lsp.config("gopls", {
+  filetypes = { "go", "gomod", "gowork" },
+})
+
+vim.lsp.config("forge", {
+  cmd = { "forge", "lsp", "--stdio" },
+  filetypes = { "solidity" },
+  root_markers = { "foundry.toml", ".git" },
 })
 
 local pattern_for_jars_for_java_debugger = "/mason/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar"

@@ -1,5 +1,4 @@
 local map = require "mappings.map"
-local navigation_repeat = require "utils.navigation_repeat"
 local slashing = require "configs.slashing"
 
 local function exit_visual_then(fn)
@@ -8,8 +7,11 @@ local function exit_visual_then(fn)
 end
 
 map("n", "/", function()
-  slashing.prompt()
-end, { desc = "Search forward" })
+  if require("configs.macro-status").active() then
+    return "/"
+  end
+  return '<Cmd>lua require("configs.slashing").prompt()<CR>'
+end, { expr = true, desc = "Search forward" })
 
 map("n", "<A-f>", function()
   slashing.prompt()
@@ -24,10 +26,11 @@ map("n", "<A-Q>", function()
 end, { desc = "Search backward" })
 
 map("v", "/", function()
-  exit_visual_then(function()
-    slashing.prompt { prompt = "Search in selection", visual = true }
-  end)
-end, { desc = "Search in visual selection" })
+  if require("configs.macro-status").active() then
+    return "/"
+  end
+  return '<Esc><Cmd>lua require("configs.slashing").prompt { prompt = "Search in selection", visual = true }<CR>'
+end, { expr = true, desc = "Search in visual selection" })
 
 map("v", "<A-q>", function()
   exit_visual_then(function()
@@ -35,8 +38,12 @@ map("v", "<A-q>", function()
   end)
 end, { desc = "Search in visual selection" })
 
-map({ "n", "x" }, "n", navigation_repeat.repeat_next, { desc = "Repeat next navigation" })
-map({ "n", "x" }, "N", navigation_repeat.repeat_previous, { desc = "Repeat previous navigation" })
+map({ "n", "x" }, "n", function()
+  return require("configs.macro-status").active() and "n" or '<Cmd>lua require("utils.navigation_repeat").repeat_next()<CR>'
+end, { expr = true, desc = "Repeat next navigation" })
+map({ "n", "x" }, "N", function()
+  return require("configs.macro-status").active() and "N" or '<Cmd>lua require("utils.navigation_repeat").repeat_previous()<CR>'
+end, { expr = true, desc = "Repeat previous navigation" })
 
 map("n", "*", function()
   if slashing.jump "*" then

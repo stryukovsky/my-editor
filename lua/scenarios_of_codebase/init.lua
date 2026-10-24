@@ -1,4 +1,5 @@
 local notify = require "configs.notify"
+local navigation_repeat = require "utils.navigation_repeat"
 
 local M = {
   active = nil,
@@ -137,6 +138,7 @@ local function select_scenario(scenario)
   M.active = scenario
   M.last = scenario
   M.playback_index = 0
+  navigation_repeat.set(M.next, M.previous, "scenario location")
   notify.send("Scenarios", "Selected: " .. scenario.name)
   local first_point = scenario.points[1]
   if first_point and jump(scenario, first_point.position) then
@@ -282,6 +284,7 @@ function M.next()
     return
   end
   local points = M.active.points
+  navigation_repeat.set(M.next, M.previous, "scenario location")
   if #points == 0 then
     notify.send("Scenarios", "Selected scenario has no points", vim.log.levels.WARN)
     return
@@ -306,6 +309,7 @@ function M.previous()
     return
   end
   local points = M.active.points
+  navigation_repeat.set(M.next, M.previous, "scenario location")
   if M.playback_index > #points then
     M.playback_index = #points
   else
@@ -328,6 +332,9 @@ function M.replay()
 end
 
 function M.quit()
+  if navigation_repeat.name() == "scenario location" then
+    navigation_repeat.clear()
+  end
   clear_virtual_text()
   M.active = nil
   M.last = nil

@@ -93,12 +93,8 @@ local SECTIONS = {
   {
     title = "Macros",
     items = {
-      { "<leader>q", "start / stop recording" },
-      { "Q", "play macro" },
-      { "<C-q>", "switch macro slot" },
-      { "cq", "edit macro" },
-      { "dq", "delete all macros" },
-      { "yq", "yank macro" },
+      { "<leader>q", "start / stop recording to q" },
+      { "Q", "play macro q (supports count)" },
       { "q", "disabled (nop)" },
     },
   },

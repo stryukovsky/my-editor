@@ -37,7 +37,6 @@ return {
       require("configs.notify").setup()
     end,
   },
-  { "chrisgrieser/nvim-recorder" },
   {
     "hat0uma/csvview.nvim",
     opts = require "configs.csv",

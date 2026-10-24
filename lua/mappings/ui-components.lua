@@ -12,60 +12,6 @@ local notify = require "configs.notify"
 
 local ui_components_modes = { "n" }
 
--- VCS/cache/deps dirs only — not .gitignore. Gitignored project files still show.
-local find_files_junk_dirs = {
-  ".git",
-  ".svn",
-  ".hg",
-  "node_modules",
-  "bower_components",
-  ".venv",
-  "venv",
-  "__pycache__",
-  ".mypy_cache",
-  ".pytest_cache",
-  ".ruff_cache",
-  ".tox",
-  ".direnv",
-  ".cache",
-  ".next",
-  ".nuxt",
-  ".output",
-  ".turbo",
-  "dist",
-  "build",
-  "target",
-  "coverage",
-  ".gradle",
-  ".yarn",
-  ".pnpm-store",
-}
-
-local function find_files_skip_junk()
-  local find_command
-  if vim.fn.executable "fd" == 1 then
-    find_command = { "fd", "--type", "f", "--color", "never" }
-  elseif vim.fn.executable "fdfind" == 1 then
-    find_command = { "fdfind", "--type", "f", "--color", "never" }
-  elseif vim.fn.executable "rg" == 1 then
-    find_command = { "rg", "--files", "--color", "never" }
-  end
-  if find_command then
-    local is_rg = find_command[1] == "rg"
-    local flag = is_rg and "--glob" or "--exclude"
-    for _, dir in ipairs(find_files_junk_dirs) do
-      find_command[#find_command + 1] = flag
-      find_command[#find_command + 1] = is_rg and ("!" .. dir) or dir
-    end
-  end
-  require("telescope.builtin").find_files {
-    hidden = true,
-    no_ignore = true,
-    no_ignore_parent = true,
-    find_command = find_command,
-  }
-end
-
 local telescope_components = {
   {
     modes = ui_components_modes,
@@ -78,7 +24,9 @@ local telescope_components = {
   {
     modes = { "n" },
     shortcut = "<leader><leader>",
-    command = find_files_skip_junk,
+    command = function()
+      require("utils.project_files").open()
+    end,
     desc = "UI telescope files",
   },
   {

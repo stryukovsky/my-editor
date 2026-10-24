@@ -304,8 +304,22 @@ map({ "n", "x" }, ";", navigation_repeat.repeat_next, { desc = "Repeat next navi
 map({ "n", "x" }, "<A-;>", navigation_repeat.repeat_previous, { desc = "Repeat previous navigation" })
 
 -- navigate in jumps
-map("n", "<A-[>", "<cmd>pop<cr>", { desc = "Navigation jump prev" })
-map("n", "<A-]>", "<cmd>tag<cr>", { desc = "Navigation jump next" })
+map("n", "<A-[>", function()
+  local scenarios = require "scenarios_of_codebase"
+  if scenarios.active then
+    scenarios.previous()
+  else
+    vim.cmd.pop()
+  end
+end, { desc = "Previous scenario location or navigation jump" })
+map("n", "<A-]>", function()
+  local scenarios = require "scenarios_of_codebase"
+  if scenarios.active then
+    scenarios.next()
+  else
+    vim.cmd.tag()
+  end
+end, { desc = "Next scenario location or navigation jump" })
 
 map({ "n", "v" }, "<leader>fm", function()
   require("conform").format({ lsp_fallback = true, async = true }, function(err, _did_edit)

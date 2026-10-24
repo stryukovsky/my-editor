@@ -8,7 +8,3 @@ vim.keymap.set(
   end,
   { silent = true, buffer = bufnr }
 )
-
-vim.keymap.set("n", "<leader>dd", function()
-  vim.cmd.RustLsp "debuggables"
-end, { silent = true, buffer = bufnr })

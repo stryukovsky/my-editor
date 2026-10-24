@@ -13,7 +13,7 @@ local options = {
     rust = { "rustfmt" },
     python = { "black" },
     xml = { "xmlformatter" },
-    solidity = { "prettier_for_solidity" },
+    solidity = { "forge_fmt" },
   },
   formatters = {
     -- proseWrap only applies to markdown; keep it off the shared prettier formatter.
@@ -30,10 +30,10 @@ local options = {
         "always",
       },
     },
-    prettier_for_solidity = {
-      command = "npx",
+    forge_fmt = {
+      command = "forge",
 
-      args = { "prettier", "--write", "--plugin=prettier-plugin-solidity", "$FILENAME" },
+      args = {"fmt",  "$FILENAME" },
       stdin = false,
     },
   },

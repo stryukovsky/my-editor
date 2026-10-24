@@ -321,10 +321,6 @@ local function override_highlights()
   end
   vim.opt.guicursor = table.concat(cursor_parts, ",")
 
-  -- for macros.lua
-  hl(0, "MacroStartBadge", { bg = "#e06c75", fg = "#282c34", bold = true })
-  hl(0, "MacroStartChar", { bg = "#e06c75", fg = "#282c34", bold = true })
-
   sync_cursorline_nr()
 
   local project_colors = {
