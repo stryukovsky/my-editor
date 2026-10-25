@@ -9,7 +9,6 @@ scalacli
 metals
 jupyter
 opencode
-nautilus
 uv
 gvfs-metadata
 recently-used.xbel
@@ -20,3 +19,4 @@ nvim.log
 bin/coursier/
 wget/.wget-hsts
 **/**/*.pyc
+nautilus/tags/meta.db

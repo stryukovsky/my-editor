@@ -37,6 +37,8 @@ local function sync_cursorline_nr()
 end
 
 local function override_highlights()
+  hl(0, "ScalarLinesSource", { bg = "#005faf", fg = "#ffffff" })
+  hl(0, "ScalarLinesTarget", { bg = "#af0000", fg = "#ffffff" })
   hl(0, "PreProc", { link = "Comment" })
   local medium_orange_fg = "#c49a2e"
   local dark_orange_fg = { fg = "#c45a12" }

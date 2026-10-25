@@ -20,3 +20,11 @@ gsettings set org.gnome.desktop.a11y.magnifier caret-tracking 'none'
 gsettings set org.gnome.desktop.a11y.magnifier screen-position 'full-screen'
 gsettings set org.gnome.desktop.a11y.magnifier scroll-at-edges true
 gsettings set org.gnome.desktop.a11y.magnifier mag-factor 2.0
+
+# Install the Nautilus Open in Kitty action from this dotfiles checkout.
+fedora_setup_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+nautilus_extension_dir="${XDG_DATA_HOME:-$HOME/.local/share}/nautilus-python/extensions"
+mkdir -p -- "$nautilus_extension_dir"
+# Match the system Ghostty module; the provider guards duplicate registrations.
+ln -sfn -- "$fedora_setup_dir/nautilus/kitty.py" "$nautilus_extension_dir/ghostty.py"
+echo 'Installed Open in Kitty. Run nautilus -q, then reopen Files to load it.'
