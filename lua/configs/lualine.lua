@@ -191,7 +191,10 @@ setup_lualine {
             return "NEO-TREE"
           end,
         },
-        lualine_b = { git_branch.lualine_component() },
+        lualine_b = {
+          git_fetch.lualine_component(),
+          git_branch.lualine_component(),
+        },
         lualine_c = { get_neotree_path }, -- Displays relative path from CWD
       },
       filetypes = { "neo-tree" },
