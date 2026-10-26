@@ -14,13 +14,17 @@ map("n", "<Esc>", function()
 end, { desc = "clear highlights and notifications" })
 
 map("n", "<C-c>", function()
-  if vim.bo.modifiable then
-    vim.cmd "%y+"
-    vim.notify("Copied whole buffer to clipboard", vim.log.levels.INFO)
-  else
-    vim.notify("Buffer is not editable. Cannot copy.", vim.log.levels.WARN)
+  if vim.bo.buftype == "terminal" then
+    local job = vim.b.terminal_job_id
+    local ok = job and pcall(vim.api.nvim_chan_send, job, "\003")
+    if not ok then
+      vim.notify("Terminal job is no longer running", vim.log.levels.WARN)
+    end
+    return
   end
-end, { desc = "Copy whole file if buffer is editable" })
+  vim.cmd "%y+"
+  vim.notify("Copied whole buffer to clipboard", vim.log.levels.INFO)
+end, { desc = "Interrupt terminal job or copy whole buffer" })
 
 -- Same as i<space><Esc>l: insert a space at the cursor, stay in normal mode, move right.
 map("n", "<C-space>", "i <Esc>l", { desc = "Insert space at cursor" })
@@ -47,7 +51,7 @@ require "mappings.ripgreplsp"
 require "mappings.neotest"
 require "mappings.text-case"
 require "mappings.refactoring-setup"
-require "mappings.neogit-setup"
+require "mappings.git"
 require "mappings.lsp_controls"
 require "mappings.snippet"
 require "mappings.logviewer"

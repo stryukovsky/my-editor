@@ -1,4 +1,4 @@
-local async = require "plenary.async"
+local git = require "configs.gitutils"
 local M = {}
 
 -- Timer reference for stopping later
@@ -34,85 +34,70 @@ local function log_print_debug(msg)
   log.debug(msg)
 end
 
--- Check if we're in a git repository
+-- Check if we're in a git repository.
 function M.is_git_repo()
-  local result = vim.fn.system "git rev-parse --is-inside-work-tree 2>/dev/null"
-  return vim.v.shell_error == 0 and result:match "true" ~= nil
+  return git.root() ~= nil
 end
 
--- Check if any git operations are in progress using NeoGit's state
+-- Git records unfinished operations and lock files in its per-worktree directory.
 function M.is_git_operation_in_progress()
-  if not M.is_git_repo() then
-    return true -- Not a git repo, don't fetch
-  end
-
-  -- Try to get NeoGit's repository state
-  local success, git = pcall(require, "neogit.lib.git")
-  if not success then
-    return true -- Can't access NeoGit, be safe
-  end
-
-  -- Check for rebase in progress
-  if git.repo.state.rebase.head ~= nil then
+  local cwd = vim.fn.getcwd()
+  local commands = package.loaded["configs.git_commands"]
+  local root = git.root(cwd)
+  if not root or (commands and commands.busy[root]) or M.fetch_pending then
     return true
   end
-
-  -- Check for merge in progress
-  if git.repo.state.merge.head ~= nil then
+  local gitdir = git.run({ "rev-parse", "--absolute-git-dir" }, cwd)
+  if not gitdir then
     return true
   end
-
-  -- Check for cherry-pick or revert in progress
-  if git.repo.state.sequencer.head ~= nil then
-    return true
+  gitdir = vim.trim(gitdir)
+  for _, name in ipairs {
+    "rebase-merge",
+    "rebase-apply",
+    "MERGE_HEAD",
+    "CHERRY_PICK_HEAD",
+    "REVERT_HEAD",
+    "sequencer",
+    "BISECT_LOG",
+    "index.lock",
+    "HEAD.lock",
+  } do
+    if vim.uv.fs_stat(gitdir .. "/" .. name) then
+      return true
+    end
   end
-
-  -- Check for bisect in progress
-  if
-    git.repo.state.bisect.finished == false
-    and #git.repo.state.bisect.items > 0
-  then
-    return true
-  end
-
   return false
 end
 
--- Perform git fetch using NeoGit's fetch functionality
 function M.git_fetch(callback)
-  async.run(function()
-    if M.is_git_operation_in_progress() then
-      log_print_debug "Git operation in progress, skipping fetch"
-      return false
+  if M.is_git_operation_in_progress() then
+    log_print_debug "Git operation in progress, skipping fetch"
+    if callback then
+      callback(false)
     end
-
-    -- Use NeoGit's fetch functionality
-    local success, git = pcall(require, "neogit.lib.git")
-    if not success then
-      log_print_debug "Failed to load NeoGit library, skipping fetch"
-      return false
-    end
-
-    -- Perform the fetch using NeoGit's fetch function
-    local result = git.cli.fetch
-      .args("", "")
-      .call { ignore_error = true, long = true, hidden = true }
-    if result and result:success() then
-      -- Update last fetch timestamp
-      M.last_fetch_timestamp = os.time()
+    return
+  end
+  local cwd = vim.fn.getcwd()
+  M.fetch_pending = true
+  git.job {
+    args = { "fetch" },
+    cwd = cwd,
+    on_exit = function(code, stderr)
       vim.schedule(function()
-        M.refresh_sync_state(vim.fn.getcwd(), true)
+        M.fetch_pending = false
+        if code == 0 then
+          M.last_fetch_timestamp = os.time()
+          M.refresh_sync_state(cwd, true)
+        else
+          log_print_debug("Git fetch failed: " .. stderr)
+        end
+        if callback then
+          callback(code == 0)
+        end
       end)
-      return true
-    else
-      local error_msg = result
-          and result.stderr
-          and table.concat(result.stderr, "\n")
-        or "Unknown error"
-      log_print_debug("Git fetch failed: " .. error_msg)
-      return false
-    end
-  end, callback)
+    end,
+  }
 end
 
 -- Get current backoff interval
@@ -135,6 +120,9 @@ end
 -- Timer callback function
 function M.on_timer()
   M.git_fetch(function(success)
+    if not M.timer or M.timer:is_closing() then
+      return
+    end
     if success then
       -- Reset backoff on success
       M.reset_backoff()
@@ -165,6 +153,9 @@ function M.start()
 
   -- Perform initial fetch on startup
   M.git_fetch(function(success)
+    if not M.timer or M.timer:is_closing() then
+      return
+    end
     if success then
       M.reset_backoff()
       -- Schedule next fetch at default interval

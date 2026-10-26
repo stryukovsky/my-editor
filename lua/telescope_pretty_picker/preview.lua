@@ -18,6 +18,7 @@ local M = {}
 local DEBOUNCE_MS = 80
 local BRANCH_LOG_COUNT = 80
 local ONELINE_COUNT = 40
+local LOG_SUBJECT_MAX_WIDTH = 25
 local LOG_SEP = "\1"
 local preview_ns = vim.api.nvim_create_namespace "telescope_pretty_picker.preview.log"
 
@@ -31,7 +32,7 @@ local function format_log_line(line)
   end
   local parts = vim.split(payload, LOG_SEP, { plain = true })
   local deco = vim.trim(parts[1] or "")
-  local subject = display.truncate_subject(parts[2] or "", 60)
+  local subject = display.truncate_subject(parts[2] or "", LOG_SUBJECT_MAX_WIDTH)
   local date = parts[3] or ""
   if deco ~= "" then
     return string.format("%s%s - %s %s (%s)", graph, hash, deco, subject, date)

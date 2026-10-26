@@ -127,8 +127,9 @@ function M.nav(direction)
         require("configs.minidiff_review").focus_list()
         return
       end
-      notify.send("MiniDiff", "It was last hunk, so neogit", vim.log.levels.INFO)
-      require("utils.open_neogit_status")()
+      notify.send("MiniDiff", "Last hunk, focusing Neo-tree git status", vim.log.levels.INFO)
+      require("utils.ui_prevent_mess")()
+      require("utils.focus_neotree")("git_status", false, {})
       return
     end
   end

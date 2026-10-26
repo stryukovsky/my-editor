@@ -13,7 +13,10 @@ function M.run(args, cwd, opts)
   vim.list_extend(cmd, args)
   local result = vim.system(cmd, { text = true }):wait()
   if not ok_codes[result.code] then
-    local err = vim.trim((result.stderr or "") ~= "" and result.stderr or ("git exited " .. result.code))
+    local err = vim.trim(
+      (result.stderr or "") ~= "" and result.stderr
+        or ("git exited " .. result.code)
+    )
     return nil, err
   end
   return result.stdout or "", nil
@@ -64,14 +67,23 @@ end
 ---@class gitutils.JobOpts
 ---@field args string[]
 ---@field cwd string
----@field on_exit fun(code: integer, stderr: string)
+---@field on_exit fun(code: integer, stderr: string, stdout: string)
 
 ---@param opts gitutils.JobOpts
 function M.job(opts)
   local cmd = { "git", "-C", opts.cwd }
   vim.list_extend(cmd, opts.args)
   local stderr = {}
+  local stdout = {}
   local id = vim.fn.jobstart(cmd, {
+    stdout_buffered = true,
+    stderr_buffered = true,
+    on_stdout = function(_, data)
+      local output = table.concat(data, "\n")
+      if output ~= "" then
+        stdout[#stdout + 1] = output
+      end
+    end,
     on_stderr = function(_, data)
       local output = table.concat(data, "\n")
       if output ~= "" then
@@ -79,11 +91,11 @@ function M.job(opts)
       end
     end,
     on_exit = function(_, code)
-      opts.on_exit(code, table.concat(stderr, "\n"))
+      opts.on_exit(code, table.concat(stderr, "\n"), table.concat(stdout, "\n"))
     end,
   })
   if id <= 0 then
-    opts.on_exit(-1, "failed to start git")
+    opts.on_exit(-1, "failed to start git", "")
   end
 end
 

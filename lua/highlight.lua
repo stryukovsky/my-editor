@@ -65,10 +65,6 @@ local function override_highlights()
   hl(0, "IlluminatedWordRead", { underline = true })
   hl(0, "IlluminatedWordWrite", { underline = true })
 
-  hl(0, "NeogitPopupConfigKey", { link = "Title" })
-  hl(0, "NeogitPopupActionKey", { link = "Title" })
-  hl(0, "NeogitPopupOptionKey", { link = "Title" })
-  hl(0, "NeogitPopupSwitchKey", { link = "Title" })
 
   hl(0, "CsvViewHeaderLine", { bold = true })
 
@@ -179,33 +175,6 @@ local function override_highlights()
   require("configs.strict_grammar").apply_spellbad()
 
   hl(0, "Cursor", { bg = foreground_active })
-  hl(0, "NeogitDiffContext", { bg = background })
-  -- move to default cursor
-  local neogit_cursor_bg = vim.api.nvim_get_hl(0, { name = "NeogitCursor" }).bg
-  local neogit_cursor_fg = vim.api.nvim_get_hl(0, { name = "NeogitCursor" }).fg
-  hl(
-    0,
-    "NeogitHunkHeaderCursor",
-    { bg = neogit_cursor_bg, fg = neogit_cursor_fg }
-  )
-  hl(0, "NeogitBranchHead", { fg = foreground_active })
-  hl(
-    0,
-    "NeogitDiffContextCursor",
-    { bg = neogit_cursor_bg, fg = neogit_cursor_fg }
-  )
-  hl(0, "NeogitDiffAddCursor", { bg = neogit_cursor_bg, fg = neogit_cursor_fg })
-  hl(
-    0,
-    "NeogitDiffDeleteCursor",
-    { bg = neogit_cursor_bg, fg = neogit_cursor_fg }
-  )
-  hl(
-    0,
-    "NeogitDiffHeaderCursor",
-    { bg = neogit_cursor_bg, fg = neogit_cursor_fg }
-  )
-
   hl(0, "Comment", { fg = "#9b8a72", italic = true })
   -- git-conflict.nvim repaints these on ColorScheme with default=true, so this pass wins.
   hl(0, "GitConflictCurrent", { bg = "#e5d5a6", fg = "#5d5140" })

@@ -7,12 +7,12 @@ local git = require "configs.gitutils"
 local M = {}
 
 M.ELLIPSIS = "…"
-M.COMMIT_SUBJECT_MAX = 40
+M.COMMIT_SUBJECT_MAX = 32
 
 -- Reference: 3-segment names (`origin/release/v1.3.0-zksync`) budget the column.
 -- Per-component `n` is derived so (segments * n + slashes) <= BRANCH_NAME_MAX.
-local REF_SEGMENTS = 3
-local REF_SEGMENT_MAX = 15
+local REF_SEGMENTS = 4
+local REF_SEGMENT_MAX = 8
 M.BRANCH_NAME_MAX = REF_SEGMENTS * REF_SEGMENT_MAX + (REF_SEGMENTS - 1) -- 47
 
 local BRANCH_COMPONENT_MAX = 16
@@ -154,7 +154,12 @@ function M.tracking_display(upstream, trackshort, remotename)
     local remote = remotename ~= "" and remotename or (upstream:match "^([^/]+)" or upstream)
     return "= " .. remote, "TelescopeResultsComment"
   end
-  return "=> " .. M.shorten_branch_name(upstream), "TelescopeResultsIdentifier"
+  local name = upstream
+  local length = vim.fn.strchars(name)
+  if length > 3 then
+    name = vim.fn.strcharpart(name, 0, 1) .. M.ELLIPSIS .. vim.fn.strcharpart(name, length - 1, 1)
+  end
+  return "=> " .. name, "TelescopeResultsIdentifier"
 end
 
 ---@class telescope_pretty_picker.display.Branch

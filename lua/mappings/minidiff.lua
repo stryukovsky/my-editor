@@ -58,9 +58,9 @@ end, { desc = "Jump to previous git conflict" })
 
 map("n", "<A-h>", minidiff.toggle_overlay, { desc = "git toggle hunk overlay" })
 
-map("n", "<leader>gcmp", function()
+map("n", "<leader>gMR", function()
   require("configs.minidiff_review").open_picker()
-end, { desc = "git review source into target" })
+end, { desc = "git review MR of source into target" })
 
 map("n", "<leader>gH", function()
   require("configs.minidiff_history").open()

@@ -27,7 +27,6 @@
   "material.nvim": { "branch": "main", "commit": "92f7366a9315cd386bc4fa4d716fde375dda210f" },
   "multicursor.nvim": { "branch": "1.0", "commit": "c574bfc1f7e63dfea3e64b8453c9f7c660127238" },
   "neo-tree.nvim": { "branch": "option-consider-untracked-as-git-change", "commit": "dbefb7bc1b11137b71de1e1bc81f2b492b3e24c6" },
-  "neogit": { "branch": "log-view-fix-open-commit-link", "commit": "47c83905f279f5fec99e1b66556aad71e877f6b2" },
   "neotest": { "branch": "master", "commit": "27bf921498043f7ecd821d6db68d05de244bbd02" },
   "neotest-golang": { "branch": "main", "commit": "05cd7bf89a146cf1fa2848a9fe277a1e68a3a51d" },
   "neotest-jest": { "branch": "main", "commit": "0e7979d51301dfae5ef839d771bd28cf593fde3f" },

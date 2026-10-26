@@ -16,9 +16,6 @@ return function()
 
   local filetype = vim.api.nvim_get_option_value("filetype", { buf = bufnr })
   local excluded_filetypes = {
-    "neogit",
-    "neogitcommit",
-    "neogitpopup",
     "neo-tree",
     "neo-tree-popup",
     "neotest-summary",

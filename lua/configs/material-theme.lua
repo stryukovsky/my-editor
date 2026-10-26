@@ -37,7 +37,6 @@ require("material").setup {
     -- "lspsaga",
     -- "mini",
     "neo-tree",
-    "neogit",
     -- "neorg",
     "neotest",
     -- "noice",

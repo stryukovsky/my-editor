@@ -3,7 +3,7 @@ local map = require "mappings.map"
 local neotest = require "neotest"
 local trouble = require "trouble"
 local oil = require "configs.oil"
-local neotree_command = require "neo-tree.command"
+local focus_neotree = require "utils.focus_neotree"
 local grug_far = require "grug-far"
 local close_telescope = require "mappings.close_telescope"
 local ui_prevent_mess = require "utils.ui_prevent_mess"
@@ -173,42 +173,6 @@ map("n", "<leader>th", function()
 end, { desc = "Theme" })
 
 -- neotree
-local function cursor_in_neotree()
-  local win = vim.api.nvim_get_current_win()
-  if not vim.api.nvim_win_is_valid(win) then
-    return false
-  end
-  local buf = vim.api.nvim_win_get_buf(win)
-  return vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "neo-tree"
-end
-
-local function workaround_neotree_focus(source, needs_reveal, opts)
-  pcall(function()
-    local focus_command = vim.tbl_extend("error", {
-      action = "focus", -- Focus NeoTree
-      source = source,
-      position = "left", -- Or "left", "float"
-    }, opts)
-    neotree_command.execute(focus_command)
-    vim.defer_fn(function()
-      if needs_reveal then
-        local reveal_command = vim.tbl_extend("error", {
-          action = "reveal", -- Focus NeoTree
-          source = source,
-          position = "left", -- Or "left", "float"
-        }, opts)
-        neotree_command.execute(reveal_command)
-      end
-      neotree_command.execute(focus_command)
-      vim.defer_fn(function()
-        if not cursor_in_neotree() then
-          neotree_command.execute(focus_command)
-        end
-      end, 200)
-    end, 100)
-  end)
-end
-
 map(ui_components_modes, "<A-e>", function()
   ui_prevent_mess()
   local current_buf = vim.api.nvim_get_current_buf()
@@ -230,22 +194,23 @@ map(ui_components_modes, "<A-e>", function()
     }
   end
 
-  workaround_neotree_focus("filesystem", --[[ needs_reveal ==  ]] file_exists, params)
+  focus_neotree("filesystem", --[[ needs_reveal ==  ]] file_exists, params)
 end, { desc = "UI neotree files", silent = true })
 
 map(ui_components_modes, "<A-l>", function()
   ui_prevent_mess()
-  workaround_neotree_focus("document_symbols", true, {})
+  focus_neotree("document_symbols", true, {})
 end, { desc = "UI neotree structure" })
 
 map(ui_components_modes, "<A-b>", function()
   ui_prevent_mess()
-  workaround_neotree_focus("buffers", true, {})
+  focus_neotree("buffers", true, {})
 end, { desc = "UI neotree buffers" })
 
--- map(ui_components_modes, "<A-k>", function()
---   workaround_neotree_focus("git_status", {})
--- end, { desc = "UI neotree status" })
+map(ui_components_modes, "<A-k>", function()
+  ui_prevent_mess()
+  focus_neotree("git_status", false, {})
+end, { desc = "UI neotree git status" })
 
 _G.bottom_component_callback_close = function() end
 --

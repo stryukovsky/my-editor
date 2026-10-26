@@ -5,16 +5,6 @@ return {
   },
   { "stevearc/overseer.nvim" },
   { "kevinhwang91/nvim-hlslens" },
-  {
-    "stryukovsky/neogit",
-    branch = "log-view-fix-open-commit-link",
-    dependencies = {
-      "nvim-lua/plenary.nvim", -- required
-
-      -- Only one of these is needed.
-      "nvim-telescope/telescope.nvim", -- optional
-    },
-  },
   { "nvim-telescope/telescope-ui-select.nvim" },
   {
     "nvimdev/dashboard-nvim",

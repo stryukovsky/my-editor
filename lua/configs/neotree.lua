@@ -108,7 +108,7 @@ local config = {
   -- The name used here must be the same name you would use in a require() call.
   sources = {
     "filesystem",
-    "buffers",
+    "git_status",
     "document_symbols",
   },
   default_source = "filesystem", -- you can choose a specific source `last` here which indicates the last used source
@@ -130,7 +130,7 @@ local config = {
     -- of the top visible node when scrolled down.
     sources = {
       { source = "filesystem" },
-      { source = "buffers" },
+      { source = "git_status" },
       { source = "document_symbols" },
     },
   },
