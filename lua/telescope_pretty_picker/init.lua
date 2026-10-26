@@ -23,4 +23,13 @@ function M.show_visible(opts)
   return visible_picker(opts)
 end
 
+---@param opts? table
+function M.show_search(opts)
+  return require("telescope_pretty_picker.search_picker").open(opts)
+end
+
+function M.show_visual_search()
+  return require("telescope_pretty_picker.search_picker").visual()
+end
+
 return M

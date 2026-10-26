@@ -3,6 +3,7 @@ return {
     "folke/flash.nvim",
     event = "VeryLazy",
   },
+  { "stevearc/overseer.nvim" },
   { "kevinhwang91/nvim-hlslens" },
   {
     "stryukovsky/neogit",
@@ -143,7 +144,10 @@ return {
   {
     "stryukovsky/render-markdown.nvim",
     -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
-    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-tree/nvim-web-devicons",
+    }, -- if you prefer nvim-web-devicons
     branch = "fix/anti-conceal-in-wrapped-table",
     opts = {
       file_types = { "markdown", "todotxt-preview" },

@@ -57,8 +57,9 @@ chmod 700 bin/nvim.appimage
 sudo bash setup/fedora/setup.sh
 bash setup/common_tools/commons.sh
 
-cp setup/fedora/zshrc.sh ~/.zshrc
+ln -sfr setup/fedora/zshrc.sh ~/.zshrc
 
+# Of course firstly install them and then apply config
 mkdir -p ~/.config/btop/
 ln -sfr setup/common_tools/btop/btop.conf ~/.config/btop/btop.conf
 mkdir -p ~/.config/kitty/
@@ -67,6 +68,9 @@ ln -sfr setup/fedora/kitty.conf ~/.config/kitty/kitty.conf
 mkdir -p ~/.config/ranger/
 ln -sfr setup/fedora/ranger/* ~/.config/ranger/
 ln -sfr setup/fedora/ranger/colorschemes ~/.config/ranger/colorschemes
+
+mkdir -p ~/.codex
+ln -sfr setup/common_tools/codex/config.toml ~/.codex/config.toml
 
 bash setup/common_tools/finalize.sh
 bash setup/common_tools/ai.sh
@@ -135,6 +139,7 @@ Install plugins
 - https://extensions.gnome.org/extension/1160/dash-to-panel/
 - https://extensions.gnome.org/extension/6994/keyboard-reset/
 - https://extensions.gnome.org/extension/1007/window-is-ready-notification-remover/
+- https://extensions.gnome.org/extension/5353/window-state-manager/
   After installed, configure it:
 
 ```sh

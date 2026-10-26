@@ -2,7 +2,7 @@ local neogit = require "neogit"
 
 neogit.setup {
   graph_style = "unicode",
-  kind = "split",
+  kind = "floating_console",
   -- Floating window style
   floating = {
     relative = "editor",

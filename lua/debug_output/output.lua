@@ -1,6 +1,5 @@
 -- Scratch log buffers for one DAP session's stdout/stderr.
 
-local map = require "mappings.map"
 local ansi = require "debug_output.ansi"
 local state = require "debug_output.state"
 
@@ -26,7 +25,9 @@ function M.find_window_for_buffer(buf)
     return nil
   end
   for _, win in ipairs(vim.api.nvim_list_wins()) do
-    if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == buf then
+    if
+      vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == buf
+    then
       return win
     end
   end
@@ -123,14 +124,23 @@ function M.append_to_buffers(session_id, lines)
         -- Follow output only when the cursor is already on the last line.
         local wins_to_follow = {}
         for _, win in ipairs(vim.api.nvim_list_wins()) do
-          if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == buf then
+          if
+            vim.api.nvim_win_is_valid(win)
+            and vim.api.nvim_win_get_buf(win) == buf
+          then
             if vim.api.nvim_win_get_cursor(win)[1] >= current_lines then
               wins_to_follow[#wins_to_follow + 1] = win
             end
           end
         end
 
-        vim.api.nvim_buf_set_lines(buf, current_lines, -1, false, vim.tbl_map(ansi.strip, lines))
+        vim.api.nvim_buf_set_lines(
+          buf,
+          current_lines,
+          -1,
+          false,
+          vim.tbl_map(ansi.strip, lines)
+        )
         vim.bo[buf].modifiable = false
 
         local last_line = vim.api.nvim_buf_line_count(buf)
@@ -181,49 +191,47 @@ function M.close_open_windows()
       if vim.api.nvim_buf_is_valid(buf) then
         local win = M.find_window_for_buffer(buf)
         if win then
-          vim.api.nvim_win_close(win, false)
+          vim.api.nvim_win_call(win, function()
+            vim.cmd "enew"
+          end)
         end
       end
     end
   end
 end
 
---- Focus an existing log window or open a new split for this session.
+--- Show this session's listed log buffer in the current window.
 ---@param session_id integer
 function M.show_session(session_id)
   local outputs = state.session_outputs[session_id] or {}
 
   local existing_buf = M.find_buffer_for_session(session_id)
   if existing_buf then
-    local win = M.find_window_for_buffer(existing_buf)
-    if win and vim.api.nvim_win_is_valid(win) then
-      vim.api.nvim_set_current_win(win)
-      return
-    end
+    vim.api.nvim_set_current_buf(existing_buf)
+    return
   end
 
-  local buf = vim.api.nvim_create_buf(false, true)
+  local buf = vim.api.nvim_create_buf(true, true)
   vim.bo[buf].buftype = "nofile"
-  vim.bo[buf].bufhidden = "wipe"
+  vim.bo[buf].bufhidden = "hide"
   vim.bo[buf].filetype = "debug_output"
 
-  local content = vim.list_extend(header_lines(session_id), vim.tbl_map(ansi.strip, outputs))
+  local content =
+    vim.list_extend(header_lines(session_id), vim.tbl_map(ansi.strip, outputs))
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
   register_buffer(session_id, buf)
 
-  vim.cmd "split"
   local win = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_buf(win, buf)
   name_output_buffer(buf, session_id)
-  map("n", "q", function()
-    vim.cmd "close"
-  end, { buffer = buf, nowait = true, silent = true, desc = "Close DAP output window" })
-  -- Keep DAP logs out of Barbar and scope.nvim's listed-buffer cache.
-  vim.bo[buf].buflisted = false
   vim.bo[buf].modifiable = false
 
   vim.schedule(function()
-    vim.api.nvim_win_set_cursor(win, { vim.api.nvim_buf_line_count(buf), 0 })
+    if
+      vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == buf
+    then
+      vim.api.nvim_win_set_cursor(win, { vim.api.nvim_buf_line_count(buf), 0 })
+    end
   end)
 end
 

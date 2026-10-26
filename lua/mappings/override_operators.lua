@@ -1,4 +1,7 @@
 local map = require "mappings.map"
+
+map({ "n", "x" }, "x", '"_x', { desc = "Delete without changing clipboard" })
+
 -- Helper to set search register without moving cursor
 local function highlight_current(is_visual)
   local pattern

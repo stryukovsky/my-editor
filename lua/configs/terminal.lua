@@ -1,5 +1,28 @@
 local M = {}
 
+-- Embedded terminals consume OSC requests instead of passing them to the host.
+-- Forward notification protocols so Kitty/Ghostty can show desktop alerts.
+vim.api.nvim_create_autocmd("TermRequest", {
+  group = vim.api.nvim_create_augroup(
+    "TerminalDesktopNotifications",
+    { clear = true }
+  ),
+  callback = function(event)
+    local data = event.data
+    local sequence = data and data.sequence or vim.v.termrequest
+    if not sequence then
+      return
+    end
+    if
+      sequence:match "^\027%]9;"
+      or sequence:match "^\027%]99;"
+      or sequence:match "^\027%]777;notify;"
+    then
+      vim.api.nvim_ui_send(sequence .. (data and data.terminator or "\027\\"))
+    end
+  end,
+})
+
 local taken_names = {}
 local taken_icons = {}
 ---@type boolean|nil
@@ -112,6 +135,17 @@ function M.release_name(name)
   end
 end
 
+--- Show and pin a terminal buffer using the shared terminal identity rules.
+---@param buf integer
+---@param name? string task name, or a random icon for an interactive shell
+function M.show(buf, name)
+  vim.bo[buf].buflisted = true
+  vim.api.nvim_set_current_buf(buf)
+  vim.cmd.BufferPin()
+  local icon = not name and random_icon() or nil
+  M.set_name(buf, "  " .. (name or icon or "") .. " ", icon)
+end
+
 --- Open a pinned Neovim terminal in the current window, like `<leader>tn`.
 ---@param cwd? string working directory for the new shell
 ---@return boolean
@@ -128,9 +162,7 @@ function M.open_new(cwd)
     zsh_available = vim.fn.executable "zsh" == 1
   end
   vim.cmd.terminal(zsh_available and "zsh" or "bash")
-  vim.cmd.BufferPin()
-  local icon = random_icon()
-  M.set_name(0, icon and ("  " .. icon .. " ") or "  ", icon)
+  M.show(vim.api.nvim_get_current_buf())
   return true
 end
 

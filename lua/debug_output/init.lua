@@ -47,14 +47,6 @@ function M.show_output()
   end
 
   if current then
-    local buf = output.find_buffer_for_session(current.id)
-    if buf then
-      local win = output.find_window_for_buffer(buf)
-      if win then
-        vim.api.nvim_set_current_win(win)
-        return
-      end
-    end
     output.show_session(current.id)
     return
   end

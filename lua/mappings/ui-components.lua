@@ -66,7 +66,7 @@ local telescope_components = {
     modes = ui_components_modes,
     shortcut = "<A-F>",
     command = function()
-      vim.cmd "Telescope live_grep"
+      require("telescope_pretty_picker").show_search()
     end,
     desc = "UI telescope search in project",
   },
@@ -74,7 +74,7 @@ local telescope_components = {
     modes = { "v" },
     shortcut = "<A-F>",
     command = function()
-      vim.cmd "Telescope grep_string"
+      require("telescope_pretty_picker").show_visual_search()
     end,
     desc = "UI telescope search in project",
   },

@@ -4,6 +4,9 @@ local is_buffer_terminal = require "utils.is_buffer_terminal"
 local is_initial_dashboard = require "utils.is_buffer_initial_dashboard"
 local script = require "utils.script"
 local terminal = require "configs.terminal"
+map("n", "<leader>ts", function()
+  require("configs.overseer").pick()
+end, { desc = "Tasks: run project task" })
 map("t", "<Esc>", "<C-\\><C-n>", { noremap = true, silent = true })
 map("t", "<A-a>", "<C-\\><C-n><C-w>h", { noremap = true, silent = true })
 map("t", "<A-s>", "<C-\\><C-n><C-w>j", { noremap = true, silent = true })

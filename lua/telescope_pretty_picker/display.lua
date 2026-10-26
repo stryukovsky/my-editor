@@ -15,11 +15,7 @@ local REF_SEGMENTS = 3
 local REF_SEGMENT_MAX = 15
 M.BRANCH_NAME_MAX = REF_SEGMENTS * REF_SEGMENT_MAX + (REF_SEGMENTS - 1) -- 47
 
-local KEEP_BY_SLASH = {
-  [0] = 16,
-  [1] = 8,
-  [2] = 4,
-}
+local BRANCH_COMPONENT_MAX = 16
 
 ---@param name string
 ---@return string
@@ -44,30 +40,28 @@ function M.shorten_author(name)
 end
 
 ---@param slash_count integer
----@return { n: integer, keep: integer }
+---@return { n: integer }
 local function slash_shorten_rule(slash_count)
   local segments = slash_count + 1
   local n = math.floor((M.BRANCH_NAME_MAX - slash_count) / segments)
-  local keep = KEEP_BY_SLASH[slash_count] or 2
-  return { n = n, keep = keep }
+  return { n = math.min(n, BRANCH_COMPONENT_MAX) }
 end
 
 ---@param component string
 ---@param n integer max allowed length
----@param keep integer head/tail chars to preserve when ellipsizing
 ---@return string
-local function shorten_slash_component(component, n, keep)
+local function shorten_slash_component(component, n)
   local len = vim.fn.strchars(component)
   if len <= n then
     return component
   end
-  -- Shortened form is keep + ellipsis + keep; shrink keep until it fits `n`.
-  keep = math.min(keep, math.floor((n - 1) / 2))
+  -- Favor the recognizable prefix while keeping the last three characters.
+  local tail = math.min(3, math.floor((n - 1) / 2))
   local out
-  if keep < 1 then
+  if tail < 1 then
     out = vim.fn.strcharpart(component, 0, n)
   else
-    out = vim.fn.strcharpart(component, 0, keep) .. M.ELLIPSIS .. vim.fn.strcharpart(component, len - keep, keep)
+    out = vim.fn.strcharpart(component, 0, n - tail - 1) .. M.ELLIPSIS .. vim.fn.strcharpart(component, len - tail, tail)
   end
   -- Post-check: component must be short enough for its budget.
   if vim.fn.strchars(out) > n then
@@ -120,7 +114,7 @@ function M.shorten_branch_name(name)
   local function apply(seg_max)
     local parts = {}
     for i, part in ipairs(originals) do
-      parts[i] = shorten_slash_component(part, seg_max, rule.keep)
+      parts[i] = shorten_slash_component(part, seg_max)
     end
     return table.concat(parts, "/")
   end

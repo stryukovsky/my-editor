@@ -103,11 +103,8 @@ function vpn_on_hiddify() {
     export HTTPS_PROXY="http://127.0.0.1:12334"
 }
 
-function vpn_off_hiddify() {
-    unset http_proxy
-    unset https_proxy
-    unset HTTP_PROXY
-    unset HTTPS_PROXY
+function vpn() {
+    vpn_on_hiddify 
 }
 
 function cursor() {
@@ -115,7 +112,18 @@ function cursor() {
 }
 
 function opencode() {
-    vpn_on_hiddify && opencode
+    vpn_on_hiddify && ~/.opencode/bin/opencode2
+}
+
+function codx() {
+    vpn_on_hiddify && ~/.local/bin/codex -a never
+}
+
+function vpn_off_hiddify() {
+    unset http_proxy
+    unset https_proxy
+    unset HTTP_PROXY
+    unset HTTPS_PROXY
 }
 
 alias activ="source .venv/bin/activate"
@@ -126,11 +134,8 @@ export PATH="$COURSIER_BIN_DIR:$PATH"
 alias nvim="~/.config/nvim/bin/nvim.appimage"
 alias vim="~/.config/nvim/bin/nvim.appimage"
 
-git config --global core.hooksPath /dev/null
-export GIT_CONFIG_COUNT=1
-export GIT_CONFIG_KEY_0=core.hooksPath
-export GIT_CONFIG_VALUE_0=/dev/null
-#
+export PATH="~/.config/nvim/bin:$PATH"
+
 # Pick an installed app. The launch command is left on the prompt; Enter runs it here.
 runapp() {
   local cmd
@@ -138,12 +143,29 @@ runapp() {
   [[ -n $cmd ]] && print -z -- "$cmd"
 }
 
-# Pick an installed app and open its .desktop file in $EDITOR.
-# A system entry is copied to ~/.local/share/applications first.
-configureapp() {
-  local file
-  file=$(python3 "$HOME/.config/nvim/setup/fedora/runapp.py" --path) || return
-  # eval so EDITOR=nvim still hits the nvim alias (the appimage).
-  [[ -n $file ]] && eval "${EDITOR:-nvim} ${(q)file}"
+
+killport() {
+  if [[ $# != 1 || ! $1 =~ ^[0-9]{1,5}$ ]] || (( 10#$1 < 1 || 10#$1 > 65535 )); then
+    printf '%s\n' "Usage: killport <port>" >&2
+    return 1
+  fi
+
+  local -a pids
+  local pid
+  pids=()
+  while IFS= read -r pid; do
+    [[ -n $pid ]] && pids+=("$pid")
+  done < <(lsof -tiTCP:"$1" -sTCP:LISTEN)
+  if (( ! ${#pids[@]} )); then
+    printf 'No process listening on port %s\n' "$1"
+    return 0
+  fi
+
+  kill -- "${pids[@]}"
 }
 
+# Guarantee global git hooks stay disabled in every new shell
+git config --global core.hooksPath /dev/null
+export GIT_CONFIG_COUNT=1
+export GIT_CONFIG_KEY_0=core.hooksPath
+export GIT_CONFIG_VALUE_0=/dev/null
