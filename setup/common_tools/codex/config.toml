@@ -96,6 +96,9 @@ trust_level = "trusted"
 [projects."/home/dmitry/Downloads/Archive"]
 trust_level = "trusted"
 
+[projects."/home/dmitry/Work/fsc-project/fsc-ontology"]
+trust_level = "trusted"
+
 [tui]
 screen_reader_detection_done = true
 

@@ -195,8 +195,6 @@ local function override_highlights()
     "GitConflictAncestorLabel",
     { bg = "#e0d2b4", fg = "#765613", bold = true }
   )
-  -- periodic-git-fetch: white-on-red heading when upstream has unmerged commits.
-  hl(0, "GitRemoteBehind", { fg = "#ffffff", bg = "#ff1744", bold = true })
 
   hl(0, "MiniDiffSignAdd", { link = "GitSignsAdd" })
   hl(0, "MiniDiffSignChange", { link = "GitSignsChange" })

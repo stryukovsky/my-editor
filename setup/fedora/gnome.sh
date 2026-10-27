@@ -28,3 +28,46 @@ mkdir -p -- "$nautilus_extension_dir"
 # Match the system Ghostty module; the provider guards duplicate registrations.
 ln -sfn -- "$fedora_setup_dir/nautilus/kitty.py" "$nautilus_extension_dir/ghostty.py"
 echo 'Installed Open in Kitty. Run nautilus -q, then reopen Files to load it.'
+
+# Use permanent paths, never an AppImage's temporary /tmp/.mount_* executable.
+install_app_autostart() {
+  local desktop_id=$1 name=$2 appimage=$3
+  shift 3
+  local executable='' candidate
+  if [[ -x $appimage ]]; then
+    executable=$appimage
+  else
+    for candidate in "$@"; do
+      executable=$(command -v "$candidate") || continue
+      break
+    done
+  fi
+  if [[ -z $executable || ! -x $executable ]]; then
+    printf 'Skipping %s autostart: app not installed.\n' "$name"
+    return 0
+  fi
+
+  local autostart_dir="${XDG_CONFIG_HOME:-$HOME/.config}/autostart"
+  local exec_quoted=$executable
+  exec_quoted=${exec_quoted//\\/\\\\}
+  exec_quoted=${exec_quoted//\"/\\\"}
+  exec_quoted=${exec_quoted//\$/\\\$}
+  exec_quoted=${exec_quoted//\`/\\\`}
+  exec_quoted=${exec_quoted//%/%%}
+  mkdir -p -- "$autostart_dir"
+  cat > "$autostart_dir/$desktop_id.desktop" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=$name
+TryExec=$executable
+Exec="$exec_quoted"
+Terminal=false
+X-GNOME-Autostart-enabled=true
+DESKTOP
+  printf 'Installed %s autostart.\n' "$name"
+}
+
+# Match LocalSend's own filename to avoid launching it twice.
+install_app_autostart localsend_app LocalSend "$HOME/AppImages/localsend.appimage" localsend_app localsend
+install_app_autostart hiddify Hiddify "$HOME/AppImages/hiddify.appimage" hiddify Hiddify
+unset -f install_app_autostart

@@ -96,6 +96,14 @@ end
 
 ---@type neotree.Config.Base
 local config = {
+  event_handlers = {
+    {
+      event = "after_render",
+      handler = function(state)
+        require("mappings.neotree_git_status").attach(state)
+      end,
+    },
+  },
   enable_git_status = true,
   git_status_async = true, -- <-- this is the new setting
   consider_untracked_as_git_change = true,
@@ -417,6 +425,7 @@ local config = {
   git_status = {
     window = {
       mappings = {
+        ["h"] = "toggle_node",
         ["l"] = "open",
         ["S"] = "git_add_all",
         ["s"] = "my_git_add_file",

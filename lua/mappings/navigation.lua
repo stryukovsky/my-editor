@@ -71,7 +71,7 @@ map({ "n" }, "<A-<>", construct_handler "bprevious", { desc = "Navigation bprevi
 map({ "n" }, "<A-S-,>", construct_handler "bprevious", { desc = "Navigation bprevious" })
 map({ "n" }, "<A-S-.>", construct_handler "bnext", { desc = "Navigation bnext" })
 -- <leader>tab → kitten @ launch --type=tab (cwd inherited). Projects go through configs.projects.
-map("n", "<leader>tab", function()
+map("n", "<leader>tb", function()
   require("configs.kitten").launch { type = "tab" }
 end, { desc = "Navigation new kitty tab" })
 map("n", "<leader>x", construct_handler "BufferClose!", { desc = "Navigation close buffer" })

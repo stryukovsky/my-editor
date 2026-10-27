@@ -105,7 +105,7 @@ function M.cmd(opts)
   return cmd
 end
 
--- Create a new Kitty tab/window. Used by <leader>tab and by opening a missing project.
+-- Create a new Kitty tab/window. Used by <leader>tb and by opening a missing project.
 ---@param opts? KittenLaunchOpts
 ---@return boolean
 function M.launch(opts)

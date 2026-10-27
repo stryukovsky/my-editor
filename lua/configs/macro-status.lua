@@ -61,10 +61,6 @@ vim.api.nvim_create_autocmd("RecordingLeave", {
     recording = false
     clear_marker()
     update()
-    local git = package.loaded["configs.periodic-git-fetch"]
-    if git then
-      git.apply_behind_banner()
-    end
   end,
 })
 

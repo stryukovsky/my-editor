@@ -1,3 +1,5 @@
+local map = require "mappings.map"
+
 local icons = {
   npm = "",
   pnpm = "",
@@ -39,8 +41,16 @@ end
 return {
   desc = "Show task logs in a pinned, named buffer",
   constructor = function()
+    local close_autocmd
+    local function clear_close_autocmd()
+      if close_autocmd then
+        pcall(vim.api.nvim_del_autocmd, close_autocmd)
+        close_autocmd = nil
+      end
+    end
     return {
       on_start = function(_, task)
+        clear_close_autocmd()
         local win = vim.api.nvim_get_current_win()
         -- Overseer unlists the output after on_start; restore it afterward.
         vim.schedule(function()
@@ -54,6 +64,29 @@ return {
           end
           vim.bo[buf].buflisted = true
           vim.bo[buf].bufhidden = "hide"
+          close_autocmd = vim.api.nvim_create_autocmd(
+            { "BufUnload", "BufDelete", "BufWipeout" },
+            {
+              buffer = buf,
+              once = true,
+              desc = "Stop Overseer task when its log buffer closes",
+              callback = function()
+                close_autocmd = nil
+                if not task:is_disposed() and task:get_bufnr() == buf then
+                  task:stop()
+                end
+              end,
+            }
+          )
+          map({ "n", "i", "t" }, "<C-c>", function()
+            if not task:is_disposed() then
+              task:stop()
+            end
+          end, {
+            buffer = buf,
+            silent = true,
+            desc = "Overseer: terminate task",
+          })
           -- The ID avoids collisions between jobs with the same name. Barbar uses
           -- the final path segment as the title, keeping the icon and task name.
           local title = job_icon(task)
@@ -74,6 +107,8 @@ return {
           end
         end)
       end,
+      on_reset = clear_close_autocmd,
+      on_dispose = clear_close_autocmd,
     }
   end,
 }

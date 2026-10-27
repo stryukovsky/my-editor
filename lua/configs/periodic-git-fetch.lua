@@ -199,22 +199,6 @@ function M.setup()
       M.stop()
     end,
   })
-
-  vim.api.nvim_create_autocmd(
-    { "WinEnter", "BufWinEnter", "DirChanged", "VimResized" },
-    {
-      group = vim.api.nvim_create_augroup(
-        "PeriodicGitFetchBehindBanner",
-        { clear = true }
-      ),
-      callback = function()
-        if vim.v.event and vim.v.event.scope then
-          M.refresh_sync_state(vim.fn.getcwd(), true)
-        end
-        M.apply_behind_banner()
-      end,
-    }
-  )
 end
 
 local function format_ago(timestamp)
@@ -249,7 +233,6 @@ function M.refresh_sync_state(cwd, force)
         state.pending = false
         if vim.fn.getcwd() ~= cwd then
           state.at = 0
-          M.apply_behind_banner()
           return
         end
         state.cwd = cwd
@@ -261,107 +244,12 @@ function M.refresh_sync_state(cwd, force)
         end
         state.ahead = ahead
         state.behind = behind
-        M.apply_behind_banner()
         if package.loaded["lualine"] then
           require("lualine").refresh()
         end
       end)
     end
   )
-end
-
--- Static winbar text. A `%!` expression is painted into the statusline on redraw.
-local function is_our_banner(bar)
-  return bar:find("^%%#GitRemoteBehind#", 1) ~= nil
-end
-
-local skip_banner_ft = {
-  dashboard = true,
-  alpha = true,
-  oil = true,
-  ["neo-tree"] = true,
-  trouble = true,
-  lazy = true,
-  mason = true,
-  TelescopePrompt = true,
-}
-
-local function ensure_behind_hl()
-  vim.api.nvim_set_hl(
-    0,
-    "GitRemoteBehind",
-    { fg = "#ffffff", bg = "#ff1744", bold = true }
-  )
-end
-
--- Commits on the upstream that are not in HEAD. Nil when unknown or zero.
-function M.behind_count()
-  local state = M.sync_state
-  if state.cwd ~= vim.fn.getcwd() then
-    return nil
-  end
-  local behind = state.behind
-  if not behind or behind < 1 then
-    return nil
-  end
-  return behind
-end
-
----@param win? integer
-function M.winbar(win)
-  local behind = M.behind_count()
-  if not behind then
-    return ""
-  end
-  local noun = behind == 1 and "COMMIT" or "COMMITS"
-  local label = " REMOTE HAS " .. behind .. " " .. noun .. " "
-  win = win or vim.g.statusline_winid
-  local width = 0
-  if win and vim.api.nvim_win_is_valid(win) then
-    width = vim.api.nvim_win_get_width(win)
-  end
-  if width <= #label then
-    return "%#GitRemoteBehind#" .. label
-  end
-  local pad = math.floor((width - #label) / 2)
-  return "%#GitRemoteBehind#"
-    .. string.rep(" ", pad)
-    .. label
-    .. string.rep(" ", width - pad - #label)
-end
-
-local function is_code_window(win)
-  if not vim.api.nvim_win_is_valid(win) then
-    return false
-  end
-  if vim.api.nvim_win_get_config(win).relative ~= "" then
-    return false
-  end
-  local buf = vim.api.nvim_win_get_buf(win)
-  if vim.bo[buf].buftype ~= "" or skip_banner_ft[vim.bo[buf].filetype] then
-    return false
-  end
-  local bar = vim.wo[win].winbar
-  return bar == "" or is_our_banner(bar)
-end
-
--- Full-width white-on-red heading on ordinary code windows while behind > 0.
-function M.apply_behind_banner()
-  ensure_behind_hl()
-  local show = M.behind_count() ~= nil
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    if is_code_window(win) then
-      local bar = vim.wo[win].winbar
-      if show then
-        local text = M.winbar(win)
-        if bar ~= text then
-          vim.wo[win].winbar = text
-        end
-      elseif is_our_banner(bar) then
-        vim.wo[win].winbar = ""
-      end
-    end
-  end
 end
 
 function M.lualine_component()

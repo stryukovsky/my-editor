@@ -81,6 +81,66 @@ bash setup/common_tools/git.sh
 **Note**: read all stuff related to fedora below. Especially drivers and root
 password
 
+## Updating Fedora and development tools
+
+Run as your normal user (the script uses sudo only for DNF):
+
+```sh
+~/.config/nvim/setup/fedora/update.sh --dry-run
+~/.config/nvim/setup/fedora/update.sh
+# If RPM Fusion metalink requests time out, bypass them for this run:
+~/.config/nvim/setup/fedora/update.sh --rpmfusion-direct system
+# Select only some groups:
+~/.config/nvim/setup/fedora/update.sh node rust foundry python
+```
+
+`--rpmfusion-direct` uses the Yandex RPM Fusion mirror through temporary DNF
+overrides, preserving enabled repositories and GPG checks. It does not edit
+`/etc/yum.repos.d/`. The `country=RU` metalink setting above only filters the
+returned mirrors; fetching the metalink itself still requires mirrors.rpmfusion.org.
+
+Groups: `system`, `flatpak`, `node`, `rust`, `foundry`, `python`, `jvm`,
+`shell`, `go`. With no groups, all detected groups run. Missing tools are skipped;
+failed updates are reported at the end with a nonzero exit status. DNF, Flatpak,
+and SDKMAN retain their confirmation prompts. Dry run prints actions without
+updating or downloading anything; shell-function actions are named in its output.
+
+- DNF updates RPM-managed apps and Go itself; Flatpak updates both user and system installations.
+- nvm updates itself, then the **default Node major** (not every installed Node),
+  migrates its globals, updates compatible npm, and runs `npm update -g`.
+  Old Node versions remain available. Global npm dependencies retain semver limits.
+- rustup updates itself and installed tracking toolchains/components. It does
+  **not** update Cargo-installed applications or override project toolchain pins.
+- foundryup updates itself and installs **stable** Forge/Cast/Anvil/Chisel,
+  switching away from a nightly or custom build if one was selected.
+- uv updates itself and `uv tool` environments; pipx tools update if pipx exists.
+  Project virtual environments and managed Python interpreters are unchanged.
+- SDKMAN updates itself and metadata, then offers SDK upgrades. Check prompts:
+  Java, Gradle, and sbt upgrades can cross major versions. Coursier updates its apps.
+- Oh My Zsh updates explicitly (automatic updates are disabled in this config).
+- Go applications in `$GOBIN` or `$GOPATH/bin` are rebuilt at `@latest` using
+  embedded package paths, including lazygit, lazydocker, and abigen on this machine.
+
+Other installations found on this machine need separate update policies:
+
+- Cargo apps: bulloak, cryo_cli, cargo-build-sbf, plus Git-installed avm and
+  move-analyzer. Rustup does not update these. Review versions and source refs
+  before reinstalling; avm is currently installed from an explicit Anchor tag.
+- Solana/Agave, Anchor managed by avm, Aptos, and Surfpool: update explicitly for
+  the project/network version you need.
+- Standalone AI tools (Claude, Codex, Cursor Agent, OpenCode), Neovim AppImage,
+  other AppImages, and manually unpacked tools are outside these managers.
+  npm/uv updates only cover tools actually installed through those managers.
+- Neovim plugins and Mason packages update inside Neovim. Review plugin changes
+  and let lazy.nvim write `lazy-lock.json`.
+
+Updater references: [nvm](https://github.com/nvm-sh/nvm),
+[rustup](https://rust-lang.github.io/rustup/basics.html),
+[Foundry](https://getfoundry.sh/getting-started/installation),
+[uv](https://docs.astral.sh/uv/getting-started/installation/),
+[SDKMAN](https://sdkman.io/usage/), and
+[Coursier](https://get-coursier.io/docs/cli-install).
+
 # Neovim preparations
 
 After installation of basics, open neovim and run command
