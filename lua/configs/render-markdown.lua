@@ -2,63 +2,34 @@
 vim.treesitter.language.register("markdown", "todotxt-preview")
 
 require("render-markdown").setup {
-  enabled = false,
+  enabled = true,
   -- Scrolling triggers both CursorMoved and WinScrolled; batch the viewport refreshes.
   debounce = 230,
   completions = { lsp = { enabled = true } },
   file_types = { "markdown", "todotxt-preview" },
-  -- Normal mode keeps the rendered line, including wrapped table rows.
-  -- Insert mode still reveals source on the cursor line.
-  anti_conceal = {
-    disabled_modes = { "n", "x", },
-  },
+  anti_conceal = { enabled = false },
   win_options = {
-    concealcursor = {
-      rendered = "nv",
-    },
+    concealcursor = { rendered = "nvic" },
   },
-  code = {
-    -- Turn on / off code block & inline code rendering.
-    enabled = true,
-    language_icon = false,
-    border = "thin",
-    language_left = "",
-    inline_left = " ",
-    inline_right = " ",
-  },
-  latex = {
-    enabled = false,
-  },
-  heading = {
-    enabled = true,
-    render_modes = false,
-    atx = true,
-    setext = true,
-    sign = true,
-    icons = { " 󰉫 ", " 󰉬 ", " 󰉭 ", " 󰉮 ", " 󰉯 ", " 󰉰 " },
-    backgrounds = {
-      "RenderMarkdownH1Bg",
-      "RenderMarkdownH2Bg",
-      "RenderMarkdownH3Bg",
-      "RenderMarkdownH4Bg",
-      "RenderMarkdownH5Bg",
-      "RenderMarkdownH6Bg",
-    },
-    foregrounds = {
-      "RenderMarkdownH1",
-      "RenderMarkdownH2",
-      "RenderMarkdownH3",
-      "RenderMarkdownH4",
-      "RenderMarkdownH5",
-      "RenderMarkdownH6",
-    },
-  },
+  bullet = { enabled = true },
+  heading = { enabled = true },
+  paragraph = { enabled = false },
+  code = { enabled = false },
+  dash = { enabled = false },
+  document = { enabled = false },
+  checkbox = { enabled = true },
+  quote = { enabled = false },
+  pipe_table = { enabled = false },
+  link = { enabled = false },
+  sign = { enabled = false },
+  inline_highlight = { enabled = false },
+  indent = { enabled = false },
+  html = { enabled = false },
+  latex = { enabled = true },
+  yaml = { enabled = false },
   overrides = {
     filetype = {
-      ["todotxt-preview"] = {
-        anti_conceal = { enabled = false },
-        render_modes = true,
-      },
+      ["todotxt-preview"] = { render_modes = true },
     },
   },
 }

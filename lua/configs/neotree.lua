@@ -241,12 +241,35 @@ local config = {
       local path = node:get_id()
       system_file_explorer(path)
     end,
-    ["go_deep"] = require("utils.neotree_utils").go_deep,
+    ["go_deep"] = function(state)
+      if state.name == "filesystem" then
+        require("utils.neotree_utils").go_deep(state)
+        return
+      end
+      local node = state.tree:get_node()
+      if node:has_children() then
+        if not node:is_expanded() then
+          node:expand()
+          renderer.redraw(state)
+        end
+        local children = node:get_child_ids()
+        if #children > 0 then
+          renderer.focus_node(state, children[1])
+        end
+      else
+        require("neo-tree.sources." .. state.name .. ".commands").open(state)
+      end
+    end,
     ["go_shallow"] = function(state)
       local node = state.tree:get_node()
-      if node.type == "directory" and node:is_expanded() then
-        filesystem.toggle_directory(state, node, node:get_id())
-      else
+      if (node.type == "directory" or node:has_children()) and node:is_expanded() then
+        if state.name == "filesystem" then
+          filesystem.toggle_directory(state, node, node:get_id())
+        else
+          node:collapse()
+          renderer.redraw(state)
+        end
+      elseif node:get_parent_id() then
         renderer.focus_node(state, node:get_parent_id())
       end
     end,
@@ -337,6 +360,12 @@ local config = {
     },
     group_empty_dirs = true, -- when true, empty folders will be grouped together
     mappings = {
+      ["h"] = "go_shallow",
+      ["l"] = "go_deep",
+      ["R"] = "noop",
+      ["<leader>rr"] = "refresh",
+      ["<Tab>"] = "noop",
+      ["<C-;>"] = "noop",
       ["<space>"] = "noop",
       ["/"] = "noop",
       -- ["<esc>"] = "cancel", -- close preview or floating neo-tree window
@@ -354,7 +383,7 @@ local config = {
       -- ["<C-f>"] = { "scroll_preview", config = {direction = -10} },
       -- ["<C-b>"] = { "scroll_preview", config = {direction = 10} },
       -- ["l"] = "focus_preview",
-      ["S"] = "open_split",
+      ["S"] = "noop",
       -- ["S"] = "split_with_window_picker",
       ["s"] = "noop",
       -- ["sr"] = "open_rightbelow_vs",
@@ -382,7 +411,6 @@ local config = {
         ["l"] = "go_deep",
         ["oo"] = "open_new_window",
         ["<leader>tn"] = "open_new_terminal",
-        ["<leader>rr"] = "refresh",
         ["O"] = "open_parent_folder",
         ["F"] = "telescope_grep",
         ["R"] = "replace_in_directory",
@@ -438,6 +466,15 @@ local config = {
     },
   },
 
+  buffers = {
+    window = {
+      mappings = {
+        ["r"] = "noop",
+        ["b"] = "noop",
+        ["<leader>rn"] = "noop",
+      },
+    },
+  },
   document_symbols = {
     renderers = {
       root = {
@@ -454,15 +491,13 @@ local config = {
     },
     window = {
       mappings = {
-        ["<l>"] = "toggle_node",
-        ["<h>"] = "toggle_node",
+        ["r"] = "noop",
+        ["<leader>rn"] = "noop",
         ["f"] = "noop",
         ["<A-f>"] = "noop",
         ["<C-r>"] = function() end,
         ["F"] = "noop",
         ["<A-F>"] = "noop",
-        ["h"] = "toggle_node",
-        ["l"] = "toggle_node",
       },
     },
   },
