@@ -2,6 +2,15 @@ local map = require "mappings.map"
 
 local M = {}
 
+local excluded_aliases = {
+  h = true,
+  gg = true,
+  G = true,
+  S = true,
+  r = true,
+  R = true,
+}
+
 -- Run after Neo-tree installs its defaults. Read the live global mappings so
 -- aliases also cover new <leader>g bindings without maintaining a second list.
 function M.attach(state)
@@ -22,8 +31,8 @@ function M.attach(state)
     local lhs = vim.api.nvim_replace_termcodes(binding.lhs, true, true, true)
     if lhs:sub(1, #prefix) == prefix and #lhs > #prefix then
       local suffix = vim.fn.keytrans(lhs:sub(#prefix + 1))
-      -- Keep h for expanding/collapsing Git Status tree nodes.
-      if suffix ~= "h" then
+      -- Preserve panel commands and native top/bottom navigation.
+      if not excluded_aliases[suffix] then
         map("n", suffix, binding.callback or binding.rhs, {
           buffer = state.bufnr,
           desc = binding.desc,

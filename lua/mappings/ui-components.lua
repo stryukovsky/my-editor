@@ -14,14 +14,6 @@ local ui_components_modes = { "n" }
 
 local telescope_components = {
   {
-    modes = ui_components_modes,
-    shortcut = "<A-m>",
-    command = function()
-      vim.cmd "Telescope grapple tags"
-    end,
-    desc = "UI telescope marks",
-  },
-  {
     modes = { "n" },
     shortcut = "<leader><leader>",
     command = function()

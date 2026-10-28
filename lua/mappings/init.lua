@@ -1,4 +1,4 @@
-local clear_selections = require "utils.clear_selections"
+local escape = require "utils.escape"
 local unset = vim.keymap.del
 
 unset("i", "<Tab>")
@@ -7,11 +7,10 @@ unset("i", "<S-Tab>")
 unset("s", "<S-Tab>")
 
 local map = require "mappings.map"
-map("n", "<Esc>", function()
-  -- nvim-notify has no public "is anything visible?" check (pending() is the queue).
-  require("notify").dismiss { silent = true, pending = true }
-  clear_selections()
-end, { desc = "clear highlights and notifications" })
+map("n", "<C-z>", "u", { desc = "Undo" })
+map("i", "<C-z>", "<C-o>u", { desc = "Undo" })
+
+map("n", "<Esc>", escape, { desc = "clear highlights and notifications" })
 
 map("n", "<C-c>", function()
   if vim.bo.buftype == "terminal" then
@@ -55,7 +54,6 @@ require "mappings.git"
 require "mappings.lsp_controls"
 require "mappings.snippet"
 require "mappings.logviewer"
-require "mappings.grapple"
 require "mappings.treesj"
 require "mappings.flash"
 require "mappings.refresh-buffer"

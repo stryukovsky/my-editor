@@ -167,16 +167,6 @@ setup_lualine {
     },
 
     lualine_x = defaults_for_x_component,
-    -- lualine_y = {
-    --   {
-    --     function()
-    --       return "󰛢"
-    --     end,
-    --     cond = function()
-    --       return packafge.loaded["grapple"] and require("grapple").exists()
-    --     end,
-    --   },
-    -- },
     lualine_y = { dap_output.lualine_component() },
     lualine_z = { "location", "selectioncount" },
   },

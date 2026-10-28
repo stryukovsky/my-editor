@@ -13,12 +13,6 @@ return {
     "RRethy/vim-illuminate",
   },
   {
-    "cbochs/grapple.nvim",
-    dependencies = {
-      { "nvim-tree/nvim-web-devicons", lazy = true },
-    },
-  },
-  {
     "Wansmer/langmapper.nvim",
     lazy = false,
     priority = 1, -- High priority is needed if you will use `autoremap()`

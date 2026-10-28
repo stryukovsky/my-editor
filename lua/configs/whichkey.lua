@@ -34,10 +34,29 @@ local config = {
     { "<leader>", mode = { "n", "v" } },
     { "<auto>", mode = "nixsotc" },
   },
-  sort = { "alphanum", "group", "local", "order", "mod" },
+  sort = {
+    function(item)
+      return item.group and 0 or 1
+    end,
+    "alphanum", "local", "order", "mod",
+  },
   ---@type number|fun(node: wk.Node):boolean?
-  expand = 3, -- expand groups when <= n mappings
+  expand = 0, -- keep groups collapsed until their prefix is pressed
 }
 
 local wk = require "which-key"
 wk.setup(config)
+
+wk.add({
+  {
+    mode = { "n", "v" },
+    { "<leader>g", group = "Git" },
+    { "<leader>t", group = "Tasks, tests & terminals" },
+    { "<leader>c", group = "Code & conflicts" },
+    { "<leader>d", group = "Debug" },
+    { "<leader>f", group = "Find & format" },
+    { "<leader>l", group = "LSP" },
+    { "<leader>j", group = "Jobs (todo file)" },
+    { "<leader>R", group = "Refactor" },
+  },
+})

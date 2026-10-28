@@ -11,7 +11,6 @@ return {
   "TelescopePrompt",
   "trouble",
   "grug-far",
-  "grapple",
   "neotest-summary",
   "zenmode-bg",
   "dap-terminal",

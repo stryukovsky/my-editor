@@ -41,7 +41,6 @@ local SECTIONS = {
       { "<A-c>", "git commits" },
       { "<A-g>", "git branches" },
       { "<A-k>", "Neo-tree git status" },
-      { "<A-m>", "marks (grapple)" },
       { "<A-u>", "undo tree" },
       { "<A-j>", "TODOs" },
       { "<A-R>", "find and replace" },
@@ -93,9 +92,9 @@ local SECTIONS = {
   {
     title = "Macros",
     items = {
-      { "<leader>q", "start / stop recording to q" },
-      { "Q", "play macro q (supports count)" },
-      { "q", "disabled (nop)" },
+      { "<leader>q", "Macro: toggle recording @q" },
+      { "Q", "Macro: play @q (supports count)" },
+      { "q", "Macro: bare recording disabled" },
     },
   },
   {

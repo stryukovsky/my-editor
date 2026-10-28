@@ -1,6 +1,6 @@
 ---@diagnostic disable: param-type-mismatch, unused-local, missing-fields, redundant-parameter
 local filesystem = require "neo-tree.sources.filesystem"
-local clear_selections = require "utils.clear_selections"
+local escape = require "utils.escape"
 local renderer = require "neo-tree.ui.renderer"
 local telescope = require "telescope.builtin"
 local commands = require "neo-tree.sources.common.commands"
@@ -371,7 +371,7 @@ local config = {
       -- ["<esc>"] = "cancel", -- close preview or floating neo-tree window
       ["<esc>"] = function(state)
         commands.cancel(state)
-        clear_selections()
+        escape()
       end, -- close preview or floating neo-tree window
       ["P"] = {
         "toggle_preview",
@@ -460,8 +460,23 @@ local config = {
         ["u"] = "git_unstage_file",
         ["x"] = "git_revert_file",
         ["c"] = "git_commit",
-        ["gp"] = "git_push",
-        ["gg"] = "git_commit_and_push",
+        ["gt"] = "noop",
+        ["gu"] = "noop",
+        ["gU"] = "noop",
+        ["gr"] = "noop",
+        ["gc"] = "noop",
+        ["gp"] = "noop",
+        ["gl"] = "noop",
+        ["b"] = "noop",
+        ["o"] = "noop",
+        ["oc"] = "noop",
+        ["od"] = "noop",
+        ["om"] = "noop",
+        ["on"] = "noop",
+        ["os"] = "noop",
+        ["ot"] = "noop",
+        ["gg"] = "noop",
+        ["G"] = "noop",
       },
     },
   },
