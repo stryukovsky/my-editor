@@ -41,6 +41,9 @@ local function run(cwd, args, message, callback)
           )
           return
         end
+        if args[1] == "commit" and package.loaded["neo-tree"] then
+          require("neo-tree.sources.manager").refresh "git_status"
+        end
         if callback then
           callback()
           return
@@ -75,7 +78,8 @@ function M.pull()
 end
 
 function M.push()
-  command({ "push" }, "Push finished")
+  -- Establish tracking automatically on the first push of a new branch.
+  command({ "-c", "push.autoSetupRemote=true", "push" }, "Push finished")
 end
 
 function M.fetch()

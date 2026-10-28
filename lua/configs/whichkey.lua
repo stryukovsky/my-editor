@@ -56,6 +56,7 @@ wk.add({
     { "<leader>d", group = "Debug" },
     { "<leader>f", group = "Find & format" },
     { "<leader>l", group = "LSP" },
+    { "<leader>md", group = "markdown" },
     { "<leader>j", group = "Jobs (todo file)" },
     { "<leader>R", group = "Refactor" },
   },
