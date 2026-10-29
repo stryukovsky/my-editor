@@ -19,6 +19,17 @@ In `~/.config/nvim/` you need to run setup scripts:
 
 Install basics with script on every platform
 
+# Crossplatform Neovim preparations
+
+**After installation of basics**, open neovim and run command
+
+```
+MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server basedpyright goimports prettier clangd black gofumpt vscode-solidity-server texlab jdtls xmlformatter java-debug-adapter
+```
+
+JDTLS NEEDS VPN!!!
+
+
 # Fedora / Asahi Fedora linux:
 
 Important stuff with root password
@@ -141,15 +152,6 @@ Updater references: [nvm](https://github.com/nvm-sh/nvm),
 [SDKMAN](https://sdkman.io/usage/), and
 [Coursier](https://get-coursier.io/docs/cli-install).
 
-# Neovim preparations
-
-After installation of basics, open neovim and run command
-
-```
-MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server basedpyright goimports prettier clangd black gofumpt vscode-solidity-server texlab jdtls xmlformatter java-debug-adapter
-```
-
-JDTLS NEEDS VPN!!!
 
 ## Debugger for java
 
@@ -205,6 +207,11 @@ Install plugins
 ```sh
 bash setup/fedora/gnome.sh
 ```
+
+## Fedora apps
+
+https://github.com/storytold/pdfcraft
+https://github.com/localsend/localsend
 
 ## Cuda NVIDIA & ollama
 
