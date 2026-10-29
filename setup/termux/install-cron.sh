@@ -5,6 +5,9 @@ setup_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 mkdir -p -- "$HOME/.local/bin" "$HOME/.local/state/vault-sync"
 cp -- "$setup_dir/vault-sync.sh" "$HOME/.local/bin/vault-sync"
 chmod 700 "$HOME/.local/bin/vault-sync"
+if [[ -n ${VAULT_DIR:-} || ! -f $HOME/.local/state/vault-sync/vault-path ]]; then
+  printf '%s\n' "${VAULT_DIR:-/storage/emulated/0/Documents/my-vault}" > "$HOME/.local/state/vault-sync/vault-path"
+fi
 
 # Keep unrelated cron jobs; replace our marked job on repeated setup runs.
 cron_file=$(mktemp)

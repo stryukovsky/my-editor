@@ -1,87 +1,82 @@
-# Termux setup
+# Termux vault sync
 
-Run from this Neovim checkout **in Termux**, without sudo:
+Minimal setup: Git, OpenSSH, coreutils (`timeout`), util-linux (`flock`), cronie,
+and termux-services. It leaves your shell, theme, fonts, and editor configuration
+alone and does not install development tools.
+
+From this checkout, inside Termux:
 
 ```sh
 bash setup/termux/setup.sh
 ```
 
-Grant Android storage access when prompted. The script upgrades packages,
-installs terminal tools, sets Zsh as the shell, and installs the configs below.
-Existing config files get a one-time `.before-termux-setup` backup.
-Open a new shell after setup.
+Grant storage access when Android prompts. Configure an SSH key with read/write
+access to the vault and verify GitHub's host key interactively. Then clone the
+vault if it is not already present:
 
-## Fedora features carried over
+```sh
+ssh -T git@github.com
+mkdir -p /storage/emulated/0/Documents
+git clone git@github.com:stryukovsky/my-vault.git /storage/emulated/0/Documents/my-vault
+bash "$HOME/.local/bin/vault-sync"
+```
 
-| Fedora setup | Termux setup |
-| --- | --- |
-| Zsh + Oh My Zsh philips, fzf, aliases | Same prompt, portable plugins, `ff`/`mc`, `o=termux-open`, `vim=nvim` |
-| AdwaitaMono Nerd Font, Material wheat colors | `~/.termux/font.ttf` and `colors.properties`; matching Ranger/tmux colors |
-| tmux navigation | Same Ctrl navigation and visual copy; OSC 52 clipboard, compact status bar, no desktop plugin dependencies |
-| Ranger | Wheat scheme, copy/cut/paste, rename/delete; Android file opening instead of Kitty/GNOME commands |
-| Neovim, ripgrep, fd-find | `neovim`, `ripgrep`, `fd`, `tree-sitter` |
-| GCC/build tools | Termux Clang, make, CMake, Ninja, pkg-config |
-| nvm / rustup / desktop language installs | Android-native `nodejs-lts`, Python, Go, Rust packages |
-| btop | htop (Termux's maintained process monitor; Android limits process visibility) |
-| pandoc, ImageMagick, debugger, coverage, PostgreSQL, Maven | Install if available in this device's current package metadata |
-| cron | cronie supervised by termux-services |
+The cron key must work without an interactive passphrase prompt; cron does not
+inherit a new shell's SSH agent.
 
-GNOME, Wayland, desktop terminals, Flatpak, Fedora repositories, kernel VPN
-configuration, and desktop clipboard helpers are not installed. Android owns
-those system/desktop functions. Do not run `setup/common_tools/commons.sh` here:
-its desktop runtime installers are not the Termux package workflow.
+## Bidirectional sync every three minutes
 
-Use `update-termux` in Zsh to upgrade Termux packages and Oh My Zsh. Package
-upgrades also update the packaged language runtimes.
+The installed `~/.local/bin/vault-sync` runs this sequence:
 
-## Vault update every three minutes
+1. Stash local tracked and untracked edits, if any.
+2. `git pull --no-rebase --no-edit` (merge remote updates).
+3. Pop only the stash created by this run, if any.
+4. `git add -A`, then `git commit -m "sync"` if staged changes exist.
+5. `git push`, including when a previous run committed but could not push.
 
-Setup installs `~/.local/bin/vault-sync` and this marked cronie entry, preserving
-unrelated jobs and replacing its own entry on subsequent runs:
+The default vault is `/storage/emulated/0/Documents/my-vault`. For a different
+checkout, set `VAULT_DIR` when running setup; the cron installer saves that path
+for the job. Direct invocation also accepts `VAULT_DIR`.
+
+Overlapping runs are locked out. Network operations time out after two minutes.
+Pull, stash-pop, commit, and push failures stop the run. Conflicts require manual
+resolution; the job does not choose a side or discard edits. A failed pull/pop
+preserves the sync stash and subsequent runs stop until it is recovered. Existing
+unrelated stashes are left alone, including on clean runs.
+
+To recover, inspect `git status` and `git stash list` in the vault. Resolve or
+abort the interrupted merge, then restore the `termux-vault-sync` stash if still
+present and resolve its conflicts. Once recovered, remove that stash from the
+stash list before running sync again. Do not drop it before restoring your edits.
+
+Setup preserves unrelated cron entries and replaces its own marked job on reruns:
 
 ```cron
 */3 * * * * /data/data/com.termux/files/usr/bin/bash "$HOME/.local/bin/vault-sync" >> "$HOME/.local/state/vault-sync/cron.log" 2>&1 # termux-vault-sync
 ```
 
-The prefix is taken from `$PREFIX` during installation. The vault defaults to
-`/storage/emulated/0/Documents/my-vault`. This job **pulls only**, with
-`git pull --ff-only`: it never commits, stashes, rebases, or pushes local edits.
-Dirty checkouts are skipped. Concurrent runs are locked out, network operations
-time out, and SSH is noninteractive with strict host-key checking.
-
-First configure an SSH key authorized for `stryukovsky/my-vault`, verify GitHub's
-host key interactively, and clone using the shell helper:
+The installer uses the device's `$PREFIX`. Check the schedule and service with:
 
 ```sh
-ssh -T git@github.com
-pullvault
-bash "$HOME/.local/bin/vault-sync"
 crontab -l
 sv status crond
 tail -n 30 "$HOME/.local/state/vault-sync/cron.log"
 ```
 
-The cron key must work without an interactive passphrase prompt (cron does not
-inherit a new shell's SSH agent). Shared storage must remain accessible.
-`pushvault` explicitly stages and commits local changes, then rebases and pushes;
-use it manually when you want to publish phone edits.
+Keep Termux running, permit background activity, and disable its Android battery
+optimization. Setup enables crond and acquires `termux-wake-lock`; release it
+with `termux-wake-unlock` when no longer needed. Android can still stop the app,
+so exact timing is not guaranteed. Reboot autostart requires Termux:Boot.
+Truncate the cron log occasionally if it grows large.
 
-Keep Termux running, allow background activity, and disable Android battery
-optimization for Termux. Setup acquires `termux-wake-lock` to help cron run while
-the screen is off; release it with `termux-wake-unlock` when no longer needed.
-Android can still stop the app, so this is not an exact timing guarantee. Services
-restart on a new Termux shell; reboot autostart requires the separate Termux:Boot
-app. The cron log is a regular file; truncate it occasionally if it grows large.
-
-To reinstall only the scheduled job after packages are installed:
+To update only the installed script and cron entry after editing this checkout:
 
 ```sh
 bash setup/termux/install-cron.sh
 ```
 
-To remove it, run `crontab -e` and delete the `# termux-vault-sync` line. Disable
-crond with `sv-disable crond` only if no other jobs need it.
+To remove the job, delete the `# termux-vault-sync` line with `crontab -e`.
+Disable crond with `sv-disable crond` only if no other jobs need it.
 
-Sources: [Termux package definitions](https://github.com/termux/termux-packages/tree/master/packages),
-[service management](https://github.com/termux/termux-services),
-and [Termux maintainer guidance on cron/background execution](https://github.com/termux/termux-app/discussions/3297).
+[Termux service management](https://github.com/termux/termux-services) ·
+[Termux cron/background guidance](https://github.com/termux/termux-app/discussions/3297)

@@ -270,8 +270,8 @@ Setup the environment:
 bash setup/termux/setup.sh
 ```
 
-See [Termux setup](setup/termux/README.md) for the Fedora feature mapping,
-terminal theme, and three-minute vault cron job.
+See [Termux setup](setup/termux/README.md) for the minimal setup and
+three-minute bidirectional vault sync cron job.
 
 # MACOS
 
