@@ -31,14 +31,10 @@ pullvault() {
 }
 
 pushvault() {
-  local vault_dir=${VAULT_DIR:-/storage/emulated/0/Documents/my-vault}
-  [[ -d $vault_dir/.git ]] || { print -u2 'Run pullvault first'; return 1; }
-  git -C "$vault_dir" add . || return
-  if ! git -C "$vault_dir" diff --cached --quiet; then
-    git -C "$vault_dir" commit -m 'chore: update' || return
-  fi
-  git -C "$vault_dir" pull --rebase && git -C "$vault_dir" push
+  # Share cron's sync sequence, saved vault path, lock, and conflict handling.
+  VAULT_DIR="${VAULT_DIR:-}" bash "$HOME/.local/bin/vault-sync"
 }
+alias pv=pushvault
 
 update-termux() {
   pkg update && pkg upgrade || return

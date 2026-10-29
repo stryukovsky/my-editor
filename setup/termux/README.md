@@ -34,6 +34,10 @@ The installed `~/.local/bin/vault-sync` runs this sequence:
 4. `git add -A`, then `git commit -m "sync"` if staged changes exist.
 5. `git push`, including when a previous run committed but could not push.
 
+The Termux `zshrc.sh` defines `pushvault` and its shortcut `pv`. Both invoke the
+same installed sync script as cron, sharing its lock and conflict handling.
+After updating your Termux Zsh config, reload it with `source ~/.zshrc`.
+
 The default vault is `/storage/emulated/0/Documents/my-vault`. For a different
 checkout, set `VAULT_DIR` when running setup; the cron installer saves that path
 for the job. Direct invocation also accepts `VAULT_DIR`.
