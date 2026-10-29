@@ -403,6 +403,11 @@ local config = {
     },
   },
   filesystem = {
+    commands = {
+      copy_to_clipboard = require("utils.neotree_clipboard").copy,
+      copy_to_clipboard_visual = require("utils.neotree_clipboard").copy_visual,
+      paste_from_clipboard = require("utils.neotree_clipboard").paste,
+    },
     hijack_netrw_behavior = "disabled",
     window = {
       mappings = {

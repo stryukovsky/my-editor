@@ -11,6 +11,13 @@ gsettings set org.gnome.desktop.peripherals.pointingstick speed -1.0
 gsettings set org.gnome.GPaste save-history false
 gsettings set org.gnome.desktop.interface enable-hot-corners false
 
+# PdfCraft's AppImage desktop integration installs pdfcraft.desktop.
+if [[ -f ${XDG_DATA_HOME:-$HOME/.local/share}/applications/pdfcraft.desktop || -f /usr/share/applications/pdfcraft.desktop ]]; then
+  xdg-mime default pdfcraft.desktop application/pdf
+else
+  printf 'Skipping PDF default: install PdfCraft desktop integration first.\n'
+fi
+
 gsettings set org.gnome.desktop.sound allow-volume-above-100-percent 'true'
 
 gsettings set org.gnome.desktop.a11y.magnifier lens-mode false

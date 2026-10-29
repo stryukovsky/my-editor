@@ -261,8 +261,10 @@ Setup the environment:
 ```sh
 
 bash setup/termux/setup.sh
-cp setup/zshrc.sh ~/.zshrc
 ```
+
+See [Termux setup](setup/termux/README.md) for the Fedora feature mapping,
+terminal theme, and three-minute vault cron job.
 
 # MACOS
 
@@ -298,3 +300,20 @@ https://github.com/tmux/tmux
 https://gcc.gnu.org/ https://github.com/BurntSushi/ripgrep
 https://github.com/aristocratos/bpytop  
 https://go.dev/ https://github.com/pyenv/pyenv
+
+## Neo-tree shared file clipboard
+
+In the filesystem tree, `c` saves the current file or directory for copying;
+visual `c` saves the selected entries together. Each copy replaces the previous
+selection. `p` reads the latest saved paths, so you can paste in another Neovim
+process or paste into several directories without copying again.
+
+Paths are stored in `stdpath("data")/neotree-clipboard.json` (this configuration
+uses `~/.config/nvim/data/neotree-clipboard.json`). Paste, Esc, local clipboard
+clearing, text-path yanks (`y`), and exiting Neovim preserve this file. Only a new
+file copy replaces it. Sources must still exist when pasting.
+
+`x` remains a local cut: a pending cut takes priority over the saved copies and
+moves its entries on paste. After it is pasted or cleared, `p` uses the shared
+copy selection again. Destination selection and name-conflict prompts follow
+Neo-tree's usual behavior.
