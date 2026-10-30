@@ -169,6 +169,14 @@ map(ui_components_modes, "<A-e>", function()
   ui_prevent_mess()
   local current_buf = vim.api.nvim_get_current_buf()
   local file_path = vim.api.nvim_buf_get_name(current_buf)
+  if vim.bo[current_buf].filetype == "neo-tree" then
+    local state = require("neo-tree.sources.manager").get_state_for_window()
+    local node = state and state.tree and state.tree:get_node()
+    file_path = node and node.path or ""
+  end
+  if require("utils.reveal_in_git_status")(file_path) then
+    return
+  end
   local empty_file_path = file_path == ""
   local file_exists = false
   if not empty_file_path then

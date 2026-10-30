@@ -47,6 +47,9 @@ local function override_highlights()
   local foreground_inactive = vim.api.nvim_get_hl(0, { name = "Normal" }).fg
   local foreground_active = vim.api.nvim_get_hl(0, { name = "Title" }).fg
 
+  hl(0, "TerminalNormalBar", { bg = "#ff1744", fg = "#ffffff", bold = true })
+  hl(0, "TerminalInputBar", { bg = "#f7f1e3", fg = "#40382c" })
+
   hl(0, "Title", { fg = medium_orange_fg, bold = true })
 
   hl(0, "DiagnosticWarn", dark_orange_fg)

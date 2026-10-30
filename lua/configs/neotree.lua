@@ -8,7 +8,6 @@ local grug_far = require "grug-far"
 local system_file_explorer = require "utils.system_file_explorer"
 local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
-local async = require "plenary.async"
 local notify = require "configs.notify"
 local script = require "utils.script"
 
@@ -101,6 +100,7 @@ local config = {
       event = "after_render",
       handler = function(state)
         require("mappings.neotree_git_status").attach(state)
+        require("mappings.neotree_git_navigation").attach(state)
       end,
     },
   },
@@ -173,9 +173,7 @@ local config = {
       require("configs.terminal").open_new(path)
     end,
     ["my_git_add_file"] = function(state)
-      async.run(function()
-        commands.git_add_file(state)
-      end, function() end)
+      require("neo-tree.sources.git_status.commands").git_add_file(state)
     end,
     ["make_executable"] = function(state)
       local node = state.tree:get_node()
@@ -458,6 +456,7 @@ local config = {
   git_status = {
     window = {
       mappings = {
+        ["C"] = "close_all_nodes",
         ["h"] = "toggle_node",
         ["l"] = "open",
         ["S"] = "git_add_all",

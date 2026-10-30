@@ -150,16 +150,18 @@ function M.tracking_display(upstream, trackshort, remotename)
   if upstream == "" then
     return "", "TelescopeResultsComment"
   end
+  local remote = remotename ~= "" and remotename or (upstream:match "^([^/]+)" or upstream)
   if trackshort == "=" then
-    local remote = remotename ~= "" and remotename or (upstream:match "^([^/]+)" or upstream)
-    return "= " .. remote, "TelescopeResultsComment"
+    return "=" .. remote, "TelescopeResultsComment"
   end
-  local name = upstream
-  local length = vim.fn.strchars(name)
-  if length > 3 then
-    name = vim.fn.strcharpart(name, 0, 1) .. M.ELLIPSIS .. vim.fn.strcharpart(name, length - 1, 1)
+  local arrows = ""
+  if trackshort:find(">", 1, true) then
+    arrows = arrows .. "↑"
   end
-  return "=> " .. name, "TelescopeResultsIdentifier"
+  if trackshort:find("<", 1, true) then
+    arrows = arrows .. "↓"
+  end
+  return arrows .. remote, "DiagnosticError"
 end
 
 ---@class telescope_pretty_picker.display.Branch

@@ -1,86 +1,53 @@
-# Termux vault sync
+# Termux setup and Obsidian vault
 
-Minimal setup: Git, OpenSSH, coreutils (`timeout`), util-linux (`flock`), cronie,
-and termux-services. It leaves your shell, theme, fonts, and editor configuration
-alone and does not install development tools.
-
-From this checkout, inside Termux:
+Run from this Neovim config checkout inside Termux:
 
 ```sh
 bash setup/termux/setup.sh
 ```
 
-Grant storage access when Android prompts. Configure an SSH key with read/write
-access to the vault and verify GitHub's host key interactively. Then clone the
-vault if it is not already present:
+Grant Android storage access, then choose a nearby mirror or regional mirror
+group in `termux-change-repo`. Setup installs Git, OpenSSH, Zsh, Neovim, fzf,
+tmux, ranger, and htop; installs the shell, terminal colors, tmux, and ranger
+configs; and selects Zsh as the login shell. Existing config files get a
+`.before-termux-setup` backup once. Oh My Zsh is used if already installed.
+
+Setup removes the previous marked vault cron job and installed `vault-sync`
+script. Unrelated cron jobs are preserved; crond is disabled and the old wake lock is released only when removing
+our job leaves no other entries. No scheduled sync or wake lock is installed.
+
+An Ed25519 SSH key is generated interactively if absent. Existing keys are
+preserved. Setup prints the public key last: add it to
+[GitHub SSH keys](https://github.com/settings/ssh/new), then run:
 
 ```sh
+exec zsh
 ssh -T git@github.com
-mkdir -p /storage/emulated/0/Documents
-git clone git@github.com:stryukovsky/my-vault.git /storage/emulated/0/Documents/my-vault
-bash "$HOME/.local/bin/vault-sync"
+clv  # only if the vault is not already cloned
+cdv
 ```
 
-The cron key must work without an interactive passphrase prompt; cron does not
-inherit a new shell's SSH agent.
+The vault path is always `/storage/emulated/0/Documents/my-vault`.
+`clv` clones `git@github.com:stryukovsky/my-vault.git` there. If it already exists,
+use it directly; clone does not replace an existing directory.
 
-## Bidirectional sync every three minutes
+| Command | Behavior |
+| --- | --- |
+| `cdv` | Change to the vault directory. |
+| `clv` | Clone the vault from GitHub over SSH. |
+| `wv` | Stage all changes/deletions, commit if needed, and force-push the local branch over its tracked remote branch. |
+| `rv` | Stash tracked/untracked edits, fetch the tracked remote branch, fast-forward to it, then pop this run's stash. |
 
-The installed `~/.local/bin/vault-sync` runs this sequence:
+`wv` deliberately overwrites remote history, including commits missing locally.
+It never pulls first. A clean working tree still pushes existing local commits.
+Both commands use the configured upstream remote and branch, falling back to
+`origin` and the current branch name if no upstream is configured.
 
-1. Stash local tracked and untracked edits, if any.
-2. `git pull --no-rebase --no-edit` (merge remote updates).
-3. Pop only the stash created by this run, if any.
-4. `git add -A`, then `git commit -m "sync"` if staged changes exist.
-5. `git push`, including when a previous run committed but could not push.
+`rv` does not push. Diverged committed histories stop the fast-forward; fetch or
+update failures preserve the new stash and print its ID. A stash-pop conflict
+also leaves the stash available. Inspect `git status` and `git stash list`, then
+restore/resolve it manually. A clean run never pops an unrelated existing stash.
+Pending merges, rebases, or unresolved conflicts must be resolved first.
 
-The Termux `zshrc.sh` defines `pushvault` and its shortcut `pv`. Both invoke the
-same installed sync script as cron, sharing its lock and conflict handling.
-After updating your Termux Zsh config, reload it with `source ~/.zshrc`.
-
-The default vault is `/storage/emulated/0/Documents/my-vault`. For a different
-checkout, set `VAULT_DIR` when running setup; the cron installer saves that path
-for the job. Direct invocation also accepts `VAULT_DIR`.
-
-Overlapping runs are locked out. Network operations time out after two minutes.
-Pull, stash-pop, commit, and push failures stop the run. Conflicts require manual
-resolution; the job does not choose a side or discard edits. A failed pull/pop
-preserves the sync stash and subsequent runs stop until it is recovered. Existing
-unrelated stashes are left alone, including on clean runs.
-
-To recover, inspect `git status` and `git stash list` in the vault. Resolve or
-abort the interrupted merge, then restore the `termux-vault-sync` stash if still
-present and resolve its conflicts. Once recovered, remove that stash from the
-stash list before running sync again. Do not drop it before restoring your edits.
-
-Setup preserves unrelated cron entries and replaces its own marked job on reruns:
-
-```cron
-*/3 * * * * /data/data/com.termux/files/usr/bin/bash "$HOME/.local/bin/vault-sync" >> "$HOME/.local/state/vault-sync/cron.log" 2>&1 # termux-vault-sync
-```
-
-The installer uses the device's `$PREFIX`. Check the schedule and service with:
-
-```sh
-crontab -l
-sv status crond
-tail -n 30 "$HOME/.local/state/vault-sync/cron.log"
-```
-
-Keep Termux running, permit background activity, and disable its Android battery
-optimization. Setup enables crond and acquires `termux-wake-lock`; release it
-with `termux-wake-unlock` when no longer needed. Android can still stop the app,
-so exact timing is not guaranteed. Reboot autostart requires Termux:Boot.
-Truncate the cron log occasionally if it grows large.
-
-To update only the installed script and cron entry after editing this checkout:
-
-```sh
-bash setup/termux/install-cron.sh
-```
-
-To remove the job, delete the `# termux-vault-sync` line with `crontab -e`.
-Disable crond with `sv-disable crond` only if no other jobs need it.
-
-[Termux service management](https://github.com/termux/termux-services) ·
-[Termux cron/background guidance](https://github.com/termux/termux-app/discussions/3297)
+The old `pushvault` / `pv` names now call `wv`; `pullvault` calls `rv`.
+To select another package mirror later, run `termux-change-repo` again.

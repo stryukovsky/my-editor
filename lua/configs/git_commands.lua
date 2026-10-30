@@ -32,6 +32,11 @@ local function run(cwd, args, message, callback)
     on_exit = function(code, stderr, stdout)
       vim.schedule(function()
         M.busy[cwd] = nil
+        -- Failed Git commands can also change the index/worktree (e.g. merge conflicts).
+        if package.loaded["neo-tree"] then
+          local events = require "neo-tree.events"
+          events.fire_event(events.GIT_EVENT)
+        end
         if code ~= 0 then
           local error = stderr ~= "" and stderr or stdout
           notify.send(
@@ -40,9 +45,6 @@ local function run(cwd, args, message, callback)
             vim.log.levels.ERROR
           )
           return
-        end
-        if args[1] == "commit" and package.loaded["neo-tree"] then
-          require("neo-tree.sources.manager").refresh "git_status"
         end
         if callback then
           callback()

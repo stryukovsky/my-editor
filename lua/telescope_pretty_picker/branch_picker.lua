@@ -104,7 +104,9 @@ end
 ---Telescope `actions.git_delete_branch`, with `vim.fn.confirm`.
 ---@param prompt_bufnr integer
 local function git_delete_branch(prompt_bufnr)
-  if not commons.confirmed "Do you really want to delete the selected branches?" then
+  if
+    not commons.confirmed "Do you really want to delete the selected branches?"
+  then
     notify_canceled()
     return
   end
@@ -133,8 +135,66 @@ local function git_delete_branch(prompt_bufnr)
   end)
 end
 
+-- Compare the selected local branch with its configured remote-tracking ref.
+local function merge_confirmation(selection, cwd)
+  local question =
+    string.format("Do you really want to merge branch %s?", selection.value)
+  local ref = selection.refname or ""
+  if not vim.startswith(ref, "refs/heads/") then
+    return question
+  end
+
+  local output, err =
+    git.run({ "for-each-ref", "--format=%(upstream)", ref }, cwd)
+  if not output then
+    return nil, err
+  end
+  local upstream = vim.trim(output)
+  if not vim.startswith(upstream, "refs/remotes/") then
+    return question
+  end
+
+  local counts
+  counts, err = git.run(
+    { "rev-list", "--left-right", "--count", ref .. "..." .. upstream },
+    cwd
+  )
+  if not counts then
+    return nil, err
+  end
+  local ahead, behind = counts:match "^(%d+)%s+(%d+)"
+  ahead, behind = tonumber(ahead), tonumber(behind)
+  if not ahead or not behind then
+    return nil, "Cannot compare branch with " .. upstream
+  end
+  if ahead == 0 and behind == 0 then
+    return question
+  end
+
+  local remote_name = upstream:sub(#"refs/remotes/" + 1)
+  local warning = string.format(
+    "%s has %d new commits missing from %s.",
+    remote_name,
+    behind,
+    selection.value
+  )
+  if ahead > 0 then
+    warning = warning
+      .. string.format(
+        "\n%s has %d commits missing from %s.",
+        selection.value,
+        ahead,
+        remote_name
+      )
+  end
+  return warning
+    .. "\nMerge local branch "
+    .. selection.value
+    .. " into the current branch anyway?"
+end
+
 ---Telescope `make_git_branch_action` for merge/rebase, with `vim.fn.confirm`.
----@param opts { confirmation_question: string, success_message: string, error_message: string, command: fun(branch_name: string): string[] }
+---@param opts { confirmation_question: string|function, success_message: string, error_message: string, command: fun(branch_name: string): string[] }
 ---@return fun(prompt_bufnr: integer)
 local function make_git_branch_action(opts)
   return function(prompt_bufnr)
@@ -145,7 +205,19 @@ local function make_git_branch_action(opts)
       return
     end
 
-    local question = string.format(opts.confirmation_question, selection.value)
+    local question, check_err
+    if type(opts.confirmation_question) == "function" then
+      question, check_err = opts.confirmation_question(selection, cwd)
+    else
+      question = string.format(opts.confirmation_question, selection.value)
+    end
+    if not question then
+      tell(
+        check_err or "Cannot check branch tracking status",
+        vim.log.levels.ERROR
+      )
+      return
+    end
     if not commons.confirmed(question) then
       notify_canceled()
       return
@@ -165,7 +237,7 @@ local function make_git_branch_action(opts)
 end
 
 local git_merge_branch = make_git_branch_action {
-  confirmation_question = "Do you really want to merge branch %s?",
+  confirmation_question = merge_confirmation,
   success_message = "Merged branch: %s",
   error_message = "Error when merging branch: %s. Git returned: '%s'",
   command = function(branch_name)
