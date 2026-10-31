@@ -1,0 +1,7 @@
+{
+  "uuid": "kitty-top@local",
+  "name": "Kitty btop Focus",
+  "description": "Let the Copilot launcher focus its selected Kitty window on Wayland.",
+  "shell-version": ["50"],
+  "version": 1
+}

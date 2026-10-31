@@ -1,6 +1,19 @@
 local map = require "mappings.map"
 
-map({ "n", "x" }, "x", '"_x', { desc = "Delete without changing clipboard" })
+-- Keep copied text when deleting/changing; an empty clipboard can accept deletions.
+for _, key in ipairs { "d", "D", "c", "C", "x", "X", "s", "S", "." } do
+  map(key == "." and "n" or { "n", "x" }, key, function()
+    local register = vim.v.register
+    if register ~= '"' and register ~= "+" then
+      return key
+    end
+    local ok, clipboard = pcall(vim.fn.getreg, "+")
+    if not ok or clipboard ~= "" then
+      return '"_' .. key
+    end
+    return key
+  end, { expr = true, desc = "Delete/change without overwriting clipboard" })
+end
 
 -- Helper to set search register without moving cursor
 local function highlight_current(is_visual)

@@ -23,7 +23,6 @@ local SECTIONS = {
       { "<A-W>", "wrap (also <A-r>)" },
       { "<A-1>", "relative line numbers" },
       { "<A-Z>", "zen UI" },
-      { "<leader>zen", "zen mode" },
     },
   },
   {
@@ -33,7 +32,7 @@ local SECTIONS = {
       { "<A-l>", "document symbols" },
       { "<A-o>", "oil file browser" },
       { "<leader><leader>", "find files" },
-      { "<A-b>", "buffers tree" },
+      { "<A-b>", "debug breakpoints" },
       { "<A-P>", "projects" },
       { "<A-z>", "oldfiles" },
       { "<A-f>", "search forward" },
@@ -46,12 +45,14 @@ local SECTIONS = {
       { "<A-R>", "find and replace" },
       { "<A-p>", "trouble diagnostics" },
       { "<A-i>", "mermaid block ASCII / row / diagnostic" },
+      { "<A-I>", "toggle CSV view (CSV buffers)" },
+      { "<leader>mdt", "toggle Markdown rendering (current buffer)" },
       { "<leader>va", "diagram as ASCII" },
       { "<leader>vi", "diagram as image" },
       { "<A-t>", "test summary" },
       { "<A-T>", "test output" },
       { "<leader>th", "colorscheme" },
-      { "<leader>notify", "notification history" },
+      { "<leader>logv", "notification/error log picker" },
     },
   },
 
@@ -151,8 +152,8 @@ local SECTIONS = {
   {
     title = "Treesj",
     items = {
-      { "<leader>ss", "split" },
-      { "<leader>sj", "join" },
+      { "<leader>sjs", "split" },
+      { "<leader>sjj", "join" },
     },
   },
   {

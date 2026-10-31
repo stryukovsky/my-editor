@@ -26,12 +26,19 @@ local function open_history()
   for _, notification in ipairs(notifications) do
     local timestamp = os.date("%Y-%m-%d %H:%M:%S", notification.time)
     local title = table.concat(notification.title or {}, " ")
-    table.insert(lines, ("%s [%s] %s"):format(timestamp, notification.level, title))
+    table.insert(
+      lines,
+      ("%s [%s] %s"):format(timestamp, notification.level, title)
+    )
     vim.list_extend(lines, notification.message)
     table.insert(lines, "")
   end
 
-  open_scratch { name = "notify-history", filetype = "notify-history", lines = lines }
+  open_scratch {
+    name = "notify-history",
+    filetype = "notify-history",
+    lines = lines,
+  }
 end
 
 -- ERROR toasts from nvim-notify, plus :messages lines that look like Vim/Lua errors.
@@ -80,5 +87,16 @@ local function open_errors()
   open_scratch { name = "session-errors", filetype = "log", lines = lines }
 end
 
-map("n", "<leader>notify", open_history, { desc = "Notify show session history" })
-map("n", "<leader>err", open_errors, { desc = "Show session errors" })
+map("n", "<leader>logv", function()
+  vim.ui.select(
+    { "Notifications", "Errors" },
+    { prompt = "View logs" },
+    function(choice)
+      if choice == "Notifications" then
+        open_history()
+      elseif choice == "Errors" then
+        open_errors()
+      end
+    end
+  )
+end, { desc = "Logs: view notifications or errors" })

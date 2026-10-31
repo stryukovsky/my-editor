@@ -212,7 +212,7 @@ local function enable_heavy(buf)
     vim.opt_local.spelloptions = "camel,noplainbuffer"
   end)
 
-  vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+  vim.bo[buf].indentexpr = "v:lua.require'configs.treesitter'.indentexpr()"
   apply_hex_syntax(buf)
 
   vim.api.nvim_buf_call(buf, function()
@@ -294,7 +294,7 @@ vim.api.nvim_create_autocmd("FileType", {
       return
     end
 
-    vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+    vim.bo[args.buf].indentexpr = "v:lua.require'configs.treesitter'.indentexpr()"
 
     vim.schedule(function()
       if not vim.api.nvim_buf_is_valid(args.buf) or is_skipping(args.buf) then

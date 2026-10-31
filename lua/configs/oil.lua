@@ -280,7 +280,6 @@ oil.setup {
     ["<A-e>"] = function(_) end,
     ["<A-l>"] = function(_) end,
     ["<A-k>"] = function(_) end,
-    ["<A-b>"] = function(_) end,
     ["-"] = { "actions.parent", mode = "n" },
     ["<bs>"] = { "actions.parent", mode = "n" },
     ["q"] = { callback = close_oil, desc = "Close", mode = "n" },

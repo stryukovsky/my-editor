@@ -202,11 +202,6 @@ map(ui_components_modes, "<A-l>", function()
   focus_neotree("document_symbols", true, {})
 end, { desc = "UI neotree structure" })
 
-map(ui_components_modes, "<A-b>", function()
-  ui_prevent_mess()
-  focus_neotree("buffers", true, {})
-end, { desc = "UI neotree buffers" })
-
 map(ui_components_modes, "<A-k>", function()
   ui_prevent_mess()
   focus_neotree("git_status", false, {})

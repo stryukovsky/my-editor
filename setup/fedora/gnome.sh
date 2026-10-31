@@ -30,6 +30,21 @@ gsettings set org.gnome.desktop.a11y.magnifier mag-factor 2.0
 
 # Install the Nautilus Open in Kitty action from this dotfiles checkout.
 fedora_setup_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+# The Lenovo Copilot key emits Super+Shift+F23. Preserve other custom shortcuts.
+python3 "$fedora_setup_dir/../../bin/kitty-top" --install-shortcut
+
+# Keep a persistent copy of the desktop wallpaper for both light and dark mode.
+wallpaper_source="$fedora_setup_dir/../../MyBackground.jpg"
+if [[ -f $wallpaper_source ]]; then
+  wallpaper_path="${XDG_DATA_HOME:-$HOME/.local/share}/backgrounds/MyBackground.jpg"
+  install -Dm644 -- "$wallpaper_source" "$wallpaper_path"
+  wallpaper_uri=$(python3 -c 'import pathlib, sys; print(pathlib.Path(sys.argv[1]).resolve().as_uri())' "$wallpaper_path")
+  gsettings set org.gnome.desktop.background picture-uri "$wallpaper_uri"
+  gsettings set org.gnome.desktop.background picture-uri-dark "$wallpaper_uri"
+  gsettings set org.gnome.desktop.background picture-options 'zoom'
+fi
+
 nautilus_extension_dir="${XDG_DATA_HOME:-$HOME/.local/share}/nautilus-python/extensions"
 mkdir -p -- "$nautilus_extension_dir"
 # Match the system Ghostty module; the provider guards duplicate registrations.

@@ -202,7 +202,12 @@ Install plugins
 - https://extensions.gnome.org/extension/6994/keyboard-reset/
 - https://extensions.gnome.org/extension/1007/window-is-ready-notification-remover/
 - https://extensions.gnome.org/extension/5353/window-state-manager/
+- https://extensions.gnome.org/extension/7048/rounded-window-corners-reborn/
+- https://extensions.gnome.org/extension/4559/quick-lang-switch/
+- https://extensions.gnome.org/extension/3193/blur-my-shell/
+- https://extensions.gnome.org/extension/19/user-themes/
   After installed, configure it:
+
 
 ```sh
 bash setup/fedora/gnome.sh
@@ -212,6 +217,13 @@ bash setup/fedora/gnome.sh
 
 https://github.com/storytold/pdfcraft
 https://github.com/localsend/localsend
+
+## Fedora themes 
+
+https://github.com/vinceliuice/whitesur-gtk-theme 
+
+In Gnome user themes extension set light theme
+
 
 ## Cuda NVIDIA & ollama
 

@@ -1,0 +1,184 @@
+#!/usr/bin/python3
+"""Focus btop across Kitty instances, or start it in a new tab/window."""
+import fcntl
+import json
+import os
+from pathlib import Path
+import socket
+import struct
+import subprocess
+import sys
+import time
+
+
+def remote(address, *args):
+    result = subprocess.run(
+        ['kitty', '@', '--to', address, *args],
+        stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=4,
+    )
+    if result.returncode:
+        raise RuntimeError(result.stderr.strip() or 'Kitty remote control failed')
+    return result.stdout.strip()
+
+
+def addresses():
+    # listen_on unix:/tmp/mykitty produces one socket per Kitty process.
+    paths = sorted(Path('/tmp').glob('mykitty-*'), reverse=True)
+    paths.append(Path('/tmp/mykitty'))
+    result = []
+    configured = os.environ.get('KITTY_LISTEN_ON', '')
+    if configured.startswith('unix:'):
+        result.append(configured)
+    for path in paths:
+        try:
+            if path.is_socket() and path.stat().st_uid == os.getuid():
+                result.append(f'unix:{path}')
+        except OSError:
+            continue
+    return list(dict.fromkeys(result))
+
+
+def running_instances():
+    instances = []
+    for address in addresses():
+        try:
+            windows = json.loads(remote(address, 'ls'))
+            if windows:
+                instances.append((address, windows))
+        except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired):
+            continue  # A socket can outlive its Kitty process.
+    instances.sort(key=lambda item: any(w.get('is_focused') for w in item[1]), reverse=True)
+    return instances
+
+
+def runs_btop(window):
+    processes = window.get('foreground_processes') or [{'cmdline': window.get('cmdline', [])}]
+    return any(p.get('cmdline') and Path(p['cmdline'][0]).name == 'btop' for p in processes)
+
+
+
+def focus_window(address, window_id):
+    remote(address, 'focus-window', '--match', f'id:{window_id}')
+    if os.environ.get('XDG_CURRENT_DESKTOP', '').find('GNOME') < 0:
+        return
+    from gi.repository import Gio, GLib
+
+    # FocusApp is restricted on GNOME; our extension handles only Kitty windows.
+    windows = json.loads(remote(address, 'ls'))
+    tab = next(t for ow in windows for t in ow['tabs']
+               if any(str(w['id']) == str(window_id) for w in t['windows']))
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
+        connection.settimeout(2)
+        connection.connect(address.removeprefix('unix:'))
+        pid, _, _ = struct.unpack('3i', connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, 12))
+    try:
+        result = Gio.bus_get_sync(Gio.BusType.SESSION, None).call_sync(
+            'org.gnome.Shell', '/org/gnome/Shell/Extensions/KittyTop',
+            'org.gnome.Shell.Extensions.KittyTop', 'Focus',
+            GLib.Variant('(us)', (pid, tab['title'])), GLib.VariantType.new('(b)'),
+            Gio.DBusCallFlags.NONE, 2000, None,
+        )
+        if not result.unpack()[0]:
+            raise RuntimeError('GNOME could not find the selected Kitty window')
+    except GLib.Error as error:
+        raise RuntimeError('Kitty tab selected, but GNOME focus helper is unavailable; '
+                           'log out/in after --install-shortcut') from error
+
+
+def focus_btop():
+    instances = running_instances()
+    # Search every OS window, tab and pane before creating anything.
+    for address, os_windows in instances:
+        for os_window in os_windows:
+            for tab in os_window['tabs']:
+                for window in tab['windows']:
+                    if runs_btop(window):
+                        focus_window(address, window['id'])
+                        return
+    if instances:
+        address, os_windows = instances[0]
+        preferred = next(
+            (w for w in os_windows if w.get('is_focused') or w.get('last_focused')),
+            os_windows[0],
+        )
+        tab = next((t for t in preferred['tabs'] if t.get('is_active')), preferred['tabs'][0])
+        window_id = remote(address, 'launch', '--type=tab', '--match', f"id:{tab['id']}", '--title=btop', 'btop')
+        focus_window(address, window_id)
+        return
+    process = subprocess.Popen(
+        ['kitty', '--title', 'btop', 'btop'], stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True,
+    )
+    # Keep the lock until startup is visible, so rapid keypresses reuse this window.
+    address = f'unix:/tmp/mykitty-{process.pid}'
+    deadline = time.monotonic() + 8
+    while time.monotonic() < deadline:
+        if process.poll() is not None:
+            raise RuntimeError('Kitty exited during startup')
+        try:
+            window_id = next((w['id'] for ow in json.loads(remote(address, 'ls'))
+                              for tab in ow['tabs'] for w in tab['windows'] if runs_btop(w)), None)
+        except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired):
+            window_id = None
+        if window_id is not None:
+            focus_window(address, window_id)
+            return
+        time.sleep(0.15)
+    raise RuntimeError('Kitty did not expose its remote-control socket; check listen_on')
+
+
+def install_shortcut():
+    from gi.repository import Gio
+
+    schema = 'org.gnome.settings-daemon.plugins.media-keys'
+    path = '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/kitty-top/'
+    settings = Gio.Settings.new(schema)
+    shortcut = Gio.Settings.new_with_path(schema + '.custom-keybinding', path)
+    shortcut.set_string('name', 'Copilot: focus or launch btop in Kitty')
+    # GNOME parses this command directly; no shell expansion.
+    command = str(Path(__file__).resolve()).replace('\\', '\\\\').replace('"', '\\"')
+    shortcut.set_string('command', f'/usr/bin/python3 "{command}"')
+    shortcut.set_string('binding', '<Super><Shift>F23')
+    paths = settings.get_strv('custom-keybindings')
+    if path not in paths:
+        settings.set_strv('custom-keybindings', [*paths, path])
+    source = Path(__file__).resolve().parent.parent / 'setup/fedora/kitty-top@local'
+    extensions = Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local/share')) / 'gnome-shell/extensions'
+    extensions.mkdir(parents=True, exist_ok=True)
+    target = extensions / 'kitty-top@local'
+    if not target.exists():
+        target.symlink_to(source, target_is_directory=True)
+    elif target.resolve() != source.resolve():
+        raise RuntimeError(f'{target} already exists; refusing to overwrite it')
+    shell = Gio.Settings.new('org.gnome.shell')
+    enabled = shell.get_strv('enabled-extensions')
+    if 'kitty-top@local' not in enabled:
+        shell.set_strv('enabled-extensions', [*enabled, 'kitty-top@local'])
+    disabled = shell.get_strv('disabled-extensions')
+    if 'kitty-top@local' in disabled:
+        shell.set_strv('disabled-extensions', [e for e in disabled if e != 'kitty-top@local'])
+    Gio.Settings.sync()
+    print('Installed Copilot (Super+Shift+F23) → Kitty btop; log out/in to load the GNOME focus helper')
+
+
+def main():
+    if sys.argv[1:] == ['--install-shortcut']:
+        install_shortcut()
+        return
+    if sys.argv[1:]:
+        raise RuntimeError('Usage: kitty-top [--install-shortcut]')
+    runtime = Path(os.environ.get('XDG_RUNTIME_DIR', f'/run/user/{os.getuid()}'))
+    with (runtime / 'kitty-top.lock').open('a') as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return
+        focus_btop()
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (OSError, RuntimeError, ValueError, subprocess.TimeoutExpired) as error:
+        print(f'kitty-top: {error}', file=sys.stderr)
+        sys.exit(1)

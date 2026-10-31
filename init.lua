@@ -59,8 +59,9 @@ local langmapper = require "langmapper"
 langmapper.automapping { global = true, buffer = true }
 
 -- langmapper translates `/` (slash search) to `.` because that is the same physical
--- key on the Russian layout. Keep Vim's repeat-last-change on `.`.
-for _, mode in ipairs { "n", "v", "x", "s" } do
+-- key on the Russian layout. Normal mode already has the clipboard-safe repeat
+-- mapping from mappings.override_operators; clear translated search in other modes.
+for _, mode in ipairs { "v", "x", "s" } do
   pcall(vim.keymap.del, mode, ".")
 end
 

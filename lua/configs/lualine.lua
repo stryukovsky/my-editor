@@ -88,11 +88,28 @@ local function get_lualine_theme()
   return lualine_theme
 end
 
+-- Empty local statuslines (including new documentation floats) use this fallback.
+-- Keep it rendered so a redraw before lualine's next refresh cannot flash blank.
+local refresh_group = vim.api.nvim_create_augroup("LualineFiletypeRefresh", { clear = true })
+vim.api.nvim_create_autocmd("OptionSet", {
+  group = refresh_group,
+  pattern = "statusline",
+  callback = function()
+    if vim.v.option_type == "local" and vim.api.nvim_win_get_config(0).relative == "" then
+      vim.go.statusline = vim.v.option_new
+    end
+  end,
+})
+
 local function setup_lualine(opts)
   local lualine = require "lualine"
   lualine.setup(opts)
   -- setup() leaves a blank statusline until the refresh timer. Paint it now.
   lualine.refresh { force = true }
+  -- OptionSet does not run during startup.
+  if vim.api.nvim_win_get_config(0).relative == "" then
+    vim.go.statusline = vim.wo.statusline
+  end
 end
 
 vim.api.nvim_create_autocmd({ "ColorScheme" }, {
@@ -110,13 +127,10 @@ setup_lualine {
   options = {
     theme = get_lualine_theme(),
     globalstatus = true,
-    -- Opening the menu sets its filetype while that float is current, and the
-    -- FileType refresh would paint the menu buffer into the global statusline.
-    ignore_focus = {
-      "blink-cmp-menu",
-      "blink-cmp-documentation",
-      "blink-cmp-signature",
-    },
+    -- Completion/documentation floats must not replace the editor's global bar.
+    ignore_focus = function(win)
+      return vim.api.nvim_win_get_config(win).relative ~= ""
+    end,
     refresh = {
       events = {
         "WinEnter",
@@ -197,26 +211,12 @@ setup_lualine {
   "mason",
 }
 
-local blink_statusline_ft = {
-  ["blink-cmp-menu"] = true,
-  ["blink-cmp-documentation"] = true,
-  ["blink-cmp-signature"] = true,
-}
-
--- FileType is not a lualine refresh event: blink sets it on the menu float
--- while that window is current, and a refresh then swaps the global statusline.
+-- FileType is not a lualine refresh event; only refresh for editor buffers.
 vim.api.nvim_create_autocmd("FileType", {
+  group = refresh_group,
   callback = function()
-    if blink_statusline_ft[vim.bo.filetype] then
-      local prev = vim.fn.win_getid(vim.fn.winnr "#")
-      if prev ~= 0 and vim.api.nvim_win_is_valid(prev) then
-        local stl = vim.wo[prev].statusline
-        if stl ~= "" then
-          vim.wo.statusline = stl
-        end
-      end
-      return
+    if vim.api.nvim_win_get_config(0).relative == "" then
+      require("lualine").refresh()
     end
-    require("lualine").refresh()
   end,
 })

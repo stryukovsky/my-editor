@@ -79,7 +79,6 @@ require "mappings.scalar_lines"
 require "mappings.notify"
 require "mappings.csv"
 require "mappings.bigfiles"
-require "mappings.zenmode"
 require "mappings.help"
 
 require("configs.completion").setup_mappings()

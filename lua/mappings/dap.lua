@@ -91,11 +91,7 @@ map("n", "<leader>di", function()
   dap.step_into()
 end, { desc = "debug step into" })
 
-map("n", "<leader>out", function()
-  dap.step_out()
-end, { desc = "debug step out" })
-
-map("n", "<leader>b", function()
+map("n", "<leader>db", function()
   dap.toggle_breakpoint()
 end, { desc = "debug toggle breakpoint" })
 
@@ -255,7 +251,7 @@ map("n", "<leader>dw", function()
   dap.focus_frame()
 end, { desc = "debug go to stopped position" })
 
-map({ "n", "v" }, "<leader>db", function()
+map({ "n", "v" }, "<A-b>", function()
   ui_prevent_mess()
   require("trouble").open { mode = "dap_breakpoints", focus = true }
 end, { desc = "debug list breakpoints" })

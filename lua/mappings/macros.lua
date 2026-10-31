@@ -5,4 +5,3 @@ map("n", "<leader>q", function()
   return vim.fn.reg_recording() == "" and "qq" or "q"
 end, { expr = true, desc = "Macro: toggle recording @q" })
 map("n", "Q", "@q", { desc = "Macro: play @q" })
-map("n", "<leader>sl", "<cmd>sleep 500m<cr>", { desc = "Macro: pause 0.5 seconds" })

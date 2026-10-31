@@ -2,6 +2,10 @@ local map = require "mappings.map"
 local async = require "plenary.async"
 local notify = require "configs.notify"
 
+map("n", "<leader>mdt", function()
+  require("render-markdown").buf_toggle()
+end, { desc = "Markdown toggle rendering for this buffer" })
+
 map("n", "<leader>mdr", function()
   require("render-markdown").preview()
 end, { desc = "Markdown render" })
