@@ -20,3 +20,5 @@ bin/coursier/
 wget/.wget-hsts
 **/**/*.pyc
 nautilus/tags/meta.db
+bin/lazydocker
+bin/mermaid-ascii
