@@ -9,6 +9,7 @@ local system_file_explorer = require "utils.system_file_explorer"
 local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
 local notify = require "configs.notify"
+local git_actions = require "configs.git_commands"
 local script = require "utils.script"
 
 local open_files_do_not_replace_types = require "utils.technical_ui_filetypes"
@@ -171,9 +172,6 @@ local config = {
         vim.cmd "vsplit"
       end
       require("configs.terminal").open_new(path)
-    end,
-    ["my_git_add_file"] = function(state)
-      require("neo-tree.sources.git_status.commands").git_add_file(state)
     end,
     ["make_executable"] = function(state)
       local node = state.tree:get_node()
@@ -402,6 +400,9 @@ local config = {
   },
   filesystem = {
     commands = {
+      git_add_file = git_actions.stage,
+      git_add_all = git_actions.stage_all,
+      git_unstage_file = git_actions.unstage,
       copy_to_clipboard = require("utils.neotree_clipboard").copy,
       copy_to_clipboard_visual = require("utils.neotree_clipboard").copy_visual,
       paste_from_clipboard = require("utils.neotree_clipboard").paste,
@@ -454,13 +455,22 @@ local config = {
     },
   },
   git_status = {
+    commands = {
+      git_add_file = git_actions.stage,
+      git_add_all = git_actions.stage_all,
+      git_unstage_file = git_actions.unstage,
+      git_revert_file = git_actions.revert,
+      git_commit = git_actions.commit,
+      git_push = git_actions.push,
+      git_pull = git_actions.pull,
+    },
     window = {
       mappings = {
         ["C"] = "close_all_nodes",
         ["h"] = "toggle_node",
         ["l"] = "open",
         ["S"] = "git_add_all",
-        ["s"] = "my_git_add_file",
+        ["s"] = "git_add_file",
         ["u"] = "git_unstage_file",
         ["x"] = "git_revert_file",
         ["c"] = "git_commit",

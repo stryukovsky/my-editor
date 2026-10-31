@@ -4,6 +4,8 @@ local map = require "mappings.map"
 -- LSP drives its own asynchronous completion; other buffers use native sources.
 vim.o.autocomplete = true
 vim.o.autocompletedelay = 100
+vim.o.pumborder = "rounded"
+vim.o.pumblend = 0
 vim.opt.completeopt =
   { "menu", "menuone", "noselect", "fuzzy", "nosort", "popup" }
 vim.opt.complete = { ".", "w", "b" }
@@ -81,6 +83,8 @@ vim.api.nvim_create_autocmd({ "CompleteChanged", "WinNew" }, {
     vim.schedule(function()
       local win = vim.fn.complete_info().preview_winid
       if win and win > 0 and vim.api.nvim_win_is_valid(win) then
+        vim.wo[win].winhighlight =
+          "Normal:PmenuPreview,NormalFloat:PmenuPreview,FloatBorder:PmenuPreviewBorder"
         local border = vim.api.nvim_win_get_config(win).border
         if not border or border[1] ~= "╭" then
           vim.api.nvim_win_set_config(win, { border = "rounded" })

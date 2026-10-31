@@ -84,6 +84,30 @@ require("material").setup {
       spell_bad = { fg = colors.main.red, italic = true, undercurl = true }
     end
     return {
+      -- Native completion uses the same wheat surfaces as the editor.
+      Pmenu = { bg = colors.editor.bg_alt, fg = colors.editor.fg },
+      PmenuSel = {
+        bg = colors.editor.selection,
+        fg = colors.editor.fg,
+        bold = true,
+      },
+      PmenuKind = { bg = colors.editor.bg_alt, fg = colors.editor.fg_dark },
+      PmenuKindSel = { bg = colors.editor.selection, fg = colors.editor.fg },
+      PmenuExtra = { bg = colors.editor.bg_alt, fg = colors.editor.fg_dark },
+      PmenuExtraSel = { bg = colors.editor.selection, fg = colors.editor.fg },
+      PmenuMatch = {
+        fg = vim.o.background == "light" and "#8c6a1b" or colors.editor.accent,
+        bold = true,
+      },
+      PmenuMatchSel = {
+        fg = vim.o.background == "light" and "#765613" or colors.editor.accent,
+        bold = true,
+      },
+      PmenuBorder = { bg = colors.editor.bg_alt, fg = colors.editor.border },
+      PmenuSbar = { bg = colors.editor.contrast },
+      PmenuThumb = { bg = colors.editor.accent },
+      PmenuPreview = { bg = colors.editor.bg_alt, fg = colors.editor.fg },
+      PmenuPreviewBorder = { link = "PmenuBorder" },
       Visual = { bg = "#0042ff", fg = "#fff7e8" },
       SpellBad = spell_bad,
       SpellCap = {},
