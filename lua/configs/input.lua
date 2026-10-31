@@ -97,7 +97,12 @@ function M.bind_float_keys(buf, opts)
   end, { buffer = buf, nowait = true })
   map("n", "<Esc>", opts.cancel, { buffer = buf, nowait = true })
   map("n", "q", opts.cancel, { buffer = buf, nowait = true })
-  map(opts.submit_modes or { "i", "n" }, "<CR>", opts.submit, { buffer = buf, nowait = true })
+  map(
+    opts.submit_modes or { "i", "n" },
+    "<CR>",
+    opts.submit,
+    { buffer = buf, nowait = true }
+  )
 end
 
 ---Restore editor mode captured before the float opened.
@@ -133,7 +138,8 @@ function M.setup()
     local default = opts.default == nil and "" or tostring(opts.default)
     local max_width = math.max(1, vim.o.columns - 4)
     local preferred = math.floor(vim.o.columns * 0.6)
-    local width = math.min(max_width, math.max(preferred, display_width(default) + 8, 72))
+    local width =
+      math.min(max_width, math.max(preferred, display_width(default) + 8, 72))
     local height = 1
     local row = math.floor((vim.o.lines - height) / 2)
     local col = math.floor((vim.o.columns - width) / 2)
@@ -144,7 +150,7 @@ function M.setup()
     vim.bo[buffer].bufhidden = "wipe"
     vim.bo[buffer].buftype = "nofile"
     vim.bo[buffer].swapfile = false
-    -- blink.cmp: vim.b.completion == false disables suggestions on this buffer.
+    -- Native completion respects this flag on InsertEnter.
     vim.b[buffer].completion = false
     vim.api.nvim_buf_set_lines(buffer, 0, -1, false, { default })
 
@@ -176,7 +182,10 @@ function M.setup()
     })
 
     local function restore_prev_win()
-      if vim.api.nvim_win_is_valid(prev_win) and vim.api.nvim_get_current_win() ~= prev_win then
+      if
+        vim.api.nvim_win_is_valid(prev_win)
+        and vim.api.nvim_get_current_win() ~= prev_win
+      then
         pcall(vim.api.nvim_set_current_win, prev_win)
       end
     end
@@ -253,7 +262,10 @@ function M.setup()
     })
 
     local virtual_text_mode = opts.virtual_text_mode
-    if virtual_text_mode == VIRTUAL_TEXT_SLASH_SEARCH and vim.api.nvim_win_is_valid(window) then
+    if
+      virtual_text_mode == VIRTUAL_TEXT_SLASH_SEARCH
+      and vim.api.nvim_win_is_valid(window)
+    then
       -- Room to the right of the cursor so `found: N` is not scrolled off in insert.
       vim.wo[window].wrap = false
       vim.wo[window].sidescrolloff = 16
@@ -268,7 +280,10 @@ function M.setup()
           end
           local line = vim.api.nvim_get_current_line()
           local ok, count, capped = pcall(opts.on_input, line)
-          if virtual_text_mode ~= VIRTUAL_TEXT_SLASH_SEARCH or not vim.api.nvim_buf_is_valid(buffer) then
+          if
+            virtual_text_mode ~= VIRTUAL_TEXT_SLASH_SEARCH
+            or not vim.api.nvim_buf_is_valid(buffer)
+          then
             return
           end
           if ok and type(count) == "number" then

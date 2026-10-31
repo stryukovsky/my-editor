@@ -25,8 +25,13 @@ map("n", "<C-c>", function()
   vim.notify("Copied whole buffer to clipboard", vim.log.levels.INFO)
 end, { desc = "Interrupt terminal job or copy whole buffer" })
 
--- Same as i<space><Esc>l: insert a space at the cursor, stay in normal mode, move right.
-map("n", "<C-space>", "i <Esc>l", { desc = "Insert space at cursor" })
+-- Append at end of line; elsewhere insert before the cursor and move right.
+map("n", "<C-space>", function()
+  if vim.fn.virtcol "." >= vim.fn.virtcol "$" - 1 then
+    return "a <Esc>"
+  end
+  return "i <Esc>l"
+end, { expr = true, desc = "Insert space at cursor" })
 
 local termux_version = os.getenv "TERMUX_VERSION"
 if not termux_version then
@@ -76,3 +81,5 @@ require "mappings.csv"
 require "mappings.bigfiles"
 require "mappings.zenmode"
 require "mappings.help"
+
+require("configs.completion").setup_mappings()

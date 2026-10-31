@@ -69,27 +69,6 @@ map("n", "<leader>py", function()
   require("configs.python").setup()
 end, opts "Python: setup")
 
-map("n", "<leader>scala", function()
-  require("configs.scalametals").enable()
-end, opts "Scala: enable Metals")
-
-local function metals_opts(desc)
-  return { desc = "Metals: " .. desc }
-end
-
-map("n", "<leader>mec", function()
-  ui_prevent_mess()
-  require("configs.scalametals").telescope_commands()
-end, metals_opts "commands (Telescope)")
-
-map("n", "<leader>mel", function()
-  require("configs.scalametals").show_logs()
-end, metals_opts "open logs")
-
-map("n", "<leader>med", function()
-  require("configs.scalametals").run_doctor()
-end, metals_opts "open doctor")
-
 map("n", "K", function()
   vim.lsp.buf.signature_help()
 end, { silent = true, noremap = true, desc = "LSP toggle signature" })

@@ -52,7 +52,22 @@ require("blink-cmp").setup {
     },
   },
   sources = {
-    default = sources,
+    default = function()
+      if vim.b.terminal_command then
+        return { "terminal_command", "terminal_command_path", "lsp", "buffer" }
+      end
+      return sources
+    end,
+    providers = {
+      terminal_command = {
+        name = "Commands",
+        module = "terminal_command.completion",
+      },
+      terminal_command_path = {
+        name = "Path",
+        module = "terminal_command.files",
+      },
+    },
   },
 
   -- (Default) Rust fuzzy matcher for typo resistance and significantly better performance
@@ -78,7 +93,8 @@ require("blink-cmp").setup {
             -- don't truncate source_icon
             ellipsis = false,
             text = function(ctx)
-              return source_icons[ctx.source_name:lower()] or source_icons.fallback
+              return source_icons[ctx.source_name:lower()]
+                or source_icons.fallback
             end,
             highlight = "BlinkCmpSource",
           },
@@ -91,7 +107,8 @@ require("blink-cmp").setup {
             highlight = function(ctx)
               local hl = ctx.kind_hl
               if vim.tbl_contains({ "Path" }, ctx.source_name) then
-                local dev_icon, dev_hl = require("nvim-web-devicons").get_icon(ctx.label)
+                local dev_icon, dev_hl =
+                  require("nvim-web-devicons").get_icon(ctx.label)
                 if dev_icon then
                   hl = dev_hl
                 end

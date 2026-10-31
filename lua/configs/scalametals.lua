@@ -8,7 +8,11 @@ local FILETYPES = { scala = true, sbt = true }
 
 local function open_readonly_file(path, filetype)
   if vim.fn.filereadable(path) ~= 1 then
-    notify.send("Metals", string.format("File not found: %s", path), vim.log.levels.WARN)
+    notify.send(
+      "Metals",
+      string.format("File not found: %s", path),
+      vim.log.levels.WARN
+    )
     return
   end
 
@@ -47,10 +51,14 @@ end
 
 local function create_config()
   local metals_config = require("metals").bare_config()
-  local success, server_props = pcall(parse_java_opts, env_string "METALS_JAVA_OPTS")
+  local success, server_props =
+    pcall(parse_java_opts, env_string "METALS_JAVA_OPTS")
   metals_config.settings = {
     showImplicitArguments = true,
-    excludedPackages = { "akka.actor.typed.javadsl", "com.github.swagger.akka.javadsl" },
+    excludedPackages = {
+      "akka.actor.typed.javadsl",
+      "com.github.swagger.akka.javadsl",
+    },
   }
   if success and server_props then
     local coursier_creds = env_string "COURSIER_CREDENTIALS"
@@ -62,10 +70,7 @@ local function create_config()
   end
   metals_config.init_options.statusBarProvider = "off"
 
-  local ok_blink, blink = pcall(require, "blink.cmp")
-  if ok_blink and blink.get_lsp_capabilities then
-    metals_config.capabilities = blink.get_lsp_capabilities()
-  end
+  metals_config.capabilities = vim.lsp.protocol.make_client_capabilities()
 
   metals_config.on_attach = function()
     require("metals").setup_dap()
@@ -126,11 +131,18 @@ end
 function M.show_logs()
   local config = require("metals.config").get_config_cache()
   if not config or not config.root_dir then
-    notify.send("Metals", "Start Metals before opening its logs", vim.log.levels.WARN)
+    notify.send(
+      "Metals",
+      "Start Metals before opening its logs",
+      vim.log.levels.WARN
+    )
     return
   end
 
-  open_readonly_file(vim.fs.joinpath(config.root_dir, ".metals", "metals.log"), "log")
+  open_readonly_file(
+    vim.fs.joinpath(config.root_dir, ".metals", "metals.log"),
+    "log"
+  )
 end
 
 function M.run_doctor()
@@ -140,7 +152,12 @@ end
 function M.enable()
   if enabled then
     attach_buf(0)
-    notify.replace("scala.metals", "Metals", "Already enabled", vim.log.levels.INFO)
+    notify.replace(
+      "scala.metals",
+      "Metals",
+      "Already enabled",
+      vim.log.levels.INFO
+    )
     return
   end
   enabled = true

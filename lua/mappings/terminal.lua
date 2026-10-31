@@ -77,6 +77,4 @@ map("n", "<Leader>tr", function()
   terminal.set_name(0, base)
 end, { desc = "Terminal: rename buffer" })
 
-map("t", "<C-s>", function ()
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, true, true), "n", false)
-end, { desc = "Terminal: exit to normal mode" })
+map("t", "<C-s>", "<C-s>", { noremap = true, desc = "Terminal: send Ctrl-S (edit pending command in Zsh)" })

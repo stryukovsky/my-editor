@@ -42,6 +42,7 @@ return {
   desc = "Show task logs in a pinned, named buffer",
   constructor = function()
     local close_autocmd
+    local log_buf
     local function clear_close_autocmd()
       if close_autocmd then
         pcall(vim.api.nvim_del_autocmd, close_autocmd)
@@ -51,10 +52,11 @@ return {
     return {
       on_start = function(_, task)
         clear_close_autocmd()
+        log_buf = task:get_bufnr()
         local win = vim.api.nvim_get_current_win()
         -- Overseer unlists the output after on_start; restore it afterward.
         vim.schedule(function()
-          local buf = task:get_bufnr()
+          local buf = log_buf
           if
             task:is_disposed()
             or not buf
@@ -96,7 +98,7 @@ return {
             buf,
             ("overseer://%s/%s"):format(task.id, title)
           )
-          if not require("barbar.state").is_pinned(buf) then
+          if not task:is_complete() and not require("barbar.state").is_pinned(buf) then
             require("barbar.api").toggle_pin(buf)
           end
           if vim.api.nvim_win_is_valid(win) then
@@ -106,6 +108,15 @@ return {
             end)
           end
         end)
+      end,
+      on_complete = function()
+        if
+          log_buf
+          and vim.api.nvim_buf_is_valid(log_buf)
+          and require("barbar.state").is_pinned(log_buf)
+        then
+          require("barbar.api").toggle_pin(log_buf)
+        end
       end,
       on_reset = clear_close_autocmd,
       on_dispose = clear_close_autocmd,
