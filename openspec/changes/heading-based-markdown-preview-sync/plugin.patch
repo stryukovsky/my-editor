@@ -1,0 +1,1506 @@
+diff --git a/README.md b/README.md
+index e0d705b..4688a17 100644
+--- a/README.md
++++ b/README.md
+@@ -139,6 +139,16 @@ use({
+ | `:RenderMarkdown debug`         | `require('render-markdown').debug()`        | Prints information about marks on current line    |
+ | `:RenderMarkdown config`        | `require('render-markdown').config()`       | Prints difference between config and default      |
+ 
++Preview navigation synchronizes by document headings. The active section is the
++last heading at or before the cursor, including nested headings. Crossing into a
++different section in either source or preview moves the other visible buffer to
++that heading; moving within a section leaves it alone. Opening or toggling back
++lands at the selected heading, rather than the exact paragraph or column.
++Documents without headings and text before the first heading use document start.
++Repeated heading titles remain separate sections, including after table or
++Mermaid expansion. Long headings retain their Markdown syntax and can be read
++with horizontal scrolling in the preview.
++
+ # Completions
+ 
+ This plugin provides completions for both checkboxes and callouts provided you follow
+diff --git a/lua/render-markdown/core/preview.lua b/lua/render-markdown/core/preview.lua
+index 70feb60..bb86e65 100644
+--- a/lua/render-markdown/core/preview.lua
++++ b/lua/render-markdown/core/preview.lua
+@@ -39,11 +39,14 @@ M.restore = {}
+ ---@type table<integer, render.md.sync.Document>
+ M.docs = {}
+ 
+----source buffer -> last source cursor, 0-based row and byte column
++---source buffer -> selected heading occurrence (zero is the preamble)
+ ---@private
+----@type table<integer, integer[]>
++---@type table<integer, integer>
+ M.anchor = {}
+ 
++---@private
++M.outlines = {}
++
+ ---@private
+ ---@type boolean
+ M.moving = false
+@@ -76,7 +79,9 @@ function M.open(src_buf)
+         local win = env.win.current()
+         if vim.api.nvim_win_get_buf(win) == src_buf then
+             local cursor = vim.api.nvim_win_get_cursor(win)
+-            M.anchor[src_buf] = { cursor[1] - 1, cursor[2] }
++            local doc = M.docs[src_buf]
++            M.anchor[src_buf] = doc and doc:section(cursor[1] - 1, 'source').id
++                or 0
+         end
+         env.buf.set(existing, 'buftype', '')
+         vim.api.nvim_win_set_buf(win, existing)
+@@ -93,7 +98,8 @@ function M.open(src_buf)
+         src_win = env.win.current()
+     end
+     local cursor = vim.api.nvim_win_get_cursor(src_win)
+-    M.anchor[src_buf] = { cursor[1] - 1, cursor[2] }
++    M.outlines[src_buf] = require('render-markdown.sync.outline').new(src_buf)
++    M.anchor[src_buf] = 0
+ 
+     M.restore[src_buf] = state.get(src_buf).enabled
+     manager.set_buf(src_buf, false)
+@@ -126,7 +132,9 @@ function M.open(src_buf)
+     local doc = M.docs[src_buf]
+     local row, col = 0, 0
+     if doc then
+-        row, col = doc:to_preview(cursor[1] - 1, cursor[2])
++        local heading = doc:section(cursor[1] - 1, 'source')
++        M.anchor[src_buf] = heading.id
++        row, col = heading.preview_row, 0
+     end
+     M.moving = true
+     M.set_cursor(src_win, row + 1, col)
+@@ -182,6 +190,7 @@ function M.open(src_buf)
+             M.clear_diagrams(src_buf)
+             M.buffers[src_buf] = nil
+             M.docs[src_buf] = nil
++            M.clear_outline(src_buf)
+             M.anchor[src_buf] = nil
+             local restore = M.restore[src_buf]
+             M.restore[src_buf] = nil
+@@ -200,6 +209,7 @@ function M.open(src_buf)
+             M.clear_diagrams(src_buf)
+             M.buffers[src_buf] = nil
+             M.docs[src_buf] = nil
++            M.clear_outline(src_buf)
+             M.anchor[src_buf] = nil
+             M.restore[src_buf] = nil
+             if dst and vim.api.nvim_buf_is_valid(dst) then
+@@ -219,6 +229,7 @@ function M.close(src)
+     M.clear_diagrams(src)
+     M.buffers[src] = nil
+     M.docs[src] = nil
++    M.clear_outline(src)
+     M.anchor[src] = nil
+     local restore = M.restore[src]
+     M.restore[src] = nil
+@@ -332,7 +343,29 @@ function M.refresh(src, dst)
+         padding = config.padding,
+         border = config.border,
+         indicator = config.alignment_indicator,
+-    }, replacements)
++    }, replacements, M.outlines[src]:rebuild())
++    local previous = M.docs[src]
++    local selected = M.anchor[src] or 0
++    local survives = selected == 0
++    for _, heading in ipairs(doc.headings) do
++        survives = survives or heading.id == selected
++    end
++    if not survives then
++        local retained = {}
++        for _, heading in ipairs(doc.headings) do
++            retained[heading.id] = true
++        end
++        local predecessor = 0
++        for _, heading in ipairs(previous and previous.headings or {}) do
++            if heading.id == selected then
++                break
++            end
++            if retained[heading.id] then
++                predecessor = heading.id
++            end
++        end
++        M.anchor[src] = predecessor
++    end
+     M.docs[src] = doc
+ 
+     local dst_lines = vim.api.nvim_buf_get_lines(dst, 0, -1, false)
+@@ -376,7 +409,7 @@ function M.set_cursor(win, row, col)
+     pcall(vim.api.nvim_win_set_cursor, win, { row, col })
+ end
+ 
+----Move the other buffer's cursor to the relative position in its paragraph.
++---A user crossing a section boundary moves peers to that heading only.
+ ---@private
+ ---@param buf integer
+ function M.on_cursor(buf)
+@@ -384,74 +417,73 @@ function M.on_cursor(buf)
+         return
+     end
+     local src = M.buffers[buf] and buf or M.get(buf)
+-    if not src then
+-        return
+-    end
+-    local doc = M.docs[src]
+-    if not doc then
++    local doc = src and M.docs[src]
++    local origin = env.win.current()
++    if not doc or not env.win.valid(origin) or env.win.buf(origin) ~= buf then
+         return
+     end
+-    local origin = env.win.current()
+-    if not env.win.valid(origin) or env.win.buf(origin) ~= buf then
++    local side = buf == src and 'source' or 'preview'
++    local heading =
++        doc:section(vim.api.nvim_win_get_cursor(origin)[1] - 1, side)
++    if M.anchor[src] == heading.id then
+         return
+     end
+-    local cursor = vim.api.nvim_win_get_cursor(origin)
+-    local row, col = cursor[1] - 1, cursor[2]
++    M.anchor[src] = heading.id
++    local peer = buf == src and M.buffers[src] or src
++    local row = buf == src and heading.preview_row or heading.source_row
+     M.moving = true
+-    if buf == src then
+-        M.anchor[src] = { row, col }
+-        local dst = M.buffers[src]
+-        if dst and vim.api.nvim_buf_is_valid(dst) then
+-            local preview_row, preview_col = doc:to_preview(row, col)
+-            for _, win in ipairs(env.buf.wins(dst)) do
+-                M.set_cursor(win, preview_row + 1, preview_col)
+-            end
+-        end
+-    else
+-        local source_row, source_col = doc:to_source(row, col)
+-        M.anchor[src] = { source_row, source_col }
+-        if vim.api.nvim_buf_is_valid(src) then
+-            for _, win in ipairs(env.buf.wins(src)) do
+-                M.set_cursor(win, source_row + 1, source_col)
+-            end
+-        end
++    for _, win in ipairs(env.buf.wins(peer)) do
++        M.set_cursor(win, row + 1, 0)
+     end
+     M.moving = false
+ end
+ 
+----After the preview is redrawn, put its cursor on the source cursor.
++---After rendering, resolve the active source or retain the preview's section.
+ ---@private
+ ---@param src integer
+ function M.follow_source(src)
+-    if M.moving then
+-        return
+-    end
+     local doc = M.docs[src]
+     local dst = M.buffers[src]
+-    if not doc or not dst or not vim.api.nvim_buf_is_valid(dst) then
++    if M.moving or not doc or not dst then
+         return
+     end
+-    local row, col ---@type integer, integer
+-    local wins = env.buf.wins(src)
+     local current = env.win.current()
+-    if #wins > 0 then
+-        local win = vim.tbl_contains(wins, current) and current or wins[1]
+-        local cursor = vim.api.nvim_win_get_cursor(win)
+-        row, col = cursor[1] - 1, cursor[2]
+-        M.anchor[src] = { row, col }
+-    elseif M.anchor[src] then
+-        row, col = M.anchor[src][1], M.anchor[src][2]
++    local heading
++    if env.win.buf(current) == src then
++        heading =
++            doc:section(vim.api.nvim_win_get_cursor(current)[1] - 1, 'source')
+     else
+-        return
++        for _, item in ipairs(doc.headings) do
++            if item.id == M.anchor[src] then
++                heading = item
++                break
++            end
++        end
+     end
+-    local preview_row, preview_col = doc:to_preview(row, col)
++    heading = heading or { id = 0, source_row = 0, preview_row = 0 }
++    M.anchor[src] = heading.id
+     M.moving = true
++    if env.win.buf(current) == dst then
++        for _, win in ipairs(env.buf.wins(src)) do
++            M.set_cursor(win, heading.source_row + 1, 0)
++        end
++    end
+     for _, win in ipairs(env.buf.wins(dst)) do
+-        M.set_cursor(win, preview_row + 1, preview_col)
++        M.set_cursor(win, heading.preview_row + 1, 0)
+     end
+     M.moving = false
+ end
+ 
++---@private
++---@param src integer
++function M.clear_outline(src)
++    local outline = M.outlines[src]
++    M.outlines[src] = nil
++    if outline then
++        outline:close()
++    end
++end
++
+ ---@private
+ ---@param buf integer
+ ---@param kinds (string|false)[]
+diff --git a/lua/render-markdown/lib/wrap.lua b/lua/render-markdown/lib/wrap.lua
+index 268c379..731dcd7 100644
+--- a/lua/render-markdown/lib/wrap.lua
++++ b/lua/render-markdown/lib/wrap.lua
+@@ -3,12 +3,6 @@ local str = require('render-markdown.lib.str')
+ ---@class render.md.Wrap
+ local M = {}
+ 
+----Source row uses the low 26 bits, preview row the next 26 bits.
+----Both fit in the exact integer range of a Lua number.
+-local ROW_BITS = 26
+-local ROW_MASK = 2 ^ ROW_BITS - 1
+-local ROW_SPAN = 2 ^ ROW_BITS
+-
+ ---Leading blockquote markers, including the whitespace that follows them.
+ ---@param line string
+ ---@return string
+@@ -152,17 +146,14 @@ function M.line(line, width)
+ end
+ 
+ ---Wrap every line that is not marked protected. `protected` is keyed by
+----0-based source row. The returned map sends each source row to the first
+----wrapped row, also 0-based.
++---0-based source row.
+ ---@param lines string[]
+ ---@param protected table<integer, boolean>
+ ---@param width integer
+----@return string[], table<integer, integer>
++---@return string[]
+ function M.lines(lines, protected, width)
+     local out = {} ---@type string[]
+-    local map = {} ---@type table<integer, integer>
+     for i, line in ipairs(lines) do
+-        map[i - 1] = #out
+         local chunk = protected[i - 1] and { line } or M.line(line, width)
+         for _, item in ipairs(chunk) do
+             out[#out + 1] = item
+@@ -171,28 +162,7 @@ function M.lines(lines, protected, width)
+     if #out == 0 then
+         out[1] = ''
+     end
+-    return out, map
+-end
+-
+----@class render.md.wrap.Piece
+----@field text string
+----Low 26 bits are the source row, the next 26 bits are the preview row.
+----@field rows integer
+-
+----@param source_row integer
+----@param preview_row integer
+----@return integer
+-function M.pack(source_row, preview_row)
+-    local source = bit.band(source_row, ROW_MASK)
+-    local preview = bit.band(preview_row, ROW_MASK)
+-    return source + preview * ROW_SPAN
+-end
+-
+----@param rows integer
+----@return integer source_row
+----@return integer preview_row
+-function M.unpack(rows)
+-    return bit.band(rows, ROW_MASK), math.floor(rows / ROW_SPAN)
++    return out
+ end
+ 
+ return M
+diff --git a/lua/render-markdown/sync/init.lua b/lua/render-markdown/sync/init.lua
+index bc63f5e..239f526 100644
+--- a/lua/render-markdown/sync/init.lua
++++ b/lua/render-markdown/sync/init.lua
+@@ -1,316 +1,155 @@
+-local paragraph = require('render-markdown.sync.paragraph')
+ local table_text = require('render-markdown.lib.table_text')
++local wrap = require('render-markdown.lib.wrap')
+ 
+----@class render.md.sync.Gap
+----@field kind 'blank'
+----@field source_start integer
++---@class render.md.sync.Heading
++---@field id integer
++---@field source_row integer
+ ---@field source_end integer
+----@field preview_start integer
+----@field preview_end integer
+-
+----@class render.md.sync.Table
+----@field kind 'table'|'literal'
+----@field source_start integer
+----@field source_end integer
+----@field preview_start integer
+----@field preview_end integer
+-
+----@alias render.md.sync.Block
+----| render.md.sync.Paragraph
+----| render.md.sync.Gap
+----| render.md.sync.Table
++---@field preview_row integer
++---@field level integer
+ 
+ ---@class render.md.sync.Document
+----@field blocks render.md.sync.Block[]
++---@field headings render.md.sync.Heading[]
+ ---@field lines string[]
+ ---@field kinds (string|false)[]
+----@field source_lines string[]
+----@field source_count integer
+ local Document = {}
+ Document.__index = Document
+ 
+----@class render.md.Sync
+ local M = {}
+ 
+----@param line string
+----@return boolean
+-local function is_blank(line)
+-    return line:match('^%s*$') ~= nil
+-end
+-
+----@param row integer
+----@param count integer
+----@return integer
+-local function clamp_row(row, count)
+-    if count < 1 then
+-        return 0
+-    end
+-    if row < 0 then
+-        return 0
+-    end
+-    if row >= count then
+-        return count - 1
+-    end
+-    return row
+-end
+-
+----@param line? string
+----@param col integer
+----@return integer
+-local function clamp_col(line, col)
+-    line = line or ''
+-    if col < 0 then
+-        return 0
+-    end
+-    if col > #line then
+-        return #line
+-    end
+-    return col
+-end
+-
+----Placeholder until table sync exists: spread source rows across the rendered
+----table, and the other way around. Columns stay at the start of the row.
+----@param index integer
+----@param from_n integer
+----@param to_n integer
+----@return integer
+-local function ratio(index, from_n, to_n)
+-    if to_n <= 1 or from_n <= 1 then
+-        return 0
+-    end
+-    if index < 0 then
+-        index = 0
+-    end
+-    local offset = math.floor(index * to_n / from_n)
+-    if offset < 0 then
+-        return 0
+-    end
+-    if offset >= to_n then
+-        return to_n - 1
+-    end
+-    return offset
+-end
+-
+----@param blocks render.md.sync.Block[]
+----@param lines string[]
+----@param kinds (string|false)[]
+----@param block_lines string[]
+----@param source_start integer
+----@param width integer
+----@param opts? render.md.table.text.Opts
+-local function append_table(
+-    blocks,
+-    lines,
+-    kinds,
+-    block_lines,
+-    source_start,
+-    width,
+-    opts
+-)
+-    local rendered = table_text.block(block_lines, width, opts)
+-    if not rendered or #rendered.lines == 0 then
+-        local prose = paragraph.render(block_lines, source_start, #lines, width)
+-        for _, line in ipairs(prose.preview_lines) do
+-            lines[#lines + 1] = line
+-            kinds[#kinds + 1] = false
++---Read the source outline, independently of document-symbol/LSP attachment.
++---String input is useful to callers rendering text without a buffer.
++---@param source integer|string
++---@return render.md.sync.Heading[]
++function M.headings(source)
++    local ok, result = pcall(function()
++        local parser = type(source) == 'number'
++                and vim.treesitter.get_parser(source, 'markdown')
++            or vim.treesitter.get_string_parser(source, 'markdown')
++        local trees = parser:parse()
++        local headings = {}
++        local function walk(node)
++            local kind = node:type()
++            if kind == 'atx_heading' or kind == 'setext_heading' then
++                local row, _, last, col = node:range()
++                headings[#headings + 1] = {
++                    id = row + 1,
++                    source_row = row,
++                    source_end = last + (col > 0 and 1 or 0),
++                    level = require('render-markdown.integ.lsp').level(node),
++                    preview_row = 0,
++                }
++                return
++            end
++            for child in node:iter_children() do
++                walk(child)
++            end
+         end
+-        blocks[#blocks + 1] = prose
+-        return
+-    end
+-    local preview_start = #lines
+-    for i, line in ipairs(rendered.lines) do
+-        lines[#lines + 1] = line
+-        kinds[#kinds + 1] = rendered.kinds[i] or false
+-    end
+-    blocks[#blocks + 1] = {
+-        kind = 'table',
+-        source_start = source_start,
+-        source_end = source_start + #block_lines,
+-        preview_start = preview_start,
+-        preview_end = #lines,
+-    }
++        if trees[1] then
++            walk(trees[1]:root())
++        end
++        return headings
++    end)
++    return ok and result or {}
+ end
+ 
+----Build the document. Paragraphs are the only block with a column mapping.
+----Blank lines separate them. Tables are emitted with the existing renderer so
+----later paragraphs stay aligned; their cursor mapping is filled in later.
++---Render text and record only heading correspondence. Prose and tables do not
++---carry cursor maps. Literal replacements (including diagrams) stay untouched.
+ ---@param src_lines string[]
+ ---@param table_rows table<integer, boolean>
+ ---@param width integer
+ ---@param opts? render.md.table.text.Opts
+ ---@param replacements? table<integer, {source_end: integer, lines: string[]}>
++---@param headings? render.md.sync.Heading[]
+ ---@return render.md.sync.Document
+-function M.build(src_lines, table_rows, width, opts, replacements)
+-    local blocks = {} ---@type render.md.sync.Block[]
+-    local lines = {} ---@type string[]
+-    local kinds = {} ---@type (string|false)[]
++function M.build(src_lines, table_rows, width, opts, replacements, headings)
++    headings = headings or M.headings(table.concat(src_lines, '\n'))
+     replacements = replacements or {}
+-    local index = 1
+-    while index <= #src_lines do
+-        local replacement = replacements[index - 1]
++    local starts, protected = {}, {}
++    for _, heading in ipairs(headings) do
++        starts[heading.source_row] = heading
++        for row = heading.source_row, heading.source_end - 1 do
++            protected[row] = true
++        end
++    end
++    local lines, kinds = {}, {}
++    local function append(chunk, highlights)
++        for i, line in ipairs(chunk) do
++            lines[#lines + 1] = line
++            kinds[#kinds + 1] = highlights and highlights[i] or false
++        end
++    end
++    local row = 0
++    while row < #src_lines do
++        local heading = starts[row]
++        if heading then
++            heading.preview_row = #lines
++        end
++        local replacement = replacements[row]
+         if replacement then
+-            local preview_start = #lines
+-            for _, line in ipairs(replacement.lines) do
+-                lines[#lines + 1] = line
+-                kinds[#kinds + 1] = false
+-            end
+-            blocks[#blocks + 1] = {
+-                kind = 'literal',
+-                source_start = index - 1,
+-                source_end = replacement.source_end,
+-                preview_start = preview_start,
+-                preview_end = #lines,
+-            }
+-            index = replacement.source_end + 1
+-        elseif table_rows[index - 1] then
+-            local source_start = index - 1
+-            local block_lines = {} ---@type string[]
+-            while
+-                index <= #src_lines
+-                and table_rows[index - 1]
+-                and not replacements[index - 1]
+-            do
+-                block_lines[#block_lines + 1] = src_lines[index]
+-                index = index + 1
+-            end
+-            append_table(
+-                blocks,
+-                lines,
+-                kinds,
+-                block_lines,
+-                source_start,
+-                width,
+-                opts
+-            )
+-        elseif is_blank(src_lines[index]) then
+-            local source_start = index - 1
+-            local preview_start = #lines
+-            while
+-                index <= #src_lines
+-                and is_blank(src_lines[index])
+-                and not table_rows[index - 1]
+-                and not replacements[index - 1]
+-            do
+-                lines[#lines + 1] = src_lines[index]
+-                kinds[#kinds + 1] = false
+-                index = index + 1
++            append(replacement.lines)
++            row = replacement.source_end
++        elseif protected[row] then
++            append({ src_lines[row + 1] })
++            row = row + 1
++        elseif table_rows[row] then
++            local chunk = {}
++            repeat
++                chunk[#chunk + 1] = src_lines[row + 1]
++                row = row + 1
++            until row >= #src_lines
++                or not table_rows[row]
++                or replacements[row]
++                or protected[row]
++            local rendered = table_text.block(chunk, width, opts)
++            if rendered and #rendered.lines > 0 then
++                append(rendered.lines, rendered.kinds)
++            else
++                for _, line in ipairs(chunk) do
++                    append(wrap.line(line, width))
++                end
+             end
+-            blocks[#blocks + 1] = {
+-                kind = 'blank',
+-                source_start = source_start,
+-                source_end = index - 1,
+-                preview_start = preview_start,
+-                preview_end = #lines,
+-            }
+         else
+-            local source_start = index - 1
+-            local block_lines = {} ---@type string[]
+-            while
+-                index <= #src_lines
+-                and not table_rows[index - 1]
+-                and not replacements[index - 1]
+-                and not is_blank(src_lines[index])
+-            do
+-                block_lines[#block_lines + 1] = src_lines[index]
+-                index = index + 1
+-            end
+-            local prose =
+-                paragraph.render(block_lines, source_start, #lines, width)
+-            for _, line in ipairs(prose.preview_lines) do
+-                lines[#lines + 1] = line
+-                kinds[#kinds + 1] = false
+-            end
+-            blocks[#blocks + 1] = prose
++            append(wrap.line(src_lines[row + 1], width))
++            row = row + 1
+         end
+     end
+     if #lines == 0 then
+-        lines[1] = ''
+-        kinds[1] = false
+-        blocks[1] = {
+-            kind = 'blank',
+-            source_start = 0,
+-            source_end = 0,
+-            preview_start = 0,
+-            preview_end = 1,
+-        }
++        append({ '' })
+     end
+-    return setmetatable({
+-        blocks = blocks,
+-        lines = lines,
+-        kinds = kinds,
+-        source_lines = src_lines,
+-        source_count = #src_lines,
+-    }, Document)
++    return setmetatable(
++        { lines = lines, kinds = kinds, headings = headings },
++        Document
++    )
+ end
+ 
+----@param blocks render.md.sync.Block[]
+----@param row integer
+----@param start_key 'source_start'|'preview_start'
+----@param end_key 'source_end'|'preview_end'
+----@return render.md.sync.Block?
+-local function block_at(blocks, row, start_key, end_key)
+-    for _, block in ipairs(blocks) do
+-        if row >= block[start_key] and row < block[end_key] then
+-            return block
++---Last heading at or before the cursor, including all heading levels.
++---@param row integer 0-based
++---@param side 'source'|'preview'
++---@return render.md.sync.Heading
++function Document:section(row, side)
++    local selected =
++        { id = 0, source_row = 0, source_end = 0, preview_row = 0, level = 0 }
++    local key = side .. '_row'
++    for _, heading in ipairs(self.headings) do
++        if heading[key] > row then
++            break
+         end
++        selected = heading
+     end
+-    return blocks[#blocks]
++    return selected
+ end
+ 
+----@param self render.md.sync.Document
+----@param row integer 0-based
+----@param col integer 0-based byte
++---@param row integer
+ ---@return integer, integer
+-function Document:to_preview(row, col)
+-    if #self.lines == 0 then
+-        return 0, 0
+-    end
+-    row = clamp_row(row, math.max(self.source_count, 1))
+-    local block = block_at(self.blocks, row, 'source_start', 'source_end')
+-    local preview_row, preview_col = 0, 0
+-    if block and block.kind == 'paragraph' then
+-        preview_row, preview_col = paragraph.preview_pos(block, row)
+-    elseif block and block.kind == 'blank' then
+-        preview_row = block.preview_start + (row - block.source_start)
+-        preview_col = col
+-    elseif block and (block.kind == 'table' or block.kind == 'literal') then
+-        local source_n = block.source_end - block.source_start
+-        local preview_n = block.preview_end - block.preview_start
+-        local offset = ratio(row - block.source_start, source_n, preview_n)
+-        preview_row = block.preview_start + offset
+-        preview_col = 0
+-    end
+-    preview_row = clamp_row(preview_row, #self.lines)
+-    preview_col = clamp_col(self.lines[preview_row + 1], preview_col)
+-    return preview_row, preview_col
++function Document:to_preview(row)
++    return self:section(row, 'source').preview_row, 0
+ end
+ 
+----@param self render.md.sync.Document
+----@param row integer 0-based
+----@param col integer 0-based byte
++---@param row integer
+ ---@return integer, integer
+-function Document:to_source(row, col)
+-    if self.source_count < 1 then
+-        return 0, 0
+-    end
+-    row = clamp_row(row, #self.lines)
+-    local block = block_at(self.blocks, row, 'preview_start', 'preview_end')
+-    local source_row, source_col = 0, 0
+-    if block and block.kind == 'paragraph' then
+-        source_row, source_col = paragraph.source_pos(block, row)
+-    elseif block and block.kind == 'blank' then
+-        source_row = block.source_start + (row - block.preview_start)
+-        source_col = col
+-    elseif block and (block.kind == 'table' or block.kind == 'literal') then
+-        local source_n = block.source_end - block.source_start
+-        local preview_n = block.preview_end - block.preview_start
+-        local offset = ratio(row - block.preview_start, preview_n, source_n)
+-        source_row = block.source_start + offset
+-        source_col = 0
+-    end
+-    source_row = clamp_row(source_row, self.source_count)
+-    source_col = clamp_col(self.source_lines[source_row + 1], source_col)
+-    return source_row, source_col
++function Document:to_source(row)
++    return self:section(row, 'preview').source_row, 0
+ end
+ 
+ return M
+diff --git a/lua/render-markdown/sync/paragraph.lua b/lua/render-markdown/sync/paragraph.lua
+deleted file mode 100644
+index 52f527a..0000000
+--- a/lua/render-markdown/sync/paragraph.lua
++++ /dev/null
+@@ -1,94 +0,0 @@
+-local wrap = require('render-markdown.lib.wrap')
+-
+----@class render.md.sync.paragraph.Row
+----@field source_row integer
+----@field pieces render.md.wrap.Piece[]
+-
+----@class render.md.sync.Paragraph
+----@field kind 'paragraph'
+----@field source_start integer 0-based, first source line
+----@field source_end integer 0-based, exclusive
+----@field preview_start integer 0-based, first preview line
+----@field preview_end integer 0-based, exclusive
+----@field source_count integer N source lines
+----@field preview_count integer M preview lines after wrapping
+----@field source_lines string[]
+----@field preview_lines string[]
+----source row -> first preview row produced by that source line
+----@field line_map table<integer, integer>
+----@field rows render.md.sync.paragraph.Row[]
+-
+----@class render.md.sync.ParagraphModule
+-local M = {}
+-
+----Wrap a run of prose. Each source line becomes one or more preview lines,
+----and the paragraph remembers that N lines turned into M lines.
+----@param source_lines string[]
+----@param source_start integer
+----@param preview_start integer
+----@param width integer
+----@return render.md.sync.Paragraph
+-function M.render(source_lines, source_start, preview_start, width)
+-    local rows = {} ---@type render.md.sync.paragraph.Row[]
+-    local preview_lines = {} ---@type string[]
+-    local line_map = {} ---@type table<integer, integer>
+-    for i, line in ipairs(source_lines) do
+-        local source_row = source_start + i - 1
+-        local pieces = {} ---@type render.md.wrap.Piece[]
+-        line_map[source_row] = preview_start + #preview_lines
+-        for _, text in ipairs(wrap.line(line, width)) do
+-            local preview_row = preview_start + #preview_lines
+-            pieces[#pieces + 1] = {
+-                text = text,
+-                rows = wrap.pack(source_row, preview_row),
+-            }
+-            preview_lines[#preview_lines + 1] = text
+-        end
+-        rows[#rows + 1] = { source_row = source_row, pieces = pieces }
+-    end
+-    ---@type render.md.sync.Paragraph
+-    return {
+-        kind = 'paragraph',
+-        source_start = source_start,
+-        source_end = source_start + #source_lines,
+-        preview_start = preview_start,
+-        preview_end = preview_start + #preview_lines,
+-        source_count = #source_lines,
+-        preview_count = #preview_lines,
+-        source_lines = source_lines,
+-        preview_lines = preview_lines,
+-        line_map = line_map,
+-        rows = rows,
+-    }
+-end
+-
+----A source line maps to the first preview line it wrapped into.
+----@param block render.md.sync.Paragraph
+----@param row integer
+----@return integer, integer
+-function M.preview_pos(block, row)
+-    local state = block.rows[row - block.source_start + 1]
+-    if not state or #state.pieces == 0 then
+-        return block.preview_start, 0
+-    end
+-    local _, preview_row = wrap.unpack(state.pieces[1].rows)
+-    return preview_row, 0
+-end
+-
+----Any wrapped preview line maps back to its source line.
+----@param block render.md.sync.Paragraph
+----@param preview_row integer
+----@return integer, integer
+-function M.source_pos(block, preview_row)
+-    for _, state in ipairs(block.rows) do
+-        for _, item in ipairs(state.pieces) do
+-            local source_row, item_row = wrap.unpack(item.rows)
+-            if item_row == preview_row then
+-                return source_row, 0
+-            end
+-        end
+-    end
+-    return block.source_start, 0
+-end
+-
+-return M
+diff --git a/tests/preview_spec.lua b/tests/preview_spec.lua
+index af4e268..28e626c 100644
+--- a/tests/preview_spec.lua
++++ b/tests/preview_spec.lua
+@@ -1,4 +1,5 @@
+ ---@module 'luassert'
++local assert = require('luassert')
+ 
+ local util = require('tests.util')
+ 
+@@ -96,47 +97,6 @@ describe('preview', function()
+         assert.equal(src, vim.api.nvim_get_current_buf())
+     end)
+ 
+-    it('follows the cursor between the source and the preview', function()
+-        local prose = string.rep('alpha ', 40)
+-        util.setup.text({ prose, '', 'tail' })
+-        local src = vim.api.nvim_get_current_buf()
+-        local preview_win = vim.api.nvim_get_current_win()
+-        vim.cmd('split')
+-        local source_win = vim.api.nvim_get_current_win()
+-        vim.api.nvim_set_current_win(preview_win)
+-        vim.api.nvim_win_set_cursor(preview_win, { 1, 0 })
+-
+-        local preview = require('render-markdown.core.preview')
+-        preview.open()
+-        assert.equal(src, vim.api.nvim_win_get_buf(source_win))
+-        local dst = vim.api.nvim_win_get_buf(preview_win)
+-        assert.not_equal(src, dst)
+-
+-        vim.api.nvim_set_current_win(source_win)
+-        vim.api.nvim_win_set_cursor(source_win, { 3, 0 })
+-        -- Headless Neovim does not emit these events on its own.
+-        vim.api.nvim_exec_autocmds('CursorMoved', { buffer = src })
+-        local followed = vim.api.nvim_win_get_cursor(preview_win)
+-        assert.is_true(followed[1] > 1)
+-        assert.equal(0, followed[2])
+-
+-        vim.api.nvim_set_current_win(preview_win)
+-        vim.api.nvim_win_set_cursor(preview_win, { 1, 0 })
+-        vim.api.nvim_exec_autocmds('CursorMoved', { buffer = dst })
+-        assert.same({ 1, 0 }, vim.api.nvim_win_get_cursor(source_win))
+-
+-        vim.api.nvim_set_current_win(source_win)
+-        vim.api.nvim_buf_set_lines(src, 0, -1, false, { 'short', '', 'tail' })
+-        vim.api.nvim_exec_autocmds('TextChanged', { buffer = src })
+-        assert.same(
+-            { 'short', '', 'tail' },
+-            vim.api.nvim_buf_get_lines(dst, 0, -1, false)
+-        )
+-
+-        preview.close(src)
+-        vim.cmd('only')
+-    end)
+-
+     it('indexes headings in the preview buffer', function()
+         local cell = string.rep('word ', 30)
+         util.setup.text({
+diff --git a/tests/unit/fences_spec.lua b/tests/unit/fences_spec.lua
+index 027ee99..94ad7de 100644
+--- a/tests/unit/fences_spec.lua
++++ b/tests/unit/fences_spec.lua
+@@ -46,7 +46,7 @@ describe('preview fenced code', function()
+     end)
+ 
+     it(
+-        'emits literal replacements without reflow, retaining mappings after diagrams',
++        'emits literal replacements without reflow, retaining heading anchors after diagrams',
+         function()
+             local lines = {
+                 '# Before',
+@@ -80,8 +80,10 @@ describe('preview fenced code', function()
+             row, col = doc:to_source(4, 0)
+             assert.equal(5, row)
+             assert.equal(0, col)
+-            assert.equal('literal', doc.blocks[2].kind)
+-            assert.equal('table', doc.blocks[#doc.blocks].kind)
++            assert.equal(2, #doc.headings)
++            assert.truthy(vim.iter(doc.lines):any(function(line)
++                return line:find('┌', 1, true)
++            end))
+         end
+     )
+ 
+diff --git a/tests/unit/sync_spec.lua b/tests/unit/sync_spec.lua
+index bbcfb1f..662b699 100644
+--- a/tests/unit/sync_spec.lua
++++ b/tests/unit/sync_spec.lua
+@@ -1,109 +1,123 @@
+ ---@module 'luassert'
+-
++local assert = require('luassert')
+ local sync = require('render-markdown.sync')
+-local table_text = require('render-markdown.lib.table_text')
+-
+-describe('sync', function()
+-    it(
+-        'remembers that one source line wrapped into several preview lines',
+-        function()
+-            local line = 'alpha beta gamma delta'
+-            local doc = sync.build({ line }, {}, 10)
+-            local block = doc.blocks[1]
+-            assert.equal('paragraph', block.kind)
+-            assert.equal(0, block.source_start)
+-            assert.equal(1, block.source_count)
+-            assert.is_true(block.preview_count > 1)
+-            assert.equal(block.preview_count, #block.preview_lines)
+-            assert.equal(0, block.line_map[0])
+-            assert.same(doc.lines, block.preview_lines)
+-        end
+-    )
+ 
+-    it('maps a source line onto the preview lines it wrapped into', function()
+-        local wrap = require('render-markdown.lib.wrap')
+-        local line = 'alpha beta gamma delta epsilon'
+-        local doc = sync.build({ line }, {}, 10)
+-        local block = doc.blocks[1]
+-        for col = 0, #line do
+-            local preview_row, preview_col = doc:to_preview(0, col)
+-            assert.equal(block.line_map[0], preview_row)
+-            assert.equal(0, preview_col)
+-        end
+-        for _, piece in ipairs(block.rows[1].pieces) do
+-            local source_row, preview_row = wrap.unpack(piece.rows)
+-            local back_row, back_col = doc:to_source(preview_row, 3)
+-            assert.equal(0, source_row)
+-            assert.equal(source_row, back_row)
+-            assert.equal(0, back_col)
++describe('heading synchronization', function()
++    it('uses document start without headings and in the preamble', function()
++        for _, lines in ipairs({
++            {},
++            { 'plain text', '', 'tail' },
++            { 'intro', '', '# One' },
++        }) do
++            local doc = sync.build(lines, {}, 10)
++            assert.same({ 0, 0 }, { doc:to_preview(0) })
++            assert.same({ 0, 0 }, { doc:to_source(0) })
++            if #doc.headings == 0 then
++                assert.equal(0, doc:section(999, 'source').id)
++            end
+         end
+-        assert.is_true(#block.rows[1].pieces > 1)
+     end)
+ 
+     it(
+-        'maps each source line of a paragraph onto its own preview run',
++        'pairs duplicate and nested headings after expanded prose and tables',
+         function()
+             local lines = {
+-                'alpha beta gamma',
+-                'delta epsilon zeta',
++                '# Same',
++                '',
++                ('alpha '):rep(20),
++                '',
++                '| A | B |',
++                '| --- | --- |',
++                '| long content here | more content |',
++                '',
++                '## Child',
++                'child text',
++                '# Same',
++                'tail',
+             }
+-            local doc = sync.build(lines, {}, 10)
+-            local block = doc.blocks[1]
+-            assert.equal('paragraph', block.kind)
+-            assert.equal(2, block.source_count)
+-            assert.is_true(block.preview_count > 2)
+-            local first = block.rows[1]
+-            local second = block.rows[2]
+-            local wrap = require('render-markdown.lib.wrap')
+-            local _, second_preview = wrap.unpack(second.pieces[1].rows)
+-            assert.equal(#first.pieces, second_preview)
+-            assert.equal(second_preview, block.line_map[1])
+-
+-            local preview_row, preview_col = doc:to_preview(1, 0)
+-            assert.equal(block.line_map[1], preview_row)
+-            assert.equal(0, preview_col)
+-            local source_row, source_col = doc:to_source(preview_row, 4)
+-            assert.equal(1, source_row)
+-            assert.equal(0, source_col)
++            local doc =
++                sync.build(lines, { [4] = true, [5] = true, [6] = true }, 20)
++            assert.equal(3, #doc.headings)
++            local child, second = doc.headings[2], doc.headings[3]
++            assert.is_true(child.preview_row > child.source_row)
++            assert.equal(child.id, doc:section(9, 'source').id)
++            assert.equal(second.id, doc:section(11, 'source').id)
++            assert.equal(
++                child.id,
++                doc:section(second.preview_row - 1, 'preview').id
++            )
++            assert.same({ second.preview_row, 0 }, { doc:to_preview(11, 9) })
++            assert.same({ 10, 0 }, { doc:to_source(#doc.lines - 1, 7) })
++            assert.truthy(vim.iter(doc.lines):any(function(line)
++                return line:find('┌', 1, true)
++            end))
+         end
+     )
+ 
+     it(
+-        'keeps later paragraphs aligned past a blank line and a table',
++        'preserves ATX, empty and multiline Setext headings but excludes code',
+         function()
++            local long = '# ' .. ('title '):rep(30)
+             local lines = {
+-                'alpha beta gamma',
++                long,
+                 '',
+-                '| A | B |',
+-                '| --- | --- |',
+-                '| a | b |',
++                'Setext title',
++                'continued title',
++                '---',
++                '',
++                '#',
++                '',
++                '```markdown',
++                '# Fake',
++                'Fake Setext',
++                '---',
++                '```',
+                 '',
+-                'after table text',
++                '    # Indented fake',
++                '',
++                '## Last',
+             }
+-            local rows = { [2] = true, [3] = true, [4] = true }
+-            local doc = sync.build(lines, rows, 20)
+-            local kinds = {}
+-            for _, block in ipairs(doc.blocks) do
+-                kinds[#kinds + 1] = block.kind
+-            end
+-            assert.same({
+-                'paragraph',
+-                'blank',
+-                'table',
+-                'blank',
+-                'paragraph',
+-            }, kinds)
+-
+-            local wrapped = table_text.lines(lines, rows, 20)
+-            assert.same(wrapped, doc.lines)
++            local doc = sync.build(lines, {}, 10)
++            assert.equal(4, #doc.headings)
++            assert.equal(long, doc.lines[1])
++            assert.same(
++                { 'Setext title', 'continued title', '---' },
++                vim.list_slice(doc.lines, 3, 5)
++            )
++            assert.equal(2, doc.headings[2].level)
++            assert.equal(6, doc.headings[3].source_row)
++            assert.equal(16, doc.headings[4].source_row)
++            assert.equal(doc.headings[3].id, doc:section(14, 'source').id)
++        end
++    )
+ 
+-            local tail = doc.blocks[5]
+-            assert.equal('paragraph', tail.kind)
+-            assert.equal(6, tail.source_start)
+-            local preview_row = doc:to_preview(6, 0)
+-            assert.equal(tail.preview_start, preview_row)
+-            local source_row = doc:to_source(tail.preview_start, 3)
+-            assert.equal(6, source_row)
++    it(
++        'accounts for literal diagram output without parsing it as headings',
++        function()
++            local lines =
++                { '# One', '```mermaid', 'graph LR', '```', '# Two', 'tail' }
++            local doc = sync.build(
++                lines,
++                {},
++                20,
++                nil,
++                { [1] = { source_end = 4, lines = { '# diagram text' } } }
++            )
++            assert.equal(2, #doc.headings)
++            assert.equal(2, doc.headings[2].preview_row)
++            assert.equal(4, doc:to_source(3))
+         end
+     )
++
++    it('falls back to document start when parsing is unavailable', function()
++        local original = vim.treesitter.get_string_parser
++        vim.treesitter.get_string_parser = function()
++            error('unavailable')
++        end
++        local ok, doc = pcall(sync.build, { '# One', 'tail' }, {}, 90)
++        vim.treesitter.get_string_parser = original
++        assert.is_true(ok)
++        assert.equal(0, #doc.headings)
++        assert.equal(0, doc:to_source(1))
++    end)
+ end)
+diff --git a/tests/unit/wrap_spec.lua b/tests/unit/wrap_spec.lua
+index 4b082b5..18c41ec 100644
+--- a/tests/unit/wrap_spec.lua
++++ b/tests/unit/wrap_spec.lua
+@@ -36,18 +36,6 @@ describe('wrap', function()
+         end
+     end)
+ 
+-    it('packs a source row and a preview row into one integer', function()
+-        local packed = wrap.pack(3, 19)
+-        local source_row, preview_row = wrap.unpack(packed)
+-        assert.equal(3, source_row)
+-        assert.equal(19, preview_row)
+-        local again = wrap.pack(0, 0)
+-        assert.equal(0, again)
+-        local source_zero, preview_zero = wrap.unpack(again)
+-        assert.equal(0, source_zero)
+-        assert.equal(0, preview_zero)
+-    end)
+-
+     it('skips protected rows', function()
+         local lines = {
+             'alpha beta gamma',
+diff --git a/lua/render-markdown/sync/outline.lua b/lua/render-markdown/sync/outline.lua
+new file mode 100644
+index 0000000..fe482da
+--- /dev/null
++++ b/lua/render-markdown/sync/outline.lua
+@@ -0,0 +1,78 @@
++local sync = require('render-markdown.sync')
++local ns = vim.api.nvim_create_namespace('render-markdown.preview.headings')
++
++local M = {}
++
++---Track heading occurrences across source edits, without matching title text.
++---@param buf integer
++function M.new(buf)
++    local tracker = { buf = buf, headings = {}, active = true }
++    vim.api.nvim_buf_attach(buf, false, {
++        on_lines = function(_, _, _, first, last, new_last)
++            if not tracker.active then
++                return true
++            end
++            local delta = new_last - last
++            for _, heading in ipairs(tracker.headings) do
++                local row = heading.source_row
++                if row >= first and row < last then
++                    -- Equal-length replacements include whole-line renames.
++                    -- A shrinking range removes its headings rather than
++                    -- accidentally transferring identity to the next heading.
++                    if delta < 0 then
++                        vim.api.nvim_buf_del_extmark(buf, ns, heading.id)
++                    else
++                        vim.api.nvim_buf_set_extmark(buf, ns, row, 0, {
++                            id = heading.id,
++                            right_gravity = true,
++                        })
++                    end
++                end
++                local mark =
++                    vim.api.nvim_buf_get_extmark_by_id(buf, ns, heading.id, {})
++                if #mark > 0 then
++                    heading.source_row = mark[1]
++                end
++            end
++        end,
++    })
++
++    function tracker:rebuild()
++        local old = {}
++        for _, heading in ipairs(self.headings) do
++            local mark =
++                vim.api.nvim_buf_get_extmark_by_id(buf, ns, heading.id, {})
++            if #mark > 0 then
++                old[mark[1]] = heading.id
++            end
++        end
++        local headings = sync.headings(buf)
++        local retained = {}
++        for _, heading in ipairs(headings) do
++            heading.id =
++                vim.api.nvim_buf_set_extmark(buf, ns, heading.source_row, 0, {
++                    id = old[heading.source_row],
++                    right_gravity = true,
++                })
++            retained[heading.id] = true
++        end
++        for _, heading in ipairs(self.headings) do
++            if not retained[heading.id] then
++                vim.api.nvim_buf_del_extmark(buf, ns, heading.id)
++            end
++        end
++        self.headings = headings
++        return headings
++    end
++
++    function tracker:close()
++        self.active = false
++        if vim.api.nvim_buf_is_valid(buf) then
++            vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
++        end
++        self.headings = {}
++    end
++    return tracker
++end
++
++return M
+diff --git a/tests/preview_navigation_spec.lua b/tests/preview_navigation_spec.lua
+new file mode 100644
+index 0000000..5edec4f
+--- /dev/null
++++ b/tests/preview_navigation_spec.lua
+@@ -0,0 +1,239 @@
++---@module 'luassert'
++local assert = require('luassert')
++local preview = require('render-markdown.core.preview')
++local util = require('tests.util')
++
++describe('preview heading navigation', function()
++    local src, dst, sw, pw
++    local function move(win, row, col)
++        vim.api.nvim_set_current_win(win)
++        vim.api.nvim_win_set_cursor(win, { row, col or 0 })
++        vim.api.nvim_exec_autocmds(
++            'CursorMoved',
++            { buffer = vim.api.nvim_win_get_buf(win) }
++        )
++        vim.wait(0)
++    end
++    local function open(lines, row)
++        util.setup.text(lines)
++        src = vim.api.nvim_get_current_buf()
++        pw = vim.api.nvim_get_current_win()
++        vim.cmd('split')
++        sw = vim.api.nvim_get_current_win()
++        vim.api.nvim_set_current_win(pw)
++        vim.api.nvim_win_set_cursor(pw, { row or 1, 0 })
++        preview.open()
++        dst = vim.api.nvim_get_current_buf()
++    end
++    local function edit(first, last, lines)
++        vim.api.nvim_buf_set_lines(src, first, last, false, lines)
++        vim.api.nvim_exec_autocmds('TextChanged', { buffer = src })
++    end
++    -- selene: allow(undefined_variable)
++    after_each(function()
++        if src then
++            preview.close(src)
++        end
++        vim.cmd('silent! only')
++    end)
++
++    it(
++        'follows section changes both ways without moving within a section or bouncing',
++        function()
++            open({
++                '# First',
++                'alpha',
++                'beta',
++                '## Child',
++                'child',
++                '',
++                '# First',
++                'tail',
++            })
++            move(sw, 5, 2)
++            assert.same({ 4, 0 }, vim.api.nvim_win_get_cursor(pw))
++            assert.same({ 5, 2 }, vim.api.nvim_win_get_cursor(sw))
++            assert.equal(sw, vim.api.nvim_get_current_win())
++            move(sw, 6)
++            assert.same({ 4, 0 }, vim.api.nvim_win_get_cursor(pw))
++            move(pw, 8, 2)
++            assert.same({ 7, 0 }, vim.api.nvim_win_get_cursor(sw))
++            assert.same({ 8, 2 }, vim.api.nvim_win_get_cursor(pw))
++            -- A delayed callback for the peer must not pull back the origin.
++            vim.api.nvim_exec_autocmds('CursorMoved', { buffer = src })
++            assert.same({ 8, 2 }, vim.api.nvim_win_get_cursor(pw))
++            move(pw, 2)
++            assert.same({ 1, 0 }, vim.api.nvim_win_get_cursor(sw))
++            assert.same({ 2, 0 }, vim.api.nvim_win_get_cursor(pw))
++        end
++    )
++
++    it(
++        'opens and closes at heading starts, including a hidden source',
++        function()
++            open({ 'intro', '', '# One', 'body', '# Two', 'tail' }, 4)
++            assert.same({ 3, 0 }, vim.api.nvim_win_get_cursor(pw))
++            vim.api.nvim_win_close(sw, true)
++            move(pw, 6)
++            preview.close(src)
++            assert.equal(src, vim.api.nvim_get_current_buf())
++            assert.same({ 5, 0 }, vim.api.nvim_win_get_cursor(pw))
++            preview.open(src)
++            dst = vim.api.nvim_get_current_buf()
++            assert.same({ 5, 0 }, vim.api.nvim_win_get_cursor(pw))
++        end
++    )
++
++    it(
++        'keeps preamble and heading-free movement at the document-start anchor',
++        function()
++            open({ 'intro', 'more', '', '# One', 'body' }, 2)
++            assert.same({ 1, 0 }, vim.api.nvim_win_get_cursor(pw))
++            move(sw, 2)
++            assert.same({ 1, 0 }, vim.api.nvim_win_get_cursor(pw))
++            edit(0, -1, { 'plain', 'text', 'tail' })
++            move(pw, 3)
++            preview.close(src)
++            assert.same({ 1, 0 }, vim.api.nvim_win_get_cursor(pw))
++        end
++    )
++
++    it(
++        'preserves heading identity across insertion, rename and deletion while preview is active',
++        function()
++            open({ '# Same', 'body', '# Same', 'selected', '# Last', 'tail' })
++            move(pw, 4)
++            local selected = preview.anchor[src]
++            edit(0, 0, { '# Inserted', '' })
++            assert.equal(selected, preview.anchor[src])
++            assert.same({ 5, 0 }, vim.api.nvim_win_get_cursor(pw))
++            edit(4, 5, { '# Renamed' })
++            assert.equal(selected, preview.anchor[src])
++            assert.equal('# Renamed', vim.api.nvim_get_current_line())
++            edit(4, 5, {})
++            assert.not_equal(selected, preview.anchor[src])
++            assert.same({ 3, 0 }, vim.api.nvim_win_get_cursor(pw))
++            assert.equal('# Same', vim.api.nvim_get_current_line())
++        end
++    )
++
++    it(
++        'uses the source current section when source edits shift rendered positions',
++        function()
++            open({ '# First', 'short', '', '# Second', 'tail' })
++            move(sw, 5)
++            edit(1, 2, { ('alpha '):rep(100) })
++            local heading = preview.docs[src].headings[2]
++            assert.is_true(heading.preview_row > heading.source_row)
++            assert.same(
++                { heading.preview_row + 1, 0 },
++                vim.api.nvim_win_get_cursor(pw)
++            )
++            assert.same({ 5, 0 }, vim.api.nvim_win_get_cursor(sw))
++        end
++    )
++
++    it('cleans pair state on wipeout without affecting another pair', function()
++        open({ '# One', 'body' })
++        local first = src
++        util.setup.text({ '# Other', 'body' })
++        local other = vim.api.nvim_get_current_buf()
++        preview.open()
++        local other_dst = vim.api.nvim_get_current_buf()
++        vim.api.nvim_buf_delete(dst, { force = true })
++        assert.is_nil(preview.docs[first])
++        assert.is_nil(preview.outlines[first])
++        assert.is_nil(preview.anchor[first])
++        assert.equal(other_dst, preview.buffers[other])
++        vim.api.nvim_buf_delete(other, { force = true })
++        assert.is_nil(preview.outlines[other])
++        assert.is_false(vim.api.nvim_buf_is_valid(other_dst))
++    end)
++
++    it('reopens an existing hidden preview at the source section', function()
++        open({ '# One', 'body', '# Two', 'tail' })
++        vim.api.nvim_win_set_buf(pw, src)
++        move(sw, 4)
++        vim.api.nvim_set_current_win(sw)
++        preview.open(src)
++        assert.equal(dst, vim.api.nvim_get_current_buf())
++        assert.same({ 3, 0 }, vim.api.nvim_win_get_cursor(sw))
++    end)
++    it(
++        'follows an actual document-symbol target after wrapped tables',
++        function()
++            open({
++                '# Same',
++                '',
++                '| A | B |',
++                '| --- | --- |',
++                '| ' .. ('word '):rep(50) .. ' | ' .. ('cell '):rep(30) .. ' |',
++                '',
++                '# Same',
++                'tail',
++            })
++            local symbols =
++                require('render-markdown.integ.lsp').symbols(dst, 'utf-8')
++            local target = symbols[2].selectionRange.start.line
++            assert.is_true(target > 6)
++            move(pw, target + 1)
++            assert.same({ 7, 0 }, vim.api.nvim_win_get_cursor(sw))
++            move(pw, target + 2)
++            assert.same({ 7, 0 }, vim.api.nvim_win_get_cursor(sw))
++            move(pw, 4)
++            assert.same({ 1, 0 }, vim.api.nvim_win_get_cursor(sw))
++            local position = vim.api.nvim_win_get_cursor(sw)
++            move(pw, 5)
++            assert.same(position, vim.api.nvim_win_get_cursor(sw))
++        end
++    )
++
++    it(
++        'returns to document start when the first selected heading is removed',
++        function()
++            open({ 'intro', '', '# First', 'body', '# Next', 'tail' })
++            move(pw, 4)
++            edit(2, 3, {})
++            assert.equal(0, preview.anchor[src])
++            assert.same({ 1, 0 }, vim.api.nvim_win_get_cursor(pw))
++            assert.same({ 1, 0 }, vim.api.nvim_win_get_cursor(sw))
++        end
++    )
++
++    it(
++        'retains the active preview section after a diagram finishes asynchronously',
++        function()
++            local original = vim.system
++            local done
++            vim.system = function(_, _, callback)
++                done = callback
++                return { kill = function() end }
++            end
++            local ok, err = pcall(function()
++                open({
++                    '# First',
++                    '',
++                    '```mermaid',
++                    'graph LR',
++                    'A-->B',
++                    '```',
++                    '',
++                    '# Last',
++                    'tail',
++                })
++                move(pw, 9)
++                local selected = preview.anchor[src]
++                done({ code = 0, stdout = 'diagram row\nrow two\n' })
++                assert.is_true(vim.wait(500, function()
++                    return vim.api.nvim_buf_get_lines(dst, 2, 3, false)[1]
++                        == 'diagram row'
++                end))
++                assert.equal(selected, preview.anchor[src])
++                assert.same({ 6, 0 }, vim.api.nvim_win_get_cursor(pw))
++                assert.same({ 8, 0 }, vim.api.nvim_win_get_cursor(sw))
++            end)
++            vim.system = original
++            assert.is_true(ok, err)
++        end
++    )
++end)

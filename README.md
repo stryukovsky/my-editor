@@ -434,6 +434,13 @@ Rendering is configured off by default. `<leader>mdt` toggles it for this buffer
 `<leader>mdr` opens and enables a rendered preview. The same math rendering is
 available in `todotxt-preview` buffers.
 
+Source and rendered preview navigation synchronize at headings. Entering another
+section in either buffer moves the counterpart to that heading; moving inside a
+section leaves the counterpart alone. `<leader>mdr` opens or returns at the current
+section's heading. Before the first heading, or without headings, it uses the
+document beginning. Repeated titles are distinct sections.
+
+
 Inside `$...$` or `$$...$$`, LaTeX symbols display as Unicode: for example,
 `$\alpha \cdot x \Rightarrow \infty$` displays as `α ⋅ x ⇒ ∞`, with spaces in place of the dollar delimiters.
 Supported symbols include Greek letters and variants, arrows, comparisons,
@@ -454,7 +461,9 @@ include `\min` and `\max`. Unknown commands, superscripts, subscripts and accent
 (such as `\bar p`) stay as written. Indexed roots such as `\sqrt[3]{x}` remain
 literal. Formula text and replacements share the normal text foreground, refreshed
 on theme changes. No external LaTeX converter is required. The implementation lives in
-`lua/configs/markdown-math.lua`; no render-markdown plugin source is patched.
+`lua/configs/markdown-math.lua`. A small text-transform hook in the installed
+render-markdown fork converts preview math before layout; its recovery patch is
+retained with the OpenSpec change.
 
 Focused checks (using the parsers and plugin installed in this config):
 
@@ -466,7 +475,24 @@ uv run --with pynvim python tests/markdown_math_ui.py
 While math rendering is enabled, inline `$` delimiters display as spaces. The
 opening display-math `$$` displays as the LaTeX Nerd Font icon `` followed by a
 space; the closing `$$` displays as two spaces. Toggle rendering off to reveal
-the original delimiters. Code and escaped literal dollar signs are unaffected.
+the original delimiters in source buffers. Closing the full preview returns to
+the untouched source. Code and escaped literal dollar signs are unaffected.
+
+When rendering directly in an editable source buffer, formulas stay compact.
+The spaces needed to restore source width are
+collected and split before and after the complete formula body, centering it in
+its original terminal-cell width. Symbols and nested fractions/roots do not get
+individual padding. Surrounding text and wrapping keep their source positions,
+including with Unicode and tabs. Each line of a multiline formula keeps its
+width; if its body cannot fit without growing a line, that body stays literal.
+Dollar delimiters keep their own spans, including the opening display icon.
+
+Full previews use real Unicode math text before prose wrapping and pipe-table
+sizing. This avoids measuring raw LaTeX and painting math over an already wrapped
+table. Preview math has no source-width compensation padding or late overlays;
+the table formatter measures the compact result. Math bars use `∣` / `‖` so they
+do not become Markdown column separators. The original file and source buffer,
+including their undo history, remain unchanged.
 
 ## Markdown preview diagrams
 

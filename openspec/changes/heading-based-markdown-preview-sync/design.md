@@ -28,7 +28,7 @@ Reuse the parser traversal and level recognition in `integ/lsp.lua` where practi
 
 Create ordered records with occurrence identity, level, source row, and emitted preview row. Associate preview rows as text is generated. This is heading-only rendering metadata, not a revived source-line mapping. Never match headings by title or by independently reparsing formatted preview text: wrapping and duplicate titles make those approaches unreliable.
 
-Keep heading syntax and multiline Setext headings intact when generating preview text. Long headings can soft-wrap in the existing window; prose and table formatting otherwise keep their current behavior. This prevents hard wrapping from turning a heading continuation into an apparent unrelated paragraph or losing its symbol identity.
+Keep heading syntax and multiline Setext headings intact when generating preview text. The installed Mermaid integration now keeps the preview window nowrap; retain that setting, so long headings use horizontal scrolling while prose and table formatting keep their current behavior. This prevents hard wrapping from turning a heading continuation into an apparent unrelated paragraph or losing its symbol identity.
 
 ### 3. Replace navigation state across the entire lifecycle
 

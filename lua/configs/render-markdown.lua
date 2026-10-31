@@ -11,7 +11,7 @@ require("render-markdown").setup {
   file_types = { "markdown", "todotxt-preview" },
   anti_conceal = { enabled = false },
   win_options = {
-    -- Math commands use conceal; buffer-local queries keep Markdown markers visible.
+    -- Buffer-local queries keep Markdown markers visible while rendering.
     conceallevel = { default = 0, rendered = 2 },
     concealcursor = { rendered = "nvic" },
   },
@@ -46,6 +46,9 @@ require("render-markdown").setup {
     },
   },
 }
+
+-- Materialize Unicode math before the preview measures/wraps prose and tables.
+require("render-markdown.core.preview").transform = math.lines
 
 -- The preview converter lives in the plugin; reuse our installed executable.
 local bundled_mermaid = vim.fn.stdpath "config" .. "/bin/mermaid-ascii"

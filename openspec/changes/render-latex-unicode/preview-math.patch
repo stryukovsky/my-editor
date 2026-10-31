@@ -1,0 +1,113 @@
+--- a/lua/render-markdown/core/preview.lua
++++ b/lua/render-markdown/core/preview.lua
+@@ -11,6 +11,11 @@
+ ---and padding are reserved first, then the rest is split across columns in
+ ---proportion to the widest cell in each column.
+ M.columns = 90
++
++---Optional source-text conversion before prose/table layout. It must preserve
++---source row count so heading navigation and diagram replacement rows stay valid.
++---@type (fun(buf: integer, lines: string[]): string[])?
++M.transform = nil
+ 
+ ---Converter settings. A preview keeps its own bounded cache and processes.
+ M.mermaid = { command = 'mermaid-ascii', timeout = 5000 }
+@@ -339,7 +344,13 @@
+     local src_lines = vim.api.nvim_buf_get_lines(src, 0, -1, false)
+     local replacements = M.diagram_blocks(src, dst, src_lines)
+     local config = state.get(src).pipe_table
+-    local doc = sync.build(src_lines, M.table_rows(src, src_lines), M.columns, {
++    local table_rows = M.table_rows(src, src_lines)
++    local input = M.transform and M.transform(src, src_lines) or src_lines
++    assert(
++        #input == #src_lines,
++        'preview transform must preserve source row count'
++    )
++    local doc = sync.build(input, table_rows, M.columns, {
+         padding = config.padding,
+         border = config.border,
+         indicator = config.alignment_indicator,
+--- a/README.md
++++ b/README.md
+@@ -1889,6 +1889,15 @@
+ 
+ <!-- panvimdoc-ignore-end -->
+ 
++### Preview text transforms
++
++Set `require('render-markdown.core.preview').transform` to a callback receiving
++`(source_buffer, source_lines)` and returning converted lines. It runs before
++prose wrapping and table sizing, so the layout measures the actual display text.
++The returned line count must match the source; heading navigation and diagram
++replacement positions continue to use the original source rows. The callback
++must not edit the source buffer. Without a callback, preview behavior is unchanged.
++
+ ### Mermaid in terminal previews
+ 
+ The listed preview (`require('render-markdown').preview()`) renders complete
+--- /dev/null
++++ b/tests/preview_transform_spec.lua
+@@ -0,0 +1,63 @@
++---@module 'luassert'
++local assert = require('luassert')
++local preview = require('render-markdown.core.preview')
++local util = require('tests.util')
++
++describe('preview text transform', function()
++    after_each(function()
++        for src in pairs(preview.buffers) do
++            preview.close(src)
++        end
++        preview.transform = nil
++        preview.columns = 90
++    end)
++
++    it(
++        'converts copied text before table sizing and preserves source rows',
++        function()
++            local original = {
++                '# Heading',
++                '',
++                '| Formula | Value |',
++                '| --- | --- |',
++                '| $\\alpha$ | value |',
++                '',
++                '## After',
++            }
++            util.setup.text(original)
++            local src = vim.api.nvim_get_current_buf()
++            vim.bo[src].modified = false
++            local calls = 0
++            preview.columns = 30
++            preview.transform = function(buf, lines)
++                calls = calls + 1
++                assert.equal(src, buf)
++                assert.same(original, lines)
++                local result = vim.deepcopy(lines)
++                result[5] = '| α | value |'
++                return result
++            end
++            preview.open()
++            assert.equal(1, calls)
++            local dst = vim.api.nvim_get_current_buf()
++            assert.not_equal(src, dst)
++            local lines = vim.api.nvim_buf_get_lines(dst, 0, -1, false)
++            local found = false
++            for _, line in ipairs(lines) do
++                if line:find('α', 1, true) then
++                    found = true
++                    assert.is_nil(line:find('\\alpha', 1, true))
++                    assert.equal(30, vim.api.nvim_strwidth(line))
++                end
++            end
++            assert.is_true(found)
++            assert.same(original, vim.api.nvim_buf_get_lines(src, 0, -1, false))
++            assert.is_false(vim.bo[src].modified)
++            local doc = preview.docs[src]
++            assert.equal(6, doc.headings[2].source_row)
++            assert.equal('## After', doc.lines[doc.headings[2].preview_row + 1])
++            preview.close(src)
++            assert.same(original, vim.api.nvim_buf_get_lines(src, 0, -1, false))
++        end
++    )
++end)

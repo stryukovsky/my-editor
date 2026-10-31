@@ -13,11 +13,12 @@ with tempfile.TemporaryDirectory(prefix='nvim-math-') as directory:
     os.environ['XDG_STATE_HOME'] = directory + '/state'
     os.environ['XDG_CACHE_HOME'] = directory + '/cache'
     source = '\n'.join([
-        r'unicode Ж $\alpha \cdot x \Rightarrow \infty$',
+        r'unicode Ж $\alpha \cdot x \Rightarrow \infty$ tail',
         r'$\left\langle x \right\rangle \sin x$',
         r'`$\alpha$`', '```latex', r'$\alpha$', '```',
         r'$x^2 a_i \hat{x} \frac{1}{x} \unknown \alphabogus \\alpha$',
         '', '$$', r'\theta \to \Omega', '$$', '', 'cursor',
+        r'界 $\sqrt{x̂}$ tail2', '\t$\alpha$\tTABTAIL',
     ]) + '\n'
     file = Path(directory) / 'math.md'
     file.write_text(source)
@@ -62,17 +63,38 @@ with tempfile.TemporaryDirectory(prefix='nvim-math-') as directory:
                 return lines
             ''', width)
 
+        def compact(text):
+            return ''.join(text.split())
+
+        def first_line(greek='α'):
+            line = screen()[0]
+            assert compact(line) == 'unicodeЖ' + greek + '⋅x⇒∞tail', line
+            assert line.index('tail') == source.splitlines()[0].index('tail'), 'suffix column moved'
+            body = greek + ' ⋅ x ⇒ ∞'
+            original = source.splitlines()[0]
+            start, end = original.index('$'), original.rindex('$')
+            source_width = end - start - 1
+            expected_start = start + 1 + (source_width - len(body)) // 2
+            assert body in line, 'formula contains internal compensation gaps: ' + line
+            assert line.index(body) == expected_start, 'whole formula is not centered'
+            return line
+
         def rendered():
             lines = screen()
-            assert lines[0].strip() == 'unicode Ж  α ⋅ x ⇒ ∞', lines[0]
-            assert lines[1].strip() == '⟨ x ⟩ sin x', lines[1]
+            first_line()
+            assert compact(lines[1]) == '⟨x⟩sinx', lines[1]
             assert lines[2].strip() == r'`$\alpha$`', lines[2]
             assert lines[3].strip() == '```latex', lines[3]
             assert lines[4].strip() == r'$\alpha$', lines[4]
             assert lines[5].strip() == '```', lines[5]
-            assert lines[6].strip() == r'x^2 a_i \hat{x} (1) ÷ (x) \unknown \alphabogus \\alpha', lines[6]
+            assert compact(lines[6]) == compact(r'x^2 a_i \hat{x} (1) ÷ (x) \unknown \alphabogus \\alpha'), lines[6]
             assert lines[8].strip() == '' and lines[10].strip() == '', 'display delimiter icon/spaces'
-            assert lines[9].strip() == 'θ → Ω', lines[9]
+            assert compact(lines[9]) == 'θ→Ω', lines[9]
+            assert compact(lines[13]) == '界√(x̂)tail2', lines[13]
+            for index, token in ((13, 'tail2'), (14, 'TABTAIL')):
+                actual = lines[index].split(token)[0]
+                original = source.splitlines()[index].split(token)[0]
+                assert nvim.funcs.strdisplaywidth(actual) == nvim.funcs.strdisplaywidth(original), 'Unicode/tab suffix moved'
             assert nvim.current.window.options['conceallevel'] == 2
 
         # Respect the user's configured default. When rendering starts disabled,
@@ -92,7 +114,10 @@ with tempfile.TemporaryDirectory(prefix='nvim-math-') as directory:
         math_fg = nvim.api.get_hl(0, {'name': 'RenderMarkdownMath'})['fg']
         assert normal_fg == math_fg
         # screenattr covers the resulting UI cells, including virtual text.
-        attrs = [nvim.funcs.screenattr(1, col) for col in (11, 12, 14, 16, 18, 20)]
+        line = first_line()
+        columns = [line.index(symbol) + 1 for symbol in ('α', '⋅', '⇒', '∞')]
+        columns.append(line.index('x') + 1)
+        attrs = [nvim.funcs.screenattr(1, col) for col in columns]
         assert len(set(attrs)) == 1, ('inconsistent formula colors', attrs)
         for fg in (0x4b4031, 0xd8c8aa):
             nvim.exec_lua('''
@@ -107,7 +132,7 @@ with tempfile.TemporaryDirectory(prefix='nvim-math-') as directory:
         nvim.command('silent write')
         assert file.read_text() == source
         nvim.current.window.cursor = (1, 12)
-        assert 'α ⋅ x ⇒ ∞' in screen()[0], 'cursor line lost rendering'
+        first_line()  # Cursor inside a replacement must keep the same display width.
         nvim.current.window.cursor = (13, 0)
         nvim.exec_lua("require('render-markdown').buf_toggle()")
         lines = screen()
@@ -119,19 +144,30 @@ with tempfile.TemporaryDirectory(prefix='nvim-math-') as directory:
         ''') == 0
         nvim.exec_lua("require('render-markdown').buf_toggle()")
         rendered()
-        nvim.current.buffer[0] = r'unicode Ж $\beta \cdot x \Rightarrow \infty$'
+        nvim.current.buffer[0] = r'unicode Ж $\beta \cdot x \Rightarrow \infty$ tail'
         nvim.exec_lua("vim.api.nvim_exec_autocmds('TextChanged',{buffer=0})")
-        assert screen()[0].strip() == 'unicode Ж  β ⋅ x ⇒ ∞'
+        source = source.replace(r'\alpha \cdot', r'\beta \cdot', 1)
+        first_line('β')
         nvim.current.window.cursor = (1, 0)
         nvim.ui_try_resize(28, 30)
         nvim.command('normal! zt')
-        narrow = '\n'.join(screen(28))
-        assert 'β ⋅ x ⇒ ∞' in ' '.join(narrow.split()) and r'`$\alpha$`' in narrow, narrow
+        narrow_lines = screen(28)
+        narrow = '\n'.join(narrow_lines)
+        assert 'β⋅x⇒∞' in compact(narrow) and r'`$\alpha$`' in narrow, narrow
+        def position(lines, token):
+            return next((row, line.index(token)) for row, line in enumerate(lines) if token in line)
+
+        nvim.exec_lua("require('render-markdown').buf_toggle()")
+        source_narrow = screen(28)
+        assert position(narrow_lines, 'tail') == position(source_narrow, 'tail'), 'wrapped suffix moved'
+        assert position(narrow_lines, r'`$\alpha$`') == position(source_narrow, r'`$\alpha$`'), 'wrapped line heights changed'
+        nvim.exec_lua("require('render-markdown').buf_toggle()")
+        screen(28)
         nvim.ui_try_resize(100, 30)
         # The custom preview filetype uses the same renderer.
         nvim.current.buffer.options['filetype'] = 'todotxt-preview'
         nvim.exec_lua("require('render-markdown').buf_enable()")
-        assert screen()[0].strip() == 'unicode Ж  β ⋅ x ⇒ ∞'
+        first_line('β')
         nvim.command('vnew')
         nvim.current.buffer.options['filetype'] = 'lua'
         nvim.current.buffer[:] = [r'local alpha = "\alpha"']
@@ -163,7 +199,7 @@ with tempfile.TemporaryDirectory(prefix='nvim-math-') as directory:
             assert not nvim.current.buffer.options['modified']
             assert note.read_bytes() == note_bytes
             print('AMM vault note: real display and unchanged source passed')
-        print('markdown math UI: configured default, enable, symbols, code, source/save/undo, cursor, toggles, edits, wraps, preview and buffer isolation passed')
+        print('markdown math UI: configured default, centered width, suffix columns, colors, source/save/undo, toggles, edits, wraps, preview and buffer isolation passed')
     finally:
         try:
             nvim.command('qa!')

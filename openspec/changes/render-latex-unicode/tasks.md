@@ -33,3 +33,19 @@ Validation results are recorded in design.md.
 - [x] 5.2 Verify inline and display math with focused parser and UI checks, and update documentation and spec.
 
 - [x] 5.3 Replace only the opening display-math `$$` with the Nerd Font LaTeX icon and trailing space; verify single-line and multiline display math, unchanged inline math, code, source and toggle restoration.
+
+
+## 6. Source-width formula centering
+
+- [x] 6.1 Keep each complete formula body compact and center it with only outer compensation padding. Preserve delimiter/icon spans and each multiline source row, with literal body fallback if a row would grow.
+- [x] 6.2 Verify exact padding, Unicode, buffer-local variable tab stops, ambiguous-width glyphs, multiple inline regions, source/undo/toggle behavior, suffix columns and narrow-window wrap positions. Check every row of the supplied AMM note without modifying it.
+- [x] 6.3 Update README, behavior specs and design with width-preserving rendering semantics and verification results.
+
+- [x] 6.4 Move all individual symbol/expression compensation to the complete formula body edges; verify compact multi-symbol and nested expressions plus unchanged source width, suffix columns and wrapping.
+
+
+## 7. Real preview math before table layout
+
+- [x] 7.1 Reproduce raw-LaTeX wrapping and late math overlays overwriting table borders; isolate the preprocessing/layout order as the cause.
+- [x] 7.2 Reuse syntax-aware math transformations to materialize copied Unicode input before preview prose/table layout. Preserve source rows, code and source state; skip late preview math overlays and keep math bars safe as table content.
+- [x] 7.3 Verify actual buffer and screen table geometry, nested formulas, headings, source edits, source/undo preservation, existing source-mode rendering, Mermaid and navigation behavior. Retain the small installed-fork hook patch and documentation.

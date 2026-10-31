@@ -26,9 +26,9 @@ Alternative: install `latex2text` and keep the built-in handler. That is useful 
 
 ### Coordinate symbol conceal and existing Markdown visibility
 
-Use empty conceal plus inline virtual text for replacements and rendered conceallevel 2, restoring the existing unrendered value when rendering is disabled. Keep anti-conceal and render modes consistent with the current configuration.
+Use source-aligned virtual-text overlays for replacements, preserving the existing rendered conceallevel 2, restoring the existing unrendered value when rendering is disabled. Keep anti-conceal and render modes consistent with the current configuration.
 
-The installed plugin's pattern controls disable shared queries globally and initialize only once, so they cannot provide buffer-scoped restoration. Use the scoped fallback: compile highlight queries without `conceal` / `conceal_lines` directives and swap only the rendered buffer's highlighter query references in `on.render`. Restore the original references in `on.clear`. Cache compiled queries; preserve captures and predicates, and never mutate the shared query cache or runtime files. Apply this to Markdown, markdown_inline and injected LaTeX highlighting so only our explicit symbol marks conceal source.
+The installed plugin's pattern controls disable shared queries globally and initialize only once, so they cannot provide buffer-scoped restoration. Use the scoped fallback: compile highlight queries without `conceal` / `conceal_lines` directives and swap only the rendered buffer's highlighter query references in `on.render`. Restore the original references in `on.clear`. Cache compiled queries; preserve captures and predicates, and never mutate the shared query cache or runtime files. Apply this to Markdown, markdown_inline and injected LaTeX highlighting so source-aligned math overlays and existing Markdown markers remain visible.
 
 This uses Neovim's internal highlighter query wrapper `_query` field through one isolated adapter. The headless and attached-UI fixtures verify buffer isolation and restoration with the installed Neovim. Re-run these fixtures after Neovim highlighter changes.
 
@@ -40,13 +40,13 @@ Display inline dollar delimiters as spaces and the opening display delimiter as 
 
 ### Linear fractions, square roots and spacing
 
-Use Tree-sitter generic-command argument fields to recognize complete `\frac`, `\dfrac`, `\tfrac` and `\sqrt` expressions. Replace only their command and outer brace spans: `\frac{xy}{x+a}` displays as `(xy) ÷ (x+a)`, and `\sqrt{xy}` displays as `√(xy)`. Recurse into arguments for nested roots, fractions and symbols without overlapping marks. Keep internal subscript/superscript/accents source intact. Unbraced, indexed and incomplete structures remain literal. This avoids copying expressions into a separate flattened representation and preserves multiline source layout.
+Use Tree-sitter generic-command argument fields to recognize complete `\frac`, `\dfrac`, `\tfrac` and `\sqrt` expressions. Collect transformations of their command and outer brace spans: `\frac{xy}{x+a}` displays as `(xy) ÷ (x+a)`, and `\sqrt{xy}` displays as `√(xy)`. Recurse into arguments for nested roots, fractions and symbols, then emit one centered replacement per expression line without overlapping marks. Keep internal subscript/superscript/accents source intact. Unbraced, indexed and incomplete structures remain literal. Reconstruct each expression line from the collected transformations and untouched source, then center the readable content within its source display width. Preserve multiline source layout.
 
-Map `\quad` and `\qquad` to two and four terminal spaces. Small spacing commands and escaped spaces use one cell; `\!` disappears rather than trying to overlap terminal glyphs. Add `\min` and `\max` to named functions found in the example note.
+Spacing commands use their readable spacing (quad: two cells, qquad: four, small positive commands: one, negative spacing: empty); their saved width contributes to outer formula padding. Add `\min` and `\max` to named functions found in the example note.
 
 ### Consistent math foreground
 
-Conceal replacement characters use Neovim's global `Conceal` highlight, which caused gray symbols next to blue source. Use inline virtual text with `RenderMarkdownMath` for every nonempty replacement. Add one higher-priority math-region foreground mark for the remaining source. Set `RenderMarkdownMath` to the current `Normal` foreground in the existing highlight override function, so ColorScheme/UIEnter refresh both uniformly. Do not modify the global Conceal highlight or unrelated Markdown/LaTeX buffers.
+Conceal replacement characters use Neovim's global `Conceal` highlight, which caused gray symbols next to blue source. Use virtual-text overlays with `RenderMarkdownMath` for replacements and padding. Add one higher-priority math-region foreground mark for the remaining source. Set `RenderMarkdownMath` to the current `Normal` foreground in the existing highlight override function, so ColorScheme/UIEnter refresh both uniformly. Do not modify the global Conceal highlight or unrelated Markdown/LaTeX buffers.
 
 ## Risks / Trade-offs
 
@@ -62,7 +62,7 @@ Implement and validate the handler in the config repository, then enable it thro
 
 ## Verification
 
-- `nvim --headless -u NONE -i NONE -l tests/markdown_math.lua`: 96 checks passed by default; 107 with the optional AMM note with installed parsers, including exact dots, escaped delimiters, both filetypes, unknown prefixes, escaped commands, code/prose exclusion, edits, local query restoration and source/undo preservation.
+- `nvim --headless -u NONE -i NONE -l tests/markdown_math.lua`: 153 checks passed by default; 636 with the optional AMM note with installed parsers, including exact dots, escaped delimiters, both filetypes, unknown prefixes, escaped commands, code/prose exclusion, edits, local query restoration and source/undo preservation.
 - `uv run --with pynvim python tests/markdown_math_ui.py`: attached Neovim UI verified configured opening behavior and explicit enable, visible symbols and backticks, saved bytes, cursor-line rendering, toggles, edits, narrow-window wraps, custom preview filetype and unrelated buffer isolation.
 - The UI fixture loads the actual Markdown rendering setup with installed plugin/parsers; it does not load unrelated personal plugins or verify terminal font glyph coverage.
 
@@ -72,3 +72,21 @@ Implement and validate the handler in the config repository, then enable it thro
 - Preserve the concurrent user setting `enabled=false` and preview-enable mapping. The UI fixture verifies the configured default, then explicitly enables rendering when required.
 
 - Inline dollar delimiter nodes render as one space. The first `$$` child of a displayed equation renders as ` ` (the same LaTeX Nerd Font glyph used by the installed nvim-web-devicons tex icon); the closing `$$` remains two spaces. Escaped dollar commands and dollars in code are unchanged; plugin toggles restore the original delimiters with source bytes preserved.
+
+
+### Source-width centering
+
+Collect all primitive symbol, fraction/root, sizing and spacing transformations into one shared formula-body group. Dollar delimiters keep separate spans so the opening display icon remains anchored. Reconstruct each body line from transformations and untouched source, then measure terminal-cell widths in the source buffer context, expand tabs at their original columns, and add floor(gap/2) leading and ceil(gap/2) trailing spaces around the complete readable line. Do not pad individual symbols or nested expressions. If any body line would exceed its source width, leave that complete formula body literal; never truncate math.
+
+Split padded output into source-aligned overlay chunks at shared display-cell boundaries, keeping wide glyphs, combining sequences and tabs indivisible. Overlay text without conceal or inserted cells; inline conceal/virtual text changes narrow-window wrapping even when its logical width matches source. Preserve plugin lifecycle and existing query handling.
+
+Focused verification now covers exact per-replacement padding, grouped nested expressions, every source row in the AMM note, Unicode, variable tab stops, ambiguous-width glyphs, multiple inline regions, unchanged suffix columns, and wrap positions across toggles. Prior compact-content fixtures still verify readable mathematical content without requiring historical whitespace.
+
+
+### Convert full previews before layout
+
+Reproduction at 48 columns showed raw LaTeX split across pretty-table rows; a subsequent formula overlay consumed table borders as part of the math. Add the optional `core.preview.transform(source_buffer, lines)` hook before `sync.build`, with equal-line-count enforcement. Discover table membership and heading/diagram positions from the original source. Configure the hook to call `markdown-math.lines`, which reuses the same syntax-aware transformation collector and applies compact Unicode changes to copied lines from right to left. It does not add source-width padding or modify the source buffer.
+
+Keep direct source-buffer rendering unchanged. Skip custom math overlays for plugin-owned preview buffers, including literal/unsupported math-looking text in formatted grids. Use Unicode `∣` for materialized single math bars so they cannot become Markdown table separators. Code spans/fences remain literal, and original row counts preserve existing heading and Mermaid lifecycle behavior.
+
+The ignored installed fork is changed only at this preprocessing hook, plus documentation and a focused test. `preview-math.patch` is an incremental recovery patch on top of the existing local preview/heading/Mermaid work; it does not replace that work. No plugin pin, commit or push is made.

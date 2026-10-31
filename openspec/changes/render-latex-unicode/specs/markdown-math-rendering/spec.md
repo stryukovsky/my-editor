@@ -1,5 +1,7 @@
 # Markdown Math Rendering
 
+Readable-content examples below omit compensation padding; the source-width requirement centers each complete rendered formula body using outer padding.
+
 ## ADDED Requirements
 
 ### Requirement: Unicode symbols in Markdown math
@@ -35,7 +37,7 @@ The renderer SHALL preserve the meanings of dot commands through these mappings:
 
 ### Requirement: Display-only transformation and rendering lifecycle
 
-Rendering SHALL preserve buffer and saved-file bytes, the modified flag, and undo history. Existing render-markdown toggles SHALL enable and remove symbol rendering and restore the applicable window options. Disabling rendering SHALL reveal the original commands without stale marks. Supported symbols SHALL render without external formula converters.
+Rendering SHALL preserve source-buffer and saved-file bytes, the modified flag and undo history. Source-buffer toggles SHALL remove rendering and restore window options without stale marks. Full previews MAY contain converted Unicode in a separate read-only buffer; closing them SHALL return to unchanged source. Supported symbols SHALL render without external formula converters.
 
 #### Scenario: Source is preserved
 
@@ -132,12 +134,12 @@ Complete braced `\frac`, `\dfrac` and `\tfrac` commands SHALL display as parenth
 
 ### Requirement: Terminal math spacing
 
-The renderer SHALL display `\quad` as two spaces and `\qquad` as four spaces. Escaped spaces and small positive spacing commands SHALL display as one space, while `\!` SHALL be hidden.
+The renderer SHALL display `\quad` as two spaces and `\qquad` as four spaces. Escaped spaces and small positive spacing commands SHALL display as one space, while `\!` SHALL be hidden. Compensation for these changes SHALL be included in the complete formula body padding.
 
 #### Scenario: Mixing constraint spacing
 
 - **WHEN** math contains `M=\theta A+(1-\theta)B,\qquad 0\le\theta\le1`
-- **THEN** `\qquad` displays as four spaces and the other supported commands display as symbols
+- **THEN** `\qquad` displays as four spaces and other supported commands display as symbols, with compensation padding only around the complete formula body
 
 ### Requirement: Consistent math text color
 
@@ -156,7 +158,7 @@ While rendering is enabled, both formula source and replacement text SHALL use t
 
 ### Requirement: Dollar delimiters display as spaces
 
-While math rendering is enabled, inline dollar delimiters SHALL display as spaces. The opening `$$` of display math SHALL display as the LaTeX Nerd Font icon `` followed by one space; the closing `$$` SHALL display as two spaces. Disabling rendering SHALL reveal the original delimiters. Escaped literal dollar signs and dollar signs in code or prose SHALL remain unchanged.
+While math rendering is enabled, inline dollar delimiters SHALL display as spaces. The opening `$$` of display math SHALL display as the LaTeX Nerd Font icon `` followed by one space; the closing `$$` SHALL display as two spaces. Disabling source rendering or closing the full preview SHALL reveal the original source delimiters. Escaped literal dollar signs and dollar signs in code or prose SHALL remain unchanged.
 
 #### Scenario: Inline delimiters
 
@@ -174,3 +176,69 @@ While math rendering is enabled, inline dollar delimiters SHALL display as space
 - **WHEN** dollars occur in inline code, fenced code, or as an escaped literal dollar in math
 - **THEN** they remain literal
 - **AND** disabling rendering restores all original math delimiter dollars
+
+
+### Requirement: Centered source-width formulas
+
+When rendered directly in a source buffer, each complete formula body SHALL retain its source terminal-cell width, with compact readable math centered using only leading and trailing spaces. Odd padding SHALL place the extra space after the body. Individual symbols and nested expressions SHALL NOT receive compensation padding. Source line widths, following text columns and wrapping SHALL be preserved, honoring Unicode and buffer-local tab settings.
+
+#### Scenario: Center a compact formula
+
+- **WHEN** math contains `$\alpha + \beta$`
+- **THEN** its readable body is `α + β` with ordinary operator spacing
+- **AND** compensation spaces appear only before and after the complete body
+
+#### Scenario: Center a complete fraction
+
+- **WHEN** math contains `\frac{xy}{x+a}`
+- **THEN** its readable content `(xy) ÷ (x+a)` remains compact within the centered complete formula body
+- **AND** numerator and denominator do not acquire padding around their individual internal commands
+
+#### Scenario: Preserve neighboring text and wrapping
+
+- **WHEN** inline math shares a line with prose or other math regions
+- **THEN** text following each complete formula retains its source display column
+- **AND** toggling rendering preserves source line widths and wrapping positions
+
+#### Scenario: Unicode, tabs and multiline math
+
+- **WHEN** a math source span contains wide or combining characters, tabs, or multiple lines
+- **THEN** width is measured in terminal cells using the source buffer's tab settings
+- **AND** each source line retains its width
+
+#### Scenario: A multiline structure would grow a line
+
+- **WHEN** a supported multiline structure would render a source line wider than its original width
+- **THEN** that complete formula body remains literal rather than shifting columns or truncating mathematical content
+
+
+### Requirement: Materialize preview math before layout
+
+A full preview SHALL convert supported LaTeX math to compact Unicode text in copied input before measuring or wrapping prose and pipe tables. It SHALL NOT use late math overlays on the formatted preview. Original source rows SHALL remain identifiable for heading navigation and diagram replacements. Source text and files SHALL remain unchanged.
+
+#### Scenario: Nested math inside a narrow table
+
+- **WHEN** a table cell contains `$\frac{\sqrt{\alpha}}{\beta+\gamma}$`
+- **THEN** the table formatter receives `(√(α)) ÷ (β+γ)` as real text
+- **AND** cell wrapping and borders use that rendered width rather than raw LaTeX width
+- **AND** no later math overlay overwrites table borders
+
+#### Scenario: Math bars do not create columns
+
+- **WHEN** a table cell contains math using `\lvert` and `\rvert`
+- **THEN** materialized math uses Unicode bars such as `∣` and `‖`
+- **AND** they do not become Markdown pipe separators
+
+#### Scenario: Code, headings and refresh
+
+- **WHEN** a document contains math in headings/prose/tables, literal math in code, or asynchronous diagrams
+- **THEN** supported math is converted before preview layout while code remains literal
+- **AND** conversion preserves input line count and original heading/diagram row references
+- **AND** source edits rerun conversion before refreshing layout
+
+#### Scenario: Toggle and source preservation
+
+- **WHEN** a full preview is opened and closed
+- **THEN** its separate buffer contains actual Unicode math text
+- **AND** the source buffer bytes, modified flag and undo history remain unchanged
+- **AND** direct source-buffer rendering retains its existing width-preserving behavior

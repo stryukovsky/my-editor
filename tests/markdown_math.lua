@@ -64,42 +64,29 @@ for _, ft in ipairs { "markdown", "todotxt-preview" } do
   for _, m in ipairs(result) do
     local replacement = m.opts.virt_text and m.opts.virt_text[1][1]
       or m.opts.conceal
-    if m.opts.conceal ~= nil then
+    if m.opts.virt_text then
       byrow[m.start_row] = byrow[m.start_row] or {}
-      table.insert(byrow[m.start_row], replacement)
+      table.insert(byrow[m.start_row], vim.trim(replacement))
     end
     vim.api.nvim_buf_set_extmark(buf, ns, m.start_row, m.start_col, m.opts)
   end
+  local function content(row)
+    return byrow[row] and (table.concat(byrow[row]):gsub("%s+", "")) or nil
+  end
+  eq(content(0), "α+β≤Γ×∞", "Greek/operators")
+  eq(content(1), "⋅•……⋯⋮⋱", "dots")
+  eq(content(2), "⟨x⟩x|sinx", "delimiters/functions")
   eq(
-    byrow[0],
-    { " ", "α", "β", "≤", "Γ", "×", "∞", " " },
-    "Greek/operators"
+    content(3),
+    [[x^2a_i\hat{x}(1)÷(x)\unknown\alphabogus\\alpha]],
+    "fraction; scripts/accents/unknown/escaped unchanged"
   )
-  eq(
-    byrow[1],
-    { " ", "⋅", "•", "…", "…", "⋯", "⋮", "⋱", " " },
-    "dots"
-  )
-  eq(
-    byrow[2],
-    { " ", "", "⟨", "", "⟩", "", "", "", "sin", " " },
-    "delimiters/functions"
-  )
-  eq(
-    byrow[3],
-    { " ", "", "(", ") ÷ ", "(", ")", " " },
-    "fraction with scripts/accents/unknown/escaped unchanged"
-  )
-  eq(byrow[5], { " " }, "display opening LaTeX icon")
-  eq(byrow[7], { "  " }, "display closing delimiter spaces")
-  eq(byrow[6], { "θ", "→", "Ω" }, "display math")
-  eq(byrow[9], nil, "prose/inline code")
-  eq(byrow[11], nil, "LaTeX fence")
-  eq(
-    byrow[14],
-    { " ", "", "{", "", "}", "", "‖", "", "‖", ".", "⋅", " " },
-    "escaped delimiters and dot aliases"
-  )
+  eq(content(5), "", "display opening LaTeX icon")
+  eq(content(7), "", "display closing delimiter spaces")
+  eq(content(6), "θ→Ω", "display math")
+  eq(content(9), nil, "prose/inline code")
+  eq(content(11), nil, "LaTeX fence")
+  eq(content(14), "{x}‖x‖.⋅", "escaped delimiters and dot aliases")
   local shared = vim.treesitter.query.get("markdown_inline", "highlights")
   local hl = vim.treesitter.highlighter.active[buf]
   local wrapper = hl:get_query "markdown_inline"
@@ -139,9 +126,9 @@ for _, ft in ipairs { "markdown", "todotxt-preview" } do
     if
       m.start_row == 0
       and m.opts.virt_text
-      and m.opts.virt_text[1][1] ~= " "
+      and vim.trim(m.opts.virt_text[1][1]) ~= ""
     then
-      replacement = m.opts.virt_text[1][1]
+      replacement = vim.trim(m.opts.virt_text[1][1])
     end
   end
   eq(replacement, "β", "edit refresh")
@@ -161,7 +148,7 @@ local function display(buf)
   end
   local result, cursor = {}, 0
   for _, m in ipairs(marks(buf)) do
-    if m.opts.conceal ~= nil then
+    if m.opts.virt_text then
       local start = starts[m.start_row] + m.start_col
       local finish = starts[m.opts.end_row] + m.opts.end_col
       assert(start >= cursor, "overlapping math replacements")
@@ -214,15 +201,148 @@ for _, fixture in ipairs(fixtures) do
     vim.split(fixture[1], "\n", { plain = true })
   )
   eq(
-    display(buf),
+    display(buf):gsub("%s+", ""),
     fixture[2]
       :gsub("^%$+", function(d)
         return #d == 2 and " " or string.rep(" ", #d)
       end)
       :gsub("%$+$", function(d)
         return string.rep(" ", #d)
-      end),
+      end)
+      :gsub("%s+", ""),
     "linear math: " .. fixture[1]
+  )
+  local original = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+  local rendered = vim.split(display(buf), "\n", { plain = true })
+  eq(#rendered, #original, "source line count")
+  for i, line in ipairs(original) do
+    eq(
+      vim.fn.strdisplaywidth(rendered[i]),
+      vim.fn.strdisplaywidth(line),
+      "source cell width: " .. line
+    )
+  end
+  vim.api.nvim_buf_delete(buf, { force = true })
+end
+
+local aligned = {
+  { [[$\alpha + \beta$]], "     α + β      " },
+  { [[$\frac{a}{b}+\sqrt{x}$]], "    (a) ÷ (b)+√(x)    " },
+  { [[$\alpha$]], "   α    " },
+  { [[$\frac{xy}{x+a}$]], "  (xy) ÷ (x+a)  " },
+  { [[$\sqrt{xy}$]], "   √(xy)   " },
+  { [[$\sqrt{x̂}$]], "   √(x̂)   " },
+  { [[$\sqrt{\frac{k}{c}}$]], "    √((k) ÷ (c))    " },
+  { [[界 $\alpha$ tail $\beta$!]], "界    α     tail    β   !" },
+  { "$$\n\\frac{\na\n}{\nb\n}\n$$", " \n\\frac{\na\n}{\nb\n}\n  " },
+}
+for _, fixture in ipairs(aligned) do
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.bo[buf].filetype = "markdown"
+  vim.api.nvim_buf_set_lines(
+    buf,
+    0,
+    -1,
+    false,
+    vim.split(fixture[1], "\n", { plain = true })
+  )
+  eq(display(buf), fixture[2], "exact centered padding: " .. fixture[1])
+  vim.api.nvim_buf_delete(buf, { force = true })
+end
+for _, tabstop in ipairs { 4, 8 } do
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.bo[buf].filetype = "markdown"
+  vim.bo[buf].tabstop = tabstop
+  vim.bo[buf].vartabstop = "3,5"
+  local original = "界\t$\frac{a\tb}{c}$\tTAIL"
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, { original })
+  local rendered = display(buf)
+  vim.api.nvim_buf_call(buf, function()
+    eq(
+      vim.fn.strdisplaywidth(rendered),
+      vim.fn.strdisplaywidth(original),
+      "Unicode/tabs exact width"
+    )
+    local before = original:match "^(.*)TAIL"
+    local after = rendered:match "^(.*)TAIL"
+    eq(
+      vim.fn.strdisplaywidth(after),
+      vim.fn.strdisplaywidth(before),
+      "Unicode/tabs suffix column"
+    )
+  end)
+  vim.api.nvim_buf_delete(buf, { force = true })
+end
+local original_ambiwidth = vim.o.ambiwidth
+for _, setting in ipairs { "single", "double" } do
+  vim.o.ambiwidth = setting
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.bo[buf].filetype = "markdown"
+  local original = [[$$\alpha$$]]
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, { original })
+  local rendered = display(buf)
+  eq(
+    vim.fn.strdisplaywidth(rendered),
+    vim.fn.strdisplaywidth(original),
+    "ambiguous-width glyph cells: " .. setting
+  )
+  eq(
+    rendered:gsub("%s+", ""),
+    "α",
+    "icon and symbol survive ambiguous width: " .. setting
+  )
+  vim.api.nvim_buf_delete(buf, { force = true })
+end
+vim.o.ambiwidth = original_ambiwidth
+
+-- Preview conversion materializes compact Unicode in copied text before layout.
+do
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.bo[buf].filetype = "markdown"
+  local original = {
+    [[# Math $\alpha$]],
+    [[before $\alpha + \beta$ after]],
+    [[| Formula | Value |]],
+    [[| --- | --- |]],
+    [[| $\frac{\sqrt{\alpha}}{\beta+\gamma}$ | $\left\lvert x\right\rvert$ |]],
+    [[code `$\alpha$` stays literal]],
+    [[```latex]],
+    [[$\frac{a}{b}$]],
+    [[```]],
+    [[$$]],
+    [[\psi(x)=\sqrt{\frac{k}{c}}]],
+    [[$$]],
+    [[$\sqrt[3]{x} \unknown$]],
+  }
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, original)
+  vim.bo[buf].modified = false
+  local converted = math.lines(buf, original)
+  eq(converted, {
+    [[# Math  α ]],
+    [[before  α + β  after]],
+    [[| Formula | Value |]],
+    [[| --- | --- |]],
+    [[|  (√(α)) ÷ (β+γ)  |  ∣ x∣  |]],
+    [[code `$\alpha$` stays literal]],
+    [[```latex]],
+    [[$\frac{a}{b}$]],
+    [[```]],
+    [[]],
+    [[ψ(x)=√((k) ÷ (c))]],
+    [[  ]],
+    [[ \sqrt[3]{x} \unknown ]],
+  }, "materialized compact math with protected code and safe table bars")
+  eq(#converted, #original, "materialized source row count")
+  eq(
+    vim.api.nvim_buf_get_lines(buf, 0, -1, false),
+    original,
+    "materialization does not write source"
+  )
+  eq(vim.bo[buf].modified, false, "materialization does not modify source flag")
+  eq(
+    original[2],
+    [[before $\alpha + \beta$ after]],
+    "input line table unchanged"
   )
   vim.api.nvim_buf_delete(buf, { force = true })
 end
@@ -233,6 +353,15 @@ if arg[2] then
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, source)
   vim.bo[buf].filetype = "markdown"
   local rendered = display(buf)
+  local compact = rendered:gsub("%s+", "")
+  local viewlines = vim.split(rendered, "\n", { plain = true })
+  for i, line in ipairs(source) do
+    eq(
+      vim.fn.strdisplaywidth(viewlines[i]),
+      vim.fn.strdisplaywidth(line),
+      "AMM row width " .. i
+    )
+  end
   for _, expected in ipairs {
     "f(x)=(k) ÷ (x)",
     "ψ(x,y)=√(xy)",
@@ -242,7 +371,11 @@ if arg[2] then
     "h_u=h_v=(1) ÷ (2√(u+v))",
     "q_γ(a)=(yγ a) ÷ (x+γ a)",
   } do
-    eq(rendered:find(expected, 1, true) ~= nil, true, "AMM note: " .. expected)
+    eq(
+      compact:find((expected:gsub("%s+", "")), 1, true) ~= nil,
+      true,
+      "AMM note: " .. expected
+    )
   end
   eq(rendered:find("\\frac", 1, true), nil, "all note fractions render")
   eq(rendered:find("\\sqrt", 1, true), nil, "all note roots render")

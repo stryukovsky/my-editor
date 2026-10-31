@@ -6,7 +6,7 @@ local symbols = {
   beta = "β",
   gamma = "γ",
   delta = "δ",
-  epsilon = "ϵ",
+  epsilon = "ε",
   varepsilon = "ε",
   zeta = "ζ",
   eta = "η",
@@ -223,7 +223,109 @@ function M.clear(ctx)
   end
 end
 
-function M.parse(ctx)
+-- Expand tabs at their original display column before adding alignment spaces.
+local function expand_tabs(text, column)
+  return (
+    text:gsub("([^\t]*)\t", function(prefix)
+      column = column + vim.fn.strdisplaywidth(prefix)
+      local cells = vim.fn.strdisplaywidth("\t", column)
+      column = column + cells
+      return prefix .. string.rep(" ", cells)
+    end)
+  )
+end
+
+-- Match source and rendered grapheme boundaries at equal display columns.
+-- Overlay at source columns without concealing or inserting layout cells. Small
+-- chunks follow wrapping/scrolling; wide glyphs and tabs stay indivisible.
+local function cell_chunks(text, column)
+  local result = {}
+  for i = 0, vim.fn.strchars(text, 1) - 1 do
+    local char = vim.fn.strcharpart(text, i, 1, true)
+    local width = vim.fn.strdisplaywidth(char, column)
+    result[#result + 1] = { text = char, width = width }
+    column = column + width
+  end
+  return result
+end
+
+local function fitted_marks(row, sc, source, text, column, marks)
+  local target = cell_chunks(text, column)
+  local sw, tw, sb, tb, start_source, start_target, next_target =
+    0, 0, 0, 0, 0, 0, 1
+  for _, part in ipairs(cell_chunks(source, column)) do
+    sw, sb = sw + part.width, sb + #part.text
+    while target[next_target] and (tw < sw or target[next_target].width == 0) do
+      local char = target[next_target]
+      tw, tb, next_target = tw + char.width, tb + #char.text, next_target + 1
+    end
+    if sw == tw then
+      marks[#marks + 1] = {
+        conceal = "latex",
+        start_row = row,
+        start_col = sc + start_source,
+        opts = {
+          end_row = row,
+          end_col = sc + sb,
+          priority = 200,
+          virt_text = {
+            { text:sub(start_target + 1, tb), "RenderMarkdownMath" },
+          },
+          virt_text_pos = "overlay",
+          hl_mode = "replace",
+        },
+      }
+      start_source, start_target = sb, tb
+    end
+  end
+end
+
+local function fit_groups(buf, groups, marks)
+  -- strdisplaywidth observes this buffer's tabstop/vartabstop settings.
+  vim.api.nvim_buf_call(buf, function()
+    for _, group in ipairs(groups) do
+      table.sort(group.changes, function(a, b)
+        return a.row < b.row or (a.row == b.row and a.col < b.col)
+      end)
+      local lines =
+        vim.api.nvim_buf_get_lines(buf, group.sr, group.er + 1, false)
+      local fitted, fits, change = {}, true, 1
+      for row = group.sr, group.er do
+        local line = lines[row - group.sr + 1]
+        local sc = row == group.sr and group.sc or 0
+        local ec = row == group.er and group.ec or #line
+        local source, parts, cursor = line:sub(sc + 1, ec), {}, sc
+        while group.changes[change] and group.changes[change].row == row do
+          local item = group.changes[change]
+          parts[#parts + 1] = line:sub(cursor + 1, item.col)
+          parts[#parts + 1] = item.text
+          cursor, change = item.ec, change + 1
+        end
+        parts[#parts + 1] = line:sub(cursor + 1, ec)
+        local column = vim.fn.strdisplaywidth(line:sub(1, sc))
+        local text = expand_tabs(table.concat(parts), column)
+        local width = vim.fn.strdisplaywidth(source, column)
+        local gap = width - vim.fn.strdisplaywidth(text)
+        if gap < 0 then
+          -- A split expression can expand a brace-only row. Keep that complete
+          -- expression literal rather than changing columns or truncating math.
+          fits = false
+          break
+        end
+        if text ~= source then
+          local left = math.floor(gap / 2)
+          text = string.rep(" ", left) .. text .. string.rep(" ", gap - left)
+          fitted_marks(row, sc, source, text, column, fitted)
+        end
+      end
+      if fits then
+        vim.list_extend(marks, fitted)
+      end
+    end
+  end)
+end
+
+local function collect(ctx)
   local row, col = ctx.root:range()
   -- LaTeX injections also occur in fenced code. Only latex_block nodes from
   -- Markdown inline syntax represent the math regions we intend to render.
@@ -237,7 +339,7 @@ function M.parse(ctx)
     parent = parent:parent()
   end
   if not parent then
-    return {}
+    return nil, {}
   end
 
   local sr, sc, er, ec = ctx.root:range()
@@ -254,17 +356,22 @@ function M.parse(ctx)
       },
     },
   }
+  local groups, enclosing = {}, nil
+  local function group_for(node)
+    local sr, sc, er, ec = node:range()
+    local group = { sr = sr, sc = sc, er = er, ec = ec, changes = {} }
+    groups[#groups + 1] = group
+    return group
+  end
+  -- Collect all readable math into one group. Only its outer padding restores
+  -- source width; individual symbols and nested expressions stay compact.
+  local formula = group_for(ctx.root)
+  enclosing = formula
   local function mark(node, replacement)
     local sr, sc, er, ec = node:range()
-    -- Conceal's replacement character always uses the global Conceal color.
-    -- Inline virtual text gives every replacement the same color as the formula.
-    local opts = { end_row = er, end_col = ec, conceal = "", priority = 200 }
-    if replacement ~= "" then
-      opts.virt_text = { { replacement, "RenderMarkdownMath" } }
-      opts.virt_text_pos = "inline"
-    end
-    marks[#marks + 1] =
-      { conceal = "latex", start_row = sr, start_col = sc, opts = opts }
+    local group = enclosing or group_for(node)
+    group.changes[#group.changes + 1] =
+      { row = sr, col = sc, ec = ec, text = replacement }
   end
   local function walk(node)
     local kind = node:type()
@@ -285,6 +392,10 @@ function M.parse(ctx)
           and arg:child(arg:child_count() - 1):type() == "}"
       end
       if valid then
+        -- Nested structures contribute readable text to the shared formula
+        -- body; they do not get independent compensation padding.
+        local previous = enclosing
+        enclosing = enclosing or group_for(node)
         mark(command, count == 1 and "√" or "")
         for i = 1, count do
           local arg = args[i]
@@ -305,6 +416,7 @@ function M.parse(ctx)
         for i = count + 1, #args do
           walk(args[i])
         end
+        enclosing = previous
         return
       end
     end
@@ -315,11 +427,23 @@ function M.parse(ctx)
       local opening = kind == "$$"
         and node:parent():type() == "displayed_equation"
         and node:prev_sibling() == nil
+      -- Delimiters keep their own spans, so the display icon stays at the
+      -- opening $$ and compensation is placed around the formula body.
+      local dr, dc, der, dec = node:range()
+      if dr == formula.sr and dc == formula.sc then
+        formula.sr, formula.sc = der, dec
+      end
+      if der == formula.er and dec == formula.ec then
+        formula.er, formula.ec = dr, dc
+      end
+      local previous = enclosing
+      enclosing = nil
       mark(
         node,
-        opening and " "
+        opening and ""
           or string.rep(" ", #vim.treesitter.get_node_text(node, ctx.buf))
       )
+      enclosing = previous
     elseif kind == "command_name" then
       local text = vim.treesitter.get_node_text(node, ctx.buf)
       local command = text:match "^\\([A-Za-z]+)$"
@@ -342,7 +466,57 @@ function M.parse(ctx)
     end
   end
   walk(ctx.root)
+  return groups, marks
+end
+
+function M.parse(ctx)
+  -- Preview math has already been converted before table/prose layout. Never
+  -- interpret math-looking text in the resulting table grid as source math.
+  if require("render-markdown.core.preview").get(ctx.buf) then
+    return {}
+  end
+  local groups, marks = collect(ctx)
+  if groups then
+    fit_groups(ctx.buf, groups, marks)
+  end
   return marks
+end
+
+-- Materialize compact math in a copied document before preview tables and prose
+-- are measured. Work from original syntax ranges, preserving source row counts,
+-- code spans/fences, unknown commands, and the editable source buffer itself.
+function M.lines(buf, lines)
+  local output = vim.deepcopy(lines)
+  local ok, parser = pcall(vim.treesitter.get_parser, buf, "markdown")
+  if not ok or not parser or not pcall(parser.parse, parser, true) then
+    return output
+  end
+  local changes = {}
+  parser:for_each_tree(function(tree, language)
+    if language:lang() ~= "latex" then
+      return
+    end
+    local groups = collect { buf = buf, root = tree:root() }
+    for _, group in ipairs(groups or {}) do
+      for _, item in ipairs(group.changes) do
+        -- A literal ASCII pipe would become a new Markdown table separator.
+        -- Use the Unicode math bar in materialized text instead.
+        local text = item.text == "|" and "∣" or item.text
+        changes[#changes + 1] =
+          { row = item.row, col = item.col, ec = item.ec, text = text }
+      end
+    end
+  end)
+  table.sort(changes, function(a, b)
+    return a.row > b.row or (a.row == b.row and a.col > b.col)
+  end)
+  for _, item in ipairs(changes) do
+    local line = output[item.row + 1]
+    output[item.row + 1] = line:sub(1, item.col)
+      .. item.text
+      .. line:sub(item.ec + 1)
+  end
+  return output
 end
 
 return M

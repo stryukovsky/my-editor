@@ -7,6 +7,7 @@ Markdown math should display readable Unicode symbols in Neovim: `\alpha` as α 
 ## What Changes
 
 - Render supported LaTeX commands as Unicode inside inline and display Markdown math, including Greek letters, common operators, and distinct dot variants.
+- Keep source-mode formulas compact and centered within their original width; materialize compact Unicode in preview copies before prose/table layout.
 - Apply substitutions only to the display; preserve the original LaTeX in the buffer and on disk.
 - Preserve visible Markdown markers, existing render toggles, and ordinary prose and code.
 - Hide `\left` / `\right` sizing commands while preserving visible delimiters; support arrows, sets, logic, calculus symbols and named functions. Render complete braced fractions with a Unicode division sign and square roots with √; leave scripts and accents as written.
@@ -26,4 +27,6 @@ None. The main OpenSpec specs directory currently has no capabilities.
 
 ## Impact
 
-Planned changes affect `lua/configs/render-markdown.lua`, a small local math-symbol handler, focused verification fixtures, and README usage guidance. Conceal settings and Markdown Tree-sitter conceal directives need coordinated handling so source Markdown markers remain visible. Implementation uses only local configuration and the installed parsers/plugin; no external converter or plugin source changes are required.
+Planned changes affect `lua/configs/render-markdown.lua`, a small local math-symbol handler, focused verification fixtures, and README usage guidance. Conceal settings and Markdown Tree-sitter conceal directives need coordinated handling so source Markdown markers remain visible. Implementation uses only local configuration and the installed parsers/plugin; no external converter is required. The installed render-markdown fork gains an optional preview text-transform hook, with a retained incremental patch.
+
+The full preview converts math to real Unicode text before pipe-table widths and wraps are calculated; it does not paint math over the finished table.

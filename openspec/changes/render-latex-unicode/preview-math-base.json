@@ -1,0 +1,5 @@
+{
+  "plugin_commit": "fc2a7eccbdded47c146c89f66d6e4d11400111ff",
+  "preview_base_sha256": "c21898b6646146338f499f2805abcb1592167899af60e17644256d44eab0a147",
+  "note": "Incremental patch on existing local heading/Mermaid preview changes, not a replacement patch for a clean commit."
+}
