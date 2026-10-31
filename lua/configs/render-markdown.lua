@@ -1,16 +1,18 @@
 -- Custom ft needs the markdown parser, otherwise render-markdown has nothing to query.
 vim.treesitter.language.register("markdown", "todotxt-preview")
 
+local math = require "configs.markdown-math"
+
 require("render-markdown").setup {
-  enabled = true,
+  enabled = false,
   -- Scrolling triggers both CursorMoved and WinScrolled; batch the viewport refreshes.
   debounce = 230,
   completions = { lsp = { enabled = true } },
   file_types = { "markdown", "todotxt-preview" },
   anti_conceal = { enabled = false },
   win_options = {
-    -- Keep source markers visible, including Tree-sitter-concealed backticks.
-    conceallevel = { default = 0, rendered = 0 },
+    -- Math commands use conceal; buffer-local queries keep Markdown markers visible.
+    conceallevel = { default = 0, rendered = 2 },
     concealcursor = { rendered = "nvic" },
   },
   bullet = { enabled = true },
@@ -35,6 +37,8 @@ require("render-markdown").setup {
   indent = { enabled = false },
   html = { enabled = false },
   latex = { enabled = true },
+  custom_handlers = { latex = { parse = math.parse } },
+  on = { render = math.render, clear = math.clear },
   yaml = { enabled = false },
   overrides = {
     filetype = {

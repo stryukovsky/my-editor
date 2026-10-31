@@ -128,6 +128,12 @@ local function override_highlights()
   hl(0, "StatusColumnDivider", { bg = background, fg = "#d8c8aa" })
   hl(0, "NeoTreeNormal", { bg = background })
   hl(0, "NeoTreeEndOfBuffer", { bg = background })
+  -- One foreground for formula text and inline Unicode replacements.
+  hl(
+    0,
+    "RenderMarkdownMath",
+    { fg = foreground_inactive, italic = false, bold = false }
+  )
   -- Render Markdown: warm paper surfaces matching material-lighter.
   hl(0, "RenderMarkdownH1Bg", { bg = "#e5d5a6" })
   hl(0, "RenderMarkdownH2Bg", { bg = "#eee4ce" })

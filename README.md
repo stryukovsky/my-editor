@@ -426,3 +426,44 @@ to add another grammar without changing the Lua context engine.
 
 The input regression suite checks native rendered frames while typing, snippet
 acceptance, submission, and completion-delay restoration on input cleanup.
+
+
+## Markdown math symbols
+
+Rendering is configured off by default. `<leader>mdt` toggles it for this buffer;
+`<leader>mdr` opens and enables a rendered preview. The same math rendering is
+available in `todotxt-preview` buffers.
+
+Inside `$...$` or `$$...$$`, LaTeX symbols display as Unicode: for example,
+`$\alpha \cdot x \Rightarrow \infty$` displays as `α ⋅ x ⇒ ∞`, with spaces in place of the dollar delimiters.
+Supported symbols include Greek letters and variants, arrows, comparisons,
+arithmetic, sets, logic, calculus, delimiters, and named functions such as `\sin`
+and `\log`. Dots retain their distinct forms: `\cdot` → ⋅, `\bullet` → •,
+`\ldots` / `\dots` → …, `\cdots` → ⋯, `\vdots` → ⋮, and `\ddots` → ⋱.
+`\left` / `\right` are hidden while their delimiters remain, so
+`$\left\langle x \right\rangle$` displays as `⟨ x ⟩`. A dot delimiter in
+`\left.` or `\right.` is invisible.
+
+This only changes the display. Buffer and saved text keep the original LaTeX;
+code spans, code fences, and prose remain literal, and Markdown backticks stay
+visible. Fractions use a linear division sign: `\frac{xy}{x+a}` → `(xy) ÷ (x+a)`;
+`\dfrac` and `\tfrac` work the same way. Roots use `\sqrt{xy}` → `√(xy)`,
+including nested fractions and roots. `\quad` / `\qquad` insert two / four spaces;
+small spacing commands and escaped spaces are also supported. Named functions
+include `\min` and `\max`. Unknown commands, superscripts, subscripts and accents
+(such as `\bar p`) stay as written. Indexed roots such as `\sqrt[3]{x}` remain
+literal. Formula text and replacements share the normal text foreground, refreshed
+on theme changes. No external LaTeX converter is required. The implementation lives in
+`lua/configs/markdown-math.lua`; no render-markdown plugin source is patched.
+
+Focused checks (using the parsers and plugin installed in this config):
+
+```sh
+nvim --headless -u NONE -i NONE -l tests/markdown_math.lua
+uv run --with pynvim python tests/markdown_math_ui.py
+```
+
+While math rendering is enabled, inline `$` delimiters display as spaces. The
+opening display-math `$$` displays as the LaTeX Nerd Font icon `` followed by a
+space; the closing `$$` displays as two spaces. Toggle rendering off to reveal
+the original delimiters. Code and escaped literal dollar signs are unaffected.

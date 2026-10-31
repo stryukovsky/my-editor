@@ -8,6 +8,7 @@ end, { desc = "Markdown toggle rendering for this buffer" })
 
 map("n", "<leader>mdr", function()
   require("render-markdown").preview()
+  require("render-markdown").buf_enable()
 end, { desc = "Markdown render" })
 
 map(
