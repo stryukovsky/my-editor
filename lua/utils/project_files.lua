@@ -131,7 +131,8 @@ function M.open()
     end,
   }
   picker = require("telescope.pickers").new(opts, {
-    prompt_title = "Files · tracked | all | .ext",
+    prompt_title = "`.ext` to filter `all` to search untracked | separate by space",
+    results_title = "Files",
     finder = finder,
     sorter = sorter,
     previewer = conf.file_previewer(opts),

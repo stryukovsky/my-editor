@@ -358,6 +358,11 @@ press Enter again to submit. Tab/Shift-Tab move through snippet placeholders.
 Ctrl-Space opens completion manually. Detached HEAD/non-Git directories omit
 the branch suggestion. Filetype/Tree-sitter alone do not generate Git suggestions.
 
+The commit popup uses immediate native completion while the input is open. This
+avoids a blank menu frame during typing with a nonzero autocomplete delay. The
+previous global delay is restored on submit, cancellation, or window close;
+explicit option changes made while the input is open are preserved.
+
 ## Native completion
 
 Native completion targets Neovim 0.12.6; Blink remains disabled. Ranking follows:
@@ -406,6 +411,7 @@ Focused fixtures (run from this configuration directory):
 nvim --headless -u NONE -i NONE -l tests/native_completion_languages.lua
 nvim --headless -u NONE -i NONE -l tests/native_completion.lua
 uv run --with pynvim python tests/native_completion_integration.py
+uv run --with pynvim python tests/native_input_completion.py
 ```
 
 The mapping suite checks all language JSON definitions against their installed
@@ -417,3 +423,6 @@ English/Russian shortcuts. `pynvim` is a test dependency only. Integration also
 exercises the locally installed Lua, TypeScript, and Go servers when available.
 See the [mapping format and fixture guide](lua/native_completion/languages/README.md)
 to add another grammar without changing the Lua context engine.
+
+The input regression suite checks native rendered frames while typing, snippet
+acceptance, submission, and completion-delay restoration on input cleanup.

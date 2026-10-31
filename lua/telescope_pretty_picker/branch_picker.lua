@@ -11,87 +11,7 @@ local wrap_telescope_action = require "mappings.telescope_action_wrapper"
 
 local tell = commons.notifier "Git branches"
 
-local HINTS = {
-  { "<cr>", "switch to this picked branch" },
-  { "m", "merge this picked branch into current git branch" },
-  { "d", "delete branch" },
-  { "r", "rebase current git branch on top of this picked branch" },
-  { "y", "yank branch name" },
-  { "?", "toggle this help off" },
-}
-
----@type integer|nil
-local help_win
-
-local function close_help()
-  if help_win and vim.api.nvim_win_is_valid(help_win) then
-    vim.api.nvim_win_close(help_win, true)
-  end
-  help_win = nil
-end
-
--- Overlay only — do not enter the float, or Telescope closes the picker.
-local function help()
-  if help_win and vim.api.nvim_win_is_valid(help_win) then
-    close_help()
-    return
-  end
-
-  local key_width = 0
-  for _, row in ipairs(HINTS) do
-    key_width = math.max(key_width, vim.fn.strdisplaywidth(row[1]))
-  end
-
-  local lines = {}
-  for _, row in ipairs(HINTS) do
-    local pad = string.rep(" ", key_width - vim.fn.strdisplaywidth(row[1]))
-    lines[#lines + 1] = string.format(" %s%s  %s ", row[1], pad, row[2])
-  end
-
-  local width = 16
-  for _, line in ipairs(lines) do
-    width = math.max(width, vim.fn.strdisplaywidth(line))
-  end
-
-  local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-  vim.bo[buf].bufhidden = "wipe"
-  vim.bo[buf].modifiable = false
-
-  local height = #lines
-  help_win = vim.api.nvim_open_win(buf, false, {
-    relative = "editor",
-    width = width,
-    height = height,
-    col = math.floor((vim.o.columns - width) / 2),
-    row = math.floor((vim.o.lines - height) / 2),
-    style = "minimal",
-    border = "rounded",
-    title = " Git branches ",
-    title_pos = "center",
-    zindex = 200,
-    focusable = false,
-    noautocmd = true,
-  })
-
-  local ns = vim.api.nvim_create_namespace "telescope_pretty_picker_branch_help"
-  for i, row in ipairs(HINTS) do
-    pcall(
-      vim.hl.range,
-      buf,
-      ns,
-      "TelescopeResultsIdentifier",
-      { i - 1, 1 },
-      { i - 1, 1 + #row[1] }
-    )
-  end
-
-  vim.api.nvim_create_autocmd({ "BufLeave", "WinClosed" }, {
-    buffer = vim.api.nvim_get_current_buf(),
-    once = true,
-    callback = close_help,
-  })
-end
+local PROMPT_HINTS = "cr switch, d delete, m merge, r rename, R rebase, y yank"
 
 local function notify_canceled()
   tell "action canceled"
@@ -254,7 +174,38 @@ local git_rebase_branch = make_git_branch_action {
   end,
 }
 
----Local branch, or `git switch` onto a remote-only ref (strip `refs/remotes/<remote>/`).
+local function git_rename_branch(prompt_bufnr)
+  local selection = action_state.get_selected_entry()
+  if not selection then
+    warn_no_selection()
+    return
+  end
+  if not vim.startswith(selection.refname or "", "refs/heads/") then
+    tell("Only local branches can be renamed", vim.log.levels.WARN)
+    return
+  end
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local branch = selection.value
+  actions.close(prompt_bufnr)
+  vim.schedule(function()
+    vim.ui.input(
+      { prompt = "Rename branch: ", default = branch, cwd = cwd },
+      function(value)
+        if not value or vim.trim(value) == "" or value == branch then
+          return
+        end
+        local _, err = git.run({ "branch", "-m", branch, value }, cwd)
+        if err then
+          tell(err, vim.log.levels.ERROR)
+        else
+          tell(string.format("Renamed branch: %s → %s", branch, value))
+        end
+      end
+    )
+  end)
+end
+
+---Switch local branches, or create a tracking branch from the selected remote.
 ---@param prompt_bufnr integer
 local function git_switch_branch(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
@@ -267,11 +218,18 @@ local function git_switch_branch(prompt_bufnr)
   actions.close(prompt_bufnr)
   local branch = selection.value
   local refname = selection.refname
-  if type(refname) == "string" and refname:match "^refs/remotes/%w+/" then
-    branch = refname:gsub("^refs/remotes/%w+/", "")
+  local args = { "switch", branch }
+  if type(refname) == "string" and refname:match "^refs/remotes/[^/]+/" then
+    branch = refname:gsub("^refs/remotes/[^/]+/", "")
+    local local_ref = git.run(
+      { "show-ref", "--verify", "--quiet", "refs/heads/" .. branch },
+      cwd
+    )
+    args = local_ref and { "switch", branch }
+      or { "switch", "--track", "-c", branch, refname }
   end
 
-  local _, err = git.run({ "switch", branch }, cwd)
+  local _, err = git.run(args, cwd)
   if not err then
     tell(string.format("Switched to: '%s'", branch))
   else
@@ -316,8 +274,10 @@ local function pretty_git_branch_picker(opts)
   -- not treated as Telescope picker opts.
   local custom_attach = opts.attach_mappings
   local custom_previewer = opts.previewer
-  local prompt_title = opts.prompt_title or "Git Branches"
+  local prompt_title = opts.prompt_title
+    or (custom_attach and "Git Branches" or PROMPT_HINTS)
   local results_title = opts.results_title
+    or (not custom_attach and "Git Branches" or nil)
   opts.attach_mappings = nil
   opts.previewer = nil
   opts.prompt_title = nil
@@ -360,11 +320,11 @@ local function pretty_git_branch_picker(opts)
         end
         -- override mappings of telescope only this way :(
         map("n", "<cr>", wrap_telescope_action(git_switch_branch))
-        map("n", "?", help)
         map("n", "d", wrap_telescope_action(git_delete_branch))
         map("n", "m", wrap_telescope_action(git_merge_branch))
         -- `y` = yank branch name (mappings.telescope.defaults)
-        map("n", "r", wrap_telescope_action(git_rebase_branch))
+        map("n", "r", wrap_telescope_action(git_rename_branch))
+        map("n", "R", wrap_telescope_action(git_rebase_branch))
         return true
       end,
     })

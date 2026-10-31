@@ -10,6 +10,7 @@ local commons = require "telescope_pretty_picker.commons"
 local wrap_telescope_action = require "mappings.telescope_action_wrapper"
 
 local COMMIT_LIMIT = 1000
+local PROMPT_HINTS = "cr checkout, a/r rename, x/u undo, s undo+stash (HEAD)"
 local tell = commons.notifier "Git commits"
 
 ---@param prompt_bufnr integer
@@ -30,8 +31,17 @@ local function git_checkout(prompt_bufnr)
   if not selection then
     return
   end
+  local head, head_err = git.run({ "rev-parse", "HEAD" }, cwd)
+  if not head then
+    tell(head_err, vim.log.levels.ERROR)
+    return
+  end
+  if vim.trim(head) == selection.value then
+    tell "Already at this commit"
+    return
+  end
   actions.close(prompt_bufnr)
-  local _, err = git.run({ "checkout", selection.value }, cwd)
+  local _, err = git.run({ "switch", "--detach", selection.value }, cwd)
   if not err then
     tell(string.format("Checked out: %s", selection.value))
     vim.cmd "checktime"
@@ -56,8 +66,11 @@ local function git_reset(mode)
     if not selection then
       return
     end
-    local question =
-      string.format("Do you really want to %s reset to %s?", label, selection.value)
+    local question = string.format(
+      "Do you really want to %s reset to %s?",
+      label,
+      selection.value
+    )
     if not commons.confirmed(question) then
       tell "action canceled"
       return
@@ -76,6 +89,147 @@ local function git_reset(mode)
         vim.log.levels.ERROR
       )
     end
+  end
+end
+
+-- These actions change only HEAD; selecting an older row must never discard
+-- the commits above it.
+local function selected_head(prompt_bufnr)
+  local selection, cwd = selected(prompt_bufnr)
+  if not selection then
+    return
+  end
+  local head, err = git.run({ "rev-parse", "HEAD" }, cwd)
+  if not head then
+    tell(err, vim.log.levels.ERROR)
+    return
+  end
+  head = vim.trim(head)
+  if selection.value ~= head then
+    tell(
+      "This action is only available for the latest commit (HEAD)",
+      vim.log.levels.WARN
+    )
+    return
+  end
+  return selection, cwd, head
+end
+
+local function git_rename(prompt_bufnr)
+  local selection, cwd, head = selected_head(prompt_bufnr)
+  if not selection then
+    return
+  end
+  local message, err = git.run({ "show", "-s", "--format=%B", head }, cwd)
+  if not message then
+    tell(err, vim.log.levels.ERROR)
+    return
+  end
+  local subject, body = message:match "^([^\n]*)(.*)$"
+  actions.close(prompt_bufnr)
+  vim.schedule(function()
+    vim.ui.input({
+      prompt = "Rename commit: ",
+      default = subject,
+      filetype = "gitcommit",
+      cwd = cwd,
+    }, function(value)
+      if not value or vim.trim(value) == "" then
+        return
+      end
+      local current, check_err = git.run({ "rev-parse", "HEAD" }, cwd)
+      if not current or vim.trim(current) ~= head then
+        tell(
+          check_err or "HEAD changed while renaming; action canceled",
+          vim.log.levels.WARN
+        )
+        return
+      end
+      -- --only keeps already staged changes out of this message-only amend.
+      local _, amend_err =
+        git.run({ "commit", "--amend", "--only", "-m", value .. body }, cwd)
+      if amend_err then
+        tell(amend_err, vim.log.levels.ERROR)
+      else
+        tell("Renamed commit: " .. value)
+      end
+    end)
+  end)
+end
+
+local function git_undo(stash)
+  return function(prompt_bufnr)
+    local selection, cwd, head = selected_head(prompt_bufnr)
+    if not selection then
+      return
+    end
+    local parent, err = git.run({ "rev-parse", "--verify", head .. "^" }, cwd)
+    if not parent then
+      tell(
+        "Cannot undo the initial commit with a soft reset",
+        vim.log.levels.WARN
+      )
+      return
+    end
+    if stash then
+      local status
+      status, err =
+        git.run({ "status", "--porcelain", "--untracked-files=no" }, cwd)
+      if not status then
+        tell(err, vim.log.levels.ERROR)
+        return
+      end
+      if status ~= "" then
+        tell(
+          "Commit or stash existing tracked changes before undoing and stashing HEAD",
+          vim.log.levels.WARN
+        )
+        return
+      end
+    end
+    local question = stash
+        and string.format(
+          "Undo HEAD %s and stash its changes?",
+          selection.subject
+        )
+      or string.format(
+        "Undo HEAD %s with a soft reset (keep changes staged)?",
+        selection.subject
+      )
+    if not commons.confirmed(question) then
+      tell "action canceled"
+      return
+    end
+    actions.close(prompt_bufnr)
+    local _, reset_err = git.run({ "reset", "--soft", vim.trim(parent) }, cwd)
+    if reset_err then
+      tell(reset_err, vim.log.levels.ERROR)
+      return
+    end
+    if stash then
+      local _, stash_err = git.run(
+        { "stash", "push", "-m", "Undo commit: " .. selection.subject },
+        cwd
+      )
+      if stash_err then
+        -- Restore the commit if stashing fails; do not leave an unnoticed undo.
+        local _, restore_err = git.run({ "reset", "--soft", head }, cwd)
+        tell(
+          stash_err
+            .. (
+              restore_err and ("\nCould not restore HEAD: " .. restore_err)
+              or "\nRestored HEAD"
+            ),
+          vim.log.levels.ERROR
+        )
+        return
+      end
+      vim.cmd "checktime"
+    end
+    tell(
+      stash and "Undid HEAD and stashed its changes"
+        or "Undid HEAD; changes remain staged"
+    )
   end
 end
 
@@ -107,8 +261,12 @@ local function pretty_git_commit_picker(opts)
 
   local custom_attach = opts.attach_mappings
   local custom_previewer = opts.previewer
-  local prompt_title = opts.prompt_title or (opts.ref and ("Git Commits on " .. opts.ref) or "Git Commits")
+  local commit_title = opts.ref and ("Git Commits on " .. opts.ref)
+    or "Git Commits"
+  local prompt_title = opts.prompt_title
+    or (custom_attach and commit_title or PROMPT_HINTS)
   local results_title = opts.results_title
+    or (not custom_attach and commit_title or nil)
   local ref = opts.ref
   local limit = opts.limit or COMMIT_LIMIT
   opts.attach_mappings = nil
@@ -130,7 +288,7 @@ local function pretty_git_commit_picker(opts)
     return
   end
 
-  require("utils.ui_prevent_mess")()
+  require "utils.ui_prevent_mess"()
   local make_display = display.commit_displayer(display.commit_widths(commits))
 
   pickers
@@ -155,7 +313,11 @@ local function pretty_git_commit_picker(opts)
         -- override mappings of telescope only this way :(
         map("n", "<cr>", wrap_telescope_action(git_checkout))
         map("n", "m", wrap_telescope_action(git_reset "--mixed"))
-        map("n", "s", wrap_telescope_action(git_reset "--soft"))
+        map("n", "a", wrap_telescope_action(git_rename))
+        map("n", "r", wrap_telescope_action(git_rename))
+        map("n", "x", wrap_telescope_action(git_undo(false)))
+        map("n", "u", wrap_telescope_action(git_undo(false)))
+        map("n", "s", wrap_telescope_action(git_undo(true)))
         map("n", "h", wrap_telescope_action(git_reset "--hard"))
         return true
       end,

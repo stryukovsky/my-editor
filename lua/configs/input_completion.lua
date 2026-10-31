@@ -65,6 +65,23 @@ function M.complete(findstart, _)
 end
 
 function M.setup(buf, cwd)
+  -- A nonzero native delay exposes a blank popup frame while this float refilters.
+  -- Restore the global delay when the input closes or loses focus.
+  local previous_delay = vim.o.autocompletedelay
+  local delay_restored = false
+  vim.o.autocompletedelay = 0
+  vim.api.nvim_create_autocmd({ "BufLeave", "BufWipeout" }, {
+    buffer = buf,
+    callback = function()
+      if delay_restored then
+        return
+      end
+      delay_restored = true
+      if vim.o.autocompletedelay == 0 then
+        vim.o.autocompletedelay = previous_delay
+      end
+    end,
+  })
   vim.bo[buf].completefunc = "v:lua.NativeExtraComplete"
   vim.system(
     { "git", "-C", cwd, "symbolic-ref", "--quiet", "--short", "HEAD" },
