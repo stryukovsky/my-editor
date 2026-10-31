@@ -467,3 +467,17 @@ While math rendering is enabled, inline `$` delimiters display as spaces. The
 opening display-math `$$` displays as the LaTeX Nerd Font icon `` followed by a
 space; the closing `$$` displays as two spaces. Toggle rendering off to reveal
 the original delimiters. Code and escaped literal dollar signs are unaffected.
+
+## Markdown preview diagrams
+
+Press `<A-i>` anywhere in a Markdown file to open the full rendered preview;
+press it again in the preview to return to source. `<leader>mdr` also opens the
+preview. `<leader>mdi` opens the Markdown table-row inspector. CSV/TSV row
+inspection and diagnostics keep their existing `<A-i>` behavior.
+
+Complete Mermaid fences render as terminal diagrams using the existing
+`bin/mermaid-ascii` executable, with PATH fallback. Rendering is asynchronous;
+diagram spacing is preserved and wide diagrams scroll horizontally. If the
+converter is missing, rejects the diagram, or times out, its source fence remains
+visible with a warning. Close and reopen the preview to retry. Source files are
+unchanged. Standalone Mermaid visualization mappings still work.

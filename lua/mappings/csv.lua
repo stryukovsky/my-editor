@@ -6,7 +6,7 @@ vim.api.nvim_create_autocmd("FileType", {
   callback = function(ev)
     map(
       "n",
-      "<A-I>",
+      "<A-i>",
       "<cmd>CsvViewToggle<cr>",
       { buffer = ev.buf, desc = "CSV toggle view" }
     )

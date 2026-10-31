@@ -46,3 +46,11 @@ require("render-markdown").setup {
     },
   },
 }
+
+-- The preview converter lives in the plugin; reuse our installed executable.
+local bundled_mermaid = vim.fn.stdpath "config" .. "/bin/mermaid-ascii"
+require("render-markdown.core.preview").mermaid = {
+  command = vim.fn.executable(bundled_mermaid) == 1 and bundled_mermaid
+    or "mermaid-ascii",
+  timeout = 5000,
+}

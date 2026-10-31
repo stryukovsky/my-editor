@@ -20,6 +20,9 @@ end
 local config = {
   ---@type false | "classic" | "modern" | "helix"
   preset = "modern",
+  icons = {
+    mappings = false,
+  },
   ---@param mapping wk.Mapping
   filter = function(mapping)
     -- example to exclude mappings without a description
@@ -50,6 +53,7 @@ wk.setup(config)
 wk.add({
   {
     mode = { "n", "v" },
+    { "<leader>b", group = "Bigfiles" },
     { "<leader>g", group = "Git" },
     { "<leader>t", group = "Tasks, tests & terminals" },
     { "<leader>c", group = "Code & conflicts" },
@@ -57,8 +61,12 @@ wk.add({
     { "<leader>f", group = "Find & format" },
     { "<leader>l", group = "LSP and logs" },
     { "<leader>p", group = "Yanky, Python, PDF & projects" },
+    { "<leader>s", group = "Scenarios, swaps & spell actions" },
+    { "<leader>y", group = "yank problems, paths, or TODOs" },
+    { "<leader>e", group = "Exec script right now!" },
     { "<leader>v", group = "Visualize" },
-    { "<leader>md", group = "markdown" },
+    { "<leader>r", group = "Rename, Refresh and cuRl" },
+    { "<leader>m", group = "markdown" },
     { "<leader>j", group = "Jobs (todo file)" },
     { "<leader>R", group = "Refactor" },
   },

@@ -6,19 +6,25 @@ local navigation_repeat = require "utils.navigation_repeat"
 map("n", "<A-i>", function()
   local ft = vim.bo.filetype
   if ft == "markdown" then
-    local mermaid = require "configs.mermaid"
-    local fence = mermaid.fence_at_cursor()
-    if fence then
-      mermaid.visualize(fence)
-      return
+    local render = require "render-markdown"
+    local preview = require "render-markdown.core.preview"
+    local closing = preview.get(vim.api.nvim_get_current_buf()) ~= nil
+    render.preview()
+    if not closing then
+      render.buf_enable()
     end
-    md_table_viewer.view_row()
   elseif ft == "csv" or ft == "tsv" then
     csv_table_viewer.view_row()
   else
     vim.diagnostic.open_float()
   end
-end, { desc = "View markdown/CSV row or show diagnostic" })
+end, { desc = "Markdown preview / CSV row / diagnostic" })
+
+map("n", "<leader>mdi", function()
+  if vim.bo.filetype == "markdown" then
+    md_table_viewer.view_row()
+  end
+end, { desc = "Inspect Markdown table row" })
 
 ---@param direction 1|-1
 local function goto_diagnostic(direction)
