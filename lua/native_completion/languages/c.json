@@ -1,0 +1,270 @@
+{
+  "$schema": "../../../schemas/native-completion-language.schema.json",
+  "version": 1,
+  "language": "c",
+  "identifier_nodes": [
+    "identifier",
+    "field_identifier",
+    "type_identifier"
+  ],
+  "comment_nodes": [
+    "comment"
+  ],
+  "string_nodes": [
+    "string_literal",
+    "string_content",
+    "system_lib_string",
+    "concatenated_string",
+    "char_literal"
+  ],
+  "expressions": {
+    "member": [
+      "field_expression"
+    ],
+    "type": [
+      "type_identifier",
+      "primitive_type",
+      "sized_type_specifier",
+      "type_descriptor"
+    ],
+    "import": [
+      "preproc_include"
+    ]
+  },
+  "string_contexts": {
+    "import": [
+      "preproc_include"
+    ]
+  },
+  "keywords": [
+    "auto",
+    "break",
+    "case",
+    "char",
+    "const",
+    "continue",
+    "default",
+    "do",
+    "double",
+    "else",
+    "enum",
+    "extern",
+    "float",
+    "for",
+    "goto",
+    "if",
+    "inline",
+    "int",
+    "long",
+    "register",
+    "restrict",
+    "return",
+    "short",
+    "signed",
+    "sizeof",
+    "static",
+    "struct",
+    "switch",
+    "typedef",
+    "union",
+    "unsigned",
+    "void",
+    "volatile",
+    "while",
+    "alignas",
+    "alignof",
+    "atomic",
+    "bool",
+    "complex",
+    "generic",
+    "imaginary",
+    "noreturn",
+    "assert",
+    "thread",
+    "local",
+    "nullptr",
+    "constexpr",
+    "typeof",
+    "unqual",
+    "bitint",
+    "true",
+    "false"
+  ],
+  "fixtures": [
+    {
+      "name": "dot member",
+      "source": "void run() { obj.na<cursor>me; }",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "run",
+          "obj",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "pointer member",
+      "source": "void run() { obj->na<cursor>me; }",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "run",
+          "obj",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "type name",
+      "source": "void run() { Us<cursor>er user = create; }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "run",
+          "User",
+          "user",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "struct tag",
+      "source": "struct Us<cursor>er { int value; };",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "User",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "cast type",
+      "source": "void run() { value = (Us<cursor>er)other; }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "run",
+          "value",
+          "User",
+          "other"
+        ]
+      }
+    },
+    {
+      "name": "quoted include",
+      "source": "#include \"us<cursor>er.h\"",
+      "expect": {
+        "context": "import",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "system include",
+      "source": "#include <sys/us<cursor>er.h>",
+      "expect": {
+        "context": "import",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "call argument",
+      "source": "void run() { apply(val<cursor>ue); }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "run",
+          "apply",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "member call argument",
+      "source": "void run() { obj->apply(val<cursor>ue); }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "run",
+          "obj",
+          "apply",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "line comment",
+      "source": "// User<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "block comment",
+      "source": "/* User<cursor> */",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "string",
+      "source": "void run() { char *message = \"User<cursor>\"; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "run",
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "character",
+      "source": "void run() { char initial = 'U<cursor>'; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "run",
+          "initial"
+        ]
+      }
+    },
+    {
+      "name": "incomplete member",
+      "source": "void run() { obj.<cursor> }",
+      "expect": {
+        "context": "unknown"
+      }
+    },
+    {
+      "name": "incomplete pointer member",
+      "source": "void run() { obj-><cursor> }",
+      "expect": {
+        "context": "unknown"
+      }
+    },
+    {
+      "name": "line affinity",
+      "source": "void run() { User user = create<cursor>; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "run",
+          "User",
+          "user",
+          "create"
+        ],
+        "affinity": {
+          "createUser": 1,
+          "createCat": 0
+        },
+        "ranking": [
+          "createUser",
+          "createCat"
+        ]
+      }
+    }
+  ]
+}

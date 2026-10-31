@@ -1,0 +1,56 @@
+{
+  "$schema": "../../../schemas/native-completion-language.schema.json",
+  "version": 1,
+  "language": "tsx",
+  "extends": "typescript",
+  "fixtures": [
+    {
+      "name": "JSX member expression",
+      "source": "const el = <div>{user.na<cursor>me}</div>",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "el",
+          "div",
+          "user",
+          "name",
+          "div"
+        ]
+      }
+    },
+    {
+      "name": "JSX text",
+      "source": "const el = <div>User<cursor></div>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "el",
+          "div",
+          "div"
+        ]
+      }
+    },
+    {
+      "name": "JSX expression affinity",
+      "source": "const el = <div>{User(create<cursor>)}</div>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "el",
+          "div",
+          "User",
+          "create",
+          "div"
+        ],
+        "affinity": {
+          "createUser": 1,
+          "createCat": 0
+        },
+        "ranking": [
+          "createUser",
+          "createCat"
+        ]
+      }
+    }
+  ]
+}

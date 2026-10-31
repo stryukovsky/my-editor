@@ -357,3 +357,63 @@ only, preserving the single-line prompt. Enter accepts a selected suggestion;
 press Enter again to submit. Tab/Shift-Tab move through snippet placeholders.
 Ctrl-Space opens completion manually. Detached HEAD/non-Git directories omit
 the branch suggestion. Filetype/Tree-sitter alone do not generate Git suggestions.
+
+## Native completion
+
+Native completion targets Neovim 0.12.6; Blink remains disabled. Ranking follows:
+
+1. Exact case-sensitive/case-insensitive names, case-sensitive/case-insensitive prefixes, then fuzzy matches.
+2. Distinct identifier words elsewhere on the current line, then fine fuzzy score. `User` near `create` favors `createUser` over `createCat`; exact `createCat` still wins when typed explicitly.
+3. Nondeprecated items, single-server `sortText` (label when missing), conservative syntax fit, ordinary items before snippets, and stable final ties.
+
+Current-line affinity uses whole camel/Pascal/acronym/snake identifier components;
+repetition, query words, language keywords, comments, and strings do not boost it.
+It uses only the current line, not a project-wide frequency or semantic model.
+Language node groups, keyword exclusions, and parser fixtures live in
+[`lua/native_completion/languages/*.json`](lua/native_completion/languages/README.md).
+The shared JSON Schema is `schemas/native-completion-language.schema.json`.
+
+Lua, TypeScript/TSX, Go, Rust, Scala, Java, Python, C, C++, and Solidity have
+syntax adapters. Lua handles member/method access; the other mappings also handle type
+positions and imports/includes. C and C++ are the mappings used with clangd.
+TSX inherits TypeScript rules and adds JSX parser fixtures. Unknown syntax, missing parsers, and unsupported
+or ambiguous injected languages give neutral hints. An available parser is used;
+completion does not install one. Tree-sitter hints do not prove type compatibility
+or lexical scope. Multiple attached completion servers omit server sort keys
+because different servers' keys do not share a ranking scale.
+
+The menu is limited to 10 item rows and 70 content columns, shrinking on narrow
+screens. Display labels are limited to 45 cells and descriptions to 24 cells.
+Formatting changes display fields only: full insertion, native snippets,
+auto-import edits, commands, documentation, and distinct same-label items remain.
+The existing wheat palette and rounded opaque popup are retained.
+
+In ordinary enabled editing buffers, `<C-x><C-n>` cancels an open LSP selection
+and starts current/window/loaded-buffer word completion. `<C-Space>` requests
+LSP/manual completion; Enter accepts a selected item and otherwise inserts a
+newline. Ctrl-Enter accepts the selected or first item. Automatic fallback after
+an empty LSP response is intentionally not enabled. Floating input opts into
+completion through its `filetype`; terminal command completion keeps its sources.
+
+Compared with the old kind-first policy, an exact function can now outrank a
+variable. Compared with native default fuzzy sorting, current-line identifier
+affinity can favor `createUser` even when shorter `createCat` has a better fuzzy
+score. `fuzzy,nosort,noselect` keeps this explicit order and avoids implicit acceptance.
+
+Focused fixtures (run from this configuration directory):
+
+```sh
+nvim --headless -u NONE -i NONE -l tests/native_completion_languages.lua
+nvim --headless -u NONE -i NONE -l tests/native_completion.lua
+uv run --with pynvim python tests/native_completion_integration.py
+```
+
+The mapping suite checks all language JSON definitions against their installed
+grammars and runs their embedded parser fixtures. The core suite checks
+ranking, Unicode display, comparator laws, caching, and a 1,000-item profile.
+The integration suite drives a running Neovim with a temporary fake LSP, testing native
+acceptance, auto-imports, snippets, commands, documentation, popup limits, and
+English/Russian shortcuts. `pynvim` is a test dependency only. Integration also
+exercises the locally installed Lua, TypeScript, and Go servers when available.
+See the [mapping format and fixture guide](lua/native_completion/languages/README.md)
+to add another grammar without changing the Lua context engine.

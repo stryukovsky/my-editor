@@ -1,0 +1,471 @@
+{
+  "$schema": "../../../schemas/native-completion-language.schema.json",
+  "version": 1,
+  "language": "solidity",
+  "identifier_nodes": [
+    "identifier"
+  ],
+  "comment_nodes": [
+    "comment"
+  ],
+  "string_nodes": [
+    "string",
+    "string_literal",
+    "unicode_string_literal",
+    "hex_string_literal",
+    "yul_string_literal",
+    "yul_hex_string_literal"
+  ],
+  "expressions": {
+    "member": [
+      "member_expression"
+    ],
+    "type": [
+      "type_name",
+      "user_defined_type",
+      "primitive_type"
+    ],
+    "import": [
+      "import_directive"
+    ]
+  },
+  "string_contexts": {
+    "import": [
+      "import_directive"
+    ]
+  },
+  "keywords": [
+    "abstract",
+    "after",
+    "alias",
+    "anonymous",
+    "apply",
+    "as",
+    "assembly",
+    "auto",
+    "bool",
+    "break",
+    "byte",
+    "bytes",
+    "case",
+    "catch",
+    "constant",
+    "constructor",
+    "continue",
+    "contract",
+    "copyof",
+    "default",
+    "define",
+    "delete",
+    "do",
+    "else",
+    "emit",
+    "enum",
+    "error",
+    "event",
+    "external",
+    "fallback",
+    "false",
+    "final",
+    "for",
+    "from",
+    "function",
+    "immutable",
+    "implements",
+    "import",
+    "in",
+    "indexed",
+    "inline",
+    "int",
+    "interface",
+    "internal",
+    "is",
+    "let",
+    "library",
+    "macro",
+    "mapping",
+    "match",
+    "memory",
+    "modifier",
+    "mutable",
+    "new",
+    "null",
+    "of",
+    "override",
+    "partial",
+    "payable",
+    "pragma",
+    "private",
+    "promise",
+    "public",
+    "pure",
+    "receive",
+    "reference",
+    "relocatable",
+    "return",
+    "returns",
+    "sealed",
+    "sizeof",
+    "static",
+    "storage",
+    "string",
+    "struct",
+    "supports",
+    "super",
+    "switch",
+    "this",
+    "throw",
+    "transient",
+    "true",
+    "try",
+    "type",
+    "typedef",
+    "typeof",
+    "uint",
+    "unchecked",
+    "using",
+    "var",
+    "view",
+    "virtual",
+    "while"
+  ],
+  "fixtures": [
+    {
+      "name": "method member",
+      "source": "contract Main { function run() public { obj.pr<cursor>int(value); } }",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "Main",
+          "run",
+          "obj",
+          "print",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "field member",
+      "source": "contract Main { function run() public { user.na<cursor>me; } }",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "Main",
+          "run",
+          "user",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "local type",
+      "source": "contract Main { function run() public { Us<cursor>er memory user = create; } }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "Main",
+          "run",
+          "User",
+          "user",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "state type",
+      "source": "contract Main { Us<cursor>er public user; }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "Main",
+          "User",
+          "user"
+        ]
+      }
+    },
+    {
+      "name": "array type",
+      "source": "contract Main { Us<cursor>er[] users; }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "Main",
+          "User",
+          "users"
+        ]
+      }
+    },
+    {
+      "name": "parameter type",
+      "source": "contract Main { function run(Us<cursor>er memory user) public {} }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "Main",
+          "run",
+          "User",
+          "user"
+        ]
+      }
+    },
+    {
+      "name": "return type",
+      "source": "contract Main { function run() public returns (Us<cursor>er memory) {} }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "Main",
+          "run",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "mapping value type",
+      "source": "contract Main { mapping(address => Us<cursor>er) users; }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "Main",
+          "User",
+          "users"
+        ]
+      }
+    },
+    {
+      "name": "mapping key type",
+      "source": "contract Main { mapping(Us<cursor>er => uint256) users; }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "Main",
+          "User",
+          "users"
+        ]
+      }
+    },
+    {
+      "name": "new contract type",
+      "source": "contract Main { function run() public { new Us<cursor>er(); } }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "Main",
+          "run",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "bare import path",
+      "source": "import \"./Us<cursor>er.sol\";",
+      "expect": {
+        "context": "import",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "named import path",
+      "source": "import {User as UserAlias} from \"./Us<cursor>er.sol\";",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "User",
+          "UserAlias"
+        ]
+      }
+    },
+    {
+      "name": "imported identifier",
+      "source": "import {Us<cursor>er as UserAlias} from \"./User.sol\";",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "User",
+          "UserAlias"
+        ]
+      }
+    },
+    {
+      "name": "namespace import",
+      "source": "import * as users from \"./Us<cursor>er.sol\";",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "users"
+        ]
+      }
+    },
+    {
+      "name": "call argument neutral",
+      "source": "contract Main { function run() public { obj.print(val<cursor>ue); } }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "run",
+          "obj",
+          "print",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "cast argument neutral",
+      "source": "contract Main { function run() public { address(us<cursor>er); } }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "run",
+          "user"
+        ]
+      }
+    },
+    {
+      "name": "named call argument neutral",
+      "source": "contract Main { function run() public { obj.print({user: val<cursor>ue}); } }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "run",
+          "obj",
+          "print",
+          "user",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "line comment",
+      "source": "// User<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "block comment",
+      "source": "/* User<cursor> */",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "NatSpec line comment",
+      "source": "/// @param user User<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "NatSpec block comment",
+      "source": "/** @dev User<cursor> */",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "double quoted string",
+      "source": "contract Main { string message = \"User<cursor>\"; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "single quoted string",
+      "source": "contract Main { string message = 'User<cursor>'; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "Unicode string",
+      "source": "contract Main { string message = unicode\"User<cursor>\"; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "hex string",
+      "source": "contract Main { bytes message = hex\"556<cursor>7\"; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "incomplete member",
+      "source": "contract Main { function run() public { obj.<cursor> } }",
+      "expect": {
+        "context": "unknown"
+      }
+    },
+    {
+      "name": "line affinity",
+      "source": "contract Main { function run() public { User memory user = create<cursor>; } }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "run",
+          "User",
+          "user",
+          "create"
+        ],
+        "affinity": {
+          "createUser": 1,
+          "createCat": 0
+        },
+        "ranking": [
+          "createUser",
+          "createCat"
+        ]
+      }
+    },
+    {
+      "name": "Yul call stays neutral",
+      "source": "contract Main { function run() public { assembly { apply(val<cursor>ue) } } }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "run",
+          "apply",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "Yul string",
+      "source": "contract Main { function run() public { assembly { let message := \"User<cursor>\" } } }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "run",
+          "message"
+        ]
+      }
+    }
+  ]
+}

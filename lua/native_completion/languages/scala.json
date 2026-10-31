@@ -1,0 +1,372 @@
+{
+  "$schema": "../../../schemas/native-completion-language.schema.json",
+  "version": 1,
+  "language": "scala",
+  "identifier_nodes": [
+    "identifier",
+    "type_identifier",
+    "operator_identifier"
+  ],
+  "comment_nodes": [
+    "comment",
+    "block_comment",
+    "xml_comment"
+  ],
+  "string_nodes": [
+    "string",
+    "interpolated_string",
+    "interpolated_string_expression",
+    "character_literal",
+    "xml_string"
+  ],
+  "expressions": {
+    "member": [
+      "field_expression"
+    ],
+    "type": [
+      "type_identifier",
+      "stable_type_identifier",
+      "type_arguments",
+      "type_parameters",
+      "generic_type",
+      "contravariant_type_parameter",
+      "covariant_type_parameter"
+    ],
+    "import": [
+      "import_declaration"
+    ]
+  },
+  "string_contexts": {},
+  "keywords": [
+    "abstract",
+    "as",
+    "case",
+    "catch",
+    "class",
+    "def",
+    "derives",
+    "do",
+    "else",
+    "end",
+    "enum",
+    "erased",
+    "export",
+    "extends",
+    "extension",
+    "false",
+    "final",
+    "finally",
+    "for",
+    "forsome",
+    "given",
+    "if",
+    "implicit",
+    "infix",
+    "inline",
+    "lazy",
+    "match",
+    "new",
+    "null",
+    "object",
+    "opaque",
+    "open",
+    "override",
+    "package",
+    "private",
+    "protected",
+    "return",
+    "sealed",
+    "super",
+    "then",
+    "this",
+    "throw",
+    "trait",
+    "transparent",
+    "true",
+    "try",
+    "type",
+    "using",
+    "val",
+    "var",
+    "while",
+    "with",
+    "yield"
+  ],
+  "fixtures": [
+    {
+      "name": "member",
+      "source": "object Main { obj.pr<cursor>int() }",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "Main",
+          "obj",
+          "print"
+        ]
+      }
+    },
+    {
+      "name": "field",
+      "source": "val name = user.na<cursor>me",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "name",
+          "user",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "type annotation",
+      "source": "val user: Us<cursor>er = create",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "user",
+          "User",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "qualified type",
+      "source": "val user: example.Us<cursor>er = create",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "user",
+          "example",
+          "User",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "generic type",
+      "source": "val users: List[Us<cursor>er] = create",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "users",
+          "List",
+          "User",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "type argument",
+      "source": "val user = create[Us<cursor>er]()",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "user",
+          "create",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "type parameter bound",
+      "source": "def apply[T <: Us<cursor>er](x: T): T = x",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "apply",
+          "T",
+          "User",
+          "x",
+          "T",
+          "T",
+          "x"
+        ]
+      }
+    },
+    {
+      "name": "import path",
+      "source": "import example.user.Us<cursor>er",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "example",
+          "user",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "grouped import",
+      "source": "import example.{Us<cursor>er, createUser}",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "example",
+          "User",
+          "createUser"
+        ]
+      }
+    },
+    {
+      "name": "renamed import",
+      "source": "import example.{User => Us<cursor>erAlias}",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "example",
+          "User",
+          "UserAlias"
+        ]
+      }
+    },
+    {
+      "name": "call argument",
+      "source": "val result = apply(val<cursor>ue)",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "result",
+          "apply",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "line comment",
+      "source": "// User<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "block comment",
+      "source": "/* User<cursor> */",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "doc comment",
+      "source": "/** User<cursor> */",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "string",
+      "source": "val message = \"User<cursor>\"",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "multiline string",
+      "source": "val message = \"\"\"User<cursor>\"\"\"",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "interpolated text",
+      "source": "val message = s\"User<cursor> ${user.name}\"",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "interpolation stays conservative",
+      "source": "val message = s\"User ${user.na<cursor>me}\"",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "character",
+      "source": "val initial = 'U<cursor>'",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "initial"
+        ]
+      }
+    },
+    {
+      "name": "incomplete member",
+      "source": "object Main { obj.<cursor> }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "obj"
+        ]
+      }
+    },
+    {
+      "name": "line affinity",
+      "source": "val user: User = create<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "user",
+          "User",
+          "create"
+        ],
+        "affinity": {
+          "createUser": 1,
+          "createCat": 0
+        },
+        "ranking": [
+          "createUser",
+          "createCat"
+        ]
+      }
+    },
+    {
+      "name": "Scala 3 indentation member",
+      "source": "object Main:\n  val name = user.na<cursor>me",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "name",
+          "user",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "Scala 3 given affinity",
+      "source": "given user: User = create<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "user",
+          "User",
+          "create"
+        ],
+        "affinity": {
+          "createUser": 1,
+          "createCat": 0
+        },
+        "ranking": [
+          "createUser",
+          "createCat"
+        ]
+      }
+    }
+  ]
+}

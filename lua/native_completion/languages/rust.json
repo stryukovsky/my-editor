@@ -1,0 +1,343 @@
+{
+  "$schema": "../../../schemas/native-completion-language.schema.json",
+  "version": 1,
+  "language": "rust",
+  "identifier_nodes": [
+    "identifier",
+    "field_identifier",
+    "type_identifier",
+    "shorthand_field_identifier"
+  ],
+  "comment_nodes": [
+    "line_comment",
+    "block_comment",
+    "doc_comment"
+  ],
+  "string_nodes": [
+    "string_literal",
+    "raw_string_literal",
+    "string_content",
+    "char_literal"
+  ],
+  "expressions": {
+    "member": [
+      "field_expression"
+    ],
+    "type": [
+      "type_identifier",
+      "scoped_type_identifier",
+      "primitive_type",
+      "type_arguments",
+      "type_parameter"
+    ],
+    "import": [
+      "use_declaration",
+      "extern_crate_declaration"
+    ]
+  },
+  "string_contexts": {},
+  "keywords": [
+    "as",
+    "async",
+    "await",
+    "break",
+    "const",
+    "continue",
+    "crate",
+    "dyn",
+    "else",
+    "enum",
+    "extern",
+    "false",
+    "fn",
+    "for",
+    "if",
+    "impl",
+    "in",
+    "let",
+    "loop",
+    "match",
+    "mod",
+    "move",
+    "mut",
+    "pub",
+    "ref",
+    "return",
+    "self",
+    "static",
+    "struct",
+    "super",
+    "trait",
+    "true",
+    "type",
+    "unsafe",
+    "use",
+    "where",
+    "while",
+    "abstract",
+    "become",
+    "box",
+    "do",
+    "final",
+    "macro",
+    "override",
+    "priv",
+    "typeof",
+    "unsized",
+    "virtual",
+    "yield",
+    "try",
+    "gen"
+  ],
+  "fixtures": [
+    {
+      "name": "member",
+      "source": "fn main() { obj.pr<cursor>int(); }",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "main",
+          "obj",
+          "print"
+        ]
+      }
+    },
+    {
+      "name": "field",
+      "source": "fn main() { let name = user.na<cursor>me; }",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "main",
+          "name",
+          "user",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "type annotation",
+      "source": "fn main() { let user: Us<cursor>er = create; }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "main",
+          "user",
+          "User",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "qualified type",
+      "source": "fn main() { let user: crate::Us<cursor>er = create; }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "main",
+          "user",
+          "User",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "generic type",
+      "source": "fn main() { let users: Vec<Us<cursor>er> = create; }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "main",
+          "users",
+          "Vec",
+          "User",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "turbofish type argument",
+      "source": "fn main() { collect::<Us<cursor>er>(); }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "main",
+          "collect",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "type parameter bound",
+      "source": "fn apply<T: Us<cursor>er>(x: T) {}",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "apply",
+          "T",
+          "User",
+          "x",
+          "T"
+        ]
+      }
+    },
+    {
+      "name": "use path",
+      "source": "use crate::user::Us<cursor>er;",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "user",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "grouped use",
+      "source": "use crate::{Us<cursor>er, user::create};",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "User",
+          "user",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "use alias",
+      "source": "use crate::User as Us<cursor>erAlias;",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "User",
+          "UserAlias"
+        ]
+      }
+    },
+    {
+      "name": "associated function neutral",
+      "source": "fn main() { User::cre<cursor>ate(); }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "main",
+          "User",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "call argument",
+      "source": "fn main() { apply(val<cursor>ue); }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "main",
+          "apply",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "line comment",
+      "source": "// User<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "block comment",
+      "source": "/* User<cursor> */",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "doc comment",
+      "source": "/// User<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "string",
+      "source": "fn main() { let message = \"User<cursor>\"; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "main",
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "raw string",
+      "source": "fn main() { let message = r#\"User<cursor>\"#; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "main",
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "byte string",
+      "source": "fn main() { let message = b\"User<cursor>\"; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "main",
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "character",
+      "source": "fn main() { let initial = 'U<cursor>'; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "main",
+          "initial"
+        ]
+      }
+    },
+    {
+      "name": "incomplete member",
+      "source": "fn main() { obj.<cursor> }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "main",
+          "obj"
+        ]
+      }
+    },
+    {
+      "name": "line affinity",
+      "source": "fn main() { let user: User = create<cursor>; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "main",
+          "user",
+          "User",
+          "create"
+        ],
+        "affinity": {
+          "createUser": 1,
+          "createCat": 0
+        },
+        "ranking": [
+          "createUser",
+          "createCat"
+        ]
+      }
+    }
+  ]
+}

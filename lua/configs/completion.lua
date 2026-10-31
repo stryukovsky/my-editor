@@ -6,6 +6,8 @@ vim.o.autocomplete = true
 vim.o.autocompletedelay = 100
 vim.o.pumborder = "rounded"
 vim.o.pumblend = 0
+vim.o.pumheight = 10
+vim.o.pummaxwidth = 70
 vim.opt.completeopt =
   { "menu", "menuone", "noselect", "fuzzy", "nosort", "popup" }
 vim.opt.complete = { ".", "w", "b" }
@@ -23,45 +25,7 @@ function _G.NativeExtraComplete(findstart, base)
   return findstart == 1 and -3 or {}
 end
 
-local kinds = vim.lsp.protocol.CompletionItemKind
-local kind_priority = {}
-for rank, group in ipairs {
-  {
-    kinds.Variable,
-    kinds.Field,
-    kinds.Property,
-    kinds.Constant,
-    kinds.EnumMember,
-  },
-  {
-    kinds.Class,
-    kinds.Interface,
-    kinds.Struct,
-    kinds.Enum,
-    kinds.TypeParameter,
-    kinds.Module,
-  },
-  { kinds.Function, kinds.Method, kinds.Constructor },
-} do
-  for _, kind in ipairs(group) do
-    kind_priority[kind] = rank
-  end
-end
-kind_priority[kinds.Snippet] = 99
-
-local function compare(a, b)
-  local item_a = vim.tbl_get(a, "user_data", "nvim", "lsp", "completion_item")
-    or {}
-  local item_b = vim.tbl_get(b, "user_data", "nvim", "lsp", "completion_item")
-    or {}
-  local rank_a, rank_b =
-    kind_priority[item_a.kind] or 4, kind_priority[item_b.kind] or 4
-  if rank_a ~= rank_b then
-    return rank_a < rank_b
-  end
-  return (item_a.sortText or item_a.label or a.word)
-    < (item_b.sortText or item_b.label or b.word)
-end
+local ranking = require "native_completion"
 
 local function refresh()
   local floating = vim.api.nvim_win_get_config(0).relative ~= ""
@@ -86,6 +50,31 @@ local function refresh()
 end
 
 local group = vim.api.nvim_create_augroup("NativeCompletion", { clear = true })
+vim.api.nvim_create_autocmd(
+  { "TextChangedI", "TextChangedP", "CursorMovedI", "InsertEnter" },
+  {
+    group = group,
+    callback = function()
+      if vim.b.completion ~= false then
+        ranking.prepare()
+      end
+    end,
+  }
+)
+vim.api.nvim_create_autocmd(
+  { "BufEnter", "FileType", "LspAttach", "LspDetach" },
+  {
+    group = group,
+    callback = function()
+      ranking.invalidate()
+      vim.schedule(function()
+        if vim.b.completion ~= false then
+          ranking.prepare()
+        end
+      end)
+    end,
+  }
+)
 vim.api.nvim_create_autocmd({ "CompleteChanged", "WinNew" }, {
   group = group,
   callback = function()
@@ -125,8 +114,14 @@ vim.api.nvim_create_autocmd("LspAttach", {
         provider.triggerCharacters = triggers
       end
       vim.lsp.completion.enable(true, client.id, ev.buf, {
-        autotrigger = not vim.b[ev.buf].terminal_command,
-        cmp = compare,
+        autotrigger = not vim.b[ev.buf].terminal_command
+          and vim.b[ev.buf].completion ~= false
+          and (
+            vim.bo[ev.buf].buftype == ""
+            or vim.b[ev.buf].input_completion == true
+          ),
+        cmp = ranking.compare,
+        convert = ranking.convert,
       })
       vim.bo[ev.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
       refresh()
@@ -190,6 +185,16 @@ function M.setup_mappings()
     end
     return "<C-n>"
   end, { expr = true, desc = "Show native completion" })
+  map("i", "<C-x><C-n>", function()
+    if
+      vim.b.completion == false
+      or vim.bo.buftype ~= ""
+      or vim.b.terminal_command
+    then
+      return "<C-x><C-n>"
+    end
+    return (vim.fn.pumvisible() == 1 and "<C-e>" or "") .. "<C-n>"
+  end, { expr = true, silent = true, desc = "Complete buffer words" })
   map("i", "<CR>", function()
     if vim.fn.pumvisible() == 0 then
       return "<CR>"

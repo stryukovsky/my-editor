@@ -1,0 +1,389 @@
+{
+  "$schema": "../../../schemas/native-completion-language.schema.json",
+  "version": 1,
+  "language": "java",
+  "identifier_nodes": [
+    "identifier",
+    "type_identifier"
+  ],
+  "comment_nodes": [
+    "line_comment",
+    "block_comment"
+  ],
+  "string_nodes": [
+    "string_literal",
+    "string_fragment",
+    "multiline_string_fragment",
+    "character_literal"
+  ],
+  "expressions": {
+    "member": [
+      "field_access",
+      {
+        "node": "method_invocation",
+        "field": "name",
+        "requires": [
+          "object"
+        ]
+      }
+    ],
+    "type": [
+      "type_identifier",
+      "scoped_type_identifier",
+      "type_arguments",
+      "type_parameter",
+      "integral_type",
+      "floating_point_type",
+      "boolean_type",
+      "void_type"
+    ],
+    "import": [
+      "import_declaration"
+    ]
+  },
+  "string_contexts": {},
+  "keywords": [
+    "abstract",
+    "assert",
+    "boolean",
+    "break",
+    "byte",
+    "case",
+    "catch",
+    "char",
+    "class",
+    "const",
+    "continue",
+    "default",
+    "do",
+    "double",
+    "else",
+    "enum",
+    "exports",
+    "extends",
+    "final",
+    "finally",
+    "float",
+    "for",
+    "goto",
+    "if",
+    "implements",
+    "import",
+    "instanceof",
+    "int",
+    "interface",
+    "long",
+    "module",
+    "native",
+    "new",
+    "non",
+    "null",
+    "open",
+    "opens",
+    "package",
+    "permits",
+    "private",
+    "protected",
+    "provides",
+    "public",
+    "record",
+    "requires",
+    "return",
+    "sealed",
+    "short",
+    "static",
+    "strictfp",
+    "super",
+    "switch",
+    "synchronized",
+    "this",
+    "throw",
+    "throws",
+    "to",
+    "transient",
+    "transitive",
+    "true",
+    "false",
+    "try",
+    "uses",
+    "var",
+    "void",
+    "volatile",
+    "while",
+    "with",
+    "yield"
+  ],
+  "fixtures": [
+    {
+      "name": "method name",
+      "source": "class Main { void run() { obj.pr<cursor>int(value); } }",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "Main",
+          "run",
+          "obj",
+          "print",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "field",
+      "source": "class Main { void run() { user.na<cursor>me; } }",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "Main",
+          "run",
+          "user",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "type annotation",
+      "source": "class Main { Us<cursor>er user = create; }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "Main",
+          "User",
+          "user",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "generic type",
+      "source": "class Main { List<Us<cursor>er> users; }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "Main",
+          "List",
+          "User",
+          "users"
+        ]
+      }
+    },
+    {
+      "name": "qualified type",
+      "source": "class Main { example.Us<cursor>er user; }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "Main",
+          "example",
+          "User",
+          "user"
+        ]
+      }
+    },
+    {
+      "name": "type bound",
+      "source": "class Main<T extends Us<cursor>er> {}",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "Main",
+          "T",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "import",
+      "source": "import example.user.Us<cursor>er;",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "example",
+          "user",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "static import",
+      "source": "import static example.User.cre<cursor>ate;",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "example",
+          "User",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "call argument neutral",
+      "source": "class Main { void run() { obj.print(val<cursor>ue); } }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "run",
+          "obj",
+          "print",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "nested call argument neutral",
+      "source": "class Main { void run() { obj.print(apply(val<cursor>ue)); } }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "run",
+          "obj",
+          "print",
+          "apply",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "unqualified method neutral",
+      "source": "class Main { void run() { pr<cursor>int(value); } }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "run",
+          "print",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "method receiver neutral",
+      "source": "class Main { void run() { ob<cursor>j.print(value); } }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "run",
+          "obj",
+          "print",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "line comment",
+      "source": "// User<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "block comment",
+      "source": "/* User<cursor> */",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "documentation",
+      "source": "/** User<cursor> */",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "string",
+      "source": "class Main { String message = \"User<cursor>\"; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "String",
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "text block",
+      "source": "class Main { String message = \"\"\"\nUser<cursor>\n\"\"\"; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "character",
+      "source": "class Main { char initial = 'U<cursor>'; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "initial"
+        ]
+      }
+    },
+    {
+      "name": "incomplete member",
+      "source": "class Main { void run() { obj.<cursor> } }",
+      "expect": {
+        "context": "unknown"
+      }
+    },
+    {
+      "name": "line affinity",
+      "source": "class Main { User user = create<cursor>; }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "Main",
+          "User",
+          "user",
+          "create"
+        ],
+        "affinity": {
+          "createUser": 1,
+          "createCat": 0
+        },
+        "ranking": [
+          "createUser",
+          "createCat"
+        ]
+      }
+    },
+    {
+      "name": "member expression inside argument",
+      "source": "class Main { void run() { obj.print(user.na<cursor>me); } }",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "Main",
+          "run",
+          "obj",
+          "print",
+          "user",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "explicit invocation type argument",
+      "source": "class Main { void run() { obj.<Us<cursor>er>print(value); } }",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "Main",
+          "run",
+          "obj",
+          "User",
+          "print",
+          "value"
+        ]
+      }
+    }
+  ]
+}

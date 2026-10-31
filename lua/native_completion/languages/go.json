@@ -1,0 +1,226 @@
+{
+  "$schema": "../../../schemas/native-completion-language.schema.json",
+  "version": 1,
+  "language": "go",
+  "identifier_nodes": [
+    "identifier",
+    "field_identifier",
+    "type_identifier",
+    "package_identifier"
+  ],
+  "comment_nodes": [
+    "comment"
+  ],
+  "string_nodes": [
+    "interpreted_string_literal",
+    "interpreted_string_literal_content",
+    "raw_string_literal",
+    "raw_string_literal_content",
+    "rune_literal"
+  ],
+  "expressions": {
+    "member": [
+      "selector_expression"
+    ],
+    "type": [
+      "type_identifier",
+      "type_arguments",
+      "type_parameter_declaration"
+    ],
+    "import": [
+      "import_spec",
+      "import_declaration"
+    ]
+  },
+  "string_contexts": {
+    "import": [
+      "import_spec",
+      "import_declaration"
+    ]
+  },
+  "keywords": [
+    "break",
+    "default",
+    "func",
+    "interface",
+    "select",
+    "case",
+    "defer",
+    "go",
+    "map",
+    "struct",
+    "chan",
+    "else",
+    "goto",
+    "package",
+    "switch",
+    "const",
+    "fallthrough",
+    "if",
+    "range",
+    "type",
+    "continue",
+    "for",
+    "import",
+    "return",
+    "var"
+  ],
+  "fixtures": [
+    {
+      "name": "member",
+      "source": "package main\nfunc main() { fmt.Pr<cursor>intln() }",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "main",
+          "fmt",
+          "Println"
+        ]
+      }
+    },
+    {
+      "name": "type name",
+      "source": "package main\nvar user Us<cursor>er",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "user",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "generic type argument",
+      "source": "package main\nvar box Box[Us<cursor>er]",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "box",
+          "Box",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "type parameter",
+      "source": "package main\nfunc apply[T an<cursor>y](x T) {}",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "apply",
+          "T",
+          "any",
+          "x",
+          "T"
+        ]
+      }
+    },
+    {
+      "name": "import path",
+      "source": "package main\nimport \"fm<cursor>t\"",
+      "expect": {
+        "context": "import",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "raw import path",
+      "source": "package main\nimport `fm<cursor>t`",
+      "expect": {
+        "context": "import",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "grouped import",
+      "source": "package main\nimport (\n  \"fm<cursor>t\"\n)",
+      "expect": {
+        "context": "import",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "call argument",
+      "source": "package main\nfunc main() { fn(val<cursor>ue) }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "main",
+          "fn",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "comment",
+      "source": "package main\n// User<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "interpreted string",
+      "source": "package main\nvar message = \"User<cursor>\"",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "raw string",
+      "source": "package main\nvar message = `User<cursor>`",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "rune",
+      "source": "package main\nvar value = 'U<cursor>'",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "incomplete member",
+      "source": "package main\nfunc main() { obj.<cursor> }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "main",
+          "obj"
+        ]
+      }
+    },
+    {
+      "name": "line affinity",
+      "source": "package main\nfunc main() { var user User; _ = create<cursor> }",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "main",
+          "user",
+          "User",
+          "_",
+          "create"
+        ],
+        "affinity": {
+          "createUser": 1,
+          "createCat": 0
+        },
+        "ranking": [
+          "createUser",
+          "createCat"
+        ]
+      }
+    }
+  ]
+}

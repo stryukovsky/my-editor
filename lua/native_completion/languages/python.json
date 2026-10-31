@@ -1,0 +1,341 @@
+{
+  "$schema": "../../../schemas/native-completion-language.schema.json",
+  "version": 1,
+  "language": "python",
+  "identifier_nodes": [
+    "identifier"
+  ],
+  "comment_nodes": [
+    "comment"
+  ],
+  "string_nodes": [
+    "string",
+    "string_content",
+    "concatenated_string"
+  ],
+  "expressions": {
+    "member": [
+      {
+        "node": "attribute",
+        "field": "attribute",
+        "unless_ancestor": [
+          "type"
+        ]
+      }
+    ],
+    "type": [
+      "type",
+      "generic_type",
+      "member_type",
+      "union_type"
+    ],
+    "import": [
+      "import_statement",
+      "import_from_statement",
+      "future_import_statement"
+    ]
+  },
+  "string_contexts": {},
+  "keywords": [
+    "false",
+    "none",
+    "true",
+    "and",
+    "as",
+    "assert",
+    "async",
+    "await",
+    "break",
+    "case",
+    "class",
+    "continue",
+    "def",
+    "del",
+    "elif",
+    "else",
+    "except",
+    "finally",
+    "for",
+    "from",
+    "global",
+    "if",
+    "import",
+    "in",
+    "is",
+    "lambda",
+    "match",
+    "nonlocal",
+    "not",
+    "or",
+    "pass",
+    "raise",
+    "return",
+    "try",
+    "type",
+    "while",
+    "with",
+    "yield"
+  ],
+  "fixtures": [
+    {
+      "name": "attribute",
+      "source": "user.na<cursor>me",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "user",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "method",
+      "source": "obj.pr<cursor>int(value)",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "obj",
+          "print",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "type annotation",
+      "source": "user: Us<cursor>er = create",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "user",
+          "User",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "qualified annotation",
+      "source": "user: example.Us<cursor>er = create",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "user",
+          "example",
+          "User",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "generic annotation",
+      "source": "users: list[Us<cursor>er] = create",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "users",
+          "list",
+          "User",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "parameter annotation",
+      "source": "def apply(user: Us<cursor>er):\n    return user",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "apply",
+          "user",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "return annotation",
+      "source": "def apply(user) -> Us<cursor>er:\n    return user",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "apply",
+          "user",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "union annotation",
+      "source": "user: Us<cursor>er | None = create",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "user",
+          "User",
+          "create"
+        ]
+      }
+    },
+    {
+      "name": "import",
+      "source": "import example.us<cursor>er",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "example",
+          "user"
+        ]
+      }
+    },
+    {
+      "name": "from import",
+      "source": "from example.user import Us<cursor>er",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "example",
+          "user",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "relative import",
+      "source": "from .user import Us<cursor>er",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "user",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "aliased import",
+      "source": "import example.user as us<cursor>ers",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "example",
+          "user",
+          "users"
+        ]
+      }
+    },
+    {
+      "name": "call argument",
+      "source": "obj.print(val<cursor>ue)",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "obj",
+          "print",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "subscript neutral",
+      "source": "value = user[na<cursor>me]",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "value",
+          "user",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "comment",
+      "source": "# User<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "string",
+      "source": "message = \"User<cursor>\"",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "docstring",
+      "source": "\"\"\"User<cursor>\"\"\"",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "raw string",
+      "source": "message = r\"User<cursor>\"",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "bytes string",
+      "source": "message = b\"User<cursor>\"",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "f-string text",
+      "source": "message = f\"User<cursor> {user.name}\"",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "f-string expression stays conservative",
+      "source": "message = f\"User {user.na<cursor>me}\"",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "incomplete attribute",
+      "source": "obj.<cursor>",
+      "expect": {
+        "context": "unknown"
+      }
+    },
+    {
+      "name": "line affinity",
+      "source": "user: User = create<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "user",
+          "User",
+          "create"
+        ],
+        "affinity": {
+          "createUser": 1,
+          "createCat": 0
+        },
+        "ranking": [
+          "createUser",
+          "createCat"
+        ]
+      }
+    }
+  ]
+}

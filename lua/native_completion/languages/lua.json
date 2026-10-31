@@ -1,0 +1,175 @@
+{
+  "$schema": "../../../schemas/native-completion-language.schema.json",
+  "version": 1,
+  "language": "lua",
+  "identifier_nodes": [
+    "identifier"
+  ],
+  "comment_nodes": [
+    "comment"
+  ],
+  "string_nodes": [
+    "string",
+    "string_content"
+  ],
+  "expressions": {
+    "method": [
+      "method_index_expression"
+    ],
+    "member": [
+      "dot_index_expression"
+    ]
+  },
+  "string_contexts": {},
+  "keywords": [
+    "and",
+    "break",
+    "do",
+    "else",
+    "elseif",
+    "end",
+    "false",
+    "for",
+    "function",
+    "goto",
+    "if",
+    "in",
+    "local",
+    "nil",
+    "not",
+    "or",
+    "repeat",
+    "return",
+    "then",
+    "true",
+    "until",
+    "while",
+    "as",
+    "async",
+    "await",
+    "class",
+    "const",
+    "declare",
+    "default",
+    "enum",
+    "export",
+    "extends",
+    "from",
+    "implements",
+    "import",
+    "infer",
+    "interface",
+    "is",
+    "keyof",
+    "let",
+    "namespace",
+    "new",
+    "null",
+    "of",
+    "private",
+    "protected",
+    "public",
+    "readonly",
+    "static",
+    "super",
+    "switch",
+    "this",
+    "throw",
+    "try",
+    "type",
+    "typeof",
+    "undefined",
+    "var",
+    "void",
+    "yield"
+  ],
+  "fixtures": [
+    {
+      "name": "method",
+      "source": "obj:pr<cursor>int()",
+      "expect": {
+        "context": "method",
+        "identifiers": [
+          "obj",
+          "print"
+        ]
+      }
+    },
+    {
+      "name": "member",
+      "source": "obj.pr<cursor>int()",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "obj",
+          "print"
+        ]
+      }
+    },
+    {
+      "name": "call argument",
+      "source": "fn(val<cursor>ue)",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "fn",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "comment",
+      "source": "-- User<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "string",
+      "source": "local message = \"User<cursor>\"",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "incomplete member",
+      "source": "obj.<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "incomplete method",
+      "source": "obj:<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "line affinity",
+      "source": "local user = User(create<cursor>)",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "user",
+          "User",
+          "create"
+        ],
+        "affinity": {
+          "createUser": 1,
+          "createCat": 0
+        },
+        "ranking": [
+          "createUser",
+          "createCat"
+        ]
+      }
+    }
+  ]
+}

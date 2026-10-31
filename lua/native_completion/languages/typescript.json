@@ -1,0 +1,232 @@
+{
+  "$schema": "../../../schemas/native-completion-language.schema.json",
+  "version": 1,
+  "language": "typescript",
+  "identifier_nodes": [
+    "identifier",
+    "property_identifier",
+    "type_identifier"
+  ],
+  "comment_nodes": [
+    "comment"
+  ],
+  "string_nodes": [
+    "string",
+    "string_fragment",
+    "template_string"
+  ],
+  "expressions": {
+    "type": [
+      "type_annotation",
+      "type_arguments",
+      "type_parameter"
+    ],
+    "member": [
+      "member_expression"
+    ],
+    "import": [
+      "import_statement"
+    ]
+  },
+  "string_contexts": {
+    "import": [
+      "import_statement",
+      "export_statement"
+    ]
+  },
+  "keywords": [
+    "and",
+    "break",
+    "do",
+    "else",
+    "elseif",
+    "end",
+    "false",
+    "for",
+    "function",
+    "goto",
+    "if",
+    "in",
+    "local",
+    "nil",
+    "not",
+    "or",
+    "repeat",
+    "return",
+    "then",
+    "true",
+    "until",
+    "while",
+    "as",
+    "async",
+    "await",
+    "class",
+    "const",
+    "declare",
+    "default",
+    "enum",
+    "export",
+    "extends",
+    "from",
+    "implements",
+    "import",
+    "infer",
+    "interface",
+    "is",
+    "keyof",
+    "let",
+    "namespace",
+    "new",
+    "null",
+    "of",
+    "private",
+    "protected",
+    "public",
+    "readonly",
+    "static",
+    "super",
+    "switch",
+    "this",
+    "throw",
+    "try",
+    "type",
+    "typeof",
+    "undefined",
+    "var",
+    "void",
+    "yield"
+  ],
+  "fixtures": [
+    {
+      "name": "type annotation",
+      "source": "let x: Us<cursor>er;",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "x",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "type argument",
+      "source": "fn<Us<cursor>er>();",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "fn",
+          "User"
+        ]
+      }
+    },
+    {
+      "name": "type parameter",
+      "source": "function fn<T<cursor>>() {}",
+      "expect": {
+        "context": "type",
+        "identifiers": [
+          "fn",
+          "T"
+        ]
+      }
+    },
+    {
+      "name": "member",
+      "source": "obj.pr<cursor>int()",
+      "expect": {
+        "context": "member",
+        "identifiers": [
+          "obj",
+          "print"
+        ]
+      }
+    },
+    {
+      "name": "import",
+      "source": "import x from \"us<cursor>er\"",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "x"
+        ]
+      }
+    },
+    {
+      "name": "re-export path",
+      "source": "export { x } from \"us<cursor>er\"",
+      "expect": {
+        "context": "import",
+        "identifiers": [
+          "x"
+        ]
+      }
+    },
+    {
+      "name": "call argument",
+      "source": "fn(val<cursor>ue)",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "fn",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "comment",
+      "source": "// User<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "string",
+      "source": "const x = \"User<cursor>\"",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "x"
+        ]
+      }
+    },
+    {
+      "name": "template string",
+      "source": "const x = `User<cursor>`",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "x"
+        ]
+      }
+    },
+    {
+      "name": "incomplete member",
+      "source": "obj.<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": []
+      }
+    },
+    {
+      "name": "line affinity",
+      "source": "const user: User = create<cursor>",
+      "expect": {
+        "context": "unknown",
+        "identifiers": [
+          "user",
+          "User",
+          "create"
+        ],
+        "affinity": {
+          "createUser": 1,
+          "createCat": 0
+        },
+        "ranking": [
+          "createUser",
+          "createCat"
+        ]
+      }
+    }
+  ]
+}
