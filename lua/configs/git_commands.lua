@@ -151,12 +151,12 @@ function M.stash_pop(state)
   command(state, { "stash", "pop" }, action("stash_pop", "Applying stash…", "Stash applied", "Could not apply stash"))
 end
 
-local function input_command(state, prompt, args, info, default)
+local function input_command(state, prompt, args, info, default, filetype)
   local cwd = root(state)
   if not cwd then
     return
   end
-  vim.ui.input({ prompt = prompt, default = default }, function(value)
+  vim.ui.input({ prompt = prompt, default = default, filetype = filetype, cwd = cwd }, function(value)
     if not value or vim.trim(value) == "" then
       return
     end
@@ -195,7 +195,14 @@ function M.branch_rename(state)
 end
 
 function M.commit(state)
-  input_command(state, "Commit message: ", { "commit", "-m" }, action("commit", "Committing…", "Committed: ", "Commit failed"))
+  input_command(
+    state,
+    "Commit message: ",
+    { "commit", "-m" },
+    action("commit", "Committing…", "Committed: ", "Commit failed"),
+    nil,
+    "gitcommit"
+  )
 end
 
 function M.checkpoint(state)

@@ -123,6 +123,10 @@ local function restore_mode(mode)
 end
 
 ---Float input. `opts.on_input(value)` runs on each edit, before confirm.
+---`opts.filetype`: nonempty filetype opts into native completion and FileType hooks.
+---Omitted/empty filetype keeps completion off. `opts.cwd` supplies Git context.
+---@param opts { prompt?: string, default?: string, filetype?: string, cwd?: string, on_input?: function, virtual_text_mode?: string }
+---@param on_confirm fun(value: string|nil)
 ---`opts.virtual_text_mode = "slash_search"`: `on_input` may return a match
 ---count (and `true` when that count is capped). The float draws `found: N`
 ---beside the text, including while insert mode is active.
@@ -136,6 +140,10 @@ function M.setup()
     local prev_view = vim.fn.winsaveview()
     local prompt = opts.prompt or "Input"
     local default = opts.default == nil and "" or tostring(opts.default)
+    local filetype = opts.filetype or ""
+    vim.validate("filetype", filetype, "string")
+    local completion = filetype ~= ""
+    local cwd = opts.cwd or vim.fn.getcwd()
     local max_width = math.max(1, vim.o.columns - 4)
     local preferred = math.floor(vim.o.columns * 0.6)
     local width =
@@ -151,7 +159,8 @@ function M.setup()
     vim.bo[buffer].buftype = "nofile"
     vim.bo[buffer].swapfile = false
     -- Native completion respects this flag on InsertEnter.
-    vim.b[buffer].completion = false
+    vim.b[buffer].input_completion = completion
+    vim.b[buffer].completion = completion
     vim.api.nvim_buf_set_lines(buffer, 0, -1, false, { default })
 
     local window = vim.api.nvim_open_win(buffer, true, {
@@ -259,7 +268,51 @@ function M.setup()
         finish(vim.api.nvim_get_current_line())
       end,
       cancel = cancel,
+      submit_modes = completion and "n" or { "i", "n" },
     })
+
+    if completion then
+      map({ "i", "s" }, "<CR>", function()
+        if
+          vim.fn.pumvisible() == 1
+          and vim.fn.complete_info({ "selected" }).selected >= 0
+        then
+          return "<C-y>"
+        end
+        vim.schedule(function()
+          if not completed and vim.api.nvim_win_is_valid(window) then
+            finish(vim.api.nvim_buf_get_lines(buffer, 0, 1, false)[1] or "")
+          end
+        end)
+        return vim.fn.pumvisible() == 1 and "<C-e>" or ""
+      end, {
+        buffer = buffer,
+        expr = true,
+        desc = "Accept completion or submit input",
+      })
+      for key, direction in pairs { ["<Tab>"] = 1, ["<S-Tab>"] = -1 } do
+        map({ "i", "s" }, key, function()
+          if vim.snippet.active { direction = direction } then
+            vim.schedule(function()
+              vim.snippet.jump(direction)
+            end)
+            return ""
+          end
+          return key
+        end, {
+          buffer = buffer,
+          expr = true,
+          desc = "Jump input snippet placeholder",
+        })
+      end
+      vim.bo[buffer].filetype = filetype
+      -- Filetype formatting must not wrap a one-line input into hidden lines.
+      vim.bo[buffer].textwidth = 0
+      vim.bo[buffer].formatoptions = ""
+      if filetype == "gitcommit" then
+        require("configs.input_completion").setup(buffer, cwd)
+      end
+    end
 
     local virtual_text_mode = opts.virtual_text_mode
     if

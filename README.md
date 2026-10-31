@@ -336,3 +336,24 @@ file copy replaces it. Sources must still exist when pasting.
 moves its entries on paste. After it is pasted or cleared, `p` uses the shared
 copy selection again. Destination selection and name-conflict prompts follow
 Neo-tree's usual behavior.
+
+## Typed floating input
+
+`vim.ui.input` (also `vim.input`) accepts an optional `filetype`. Omit it or
+pass `""` to keep ordinary prompts free of autocomplete. A nonempty value sets
+the buffer filetype, runs its FileType hooks, and enables native completion;
+Tree-sitter/LSP support still depends on the installed parser/server.
+
+```lua
+vim.ui.input({ prompt = "Commit message: ", filetype = "gitcommit", cwd = vim.fn.getcwd() }, function(value)
+  -- nil means cancelled; otherwise value is the confirmed message.
+end)
+```
+
+The commit action uses this automatically. Git commit inputs offer the current
+branch (from the supplied repository `cwd`) and installed `gitcommit` snippet
+prefixes such as `feat`, `fix`, and `chore`. Templates expand their first line
+only, preserving the single-line prompt. Enter accepts a selected suggestion;
+press Enter again to submit. Tab/Shift-Tab move through snippet placeholders.
+Ctrl-Space opens completion manually. Detached HEAD/non-Git directories omit
+the branch suggestion. Filetype/Tree-sitter alone do not generate Git suggestions.

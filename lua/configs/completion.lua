@@ -17,6 +17,9 @@ function _G.NativeExtraComplete(findstart, base)
   if vim.b.terminal_command then
     return require("terminal_command.native").complete(findstart, base)
   end
+  if vim.b.input_completion and vim.bo.filetype == "gitcommit" then
+    return require("configs.input_completion").complete(findstart, base)
+  end
   return findstart == 1 and -3 or {}
 end
 
@@ -64,12 +67,18 @@ local function refresh()
   local floating = vim.api.nvim_win_get_config(0).relative ~= ""
   local disabled = vim.b.completion == false
     or vim.bo.buftype == "prompt"
-    or (vim.bo.buftype ~= "" and not vim.b.terminal_command)
+    or (
+      vim.bo.buftype ~= ""
+      and not vim.b.terminal_command
+      and not vim.b.input_completion
+    )
   local lsp_completion = not vim.b.terminal_command
     and #vim.lsp.get_clients { bufnr = 0, method = "textDocument/completion" }
       > 0
   vim.opt_local.autocomplete = not disabled and not lsp_completion
-  vim.opt_local.complete = vim.b.terminal_command and { "F", ".", "w", "b" }
+  local input_source = vim.b.input_completion and vim.bo.filetype == "gitcommit"
+  vim.opt_local.complete = input_source and { "F" }
+    or vim.b.terminal_command and { "F", ".", "w", "b" }
     or { ".", "w", "b" }
   vim.opt_local.completeopt = floating
       and { "menu", "menuone", "noselect", "fuzzy", "nosort" }
