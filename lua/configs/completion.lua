@@ -206,18 +206,20 @@ function M.setup_mappings()
     silent = true,
     desc = "Accept selected completion or insert newline",
   })
-  map(
-    "i",
-    "<C-CR>",
-    function()
-      if vim.fn.pumvisible() == 0 then
-        return ""
-      end
-      local selected = vim.fn.complete_info({ "selected" }).selected
-      return selected < 0 and "<C-n><C-y>" or "<C-y>"
-    end,
-    { expr = true, silent = true, desc = "Accept selected or first completion" }
-  )
+  for _, key in ipairs { "<C-CR>", "<A-CR>" } do
+    map(
+      "i",
+      key,
+      function()
+        if vim.fn.pumvisible() == 0 then
+          return ""
+        end
+        local selected = vim.fn.complete_info({ "selected" }).selected
+        return selected < 0 and "<C-n><C-y>" or "<C-y>"
+      end,
+      { expr = true, silent = true, desc = "Accept selected or first completion" }
+    )
+  end
   for key, direction in pairs {
     ["<C-j>"] = "<C-n>",
     ["<Down>"] = "<C-n>",

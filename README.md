@@ -396,7 +396,7 @@ The existing wheat palette and rounded opaque popup are retained.
 In ordinary enabled editing buffers, `<C-x><C-n>` cancels an open LSP selection
 and starts current/window/loaded-buffer word completion. `<C-Space>` requests
 LSP/manual completion; Enter accepts a selected item and otherwise inserts a
-newline. Ctrl-Enter accepts the selected or first item. Automatic fallback after
+newline. Ctrl-Enter or Alt-Enter accepts the selected or first item. Automatic fallback after
 an empty LSP response is intentionally not enabled. Floating input opts into
 completion through its `filetype`; terminal command completion keeps its sources.
 
