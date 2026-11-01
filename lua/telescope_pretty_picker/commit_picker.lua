@@ -57,41 +57,6 @@ local function git_checkout(prompt_bufnr)
   end
 end
 
----@param mode "--mixed"|"--soft"|"--hard"
----@return fun(prompt_bufnr: integer)
-local function git_reset(mode)
-  local label = mode:sub(3)
-  return function(prompt_bufnr)
-    local selection, cwd = selected(prompt_bufnr)
-    if not selection then
-      return
-    end
-    local question = string.format(
-      "Do you really want to %s reset to %s?",
-      label,
-      selection.value
-    )
-    if not commons.confirmed(question) then
-      tell "action canceled"
-      return
-    end
-    actions.close(prompt_bufnr)
-    local _, err = git.run({ "reset", mode, selection.value }, cwd)
-    if not err then
-      tell(string.format("Reset to: '%s'", selection.value))
-    else
-      tell(
-        string.format(
-          "Error when resetting to: %s. Git returned: '%s'",
-          selection.value,
-          err
-        ),
-        vim.log.levels.ERROR
-      )
-    end
-  end
-end
-
 -- These actions change only HEAD; selecting an older row must never discard
 -- the commits above it.
 local function selected_head(prompt_bufnr)
@@ -312,13 +277,11 @@ local function pretty_git_commit_picker(opts)
         end
         -- override mappings of telescope only this way :(
         map("n", "<cr>", wrap_telescope_action(git_checkout))
-        map("n", "m", wrap_telescope_action(git_reset "--mixed"))
         map("n", "a", wrap_telescope_action(git_rename))
         map("n", "r", wrap_telescope_action(git_rename))
         map("n", "x", wrap_telescope_action(git_undo(false)))
         map("n", "u", wrap_telescope_action(git_undo(false)))
         map("n", "s", wrap_telescope_action(git_undo(true)))
-        map("n", "h", wrap_telescope_action(git_reset "--hard"))
         return true
       end,
     })

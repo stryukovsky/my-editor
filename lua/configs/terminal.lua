@@ -139,6 +139,7 @@ end
 ---@param buf integer
 ---@param name? string fallback label before a process is detected
 function M.show(buf, name)
+  vim.bo[buf].bufhidden = "hide"
   vim.bo[buf].buflisted = true
   vim.api.nvim_set_current_buf(buf)
   vim.cmd.BufferPin()

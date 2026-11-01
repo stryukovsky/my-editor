@@ -12,10 +12,8 @@ local notify = require "configs.notify"
 local git_actions = require "configs.git_commands"
 local script = require "utils.script"
 
-local open_files_do_not_replace_types = vim.list_extend(
-  { "terminal" },
-  require "utils.technical_ui_filetypes"
-)
+-- Reuse terminal windows; the terminal stays available in the buffer bar.
+local open_files_do_not_replace_types = require "utils.technical_ui_filetypes"
 
 local function telescope_scope_opts(path)
   local relative_path = vim.fn.fnamemodify(path, ":.")
