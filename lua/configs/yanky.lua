@@ -31,7 +31,7 @@ yanky.setup {
   highlight = {
     on_put = false,
     on_yank = false,
-    timer = 100
+    timer = 100,
   },
 }
 
@@ -39,11 +39,6 @@ vim.api.nvim_create_autocmd("TextYankPost", {
   desc = "Highlight when yanking (copying) text",
   group = vim.api.nvim_create_augroup("highlight-yank", {} --[[ { clear = true } ]]),
   callback = function()
-    local ok, mc = pcall(require, "multicursor-nvim")
-    if ok and mc.hasCursors() then
-      -- Skip highlight when multicursor is active
-      return
-    end
     vim.highlight.on_yank {
       higroup = "IncSearch",
       timeout = 600,

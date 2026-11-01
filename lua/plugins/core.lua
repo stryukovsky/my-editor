@@ -106,10 +106,6 @@ return {
     "numToStr/Comment.nvim",
   },
   { "gbprod/yanky.nvim" },
-  {
-    "jake-stewart/multicursor.nvim",
-    branch = "1.0",
-  },
   { "johmsalas/text-case.nvim" },
   {
     "stryukovsky/render-markdown.nvim",

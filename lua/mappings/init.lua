@@ -44,7 +44,9 @@ require "mappings.ui-components"
 require "mappings.search"
 require "mappings.minidiff"
 require "mappings.yank_position"
-require "mappings.multicursor"
+if vim.fn.has "nvim-0.13" == 1 then
+  require "mappings.multicursors-native"
+end
 require "mappings.navigation"
 require "mappings.projects"
 require "mappings.tine-code-action"

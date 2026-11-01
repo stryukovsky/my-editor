@@ -1,5 +1,4 @@
 require "configs.telescope"
-require("multicursor-nvim").setup()
 require "configs.comment"
 require("todo-comments").setup()
 require("log-highlight").setup {}

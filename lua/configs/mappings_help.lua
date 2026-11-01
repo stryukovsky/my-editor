@@ -94,7 +94,7 @@ local SECTIONS = {
     title = "Macros",
     items = {
       { "<leader>q", "Macro: toggle recording @q" },
-      { "Q", "Macro: play @q (supports count)" },
+      { vim.fn.has "nvim-0.13" == 1 and "<leader>Q" or "Q", "Macro: play @q (supports count)" },
       { "q", "Macro: bare recording disabled" },
     },
   },

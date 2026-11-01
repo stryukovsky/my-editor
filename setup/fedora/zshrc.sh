@@ -107,18 +107,6 @@ function vpn() {
     vpn_on_hiddify 
 }
 
-function cursor() {
-    vpn_on_hiddify && caveman run -- cursor-agent
-}
-
-function opencode() {
-    vpn_on_hiddify && ~/.opencode/bin/opencode2
-}
-
-function codx() {
-    vpn_on_hiddify && ~/.local/bin/codex -a never
-}
-
 function vpn_off_hiddify() {
     unset http_proxy
     unset https_proxy
@@ -131,10 +119,32 @@ alias activ="source .venv/bin/activate"
 export COURSIER_BIN_DIR="$HOME/Tools/coursier/bin"
 export PATH="$COURSIER_BIN_DIR:$PATH"
 
-alias nvim="~/.config/nvim/bin/nvim.appimage"
-alias vim="~/.config/nvim/bin/nvim.appimage"
+# Prefer the nightly build, falling back to the configured AppImage.
+unalias nvim vim 2>/dev/null
+function nvim() {
+    if [[ -x /usr/local/bin/nvim ]]; then
+        /usr/local/bin/nvim "$@"
+    else
+        "$HOME/.config/nvim/bin/nvim.appimage" "$@"
+    fi
+}
+
+function vim() {
+    nvim "$@"
+}
 
 export PATH="~/.config/nvim/bin:$PATH"
+function cursor() {
+    vpn_on_hiddify && caveman run -- cursor-agent
+}
+
+function opencode() {
+    vpn_on_hiddify && ~/.opencode/bin/opencode2
+}
+
+function codx() {
+    vpn_on_hiddify && ~/.local/bin/codex -a never
+}
 
 # Pick an installed app. The launch command is left on the prompt; Enter runs it here.
 runapp() {
@@ -143,29 +153,28 @@ runapp() {
   [[ -n $cmd ]] && print -z -- "$cmd"
 }
 
-
-killport() {
-  if [[ $# != 1 || ! $1 =~ ^[0-9]{1,5}$ ]] || (( 10#$1 < 1 || 10#$1 > 65535 )); then
-    printf '%s\n' "Usage: killport <port>" >&2
-    return 1
-  fi
-
-  local -a pids
-  local pid
-  pids=()
-  while IFS= read -r pid; do
-    [[ -n $pid ]] && pids+=("$pid")
-  done < <(lsof -tiTCP:"$1" -sTCP:LISTEN)
-  if (( ! ${#pids[@]} )); then
-    printf 'No process listening on port %s\n' "$1"
-    return 0
-  fi
-
-  kill -- "${pids[@]}"
-}
-
 # Guarantee global git hooks stay disabled in every new shell
 git config --global core.hooksPath /dev/null
 export GIT_CONFIG_COUNT=1
 export GIT_CONFIG_KEY_0=core.hooksPath
 export GIT_CONFIG_VALUE_0=/dev/null
+
+killport() {
+  if [[ $# != 1 || $1 != <1-65535> ]]; then
+    print -u2 "Usage: killport <port>"
+    return 1
+  fi
+
+  local -a pids
+  pids=("${(@f)$(lsof -tiTCP:"$1" -sTCP:LISTEN)}")
+  pids=(${pids:#})
+  if (( ! ${#pids} )); then
+    print "No process listening on port $1"
+    return 0
+  fi
+ 
+  kill -- "${pids[@]}"
+}
+
+# Edit pending commands in the parent Neovim instance.
+[[ -r "$HOME/.config/nvim/setup/zsh/command-editor.zsh" ]] && source "$HOME/.config/nvim/setup/zsh/command-editor.zsh"
