@@ -87,16 +87,5 @@ local function open_errors()
   open_scratch { name = "session-errors", filetype = "log", lines = lines }
 end
 
-map("n", "<leader>logv", function()
-  vim.ui.select(
-    { "Notifications", "Errors" },
-    { prompt = "View logs" },
-    function(choice)
-      if choice == "Notifications" then
-        open_history()
-      elseif choice == "Errors" then
-        open_errors()
-      end
-    end
-  )
-end, { desc = "Logs: view notifications or errors" })
+map("n", "<leader>logn", open_history, { desc = "Logs: notifications" })
+map("n", "<leader>loge", open_errors, { desc = "Logs: errors" })

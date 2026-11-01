@@ -12,7 +12,10 @@ local notify = require "configs.notify"
 local git_actions = require "configs.git_commands"
 local script = require "utils.script"
 
-local open_files_do_not_replace_types = require "utils.technical_ui_filetypes"
+local open_files_do_not_replace_types = vim.list_extend(
+  { "terminal" },
+  require "utils.technical_ui_filetypes"
+)
 
 local function telescope_scope_opts(path)
   local relative_path = vim.fn.fnamemodify(path, ":.")
@@ -38,13 +41,14 @@ end
 
 local function add_to_gitignore(state)
   local node = state.tree:get_node()
-  if not node or not node:get_id() then
+  local node_path = node and (node.path or node:get_id())
+  if not node_path or node.type == "message" or node_path:match "^git_status:" then
     notify.send("Neo-tree", "Select a file or directory to ignore", vim.log.levels.WARN)
     return
   end
 
   local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":p"):gsub("/$", "")
-  local path = vim.fn.fnamemodify(node:get_id(), ":p"):gsub("/$", "")
+  local path = vim.fn.fnamemodify(node_path, ":p"):gsub("/$", "")
   local prefix = cwd .. "/"
   if path:sub(1, #prefix) ~= prefix then
     notify.send("Neo-tree", "Selected path is outside the current working directory", vim.log.levels.WARN)
@@ -75,6 +79,8 @@ local function add_to_gitignore(state)
 
   if found then
     vim.fn.writefile(updated_lines, gitignore)
+    local events = require "neo-tree.events"
+    events.fire_event(events.GIT_EVENT)
     notify.send("Neo-tree", "Removed from .gitignore: " .. entry)
     return
   end
@@ -91,6 +97,8 @@ local function add_to_gitignore(state)
 
   table.insert(lines, entry)
   vim.fn.writefile(lines, gitignore)
+  local events = require "neo-tree.events"
+  events.fire_event(events.GIT_EVENT)
   notify.send("Neo-tree", "Added to .gitignore: " .. entry)
 end
 
@@ -469,6 +477,7 @@ local config = {
         ["C"] = "close_all_nodes",
         ["h"] = "toggle_node",
         ["l"] = "open",
+        ["I"] = add_to_gitignore,
         ["S"] = "git_add_all",
         ["s"] = "git_add_file",
         ["u"] = "git_unstage_file",

@@ -1,6 +1,7 @@
 ---@diagnostic disable-next-line: missing-fields
 require("neotest").setup {
   adapters = {
+    require "neotest-forge",
     require "neotest-golang",
     require "rustaceanvim.neotest",
     require "neotest-python",

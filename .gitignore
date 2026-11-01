@@ -22,3 +22,5 @@ wget/.wget-hsts
 nautilus/tags/meta.db
 bin/lazydocker
 bin/mermaid-ascii
+bin/tee
+bin/xxd

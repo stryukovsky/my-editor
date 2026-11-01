@@ -52,7 +52,8 @@ local SECTIONS = {
       { "<A-t>", "test summary" },
       { "<A-T>", "test output" },
       { "<leader>th", "colorscheme" },
-      { "<leader>logv", "notification/error log picker" },
+      { "<leader>logn", "notification log" },
+      { "<leader>loge", "error log" },
     },
   },
 
