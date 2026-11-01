@@ -539,4 +539,5 @@ local config = {
   },
 }
 
+require("configs.neotree_git_groups").setup()
 require("neo-tree").setup(config)

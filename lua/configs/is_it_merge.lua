@@ -67,10 +67,10 @@ end
 
 ---@param stdout string
 ---@return integer
-local function parse_rg_counts(stdout)
+local function count_unmerged_files(stdout)
   local n = 0
-  for line in vim.gsplit(stdout, "\n", { plain = true, trimempty = true }) do
-    n = n + (tonumber(line) or 0)
+  for _ in stdout:gmatch "[^%z]+" do
+    n = n + 1
   end
   return n
 end
@@ -105,11 +105,11 @@ local function poll()
   poll_gen = poll_gen + 1
   local gen = poll_gen
   vim.system({
-    "rg",
-    "--count-matches",
-    "--no-filename",
-    "^>>>>>>>",
-    ".",
+    "git",
+    "diff",
+    "--name-only",
+    "--diff-filter=U",
+    "-z",
   }, { cwd = git_root, text = true }, function(result)
     vim.schedule(function()
       if gen ~= poll_gen then
@@ -117,11 +117,15 @@ local function poll()
       end
       local conflicts = 0
       if result.code == 0 then
-        conflicts = parse_rg_counts(result.stdout or "")
+        conflicts = count_unmerged_files(result.stdout or "")
       elseif result.code ~= 1 then
         conflicts = 0
       end
       set_status(format_status(op, conflicts))
+      vim.api.nvim_exec_autocmds(
+        "User",
+        { pattern = "GitWorktreeChanged", modeline = false }
+      )
     end)
   end)
 end
@@ -135,7 +139,8 @@ local function resolve_git_dir()
   git_root = select(1, gitutils.root(dir))
   git_dir = nil
   if git_root then
-    local out = select(1, gitutils.run({ "rev-parse", "--absolute-git-dir" }, git_root))
+    local out =
+      select(1, gitutils.run({ "rev-parse", "--absolute-git-dir" }, git_root))
     if out and vim.trim(out) ~= "" then
       git_dir = vim.fs.normalize(vim.trim(out))
     end

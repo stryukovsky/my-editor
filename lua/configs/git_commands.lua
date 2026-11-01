@@ -37,6 +37,7 @@ local function refresh(cwd)
     events.fire_event(events.GIT_EVENT)
   end
   vim.cmd "checktime"
+  vim.api.nvim_exec_autocmds("User", { pattern = "GitWorktreeChanged", modeline = false })
   local fetch = package.loaded["configs.periodic-git-fetch"]
   if fetch then
     fetch.refresh_sync_state(cwd, true)

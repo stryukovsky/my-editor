@@ -178,3 +178,5 @@ killport() {
 
 # Edit pending commands in the parent Neovim instance.
 [[ -r "$HOME/.config/nvim/setup/zsh/command-editor.zsh" ]] && source "$HOME/.config/nvim/setup/zsh/command-editor.zsh"
+
+export SUDO_EDITOR=nvim

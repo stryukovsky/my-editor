@@ -29,7 +29,6 @@ MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-languag
 
 JDTLS NEEDS VPN!!!
 
-
 # Fedora / Asahi Fedora linux:
 
 Important stuff with root password
@@ -94,51 +93,68 @@ password
 
 ## Updating Fedora and development tools
 
-Run as your normal user (the script uses sudo only for DNF):
+Each update unit has a Python script in
+[`setup/fedora/update/`](setup/fedora/update/). Scripts print the prepared Bash
+commands by default. Add `--run` to print and execute them. Run as your normal
+user; DNF commands use sudo.
 
 ```sh
-~/.config/nvim/setup/fedora/update.sh --dry-run
-~/.config/nvim/setup/fedora/update.sh
-# If RPM Fusion metalink requests time out, bypass them for this run:
-~/.config/nvim/setup/fedora/update.sh --rpmfusion-direct system
-# Select only some groups:
-~/.config/nvim/setup/fedora/update.sh node rust foundry python
+# Preview all updaters, separated by ====== RUN <script>.py ======:
+python3 ~/.config/nvim/setup/fedora/update/update-all.py
+# Execute all updaters:
+python3 ~/.config/nvim/setup/fedora/update/update-all.py --run
+
+# Preview each repository group independently:
+python3 ~/.config/nvim/setup/fedora/update/update-fedora-core.py
+python3 ~/.config/nvim/setup/fedora/update/update-rpmfusion.py
+python3 ~/.config/nvim/setup/fedora/update/update-external-copr.py
+
+# Execute a selected update:
+python3 ~/.config/nvim/setup/fedora/update/update-fedora-core.py --run
+python3 ~/.config/nvim/setup/fedora/update/update-node.py --run
 ```
 
-`--rpmfusion-direct` uses the Yandex RPM Fusion mirror through temporary DNF
-overrides, preserving enabled repositories and GPG checks. It does not edit
-`/etc/yum.repos.d/`. The `country=RU` metalink setting above only filters the
-returned mirrors; fetching the metalink itself still requires mirrors.rpmfusion.org.
+The three repository scripts partition DNF's effective enabled repositories:
+Fedora (`fedora`, `updates`, their variants, and `rawhide`), RPM Fusion
+(`rpmfusion-*`), and all remaining external/COPR repositories. Each command
+restricts DNF to its selected repositories. Disabled repositories stay disabled;
+configured mirrors and signature checks are preserved. Cross-repository
+dependencies may require updating another group first.
 
-Groups: `system`, `flatpak`, `node`, `rust`, `foundry`, `python`, `jvm`,
-`shell`, `go`. With no groups, all detected groups run. Missing tools are skipped;
-failed updates are reported at the end with a nonzero exit status. DNF, Flatpak,
-and SDKMAN retain their confirmation prompts. Dry run prints actions without
-updating or downloading anything; shell-function actions are named in its output.
+Available units (each named `update-<unit>.py`):
 
-- DNF updates RPM-managed apps and Go itself; Flatpak updates both user and system installations.
-- nvm updates itself, then the **default Node major** (not every installed Node),
-  migrates its globals, updates compatible npm, and runs `npm update -g`.
-  Old Node versions remain available. Global npm dependencies retain semver limits.
-- rustup updates itself and installed tracking toolchains/components. It does
-  **not** update Cargo-installed applications or override project toolchain pins.
-- foundryup updates itself and installs **stable** Forge/Cast/Anvil/Chisel,
-  switching away from a nightly or custom build if one was selected.
-- uv updates itself and `uv tool` environments; pipx tools update if pipx exists.
-  Project virtual environments and managed Python interpreters are unchanged.
-- SDKMAN updates itself and metadata, then offers SDK upgrades. Check prompts:
-  Java, Gradle, and sbt upgrades can cross major versions. Coursier updates its apps.
-- Oh My Zsh updates explicitly (automatic updates are disabled in this config).
-- Go applications in `$GOBIN` or `$GOPATH/bin` are rebuilt at `@latest` using
-  embedded package paths, including lazygit, lazydocker, and abigen on this machine.
+| Units                                       | What they update                                                                        |
+| ------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `fedora-core`, `rpmfusion`, `external-copr` | The three enabled repository groups                                                     |
+| `flatpak-user`, `flatpak-system`            | User or system Flatpak apps and runtimes                                                |
+| `nvm`                                       | Existing Git-based nvm installation; resolves the latest release tag during preparation |
+| `node`                                      | Default Node major, migrating global packages; preserves old Node versions              |
+| `npm`                                       | Compatible npm and global packages for the default Node version                         |
+| `rustup`, `rust`                            | rustup itself or installed Rust toolchains/components                                   |
+| `foundryup`, `foundry`                      | foundryup itself or the stable Foundry toolchain                                        |
+| `uv`, `uv-tools`                            | Standalone uv or tools installed by uv                                                  |
+| `sdkman`, `coursier`                        | SDKMAN and SDKs, or Coursier applications                                               |
+| `oh-my-zsh`                                 | Oh My Zsh                                                                               |
+| `go`                                        | Applications in `$GOBIN` or the first `$GOPATH/bin`, rebuilt at `@latest`               |
+
+Preparation only reads installation metadata (and remote Git tags for nvm).
+Missing tools report an error. `--run` stops on the first failed command and
+returns its exit status. DNF, Flatpak and SDKMAN keep their confirmation
+prompts; SDK upgrades can cross major versions. For Node, run `nvm`, `node`,
+then `npm`. For other self-updating managers, update the manager before its
+tools. `update-all.py` orders repository and manager updates first, continues
+after individual updater failures, and reports failures with a nonzero exit
+status. With `--run`, each updater prints `OK` on success. Failures retain full
+command output and report the failing command and exit status; preparation
+failures show both captured output streams. Interactive prompts remain visible.
 
 Other installations found on this machine need separate update policies:
 
 - Cargo apps: bulloak, cryo_cli, cargo-build-sbf, plus Git-installed avm and
   move-analyzer. Rustup does not update these. Review versions and source refs
   before reinstalling; avm is currently installed from an explicit Anchor tag.
-- Solana/Agave, Anchor managed by avm, Aptos, and Surfpool: update explicitly for
-  the project/network version you need.
+- Solana/Agave, Anchor managed by avm, Aptos, and Surfpool: update explicitly
+  for the project/network version you need.
 - Standalone AI tools (Claude, Codex, Cursor Agent, OpenCode), Neovim AppImage,
   other AppImages, and manually unpacked tools are outside these managers.
   npm/uv updates only cover tools actually installed through those managers.
@@ -151,7 +167,6 @@ Updater references: [nvm](https://github.com/nvm-sh/nvm),
 [uv](https://docs.astral.sh/uv/getting-started/installation/),
 [SDKMAN](https://sdkman.io/usage/), and
 [Coursier](https://get-coursier.io/docs/cli-install).
-
 
 ## Debugger for java
 
@@ -205,9 +220,8 @@ Install plugins
 - https://extensions.gnome.org/extension/7048/rounded-window-corners-reborn/
 - https://extensions.gnome.org/extension/4559/quick-lang-switch/
 - https://extensions.gnome.org/extension/3193/blur-my-shell/
-- https://extensions.gnome.org/extension/19/user-themes/
-  After installed, configure it:
-
+- https://extensions.gnome.org/extension/19/user-themes/ After installed,
+  configure it:
 
 ```sh
 bash setup/fedora/gnome.sh
@@ -215,15 +229,13 @@ bash setup/fedora/gnome.sh
 
 ## Fedora apps
 
-https://github.com/storytold/pdfcraft
-https://github.com/localsend/localsend
+https://github.com/storytold/pdfcraft https://github.com/localsend/localsend
 
-## Fedora themes 
+## Fedora themes
 
-https://github.com/vinceliuice/whitesur-gtk-theme 
+https://github.com/vinceliuice/whitesur-gtk-theme
 
 In Gnome user themes extension set light theme
-
 
 ## Cuda NVIDIA & ollama
 
@@ -282,8 +294,8 @@ Setup the environment:
 bash setup/termux/setup.sh
 ```
 
-See [Termux setup](setup/termux/README.md) for mirror selection, SSH keys,
-shell setup, and manual vault commands (`clv`, `cdv`, `wv`, `rv`).
+See [Termux setup](setup/termux/README.md) for mirror selection, SSH keys, shell
+setup, and manual vault commands (`clv`, `cdv`, `wv`, `rv`).
 
 # MACOS
 
@@ -329,8 +341,8 @@ process or paste into several directories without copying again.
 
 Paths are stored in `stdpath("data")/neotree-clipboard.json` (this configuration
 uses `~/.config/nvim/data/neotree-clipboard.json`). Paste, Esc, local clipboard
-clearing, text-path yanks (`y`), and exiting Neovim preserve this file. Only a new
-file copy replaces it. Sources must still exist when pasting.
+clearing, text-path yanks (`y`), and exiting Neovim preserve this file. Only a
+new file copy replaces it. Sources must still exist when pasting.
 
 `x` remains a local cut: a pending cut takes priority over the saved copies and
 moves its entries on paste. After it is pasted or cleared, `p` uses the shared
@@ -355,8 +367,8 @@ branch (from the supplied repository `cwd`) and installed `gitcommit` snippet
 prefixes such as `feat`, `fix`, and `chore`. Templates expand their first line
 only, preserving the single-line prompt. Enter accepts a selected suggestion;
 press Enter again to submit. Tab/Shift-Tab move through snippet placeholders.
-Ctrl-Space opens completion manually. Detached HEAD/non-Git directories omit
-the branch suggestion. Filetype/Tree-sitter alone do not generate Git suggestions.
+Ctrl-Space opens completion manually. Detached HEAD/non-Git directories omit the
+branch suggestion. Filetype/Tree-sitter alone do not generate Git suggestions.
 
 The commit popup uses immediate native completion while the input is open. This
 avoids a blank menu frame during typing with a nonzero autocomplete delay. The
@@ -365,45 +377,55 @@ explicit option changes made while the input is open are preserved.
 
 ## Native completion
 
-Native completion targets Neovim 0.12.6; Blink remains disabled. Ranking follows:
+Native completion targets Neovim 0.12.6; Blink remains disabled. Ranking
+follows:
 
-1. Exact case-sensitive/case-insensitive names, case-sensitive/case-insensitive prefixes, then fuzzy matches.
-2. Distinct identifier words elsewhere on the current line, then fine fuzzy score. `User` near `create` favors `createUser` over `createCat`; exact `createCat` still wins when typed explicitly.
-3. Nondeprecated items, single-server `sortText` (label when missing), conservative syntax fit, ordinary items before snippets, and stable final ties.
+1. Exact case-sensitive/case-insensitive names, case-sensitive/case-insensitive
+   prefixes, then fuzzy matches.
+2. Distinct identifier words elsewhere on the current line, then fine fuzzy
+   score. `User` near `create` favors `createUser` over `createCat`; exact
+   `createCat` still wins when typed explicitly.
+3. Nondeprecated items, single-server `sortText` (label when missing),
+   conservative syntax fit, ordinary items before snippets, and stable final
+   ties.
 
-Current-line affinity uses whole camel/Pascal/acronym/snake identifier components;
-repetition, query words, language keywords, comments, and strings do not boost it.
-It uses only the current line, not a project-wide frequency or semantic model.
-Language node groups, keyword exclusions, and parser fixtures live in
+Current-line affinity uses whole camel/Pascal/acronym/snake identifier
+components; repetition, query words, language keywords, comments, and strings do
+not boost it. It uses only the current line, not a project-wide frequency or
+semantic model. Language node groups, keyword exclusions, and parser fixtures
+live in
 [`lua/native_completion/languages/*.json`](lua/native_completion/languages/README.md).
 The shared JSON Schema is `schemas/native-completion-language.schema.json`.
 
 Lua, TypeScript/TSX, Go, Rust, Scala, Java, Python, C, C++, and Solidity have
-syntax adapters. Lua handles member/method access; the other mappings also handle type
-positions and imports/includes. C and C++ are the mappings used with clangd.
-TSX inherits TypeScript rules and adds JSX parser fixtures. Unknown syntax, missing parsers, and unsupported
-or ambiguous injected languages give neutral hints. An available parser is used;
-completion does not install one. Tree-sitter hints do not prove type compatibility
-or lexical scope. Multiple attached completion servers omit server sort keys
-because different servers' keys do not share a ranking scale.
+syntax adapters. Lua handles member/method access; the other mappings also
+handle type positions and imports/includes. C and C++ are the mappings used with
+clangd. TSX inherits TypeScript rules and adds JSX parser fixtures. Unknown
+syntax, missing parsers, and unsupported or ambiguous injected languages give
+neutral hints. An available parser is used; completion does not install one.
+Tree-sitter hints do not prove type compatibility or lexical scope. Multiple
+attached completion servers omit server sort keys because different servers'
+keys do not share a ranking scale.
 
 The menu is limited to 10 item rows and 70 content columns, shrinking on narrow
 screens. Display labels are limited to 45 cells and descriptions to 24 cells.
 Formatting changes display fields only: full insertion, native snippets,
-auto-import edits, commands, documentation, and distinct same-label items remain.
-The existing wheat palette and rounded opaque popup are retained.
+auto-import edits, commands, documentation, and distinct same-label items
+remain. The existing wheat palette and rounded opaque popup are retained.
 
 In ordinary enabled editing buffers, `<C-x><C-n>` cancels an open LSP selection
 and starts current/window/loaded-buffer word completion. `<C-Space>` requests
 LSP/manual completion; Enter accepts a selected item and otherwise inserts a
-newline. Ctrl-Enter or Alt-Enter accepts the selected or first item. Automatic fallback after
-an empty LSP response is intentionally not enabled. Floating input opts into
-completion through its `filetype`; terminal command completion keeps its sources.
+newline. Ctrl-Enter or Alt-Enter accepts the selected or first item. Automatic
+fallback after an empty LSP response is intentionally not enabled. Floating
+input opts into completion through its `filetype`; terminal command completion
+keeps its sources.
 
 Compared with the old kind-first policy, an exact function can now outrank a
 variable. Compared with native default fuzzy sorting, current-line identifier
 affinity can favor `createUser` even when shorter `createCat` has a better fuzzy
-score. `fuzzy,nosort,noselect` keeps this explicit order and avoids implicit acceptance.
+score. `fuzzy,nosort,noselect` keeps this explicit order and avoids implicit
+acceptance.
 
 Focused fixtures (run from this configuration directory):
 
@@ -415,55 +437,54 @@ uv run --with pynvim python tests/native_input_completion.py
 ```
 
 The mapping suite checks all language JSON definitions against their installed
-grammars and runs their embedded parser fixtures. The core suite checks
-ranking, Unicode display, comparator laws, caching, and a 1,000-item profile.
-The integration suite drives a running Neovim with a temporary fake LSP, testing native
-acceptance, auto-imports, snippets, commands, documentation, popup limits, and
-English/Russian shortcuts. `pynvim` is a test dependency only. Integration also
-exercises the locally installed Lua, TypeScript, and Go servers when available.
-See the [mapping format and fixture guide](lua/native_completion/languages/README.md)
-to add another grammar without changing the Lua context engine.
+grammars and runs their embedded parser fixtures. The core suite checks ranking,
+Unicode display, comparator laws, caching, and a 1,000-item profile. The
+integration suite drives a running Neovim with a temporary fake LSP, testing
+native acceptance, auto-imports, snippets, commands, documentation, popup
+limits, and English/Russian shortcuts. `pynvim` is a test dependency only.
+Integration also exercises the locally installed Lua, TypeScript, and Go servers
+when available. See the
+[mapping format and fixture guide](lua/native_completion/languages/README.md) to
+add another grammar without changing the Lua context engine.
 
 The input regression suite checks native rendered frames while typing, snippet
 acceptance, submission, and completion-delay restoration on input cleanup.
 
-
 ## Markdown math symbols
 
-Rendering is configured off by default. `<leader>mdt` toggles it for this buffer;
-`<leader>mdr` opens and enables a rendered preview. The same math rendering is
-available in `todotxt-preview` buffers.
+Rendering is configured off by default. `<leader>mdt` toggles it for this
+buffer; `<leader>mdr` opens and enables a rendered preview. The same math
+rendering is available in `todotxt-preview` buffers.
 
 Source and rendered preview navigation synchronize at headings. Entering another
 section in either buffer moves the counterpart to that heading; moving inside a
-section leaves the counterpart alone. `<leader>mdr` opens or returns at the current
-section's heading. Before the first heading, or without headings, it uses the
-document beginning. Repeated titles are distinct sections.
-
+section leaves the counterpart alone. `<leader>mdr` opens or returns at the
+current section's heading. Before the first heading, or without headings, it
+uses the document beginning. Repeated titles are distinct sections.
 
 Inside `$...$` or `$$...$$`, LaTeX symbols display as Unicode: for example,
-`$\alpha \cdot x \Rightarrow \infty$` displays as `α ⋅ x ⇒ ∞`, with spaces in place of the dollar delimiters.
-Supported symbols include Greek letters and variants, arrows, comparisons,
-arithmetic, sets, logic, calculus, delimiters, and named functions such as `\sin`
-and `\log`. Dots retain their distinct forms: `\cdot` → ⋅, `\bullet` → •,
-`\ldots` / `\dots` → …, `\cdots` → ⋯, `\vdots` → ⋮, and `\ddots` → ⋱.
-`\left` / `\right` are hidden while their delimiters remain, so
-`$\left\langle x \right\rangle$` displays as `⟨ x ⟩`. A dot delimiter in
+`$\alpha \cdot x \Rightarrow \infty$` displays as `α ⋅ x ⇒ ∞`, with spaces in
+place of the dollar delimiters. Supported symbols include Greek letters and
+variants, arrows, comparisons, arithmetic, sets, logic, calculus, delimiters,
+and named functions such as `\sin` and `\log`. Dots retain their distinct forms:
+`\cdot` → ⋅, `\bullet` → •, `\ldots` / `\dots` → …, `\cdots` → ⋯, `\vdots` → ⋮,
+and `\ddots` → ⋱. `\left` / `\right` are hidden while their delimiters remain,
+so `$\left\langle x \right\rangle$` displays as `⟨ x ⟩`. A dot delimiter in
 `\left.` or `\right.` is invisible.
 
 This only changes the display. Buffer and saved text keep the original LaTeX;
 code spans, code fences, and prose remain literal, and Markdown backticks stay
-visible. Fractions use a linear division sign: `\frac{xy}{x+a}` → `(xy) ÷ (x+a)`;
-`\dfrac` and `\tfrac` work the same way. Roots use `\sqrt{xy}` → `√(xy)`,
-including nested fractions and roots. `\quad` / `\qquad` insert two / four spaces;
-small spacing commands and escaped spaces are also supported. Named functions
-include `\min` and `\max`. Unknown commands, superscripts, subscripts and accents
-(such as `\bar p`) stay as written. Indexed roots such as `\sqrt[3]{x}` remain
-literal. Formula text and replacements share the normal text foreground, refreshed
-on theme changes. No external LaTeX converter is required. The implementation lives in
-`lua/configs/markdown-math.lua`. A small text-transform hook in the installed
-render-markdown fork converts preview math before layout; its recovery patch is
-retained with the OpenSpec change.
+visible. Fractions use a linear division sign: `\frac{xy}{x+a}` →
+`(xy) ÷ (x+a)`; `\dfrac` and `\tfrac` work the same way. Roots use `\sqrt{xy}` →
+`√(xy)`, including nested fractions and roots. `\quad` / `\qquad` insert two /
+four spaces; small spacing commands and escaped spaces are also supported. Named
+functions include `\min` and `\max`. Unknown commands, superscripts, subscripts
+and accents (such as `\bar p`) stay as written. Indexed roots such as
+`\sqrt[3]{x}` remain literal. Formula text and replacements share the normal
+text foreground, refreshed on theme changes. No external LaTeX converter is
+required. The implementation lives in `lua/configs/markdown-math.lua`. A small
+text-transform hook in the installed render-markdown fork converts preview math
+before layout; its recovery patch is retained with the OpenSpec change.
 
 Focused checks (using the parsers and plugin installed in this config):
 
@@ -478,21 +499,21 @@ space; the closing `$$` displays as two spaces. Toggle rendering off to reveal
 the original delimiters in source buffers. Closing the full preview returns to
 the untouched source. Code and escaped literal dollar signs are unaffected.
 
-When rendering directly in an editable source buffer, formulas stay compact.
-The spaces needed to restore source width are
-collected and split before and after the complete formula body, centering it in
-its original terminal-cell width. Symbols and nested fractions/roots do not get
-individual padding. Surrounding text and wrapping keep their source positions,
-including with Unicode and tabs. Each line of a multiline formula keeps its
-width; if its body cannot fit without growing a line, that body stays literal.
-Dollar delimiters keep their own spans, including the opening display icon.
+When rendering directly in an editable source buffer, formulas stay compact. The
+spaces needed to restore source width are collected and split before and after
+the complete formula body, centering it in its original terminal-cell width.
+Symbols and nested fractions/roots do not get individual padding. Surrounding
+text and wrapping keep their source positions, including with Unicode and tabs.
+Each line of a multiline formula keeps its width; if its body cannot fit without
+growing a line, that body stays literal. Dollar delimiters keep their own spans,
+including the opening display icon.
 
 Full previews use real Unicode math text before prose wrapping and pipe-table
-sizing. This avoids measuring raw LaTeX and painting math over an already wrapped
-table. Preview math has no source-width compensation padding or late overlays;
-the table formatter measures the compact result. Math bars use `∣` / `‖` so they
-do not become Markdown column separators. The original file and source buffer,
-including their undo history, remain unchanged.
+sizing. This avoids measuring raw LaTeX and painting math over an already
+wrapped table. Preview math has no source-width compensation padding or late
+overlays; the table formatter measures the compact result. Math bars use `∣` /
+`‖` so they do not become Markdown column separators. The original file and
+source buffer, including their undo history, remain unchanged.
 
 ## Markdown preview diagrams
 
@@ -504,6 +525,6 @@ inspection and diagnostics keep their existing `<A-i>` behavior.
 Complete Mermaid fences render as terminal diagrams using the existing
 `bin/mermaid-ascii` executable, with PATH fallback. Rendering is asynchronous;
 diagram spacing is preserved and wide diagrams scroll horizontally. If the
-converter is missing, rejects the diagram, or times out, its source fence remains
-visible with a warning. Close and reopen the preview to retry. Source files are
-unchanged. Standalone Mermaid visualization mappings still work.
+converter is missing, rejects the diagram, or times out, its source fence
+remains visible with a warning. Close and reopen the preview to retry. Source
+files are unchanged. Standalone Mermaid visualization mappings still work.

@@ -10,7 +10,12 @@ local function normal_virtual_line_args(args)
 end
 
 local function padded_lnum(args, segment)
-  local padded_args = vim.tbl_extend("force", {}, normal_virtual_line_args(args), { nuw = math.max(4, args.nuw) })
+  local padded_args = vim.tbl_extend(
+    "force",
+    {},
+    normal_virtual_line_args(args),
+    { nuw = math.max(4, args.nuw) }
+  )
   return builtin.lnumfunc(padded_args, segment)
 end
 
@@ -89,3 +94,70 @@ require("statuscol").setup {
     end,
   },
 }
+
+-- An empty statuscolumn still reserves space for folds, signs and line numbers.
+local ignored_filetypes = require "utils.technical_ui_filetypes"
+local hidden_gutters = {}
+local gutter_options =
+  { "statuscolumn", "foldcolumn", "signcolumn", "number", "relativenumber" }
+
+local function update_gutters()
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local bo = vim.bo[buf]
+    local hide = not bo.modifiable
+      or bo.buftype ~= ""
+      or vim.tbl_contains(ignored_filetypes, bo.filetype)
+    if hide then
+      if not hidden_gutters[win] then
+        local saved = {}
+        for _, option in ipairs(gutter_options) do
+          saved[option] = vim.api.nvim_get_option_value(option, { win = win })
+        end
+        -- statuscol may already have cleared this on FileType/BufWinEnter.
+        if saved.statuscolumn == "" then
+          saved.statuscolumn = vim.go.statuscolumn
+        end
+        hidden_gutters[win] = saved
+      end
+      local hidden = {
+        statuscolumn = "",
+        foldcolumn = "0",
+        signcolumn = "no",
+        number = false,
+        relativenumber = false,
+      }
+      for option, value in pairs(hidden) do
+        vim.api.nvim_set_option_value(option, value, { win = win })
+      end
+    elseif hidden_gutters[win] then
+      for option, value in pairs(hidden_gutters[win]) do
+        vim.api.nvim_set_option_value(option, value, { win = win })
+      end
+      hidden_gutters[win] = nil
+    end
+  end
+end
+
+local gutter_group =
+  vim.api.nvim_create_augroup("EditableBufferGutters", { clear = true })
+vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter", "FileType" }, {
+  group = gutter_group,
+  callback = function()
+    vim.schedule(update_gutters)
+  end,
+})
+vim.api.nvim_create_autocmd("OptionSet", {
+  group = gutter_group,
+  pattern = { "modifiable", "buftype" },
+  callback = function()
+    vim.schedule(update_gutters)
+  end,
+})
+vim.api.nvim_create_autocmd("WinClosed", {
+  group = gutter_group,
+  callback = function(args)
+    hidden_gutters[tonumber(args.match)] = nil
+  end,
+})
+vim.schedule(update_gutters)
