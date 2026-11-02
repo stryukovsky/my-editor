@@ -199,6 +199,16 @@ function M.paste(state)
   if not next(clipboard) then
     return
   end
+  -- Consume the shared selection before starting async copies. Clearing it in
+  -- a completion callback could erase files copied while paste is running.
+  local ok, clear_err = M.write {}
+  if not ok then
+    notify(
+      "Cannot clear shared clipboard: " .. tostring(clear_err),
+      vim.log.levels.ERROR
+    )
+    return
+  end
   -- Native paste snapshots and clears this table synchronously. Its async copy
   -- callbacks never restore it, so a later user copy/cut remains untouched.
   state.clipboard = clipboard
