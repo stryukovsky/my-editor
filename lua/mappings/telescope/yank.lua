@@ -23,7 +23,11 @@ end
 local function is_commit(entry)
   local value = entry.value
   local short = entry.short
-  return type(short) == "string" and short ~= "" and type(value) == "string" and value:match "^%x+$" ~= nil and #value >= 7
+  return type(short) == "string"
+    and short ~= ""
+    and type(value) == "string"
+    and value:match "^%x+$" ~= nil
+    and #value >= 7
 end
 
 ---@param path string
@@ -34,7 +38,8 @@ local function absolutize(path, cwd)
   if path:sub(1, 1) == "/" then
     return path:gsub("/$", "")
   end
-  local root = cwd and vim.fs.normalize(cwd) or vim.fs.normalize(vim.uv.cwd() or ".")
+  local root = cwd and vim.fs.normalize(cwd)
+    or vim.fs.normalize(vim.uv.cwd() or ".")
   return vim.fs.normalize(root .. "/" .. path):gsub("/$", "")
 end
 
@@ -62,7 +67,11 @@ local function entry_text(entry, picker)
   end
 
   -- Projects picker: value = { path = "...", tab = ... }.
-  if type(entry.value) == "table" and type(entry.value.path) == "string" and entry.value.path ~= "" then
+  if
+    type(entry.value) == "table"
+    and type(entry.value.path) == "string"
+    and entry.value.path ~= ""
+  then
     return absolutize(entry.value.path)
   end
 
@@ -93,7 +102,9 @@ function M.yank_selection(prompt_bufnr)
     return
   end
 
-  local title = type(picker.prompt_title) == "string" and picker.prompt_title:lower() or ""
+  local title = type(picker.prompt_title) == "string"
+      and picker.prompt_title:lower()
+    or ""
   if SKIP_PROMPT[title] then
     return
   end
@@ -101,6 +112,11 @@ function M.yank_selection(prompt_bufnr)
   local multi = picker:get_multi_selection()
   local entries = #multi > 0 and multi or { action_state.get_selected_entry() }
 
+  M.yank_entries(entries, picker)
+end
+
+-- Also used after a picker has closed; entries and cwd are captured beforehand.
+function M.yank_entries(entries, picker)
   local parts = {}
   for _, entry in ipairs(entries) do
     local text = entry_text(entry, picker)

@@ -4,14 +4,13 @@
 local display = require "telescope_pretty_picker.display"
 local git = require "configs.gitutils"
 local git_preview = require "telescope_pretty_picker.preview"
-local actions = require "telescope.actions"
-local action_state = require "telescope.actions.state"
 local commons = require "telescope_pretty_picker.commons"
-local wrap_telescope_action = require "mappings.telescope_action_wrapper"
+local menu = require "telescope_pretty_picker.action_menu"
 
 local tell = commons.notifier "Git branches"
 
-local PROMPT_HINTS = "cr switch, d delete, m merge, r rename, R rebase, y yank"
+local PROMPT_HINTS =
+  "Enter actions, d delete, m merge, r rename, R rebase, y yank"
 
 local function notify_canceled()
   tell "action canceled"
@@ -22,8 +21,8 @@ local function warn_no_selection()
 end
 
 ---Telescope `actions.git_delete_branch`, with `vim.fn.confirm`.
----@param prompt_bufnr integer
-local function git_delete_branch(prompt_bufnr)
+---@param context table
+local function git_delete_branch(context)
   if
     not commons.confirmed "Do you really want to delete the selected branches?"
   then
@@ -31,10 +30,9 @@ local function git_delete_branch(prompt_bufnr)
     return
   end
 
-  local picker = action_state.get_current_picker(prompt_bufnr)
-  picker:delete_selection(function(selection)
+  local function delete(selection)
     local branch = selection.value
-    local _, err = git.run({ "branch", "-D", branch }, picker.cwd)
+    local _, err = git.run({ "branch", "-D", branch }, context.cwd)
     local ok = err == nil
     -- After the picker refreshes, so the toast is not opened during the redraw.
     vim.schedule(function()
@@ -52,7 +50,15 @@ local function git_delete_branch(prompt_bufnr)
       end
     end)
     return ok
-  end)
+  end
+  if context.prompt_bufnr then
+    context.picker:delete_selection(delete)
+  else
+    for _, entry in ipairs(context.entries) do
+      delete(entry)
+    end
+    context.reopen()
+  end
 end
 
 -- Compare the selected local branch with its configured remote-tracking ref.
@@ -115,11 +121,11 @@ end
 
 ---Telescope `make_git_branch_action` for merge/rebase, with `vim.fn.confirm`.
 ---@param opts { confirmation_question: string|function, success_message: string, error_message: string, command: fun(branch_name: string): string[] }
----@return fun(prompt_bufnr: integer)
+---@return fun(context: table)
 local function make_git_branch_action(opts)
-  return function(prompt_bufnr)
-    local cwd = action_state.get_current_picker(prompt_bufnr).cwd
-    local selection = action_state.get_selected_entry()
+  return function(context)
+    local cwd = context.cwd
+    local selection = context.selection
     if selection == nil then
       warn_no_selection()
       return
@@ -143,7 +149,7 @@ local function make_git_branch_action(opts)
       return
     end
 
-    actions.close(prompt_bufnr)
+    context.close()
     local _, err = git.run(opts.command(selection.value), cwd)
     if not err then
       tell(string.format(opts.success_message, selection.value))
@@ -174,8 +180,8 @@ local git_rebase_branch = make_git_branch_action {
   end,
 }
 
-local function git_rename_branch(prompt_bufnr)
-  local selection = action_state.get_selected_entry()
+local function git_rename_branch(context)
+  local selection = context.selection
   if not selection then
     warn_no_selection()
     return
@@ -184,9 +190,9 @@ local function git_rename_branch(prompt_bufnr)
     tell("Only local branches can be renamed", vim.log.levels.WARN)
     return
   end
-  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local cwd = context.cwd
   local branch = selection.value
-  actions.close(prompt_bufnr)
+  context.close()
   vim.schedule(function()
     vim.ui.input(
       { prompt = "Rename branch: ", default = branch, cwd = cwd },
@@ -206,16 +212,16 @@ local function git_rename_branch(prompt_bufnr)
 end
 
 ---Switch local branches, or create a tracking branch from the selected remote.
----@param prompt_bufnr integer
-local function git_switch_branch(prompt_bufnr)
-  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
-  local selection = action_state.get_selected_entry()
+---@param context table
+local function git_switch_branch(context)
+  local cwd = context.cwd
+  local selection = context.selection
   if selection == nil then
     warn_no_selection()
     return
   end
 
-  actions.close(prompt_bufnr)
+  context.close()
   local branch = selection.value
   local refname = selection.refname
   local args = { "switch", branch }
@@ -245,7 +251,8 @@ local function git_switch_branch(prompt_bufnr)
 end
 
 ---@param opts? table
-local function pretty_git_branch_picker(opts)
+---@param restore_selection? fun(picker: table) Internal one-shot restoration.
+local function pretty_git_branch_picker(opts, restore_selection)
   opts = vim.tbl_deep_extend("force", {
     wrap_results = true,
     initial_mode = "normal",
@@ -272,8 +279,13 @@ local function pretty_git_branch_picker(opts)
 
   -- History/review pass attach_mappings / previewer; peel them off so they are
   -- not treated as Telescope picker opts.
+  local reopen_opts = vim.tbl_extend("force", {}, opts)
+
   local custom_attach = opts.attach_mappings
   local custom_previewer = opts.previewer
+  if custom_previewer == nil then
+    custom_previewer = git_preview.branch_log { cwd = cwd }
+  end
   local prompt_title = opts.prompt_title
     or (custom_attach and "Git Branches" or PROMPT_HINTS)
   local results_title = opts.results_title
@@ -298,37 +310,45 @@ local function pretty_git_branch_picker(opts)
   require "utils.ui_prevent_mess"()
   local make_display = display.branch_displayer(display.branch_widths(results))
 
-  pickers
-    .new(opts, {
-      prompt_title = prompt_title,
-      results_title = results_title,
-      finder = finders.new_table {
-        results = results,
-        entry_maker = function(entry)
-          entry.value = entry.name
-          entry.ordinal = entry.name
-          entry.display = make_display
-          return make_entry.set_default_entry_mt(entry, opts)
-        end,
-      },
-      -- Default graph log; MiniDiff history overrides with commit_diff.
-      previewer = custom_previewer or git_preview.branch_log { cwd = cwd },
-      sorter = conf.file_sorter(opts),
-      attach_mappings = function(prompt_bufnr, map)
-        if custom_attach then
-          return custom_attach(prompt_bufnr, map)
-        end
-        -- override mappings of telescope only this way :(
-        map("n", "<cr>", wrap_telescope_action(git_switch_branch))
-        map("n", "d", wrap_telescope_action(git_delete_branch))
-        map("n", "m", wrap_telescope_action(git_merge_branch))
-        -- `y` = yank branch name (mappings.telescope.defaults)
-        map("n", "r", wrap_telescope_action(git_rename_branch))
-        map("n", "R", wrap_telescope_action(git_rebase_branch))
-        return true
+  local picker = pickers.new(opts, {
+    prompt_title = prompt_title,
+    results_title = results_title,
+    finder = finders.new_table {
+      results = results,
+      entry_maker = function(entry)
+        entry.value = entry.name
+        entry.ordinal = entry.name
+        entry.display = make_display
+        return make_entry.set_default_entry_mt(entry, opts)
       end,
-    })
-    :find()
+    },
+    -- Default graph log; MiniDiff history overrides with commit_diff.
+    previewer = custom_previewer,
+    sorter = conf.file_sorter(opts),
+    attach_mappings = function(prompt_bufnr, telescope_map)
+      if custom_attach then
+        return custom_attach(prompt_bufnr, telescope_map)
+      end
+      return menu.attach(
+        prompt_bufnr,
+        reopen_opts,
+        pretty_git_branch_picker,
+        tell,
+        {
+          { "Switch branch", git_switch_branch },
+          { "Delete branch", git_delete_branch, keys = { "d" } },
+          { "Merge branch", git_merge_branch, keys = { "m" } },
+          { "Rename branch", git_rename_branch, keys = { "r" } },
+          { "Rebase onto branch", git_rebase_branch, keys = { "R" } },
+          { "Yank branch name", menu.yank, keys = { "y" } },
+        }
+      )
+    end,
+  })
+  if restore_selection then
+    picker:register_completion_callback(restore_selection)
+  end
+  picker:find()
 end
 
 return pretty_git_branch_picker

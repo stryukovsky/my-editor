@@ -4,30 +4,29 @@
 local display = require "telescope_pretty_picker.display"
 local git = require "configs.gitutils"
 local git_preview = require "telescope_pretty_picker.preview"
-local actions = require "telescope.actions"
-local action_state = require "telescope.actions.state"
 local commons = require "telescope_pretty_picker.commons"
-local wrap_telescope_action = require "mappings.telescope_action_wrapper"
+local menu = require "telescope_pretty_picker.action_menu"
 
 local COMMIT_LIMIT = 1000
-local PROMPT_HINTS = "cr checkout, a/r rename, x/u undo, s undo+stash (HEAD)"
+local PROMPT_HINTS =
+  "Enter actions, a/r rename, x/u undo, s undo+stash (HEAD), y yank"
 local tell = commons.notifier "Git commits"
 
----@param prompt_bufnr integer
+---@param context table
 ---@return table|nil selection
 ---@return string|nil cwd
-local function selected(prompt_bufnr)
-  local selection = action_state.get_selected_entry()
+local function selected(context)
+  local selection = context.selection
   if selection == nil then
     tell("Nothing currently selected", vim.log.levels.WARN)
     return nil, nil
   end
-  return selection, action_state.get_current_picker(prompt_bufnr).cwd
+  return selection, context.cwd
 end
 
----@param prompt_bufnr integer
-local function git_checkout(prompt_bufnr)
-  local selection, cwd = selected(prompt_bufnr)
+---@param context table
+local function git_checkout(context)
+  local selection, cwd = selected(context)
   if not selection then
     return
   end
@@ -40,7 +39,7 @@ local function git_checkout(prompt_bufnr)
     tell "Already at this commit"
     return
   end
-  actions.close(prompt_bufnr)
+  context.close()
   local _, err = git.run({ "switch", "--detach", selection.value }, cwd)
   if not err then
     tell(string.format("Checked out: %s", selection.value))
@@ -59,8 +58,8 @@ end
 
 -- These actions change only HEAD; selecting an older row must never discard
 -- the commits above it.
-local function selected_head(prompt_bufnr)
-  local selection, cwd = selected(prompt_bufnr)
+local function selected_head(context)
+  local selection, cwd = selected(context)
   if not selection then
     return
   end
@@ -80,8 +79,8 @@ local function selected_head(prompt_bufnr)
   return selection, cwd, head
 end
 
-local function git_rename(prompt_bufnr)
-  local selection, cwd, head = selected_head(prompt_bufnr)
+local function git_rename(context)
+  local selection, cwd, head = selected_head(context)
   if not selection then
     return
   end
@@ -91,7 +90,7 @@ local function git_rename(prompt_bufnr)
     return
   end
   local subject, body = message:match "^([^\n]*)(.*)$"
-  actions.close(prompt_bufnr)
+  context.close()
   vim.schedule(function()
     vim.ui.input({
       prompt = "Rename commit: ",
@@ -123,8 +122,8 @@ local function git_rename(prompt_bufnr)
 end
 
 local function git_undo(stash)
-  return function(prompt_bufnr)
-    local selection, cwd, head = selected_head(prompt_bufnr)
+  return function(context)
+    local selection, cwd, head = selected_head(context)
     if not selection then
       return
     end
@@ -165,7 +164,7 @@ local function git_undo(stash)
       tell "action canceled"
       return
     end
-    actions.close(prompt_bufnr)
+    context.close()
     local _, reset_err = git.run({ "reset", "--soft", vim.trim(parent) }, cwd)
     if reset_err then
       tell(reset_err, vim.log.levels.ERROR)
@@ -199,7 +198,8 @@ local function git_undo(stash)
 end
 
 ---@param opts? table
-local function pretty_git_commit_picker(opts)
+---@param restore_selection? fun(picker: table) Internal one-shot restoration.
+local function pretty_git_commit_picker(opts, restore_selection)
   opts = vim.tbl_deep_extend("force", {
     wrap_results = true,
     initial_mode = "normal",
@@ -224,8 +224,13 @@ local function pretty_git_commit_picker(opts)
   end
   opts.cwd = cwd
 
+  local reopen_opts = vim.tbl_extend("force", {}, opts)
+
   local custom_attach = opts.attach_mappings
   local custom_previewer = opts.previewer
+  if custom_previewer == nil then
+    custom_previewer = git_preview.commit_diff { cwd = cwd }
+  end
   local commit_title = opts.ref and ("Git Commits on " .. opts.ref)
     or "Git Commits"
   local prompt_title = opts.prompt_title
@@ -256,36 +261,47 @@ local function pretty_git_commit_picker(opts)
   require "utils.ui_prevent_mess"()
   local make_display = display.commit_displayer(display.commit_widths(commits))
 
-  pickers
-    .new(opts, {
-      prompt_title = prompt_title,
-      results_title = results_title,
-      finder = finders.new_table {
-        results = commits,
-        entry_maker = function(entry)
-          entry.ordinal = entry.short .. " " .. entry.subject
-          entry.display = make_display
-          return make_entry.set_default_entry_mt(entry, opts)
-        end,
-      },
-      -- Same async git_preview as <A-c>; MiniDiff history reuses this picker.
-      previewer = custom_previewer or git_preview.commit_diff { cwd = cwd },
-      sorter = conf.file_sorter(opts),
-      attach_mappings = function(prompt_bufnr, map)
-        if custom_attach then
-          return custom_attach(prompt_bufnr, map)
-        end
-        -- override mappings of telescope only this way :(
-        map("n", "<cr>", wrap_telescope_action(git_checkout))
-        map("n", "a", wrap_telescope_action(git_rename))
-        map("n", "r", wrap_telescope_action(git_rename))
-        map("n", "x", wrap_telescope_action(git_undo(false)))
-        map("n", "u", wrap_telescope_action(git_undo(false)))
-        map("n", "s", wrap_telescope_action(git_undo(true)))
-        return true
+  local picker = pickers.new(opts, {
+    prompt_title = prompt_title,
+    results_title = results_title,
+    finder = finders.new_table {
+      results = commits,
+      entry_maker = function(entry)
+        entry.ordinal = entry.short .. " " .. entry.subject
+        entry.display = make_display
+        return make_entry.set_default_entry_mt(entry, opts)
       end,
-    })
-    :find()
+    },
+    -- Same async git_preview as <A-c>; MiniDiff history reuses this picker.
+    previewer = custom_previewer,
+    sorter = conf.file_sorter(opts),
+    attach_mappings = function(prompt_bufnr, telescope_map)
+      if custom_attach then
+        return custom_attach(prompt_bufnr, telescope_map)
+      end
+      return menu.attach(
+        prompt_bufnr,
+        reopen_opts,
+        pretty_git_commit_picker,
+        tell,
+        {
+          { "Checkout commit (detached HEAD)", git_checkout },
+          { "Rename HEAD commit", git_rename, keys = { "a", "r" } },
+          {
+            "Undo HEAD (keep changes staged)",
+            git_undo(false),
+            keys = { "x", "u" },
+          },
+          { "Undo HEAD and stash changes", git_undo(true), keys = { "s" } },
+          { "Yank commit SHA", menu.yank, keys = { "y" } },
+        }
+      )
+    end,
+  })
+  if restore_selection then
+    picker:register_completion_callback(restore_selection)
+  end
+  picker:find()
 end
 
 return pretty_git_commit_picker
