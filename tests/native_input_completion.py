@@ -21,6 +21,8 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
     )
     (temporary / "src/nested").mkdir(parents=True)
     (temporary / "src/nested/ui.lua").write_text("return {}\n")
+    (temporary / "test/my-research").mkdir(parents=True)
+    (temporary / "test/my-research/PoolManager.swap.t.sol").write_text("// fixture\n")
     nvim = pynvim.attach(
         "child", argv=["nvim", "--embed", "--headless", "-u", "NONE", "-i", "NONE"]
     )
@@ -157,8 +159,9 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
                 "_G.input_checks.value=_G.input_result;_G.input_checks.restored=vim.o.autocompletedelay",
             )
             for token, expected, label in [
-                ("src/nested/ui", "src/nested/ui.lua", "file"),
-                ("src/nested/", "src/nested/", "folder"),
+                ("ui", "ui.lua", "file"),
+                ("nested", "nested", "folder"),
+                ("(PoolManager", "(PoolManager.swap.t.sol", "filename"),
             ]:
                 open_input()
                 key("fix: " + token, 0.3)
@@ -207,6 +210,7 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
         assert checks["snippet"] and checks["not_submitted"], checks
         assert checks["value"] == "feat(render): fix menu flicker", checks
         assert checks["file"] and checks["folder"], checks
+        assert checks["filename"], checks
         assert checks["restored"] == 137, checks
         assert checks["external"] == 73 and checks["cancelled"], checks
         assert checks["closed"] == 73, checks

@@ -8,6 +8,8 @@ vim.o.pumborder = "rounded"
 vim.o.pumblend = 0
 vim.o.pumheight = 10
 vim.o.pummaxwidth = 70
+-- Empty completion results are routine while typing, not command-line errors.
+vim.opt.shortmess:append "cC"
 vim.opt.completeopt =
   { "menu", "menuone", "noselect", "fuzzy", "nosort", "popup" }
 vim.opt.complete = { ".", "w", "b" }
@@ -26,6 +28,7 @@ function _G.NativeExtraComplete(findstart, base)
 end
 
 local ranking = require "native_completion"
+local midword = require "native_completion.midword"
 
 local function refresh()
   local floating = vim.api.nvim_win_get_config(0).relative ~= ""
@@ -51,6 +54,19 @@ local function refresh()
 end
 
 local group = vim.api.nvim_create_augroup("NativeCompletion", { clear = true })
+vim.api.nvim_create_autocmd("CompleteChanged", {
+  group = group,
+  callback = midword.prepare,
+})
+vim.api.nvim_create_autocmd({ "BufLeave", "WinLeave", "InsertLeave" }, {
+  group = group,
+  callback = midword.clear,
+})
+-- Register before LSP enables its buffer-local native acceptance handler.
+vim.api.nvim_create_autocmd("CompleteDone", {
+  group = group,
+  callback = midword.finish,
+})
 vim.api.nvim_create_autocmd(
   { "TextChangedI", "TextChangedP", "CursorMovedI", "InsertEnter" },
   {
@@ -208,18 +224,17 @@ function M.setup_mappings()
     desc = "Accept selected completion or insert newline",
   })
   for _, key in ipairs { "<C-CR>", "<A-CR>" } do
-    map(
-      "i",
-      key,
-      function()
-        if vim.fn.pumvisible() == 0 then
-          return ""
-        end
-        local selected = vim.fn.complete_info({ "selected" }).selected
-        return selected < 0 and "<C-n><C-y>" or "<C-y>"
-      end,
-      { expr = true, silent = true, desc = "Accept selected or first completion" }
-    )
+    map("i", key, function()
+      if vim.fn.pumvisible() == 0 then
+        return ""
+      end
+      local selected = vim.fn.complete_info({ "selected" }).selected
+      return selected < 0 and "<C-n><C-y>" or "<C-y>"
+    end, {
+      expr = true,
+      silent = true,
+      desc = "Accept selected or first completion",
+    })
   end
   for key, direction in pairs {
     ["<C-j>"] = "<C-n>",

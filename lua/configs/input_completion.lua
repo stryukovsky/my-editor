@@ -57,10 +57,10 @@ local function changed_paths(output)
     local record = records[index]
     local status, path = record:sub(1, 2), record:sub(4)
     if path ~= "" then
-      add(path, "Changed file")
+      add(path:match "[^/]+$", "Changed file")
       local parent = path:match "^(.*)/[^/]+$"
       while parent do
-        add(parent .. "/", "Changed folder")
+        add(parent:match "[^/]+$", "Changed folder")
         parent = parent:match "^(.*)/[^/]+$"
       end
     end
@@ -89,6 +89,9 @@ function M.complete(findstart, _)
     items[#items + 1] = { word = branch, menu = "Current branch" }
   end
   vim.list_extend(items, vim.b.input_git_paths or {})
+  items = vim.tbl_filter(function(item)
+    return not item.word:find("/", 1, true)
+  end, items)
   if token ~= "" then
     items = vim.fn.matchfuzzy(items, token, { key = "word" })
   end

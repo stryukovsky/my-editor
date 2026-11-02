@@ -63,10 +63,13 @@ local ok, err = xpcall(function()
   git("mv", "old.lua", "src/nested/renamed.lua")
   write "src/nested/new file.lua"
   write "root.txt"
+  vim.fn.mkdir(root .. "/test/my-research", "p")
+  write "test/my-research/PoolManager.swap.t.sol"
+  write "src/nested/PoolManager.swap.t.sol"
   vim.fn.mkdir(root .. "/ignored", "p")
   write "ignored/hidden.txt"
 
-  -- A nested cwd must still yield paths relative to the repository root.
+  -- A nested cwd must still find names from the whole repository.
   open(root .. "/src/nested")
   assert(
     vim.wait(5000, function()
@@ -77,22 +80,31 @@ local ok, err = xpcall(function()
   vim.o.virtualedit = "onemore"
   local items = suggestions "fix: "
   for _, path in ipairs {
-    "src/nested/modified.lua",
-    "src/staged.lua",
+    "modified.lua",
+    "staged.lua",
     "deleted.lua",
-    "src/nested/renamed.lua",
-    "src/nested/new file.lua",
+    "renamed.lua",
+    "new file.lua",
     "root.txt",
   } do
     assert(items[path] == "Changed file", "Missing changed path: " .. path)
   end
-  assert(items["src/"] == "Changed folder")
-  assert(items["src/nested/"] == "Changed folder")
-  assert(items["topic/paths"] == "Current branch")
+  assert(items["src"] == "Changed folder")
+  assert(items["nested"] == "Changed folder")
+  assert(items["test"] == "Changed folder")
+  assert(items["my-research"] == "Changed folder")
+  assert(not items["topic/paths"])
+  for word in pairs(items) do
+    assert(not word:find("/", 1, true), "Slash in suggestion: " .. word)
+  end
+  vim.b.input_git_branch = "main"
+  assert(suggestions("fix: ")["main"] == "Current branch")
+  vim.b.input_git_branch = "topic/paths"
   assert(
     not items["old.lua"]
       and not items["clean.lua"]
-      and not items["ignored/hidden.txt"]
+      and not items["hidden.txt"]
+      and not items["ignored"]
   )
   assert(not items["./"] and not items["/"])
   local seen = {}
@@ -100,17 +112,28 @@ local ok, err = xpcall(function()
     assert(not seen[item.word], "Duplicate: " .. item.word)
     seen[item.word] = true
   end
-  items = suggestions "fix(src/ne"
+  items = suggestions "fix(ne"
   assert(completion.complete(1, "") == 4)
-  assert(items["src/nested/"] and items["src/nested/modified.lua"])
+  assert(items["nested"] and items["new file.lua"])
   assert(not items["root.txt"])
+  items = suggestions "fix(PoolManager"
+  assert(completion.complete(1, "") == 4)
+  assert(items["PoolManager.swap.t.sol"] == "Changed file")
+  assert(not items["test/my-research/PoolManager.swap.t.sol"])
+  local count = 0
+  for _, item in ipairs(completion.complete(0, "").words) do
+    if item.word == "PoolManager.swap.t.sol" then
+      count = count + 1
+    end
+  end
+  assert(count == 1, "Duplicate basename suggestions")
 
   git("checkout", "--detach", "-q")
   open(root)
   assert(vim.wait(5000, function()
     return vim.b.input_git_paths ~= nil
   end))
-  assert(suggestions("fix: ")["src/staged.lua"] == "Changed file")
+  assert(suggestions("fix: ")["staged.lua"] == "Changed file")
   assert(vim.b.input_git_branch == nil)
 
   local outside = root .. "-outside"

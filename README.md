@@ -362,17 +362,20 @@ vim.ui.input({ prompt = "Commit message: ", filetype = "gitcommit", cwd = vim.fn
 end)
 ```
 
-The commit action uses this automatically. Git commit inputs offer the current
-branch (from the supplied repository `cwd`), changed file paths, their parent
-folders, and installed `gitcommit` snippet prefixes such as `feat`, `fix`, and
-`chore`. File and folder suggestions use repository-relative paths; folders end
-in `/`. Staged, unstaged, deleted, and untracked files are included, with renamed
-files suggested under their new paths. Git paths are loaded when the prompt
-opens and can be fuzzy matched anywhere in the message. Templates expand their
-first line only, preserving the single-line prompt. Enter accepts a selected suggestion;
-press Enter again to submit. Tab/Shift-Tab move through snippet placeholders.
-Ctrl-Space opens completion manually. Detached HEAD/non-Git directories omit the
-branch suggestion. Filetype/Tree-sitter alone do not generate Git suggestions.
+The commit action uses this automatically. Git commit inputs offer changed
+filenames, parent directory names, the current branch, and installed `gitcommit`
+snippet prefixes such as `feat`, `fix`, and `chore` from the supplied repository
+`cwd`. Suggestions containing `/` are omitted, including branch names with
+slashes. For `test/my-research/PoolManager.swap.t.sol`, suggestions are
+`PoolManager.swap.t.sol`, `my-research`, and `test`, without path prefixes or
+trailing slashes. Repeated names are suggested once. Staged, unstaged, deleted,
+and untracked files are included, with renamed files using their new names.
+Names are loaded when the prompt opens and can be fuzzy matched anywhere in
+the message. Templates expand their first line only, preserving the single-line
+prompt. Enter accepts a selected suggestion; press Enter again to submit.
+Tab/Shift-Tab move through snippet placeholders. Ctrl-Space opens completion
+manually. Detached HEAD/non-Git directories omit the branch suggestion.
+Filetype/Tree-sitter alone do not generate Git suggestions.
 
 The commit popup uses immediate native completion while the input is open. This
 avoids a blank menu frame during typing with a nonzero autocomplete delay. The
@@ -381,8 +384,8 @@ explicit option changes made while the input is open are preserved.
 
 ## Native completion
 
-Native completion targets Neovim 0.12.6; Blink remains disabled. Ranking
-follows:
+Native completion is verified on Neovim `v0.13.0-dev-1988+gfacba8d36b`; Blink
+remains disabled. Ranking follows:
 
 1. Exact case-sensitive/case-insensitive names, case-sensitive/case-insensitive
    prefixes, then fuzzy matches.
@@ -413,9 +416,23 @@ keys do not share a ranking scale.
 
 The menu is limited to 10 item rows and 70 content columns, shrinking on narrow
 screens. Display labels are limited to 45 cells and descriptions to 24 cells.
+Native completion status messages (including “Pattern not found” and scanning
+notices) are suppressed with `shortmess+=cC` so typing leaves the command area quiet.
 Formatting changes display fields only: full insertion, native snippets,
 auto-import edits, commands, documentation, and distinct same-label items
 remain. The existing wheat palette and rounded opaque popup are retained.
+
+In ordinary editing buffers, LSP completion reuses an identical existing
+identifier suffix: accepting `print` at `pri|nt(value)` produces
+`print|(value)` (`|` marks the cursor). A different or longer suffix is retained.
+Explicit server edit ranges take precedence: a full-word range replaces the
+suffix, while a range ending at the cursor preserves it. On the verified runtime,
+insert/replace items use their insert range. Snippets retain native expansion
+and placeholder navigation; imports and commands remain native side effects.
+The correction runs only on acceptance and shares its undo block; cancellation,
+terminal commands, and typed floating inputs keep their existing behavior.
+Run `uv run --with pynvim python tests/native_completion_midword.py` for the
+native/configured acceptance matrix, including Cyrillic and UTF-8/UTF-16 ranges.
 
 In ordinary enabled editing buffers, `<C-x><C-n>` cancels an open LSP selection
 and starts current/window/loaded-buffer word completion. `<C-Space>` requests
