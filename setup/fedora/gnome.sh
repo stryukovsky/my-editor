@@ -1,7 +1,17 @@
 gsettings set org.gnome.mutter overlay-key ''
 gsettings set org.gnome.desktop.wm.preferences button-layout ':minimize,maximize,close'
-gsettings set org.gnome.desktop.input-sources xkb-options "['altwin:ctrl_rwin']"
+gsettings set org.gnome.desktop.input-sources xkb-options "['altwin:ctrl_rwin','caps:menu']"
 gsettings set org.gnome.desktop.wm.keybindings close "['<Alt>F4','<Super>q']"
+
+# Launch/focus the first four pinned dock items with Super+A/S/D/F or Alt+1/2/3/4.
+# Free the conflicting GNOME shortcuts and keep Super+1/2/3/4 available.
+gsettings set org.gnome.shell.keybindings toggle-application-view '[]'
+gsettings set org.gnome.shell.keybindings toggle-quick-settings '[]'
+gsettings set org.gnome.shell.keybindings switch-to-application-1 "['<Super>1','<Super>a','<Alt>1']"
+gsettings set org.gnome.shell.keybindings switch-to-application-2 "['<Super>2','<Super>s','<Alt>2']"
+gsettings set org.gnome.shell.keybindings switch-to-application-3 "['<Super>3','<Super>d','<Alt>3']"
+gsettings set org.gnome.shell.keybindings switch-to-application-4 "['<Super>4','<Super>f','<Alt>4']"
+
 gsettings set org.gnome.desktop.interface clock-format '24h'
 
 gsettings set org.gnome.desktop.peripherals.touchpad tap-to-click false

@@ -58,6 +58,8 @@ vim.api.nvim_create_autocmd("User", {
   group = group,
   pattern = "GitWorktreeChanged",
   callback = function()
-    gitconflict.refresh()
+    pcall(function()
+      gitconflict.refresh()
+    end)
   end,
 })

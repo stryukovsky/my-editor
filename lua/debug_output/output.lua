@@ -42,7 +42,7 @@ function M.find_buffer_for_session(session_id)
     return nil
   end
   for buf, _ in pairs(buffers) do
-    if vim.api.nvim_buf_is_valid(buf) then
+    if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buflisted then
       return buf
     end
     buffers[buf] = nil
@@ -111,11 +111,16 @@ function M.append_to_buffers(session_id, lines)
     return
   end
   for buf, _ in pairs(buffers) do
-    if not vim.api.nvim_buf_is_valid(buf) then
+    if not vim.api.nvim_buf_is_loaded(buf) or not vim.bo[buf].buflisted then
       buffers[buf] = nil
     else
       vim.schedule(function()
-        if not vim.api.nvim_buf_is_valid(buf) then
+        -- :bdelete can leave a valid handle. Ignore work queued before close.
+        if
+          not buffers[buf]
+          or not vim.api.nvim_buf_is_loaded(buf)
+          or not vim.bo[buf].buflisted
+        then
           return
         end
         vim.bo[buf].modifiable = true
@@ -179,7 +184,13 @@ function M.unlock_buffers(session_id)
   for buf, _ in pairs(buffers) do
     if vim.api.nvim_buf_is_valid(buf) then
       vim.schedule(function()
-        vim.bo[buf].modifiable = true
+        if
+          buffers[buf]
+          and vim.api.nvim_buf_is_loaded(buf)
+          and vim.bo[buf].buflisted
+        then
+          vim.bo[buf].modifiable = true
+        end
       end)
     end
   end

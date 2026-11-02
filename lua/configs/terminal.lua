@@ -211,8 +211,13 @@ function M.open_new(cwd)
   if zsh_available == nil then
     zsh_available = vim.fn.executable "zsh" == 1
   end
-  vim.cmd.terminal(zsh_available and "zsh" or "bash")
-  M.show(vim.api.nvim_get_current_buf())
+  -- :terminal uses :enew, which can reuse an empty, modified buffer.
+  -- Start in a fresh scratch buffer and keep the previous buffer's edits.
+  local buf = vim.api.nvim_create_buf(true, true)
+  vim.api.nvim_buf_call(buf, function()
+    vim.fn.jobstart({ zsh_available and "zsh" or "bash" }, { term = true })
+  end)
+  M.show(buf)
   return true
 end
 

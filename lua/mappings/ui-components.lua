@@ -164,8 +164,8 @@ map("n", "<leader>th", function()
   vim.cmd "Telescope colorscheme"
 end, { desc = "Theme" })
 
--- neotree
-map(ui_components_modes, "<A-e>", function()
+-- Caps Lock reaches Neovim as F13 through GNOME and Kitty.
+map(ui_components_modes, "<F13>", function()
   ui_prevent_mess()
   local current_buf = vim.api.nvim_get_current_buf()
   local file_path = vim.api.nvim_buf_get_name(current_buf)
