@@ -16,7 +16,7 @@ local bindings = {
   {
     "<leader>gmr",
     function(state)
-      require("telescope_pretty_picker.remote_picker").open { state = state }
+      require("telescope_pretty_picker").show_remotes { state = state }
     end,
     "manager remotes",
   },

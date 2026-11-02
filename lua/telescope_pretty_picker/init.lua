@@ -18,6 +18,11 @@ function M.show_branches(opts)
   return branch_picker(opts)
 end
 
+---@param opts? { cwd?: string, state?: table }
+function M.show_remotes(opts)
+  return require("telescope_pretty_picker.remote_picker").open(opts)
+end
+
 ---@param opts? { state?: table }
 function M.show_visible(opts)
   return visible_picker(opts)
