@@ -24,7 +24,16 @@ vim.api.nvim_create_autocmd({
     "TerminalModeIndicator",
     { clear = true }
   ),
-  callback = function()
+  callback = function(event)
+    -- Insert completion submodes do not change the terminal indicator. A forced
+    -- redraw there exposes the temporarily removed completion prefix in inputs.
+    if
+      event.event == "ModeChanged"
+      and vim.v.event.old_mode ~= "t"
+      and vim.v.event.new_mode ~= "t"
+    then
+      return
+    end
     for _, win in ipairs(vim.api.nvim_list_wins()) do
       -- Clean up shading left by the previous implementation when reloading.
       if vim.w[win].terminal_original_winhl ~= nil then

@@ -33,6 +33,7 @@ return {
     ["<Esc>"] = actions.close,
     ["q"] = actions.close,
     ["y"] = yank_selection,
+    ["f"] = dummy,
     ["<C-h>"] = actions.results_scrolling_left,
     ["<C-l>"] = actions.results_scrolling_right,
     ["<C-j>"] = actions.results_scrolling_down,

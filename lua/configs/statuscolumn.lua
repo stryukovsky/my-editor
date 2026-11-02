@@ -112,7 +112,19 @@ local function update_gutters()
       if not hidden_gutters[win] then
         local saved = {}
         for _, option in ipairs(gutter_options) do
-          saved[option] = vim.api.nvim_get_option_value(option, { win = win })
+          saved[option] = vim.api.nvim_get_option_value(option, { win = win, scope = "local" })
+        end
+        -- A split of a technical window inherits its hidden gutter options.
+        if
+          saved.statuscolumn == ""
+          and saved.foldcolumn == "0"
+          and saved.signcolumn == "no"
+          and not saved.number
+          and not saved.relativenumber
+        then
+          for _, option in ipairs(gutter_options) do
+            saved[option] = vim.api.nvim_get_option_value(option, { scope = "global" })
+          end
         end
         -- statuscol may already have cleared this on FileType/BufWinEnter.
         if saved.statuscolumn == "" then
@@ -128,11 +140,11 @@ local function update_gutters()
         relativenumber = false,
       }
       for option, value in pairs(hidden) do
-        vim.api.nvim_set_option_value(option, value, { win = win })
+        vim.api.nvim_set_option_value(option, value, { win = win, scope = "local" })
       end
     elseif hidden_gutters[win] then
       for option, value in pairs(hidden_gutters[win]) do
-        vim.api.nvim_set_option_value(option, value, { win = win })
+        vim.api.nvim_set_option_value(option, value, { win = win, scope = "local" })
       end
       hidden_gutters[win] = nil
     end

@@ -1,24 +1,4 @@
 ---@diagnostic disable: missing-fields
--- Keep the pinned fork patched across lazy.nvim installs/updates.
--- Remove this patch once the fork exposes reliable repository refreshes.
-local source = vim.api.nvim_get_runtime_file("lua/git-conflict.lua", false)[1]
-local patch = vim.fn.stdpath "config" .. "/patches/git-conflict-refresh.patch"
-if source then
-  local dir = vim.fs.dirname(vim.fs.dirname(source))
-  local applied = vim
-    .system({ "git", "-C", dir, "apply", "--reverse", "--check", patch })
-    :wait()
-  if applied.code ~= 0 then
-    local result = vim
-      .system({ "git", "-C", dir, "apply", patch }, { text = true })
-      :wait()
-    if result.code ~= 0 then
-      error(
-        "Could not apply git-conflict refresh fix: " .. (result.stderr or "")
-      )
-    end
-  end
-end
 local gitconflict = require "git-conflict"
 local close_trouble_succeeded = require "utils.close_trouble_succeeded"
 local ui_prevent_mess = require "utils.ui_prevent_mess"

@@ -300,8 +300,11 @@ local config = {
     end,
     ["copy_path"] = function(state)
       local node = state.tree:get_node()
-      local filepath = node:get_id()
-      local filename = node.name
+      local filepath = node and node.path
+      if not filepath or node.type == "message" then
+        return
+      end
+      local filename = vim.fs.basename(filepath)
       local modify = vim.fn.fnamemodify
 
       local results = {
@@ -364,6 +367,10 @@ local config = {
     mappings = {
       ["h"] = "go_shallow",
       ["l"] = "go_deep",
+      ["<cr>"] = "go_deep",
+      ["f"] = "slash_search",
+      ["<A-f>"] = "slash_search",
+      ["y"] = "copy_path",
       ["R"] = "noop",
       ["<leader>rr"] = "refresh",
       ["<Tab>"] = "noop",
@@ -416,18 +423,13 @@ local config = {
     hijack_netrw_behavior = "disabled",
     window = {
       mappings = {
-        ["<cr>"] = "go_deep", -- expand nested file takes precedence
-        ["h"] = "go_shallow",
-        ["l"] = "go_deep",
         ["oo"] = "open_new_window",
         ["<leader>tn"] = "open_new_terminal",
         ["O"] = "open_parent_folder",
         ["F"] = "telescope_grep",
         ["R"] = "replace_in_directory",
         ["<A-F>"] = "telescope_grep",
-        ["<A-f>"] = "slash_search",
         ["<A-i>"] = "show_file_details",
-        ["f"] = "slash_search",
         ["I"] = add_to_gitignore,
         ["<C-x>"] = "clear_filter",
         ["<C-c>"] = "clear_filter",
@@ -443,7 +445,6 @@ local config = {
         ["p"] = "paste_from_clipboard",
         ["x"] = "cut_to_clipboard",
         ["e"] = "make_executable",
-        ["y"] = "copy_path",
       },
     },
     filtered_items = {
@@ -472,9 +473,6 @@ local config = {
     },
     window = {
       mappings = {
-        ["C"] = "close_all_nodes",
-        ["h"] = "toggle_node",
-        ["l"] = "open",
         ["I"] = add_to_gitignore,
         ["S"] = "git_add_all",
         ["s"] = "git_add_file",
@@ -512,25 +510,49 @@ local config = {
     },
   },
   document_symbols = {
+    follow_cursor = true,
+    components = {
+      source_line = function(_, node)
+        local range = node.extra and node.extra.selection_range
+        return {
+          text = range and tostring(range.start[1] + 1) or "",
+          highlight = "NeoTreeDimText",
+        }
+      end,
+    },
     renderers = {
       root = {
         { "indent" },
-        { "icon", default = "C" },
+        { "icon", default = "󰈙" },
         { "name", zindex = 10 },
       },
-      -- Icon + name only (no "Function" / "Constant" kind_name column).
+      -- Keep kind colors and icons; align source lines at the right edge.
       symbol = {
-        { "indent", with_expanders = true },
+        {
+          "indent",
+          with_expanders = true,
+          expander_collapsed = "",
+          expander_expanded = "",
+        },
         { "kind_icon", default = "?" },
-        { "name", zindex = 10 },
+        {
+          "container",
+          content = {
+            { "name", zindex = 10 },
+            { "source_line", zindex = 20, align = "right" },
+          },
+        },
       },
     },
     window = {
       mappings = {
-        ["r"] = "noop",
-        ["<leader>rn"] = "noop",
-        ["f"] = "noop",
-        ["<A-f>"] = "noop",
+        ["<cr>"] = "go_deep",
+        ["r"] = "rename",
+        ["<leader>rn"] = "rename",
+        ["y"] = "copy_path",
+        ["/"] = "noop",
+        ["f"] = "slash_search",
+        ["<A-f>"] = "slash_search",
         ["<C-r>"] = function() end,
         ["F"] = "noop",
         ["<A-F>"] = "noop",

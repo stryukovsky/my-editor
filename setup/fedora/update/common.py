@@ -69,6 +69,7 @@ def repository_commands(group):
             "sudo",
             tool("dnf"),
             "upgrade",
+            "-y",
             "--refresh",
             "--repo=" + ",".join(sorted(selected)),
         )

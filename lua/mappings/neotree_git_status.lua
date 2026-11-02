@@ -6,6 +6,7 @@ local excluded_aliases = {
   x = true,
   C = true,
   h = true,
+  f = true,
   gg = true,
   G = true,
   S = true,

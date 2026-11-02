@@ -13,11 +13,17 @@ local bindings = {
   { "<leader>gbr", git.branch_rename, "rename current branch" },
   { "<leader>gc", git.commit, "commit staged changes" },
   { "<leader>gC", git.checkpoint, "commit checkpoint" },
+  {
+    "<leader>gmr",
+    function(state)
+      require("telescope_pretty_picker.remote_picker").open { state = state }
+    end,
+    "manager remotes",
+  },
 }
 for _, binding in ipairs(bindings) do
   map("n", binding[1], binding[2], { desc = "git: " .. binding[3] })
 end
-
 
 map(
   "n",

@@ -24,8 +24,8 @@ end
 
 -- Optional paths allow verification without touching the user's clipboard.
 function M.write(paths, path)
-  if not valid_paths(paths) or #paths == 0 then
-    return nil, "Invalid or empty copy selection"
+  if not valid_paths(paths) then
+    return nil, "Invalid copy selection"
   end
   path = path or state_path()
   local ok, err = pcall(vim.fn.mkdir, vim.fn.fnamemodify(path, ":h"), "p")
@@ -97,7 +97,22 @@ local function notify(message, level)
 end
 
 function M.copy_visual(state, nodes)
-  local paths, clipboard = {}, {}
+  local paths, err = M.read()
+  if not paths then
+    notify(err, vim.log.levels.ERROR)
+    return
+  end
+  local clipboard, selected = {}, {}
+  for _, path in ipairs(paths) do
+    clipboard[path] = {
+      action = "copy",
+      node = {
+        id = path,
+        path = path,
+        name = vim.fn.fnamemodify(path, ":t"),
+      },
+    }
+  end
   for _, node in ipairs(nodes or {}) do
     if
       node.type == "file"
@@ -107,16 +122,22 @@ function M.copy_visual(state, nodes)
       local path = node.path or node:get_id()
       if type(path) == "string" and path ~= "" then
         path = vim.fn.fnamemodify(path, ":p"):gsub("/$", "")
-        if path ~= "" and not clipboard[path] then
-          paths[#paths + 1] = path
-          clipboard[path] = { action = "copy", node = node }
+        if path ~= "" and not selected[path] then
+          selected[path] = true
+          if clipboard[path] then
+            clipboard[path] = nil
+          else
+            clipboard[path] = { action = "copy", node = node }
+          end
         end
       end
     end
   end
-  if #paths == 0 then
+  if not next(selected) then
     return
   end
+  paths = vim.tbl_keys(clipboard)
+  table.sort(paths)
   local ok, err = M.write(paths)
   if not ok then
     notify(

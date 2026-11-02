@@ -30,7 +30,7 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
         """
       local root,override=...
       vim.opt.rtp:prepend(root)
-      for _,plugin in ipairs{'langmapper.nvim','friendly-snippets','material.nvim'} do
+      for _,plugin in ipairs{'langmapper.nvim','friendly-snippets','material.nvim','lualine.nvim'} do
         vim.opt.rtp:append(root..'/data/lazy/'..plugin)
       end
       vim.opt.rtp:append(root..'/data/tree-sitter')
@@ -41,8 +41,18 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
         package.preload['configs.input_completion']=function() return dofile(override) end
       end
       require('configs.input').setup()
+      require('configs.terminal')
       require('configs.material-theme')
       vim.o.background='light';vim.cmd.colorscheme('material-lighter')
+      require('lualine').setup {
+        options = {
+          theme = 'auto', globalstatus = true,
+          ignore_focus = function(win) return vim.api.nvim_win_get_config(win).relative ~= '' end,
+        },
+        sections = { lualine_a = {'mode'}, lualine_c = {function() return 'INPUT-STATUS' end} },
+      }
+      require('lualine').refresh {force=true}
+      vim.go.statusline=vim.wo.statusline
       vim.o.autocompletedelay=137
       _G.input_checks={}
       _G.input_result='pending'
@@ -57,10 +67,13 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
     phase = "setup"
     seen_popup = False
     blank_frames = 0
+    blank_status_frames = 0
+    blank_input_frames = 0
+    seen_input = False
     errors = []
 
     def redraw(method, updates):
-        global seen_popup, blank_frames
+        global seen_popup, blank_frames, blank_status_frames, blank_input_frames, seen_input
         if method != "redraw":
             return
         for update in updates:
@@ -80,10 +93,18 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
                             column += 1
                 elif event == "flush" and phase == "typing":
                     screen = ["".join(row) for row in grids.get(1, [])]
+                    for row, line in enumerate(screen[:-1]):
+                        if " Commit " in line:
+                            text = screen[row + 1].split("│")[1].strip()
+                            if seen_input and not text:
+                                blank_input_frames += 1
+                            seen_input = seen_input or bool(text)
                     visible = any("conventional commit" in row for row in screen)
                     if seen_popup and not visible:
                         blank_frames += 1
                     seen_popup = seen_popup or visible
+                    if not any("INPUT-STATUS" in row for row in screen):
+                        blank_status_frames += 1
 
     def call(function, *args):
         def execute():
@@ -112,7 +133,7 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
             open_input()
             call(
                 lua,
-                "_G.input_checks.delay=vim.o.autocompletedelay;_G.input_checks.docs=vim.bo.completeopt:find('popup',1,true)~=nil",
+                "_G.input_checks.delay=vim.o.autocompletedelay;_G.input_checks.docs=vim.bo.completeopt:find('popup',1,true)~=nil;_G.input_checks.insert_title=vim.api.nvim_win_get_config(0).title[1][1]",
             )
             phase = "typing"
             for character in "feat":
@@ -136,6 +157,7 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
             open_input()
             call(lua, "vim.o.autocompletedelay=73")
             key("<Esc>")
+            call(lua, "_G.input_checks.normal_title=vim.api.nvim_win_get_config(0).title[1][1]")
             key("q", 0.25)
             call(
                 lua,
@@ -145,6 +167,11 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
             call(lua, "vim.api.nvim_win_close(0,true)")
             time.sleep(0.25)
             call(lua, "_G.input_checks.closed=vim.o.autocompletedelay")
+            call(lua, "vim.cmd.enew();vim.fn.jobstart({'cat'},{term=true});vim.cmd.startinsert()")
+            time.sleep(0.2)
+            call(lua, "vim.g.statusline_winid=vim.api.nvim_get_current_win();_G.input_checks.terminal_insert=require('configs.terminal').mode_label();_G.input_checks.terminal_winbar=vim.wo.winbar")
+            key("<C-\\><C-n>")
+            call(lua, "_G.input_checks.terminal_normal=require('configs.terminal').mode_label()")
         finally:
             nvim.async_call(nvim.stop_loop)
 
@@ -153,6 +180,9 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
         nvim.run_loop(None, redraw)
         assert not errors, errors
         checks = lua("return _G.input_checks")
+        assert seen_input and blank_input_frames == 0, f"typed text disappeared in {blank_input_frames} frames"
+        assert checks["insert_title"] == " INSERT " and checks["normal_title"] == " NORMAL ", checks
+        assert blank_status_frames == 0, f"lualine disappeared in {blank_status_frames} frames"
         assert seen_popup, "completion popup was never rendered"
         assert (
             blank_frames == 0
@@ -163,12 +193,15 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
         assert checks["restored"] == 137, checks
         assert checks["external"] == 73 and checks["cancelled"], checks
         assert checks["closed"] == 73, checks
+        assert "leave terminal" in checks["terminal_insert"], checks
+        assert "enter terminal" in checks["terminal_normal"], checks
+        assert "mode_label" in checks["terminal_winbar"], checks
         assert lua("return vim.v.errmsg") == "", lua("return vim.v.errmsg")
         print(
-            "PASS native popup stays visible across typed characters; snippet acceptance and submission preserved"
+            "PASS typed input stays visible during completion; popup and lualine stay visible; snippet acceptance and submission preserved"
         )
         print(
-            "PASS completion delay restored on submit, cancel and window close; external option changes preserved"
+            "PASS completion delay restoration and terminal mode indicator preserved"
         )
     finally:
         try:

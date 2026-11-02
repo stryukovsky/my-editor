@@ -262,6 +262,24 @@ map(ui_components_modes, "<A-T>", function()
   neotest_output_opened = not neotest_output_opened
 end, { desc = "UI Test show output" })
 
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("NeotestCloseMappings", { clear = true }),
+  pattern = { "neotest-summary", "neotest-output-panel", "neotest-output" },
+  callback = function(event)
+    map("n", "q", function()
+      if event.match == "neotest-summary" then
+        neotest_summary_opened = false
+        neotest.summary.close()
+      elseif event.match == "neotest-output-panel" then
+        neotest_output_opened = false
+        neotest.output_panel.close()
+      else
+        vim.api.nvim_win_close(0, true)
+      end
+    end, { buffer = event.buf, desc = "Close test window" })
+  end,
+})
+
 -- trouble plugin
 -- "<cmd>Trouble diagnostics toggle focus=true<CR>"
 map(ui_components_modes, "<A-p>", function()

@@ -30,6 +30,7 @@ local ranking = require "native_completion"
 local function refresh()
   local floating = vim.api.nvim_win_get_config(0).relative ~= ""
   local disabled = vim.b.completion == false
+    or vim.bo.filetype == "TelescopePrompt"
     or vim.bo.buftype == "prompt"
     or (
       vim.bo.buftype ~= ""
