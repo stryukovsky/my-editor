@@ -19,6 +19,8 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
     subprocess.run(
         ["git", "init", "-q", "-b", "topic/input-render", str(temporary)], check=True
     )
+    (temporary / "src/nested").mkdir(parents=True)
+    (temporary / "src/nested/ui.lua").write_text("return {}\n")
     nvim = pynvim.attach(
         "child", argv=["nvim", "--embed", "--headless", "-u", "NONE", "-i", "NONE"]
     )
@@ -154,6 +156,20 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
                 lua,
                 "_G.input_checks.value=_G.input_result;_G.input_checks.restored=vim.o.autocompletedelay",
             )
+            for token, expected, label in [
+                ("src/nested/ui", "src/nested/ui.lua", "file"),
+                ("src/nested/", "src/nested/", "folder"),
+            ]:
+                open_input()
+                key("fix: " + token, 0.3)
+                key("<C-n><CR>")
+                call(
+                    lua,
+                    "local label,expected=...;_G.input_checks[label]=vim.api.nvim_get_current_line()==expected and _G.input_result=='pending'",
+                    label,
+                    "fix: " + expected,
+                )
+                key("<CR>", 0.25)
             open_input()
             call(lua, "vim.o.autocompletedelay=73")
             key("<Esc>")
@@ -190,6 +206,7 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
         assert checks["delay"] == 0 and not checks["docs"], checks
         assert checks["snippet"] and checks["not_submitted"], checks
         assert checks["value"] == "feat(render): fix menu flicker", checks
+        assert checks["file"] and checks["folder"], checks
         assert checks["restored"] == 137, checks
         assert checks["external"] == 73 and checks["cancelled"], checks
         assert checks["closed"] == 73, checks
@@ -203,6 +220,7 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
         print(
             "PASS completion delay restoration and terminal mode indicator preserved"
         )
+        print("PASS changed file and parent folder completion acceptance in commit input")
     finally:
         try:
             nvim.command("qa!")

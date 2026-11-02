@@ -43,6 +43,36 @@ local function commit_templates()
   return templates
 end
 
+local function changed_paths(output)
+  local items, seen = {}, {}
+  local records = vim.split(output, "\0", { plain = true, trimempty = true })
+  local index = 1
+  local function add(path, menu)
+    if not seen[path] then
+      seen[path] = true
+      items[#items + 1] = { word = path, menu = menu }
+    end
+  end
+  while index <= #records do
+    local record = records[index]
+    local status, path = record:sub(1, 2), record:sub(4)
+    if path ~= "" then
+      add(path, "Changed file")
+      local parent = path:match "^(.*)/[^/]+$"
+      while parent do
+        add(parent .. "/", "Changed folder")
+        parent = parent:match "^(.*)/[^/]+$"
+      end
+    end
+    -- Porcelain -z emits a rename/copy's destination first, then its old path.
+    index = index + (status:find "[RC]" and 2 or 1)
+  end
+  table.sort(items, function(a, b)
+    return a.word < b.word
+  end)
+  return items
+end
+
 function M.complete(findstart, _)
   local before = vim.api.nvim_get_current_line():sub(1, vim.fn.col "." - 1)
   local token = before:match "[%w_./%-]*$" or ""
@@ -58,6 +88,7 @@ function M.complete(findstart, _)
   if type(branch) == "string" and branch ~= "" then
     items[#items + 1] = { word = branch, menu = "Current branch" }
   end
+  vim.list_extend(items, vim.b.input_git_paths or {})
   if token ~= "" then
     items = vim.fn.matchfuzzy(items, token, { key = "word" })
   end
@@ -94,6 +125,22 @@ function M.setup(buf, cwd)
       end)
     end
   )
+  vim.system({
+    "git",
+    "--no-optional-locks",
+    "-C",
+    cwd,
+    "status",
+    "--porcelain=v1",
+    "-z",
+    "--untracked-files=all",
+  }, {}, function(result)
+    vim.schedule(function()
+      if vim.api.nvim_buf_is_valid(buf) and result.code == 0 then
+        vim.b[buf].input_git_paths = changed_paths(result.stdout or "")
+      end
+    end)
+  end)
   vim.api.nvim_create_autocmd("CompleteDone", {
     buffer = buf,
     callback = function()

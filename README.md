@@ -363,9 +363,13 @@ end)
 ```
 
 The commit action uses this automatically. Git commit inputs offer the current
-branch (from the supplied repository `cwd`) and installed `gitcommit` snippet
-prefixes such as `feat`, `fix`, and `chore`. Templates expand their first line
-only, preserving the single-line prompt. Enter accepts a selected suggestion;
+branch (from the supplied repository `cwd`), changed file paths, their parent
+folders, and installed `gitcommit` snippet prefixes such as `feat`, `fix`, and
+`chore`. File and folder suggestions use repository-relative paths; folders end
+in `/`. Staged, unstaged, deleted, and untracked files are included, with renamed
+files suggested under their new paths. Git paths are loaded when the prompt
+opens and can be fuzzy matched anywhere in the message. Templates expand their
+first line only, preserving the single-line prompt. Enter accepts a selected suggestion;
 press Enter again to submit. Tab/Shift-Tab move through snippet placeholders.
 Ctrl-Space opens completion manually. Detached HEAD/non-Git directories omit the
 branch suggestion. Filetype/Tree-sitter alone do not generate Git suggestions.
