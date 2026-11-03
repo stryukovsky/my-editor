@@ -42,7 +42,10 @@ for _, spec in ipairs(specs) do
   for _, language in ipairs(spec.languages or {}) do
     languages[language] = true
   end
-  if contains(spec.languages, query) and (not category or contains(spec.categories, category)) then
+  if
+    contains(spec.languages, query)
+    and (not category or contains(spec.categories, category))
+  then
     local executables = vim.tbl_keys(spec.bin or {})
     table.sort(executables)
     matches[#matches + 1] = {
@@ -69,6 +72,8 @@ else
     language = query,
     category = category,
     candidates = matches,
-    note = #matches == 0 and "No cached matches; verify language label, category, registry freshness and shared tools." or nil,
+    note = #matches == 0
+        and "No cached matches; verify language label, category, registry freshness and shared tools."
+      or nil,
   })
 end

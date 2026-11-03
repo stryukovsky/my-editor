@@ -79,6 +79,6 @@ if [[ ! -f $key_file ]]; then
 elif [[ ! -f $key_file.pub ]]; then
   ssh-keygen -y -f "$key_file" > "$key_file.pub"
 fi
-printf '\nSetup complete. Start zsh, then use clv, cdv, wv (overwrite remote), or rv (stash/fetch/pop).\n'
+printf '\nSetup complete. Start zsh, then use clv, cdv, wv (overwrite remote), or rv (discard unstaged tracked edits and pull).\n'
 printf '\nFinally, add this public key to GitHub: https://github.com/settings/ssh/new\n'
 cat -- "$key_file.pub"

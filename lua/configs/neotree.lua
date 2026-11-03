@@ -9,6 +9,7 @@ local system_file_explorer = require "utils.system_file_explorer"
 local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
 local notify = require "integrations.notify"
+local git_actions = require "moonshine.git.commands"
 local script = require "utils.script"
 
 -- Reuse terminal windows; the terminal stays available in the buffer bar.
@@ -149,6 +150,10 @@ local config = {
     },
   },
   commands = {
+    git_commit = git_actions.commit,
+    git_commit_and_push = git_actions.commit_and_push,
+    git_branch_create = git_actions.branch_create,
+    git_branch_rename = git_actions.branch_rename,
     ["open_new_window"] = function(state)
       local node = state.tree:get_node()
       if not node or not node:get_id() then

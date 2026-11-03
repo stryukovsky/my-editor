@@ -22,6 +22,13 @@ Terminal buffers and command editing share the `terminal_reimagined` plugin;
 command editing lives in `terminal_reimagined.command`. Ripgrep navigation uses
 `moonshine.ripgreplsp`.
 
+`dap_tools` owns on-demand debug adapter activation. `<leader>da` ranks languages
+by project marker files and previews their debuggee configurations. Several
+matching languages keep the picker open after Enter so they can be activated
+together. All adapter activation and presets are owned by `dap_tools`. Rust
+uses CodeLLDB; Java/Scala use their LSP connections only when launching.
+`<leader>dd` remains the launch picker.
+
 To add a feature, create `<feature>/lua/<module>/init.lua` here and put its
 options/setup call in `lua/configs/` when needed. The local spec discovers the
 new directory automatically. These plugins still use shared config helpers

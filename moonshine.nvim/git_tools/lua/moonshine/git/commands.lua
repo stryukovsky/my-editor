@@ -95,6 +95,7 @@ run = function(cwd, steps, action, enqueue)
       on_exit = function(code, stderr, stdout)
         vim.schedule(function()
           if code == 0 and index < #steps then
+            refresh(cwd)
             step(index + 1)
           else
             finished(code, stderr, stdout)
@@ -152,7 +153,7 @@ function M.stash_pop(state)
   command(state, { "stash", "pop" }, action("stash_pop", "Applying stash…", "Stash applied", "Could not apply stash"))
 end
 
-local function input_command(state, prompt, args, info, default, filetype)
+local function input_command(state, prompt, args, info, default, filetype, following_steps)
   local cwd = root(state)
   if not cwd then
     return
@@ -163,7 +164,9 @@ local function input_command(state, prompt, args, info, default, filetype)
     end
     local command_args = vim.list_extend(vim.deepcopy(args), { value })
     local details = vim.tbl_extend("force", info, { done = info.done .. value })
-    run(cwd, { command_args }, details)
+    local steps = { command_args }
+    vim.list_extend(steps, following_steps or {})
+    run(cwd, steps, details)
   end)
 end
 
@@ -195,15 +198,25 @@ function M.branch_rename(state)
   )
 end
 
-function M.commit(state)
+function M.commit(state, and_push)
   input_command(
     state,
     "Commit message: ",
     { "commit", "-m" },
-    action("commit", "Committing…", "Committed: ", "Commit failed"),
+    action(
+      "commit",
+      and_push and "Committing and pushing…" or "Committing…",
+      and_push and "Committed and pushed: " or "Committed: ",
+      and_push and "Commit/push failed" or "Commit failed"
+    ),
     nil,
-    "gitcommit"
+    "gitcommit",
+    and_push and { { "-c", "push.autoSetupRemote=true", "push" } } or nil
   )
+end
+
+function M.commit_and_push(state)
+  M.commit(state, true)
 end
 
 function M.checkpoint(state)

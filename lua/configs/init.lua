@@ -45,7 +45,7 @@ require "configs.completion"
 require "configs.whichkey"
 require "configs.grug-far"
 require "configs.treesj"
-require "configs.debuggers"
+require("dap_tools").setup()
 require "configs.debug_output"
 require "configs.scenarios_of_codebase"
 require "configs.scalar_lines"

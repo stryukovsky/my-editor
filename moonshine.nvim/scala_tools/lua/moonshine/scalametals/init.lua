@@ -1,5 +1,4 @@
 local notify = require "integrations.notify"
-local dap = require "dap"
 
 local M = {}
 
@@ -71,39 +70,6 @@ local function create_config()
   metals_config.init_options.statusBarProvider = "off"
 
   metals_config.capabilities = vim.lsp.protocol.make_client_capabilities()
-
-  metals_config.on_attach = function()
-    require("metals").setup_dap()
-
-    -- scala
-    dap.configurations.scala = {
-      {
-        type = "scala",
-        request = "launch",
-        name = "RunOrTest",
-        metals = {
-          runType = "runOrTestFile",
-          --args = { "firstArg", "secondArg", "thirdArg" }, -- here just as an example
-        },
-      },
-      {
-        type = "scala",
-        request = "launch",
-        name = "Test Target",
-        metals = {
-          runType = "testTarget",
-        },
-      },
-      {
-        type = "scala",
-        request = "launch",
-        name = "Sbt run",
-        metals = {
-          shellCommand = "sbt run",
-        },
-      },
-    }
-  end
 
   return metals_config
 end

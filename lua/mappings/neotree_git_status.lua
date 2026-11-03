@@ -2,7 +2,13 @@ local map = require "mappings.map"
 
 local M = {}
 
-local source_commands = { c = "git_commit", p = "git_pull", P = "git_push" }
+local source_commands = {
+  c = "git_commit",
+  bc = "git_branch_create",
+  br = "git_branch_rename",
+  p = "git_pull",
+  P = "git_push",
+}
 
 local excluded_aliases = {
   x = true,

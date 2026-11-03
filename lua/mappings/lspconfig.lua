@@ -65,10 +65,6 @@ map("n", "<leader>rn", function()
   vim.lsp.buf.rename()
 end, opts "renamer")
 
-map("n", "<leader>py", function()
-  require("moonshine.python").setup()
-end, opts "Python: setup")
-
 map("n", "K", function()
   vim.lsp.buf.signature_help()
 end, { silent = true, noremap = true, desc = "LSP toggle signature" })

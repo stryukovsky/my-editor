@@ -102,8 +102,12 @@ parens).
 - LSP servers enabled in `lua/configs/lspconfig.lua`: html, cssls, ts_ls,
   lua_ls, sqls, bashls, basedpyright, gopls, clangd, solidity_ls, texlab, jdtls,
   move_analyzer
-- DAP configs in `lua/configs/debuggers.lua`: pwa-node (JS/TS), jdtls (Java),
-  dap-python, dap-go, rustaceanvim (Rust), nvim-metals (Scala)
+- DAP activation and presets live in `moonshine.nvim/dap_tools/lua/dap_tools/`.
+  `<leader>da` opens the project-ranked language picker; adapters and predefined
+  configurations are registered only after activation. `<leader>dd` starts a
+  debuggee using the existing launch picker. `dap_tools` owns adapter activation
+  and presets for every supported language. Rust uses CodeLLDB. Java and Scala
+  register without an LSP connection; launching requires jdtls or Metals.
 - Mason handles LSP/DAP/linter binary installs
 
 ## Notable Plugins

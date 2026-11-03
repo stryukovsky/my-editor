@@ -8,6 +8,10 @@ local ui_prevent_mess = require "utils.ui_prevent_mess"
 -- local trouble = require "trouble"
 
 -- debugger
+map("n", "<leader>da", function()
+  require("dap_tools").open()
+end, { desc = "debug activate adapter" })
+
 map("n", "<leader>dd", function()
   debug_output.launch()
 end, { desc = "debug select and start" })

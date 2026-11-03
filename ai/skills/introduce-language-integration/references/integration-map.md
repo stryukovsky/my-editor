@@ -10,7 +10,7 @@ for consolidation, not an already implemented registry.
 | --- | --- | --- |
 | Formatting | `lua/configs/conform.lua`, `lua/plugins/core.lua`, `lua/mappings/inspection.lua` | Conform receives its options through the plugin spec; format-on-save is commented out. Keep formatter ordering and custom options. |
 | LSP | `lua/configs/lspconfig.lua`, `lua/plugins/mason.lua` | Native `vim.lsp.config` / `enable`; wrappers around start/attach skip disabled, big-file and review buffers. |
-| LSP controls | `moonshine.nvim/lsp-riced/lua/lsp-riced/`, `lua/configs/lsp-riced.lua`, `lua/mappings/lsp_controls.lua` | Inspect server discovery/start/stop paths and their use of `configs.lspconfig.servers` when changing registry ownership. `lua/configs/lsp_controls.lua` is a compatibility facade. |
+| LSP controls | `moonshine.nvim/lsp-riced/lua/lsp-riced/`, `lua/configs/lsp-riced.lua`, `lua/mappings/lsp_controls.lua` | Start discovery reads native LSP configs/runtimepath; server actions include explicit Scala enablement. Preserve those paths when changing registry ownership. `lua/configs/lsp_controls.lua` is a compatibility facade. |
 | Tools | `lua/configs/mason.lua`, `lua/plugins/mason.lua`, `lua/options.lua`, `README.md` | Mason root and PATH are `data/mason`; README contains a manual MasonInstall list, not automatic synchronization. No Mason bridge plugin specs. |
 | DAP | `lua/configs/debuggers.lua`, `lua/mappings/dap.lua`, specialist modules below | Shared JS and CodeLLDB adapters, language launch configurations and global envFile normalization. |
 | Debug UI/policy | `lua/configs/debug_output.lua`, `moonshine.nvim/debug_output/lua/debug_output/`, `lua/integrations/trouble/sources/dap_breakpoints.lua` | Shared runtime/debug output behavior; retain adapter compatibility when moving definitions. |
@@ -123,7 +123,7 @@ aliases and embedded languages. No root queries/ or lsp/ directory was present.
 | Area | Sources / implications |
 | --- | --- |
 | Testing | `lua/configs/neotest.lua`, `lua/plugins/mason.lua`: Forge local adapter, Go, rustaceanvim, Python, Scala (sbt/scalatest), Jest (npm test --). Preserve adapter factories/options and dependency load timing. Local Forge adapter: `moonshine.nvim/neotest-forge/lua/neotest-forge/`. |
-| Refactoring | `lua/configs/refactoring-setup.lua`: language-specific return/parameter prompts; `lua/mappings/refactoring-setup.lua`. Read `lua/mappings/init.lua` to verify these modules are loaded before assuming setup is active. |
+| Refactoring | `lua/configs/refactoring-setup.lua`: language-specific return/parameter prompts, but this setup module is not required by configs/init or mappings/init. The bindings in `lua/mappings/refactoring-setup.lua` are loaded. Preserve the distinction between intended options and active behavior. |
 | Comments | `lua/configs/comment.lua`: Solidity line/block overrides; sh/bash/zsh/env/dotenv hash comments and pre_hook. |
 | Search fallback | `moonshine.nvim/ripgreplsp/lua/moonshine/ripgreplsp/init.lua`: FT_TO_LANG ast-grep aliases plus language-specific definition patterns; ast-grep executable lookup and rg fallback. This catalogue is distinct from Tree-sitter grammar names. |
 | Spell | `lua/options.lua` and `moonshine.nvim/bigfiles/lua/moonshine/bigfiles/init.lua` duplicate ft_string_groups. Preserve spell exclusions and existing buffer guards while moving shared data. Strict grammar module adjusts highlights, not language tooling. |
@@ -158,3 +158,5 @@ Installed implementation examples to inspect without modifying:
 
 Do not treat installed data/ contents as versioned configuration or edit them to
 implement language support. Keep tool selection explicit in the unified source.
+The actual `.stylua.toml` uses 80 columns, two-space indentation and no call
+parentheses, despite AGENTS.md's older 150-column description.

@@ -12,6 +12,8 @@ local SECTIONS = {
       { "<leader>sa", "spelling suggestions" },
       { "<leader>ta", "convert text case" },
       { "<leader>aa", "AI actions" },
+      { "<leader>da", "activate debug adapter" },
+      { "<leader>dd", "select and start debuggee" },
     },
   },
   {

@@ -30,11 +30,9 @@ return {
   { "mfussenegger/nvim-jdtls" },
   {
     "leoluz/nvim-dap-go",
-    ft = "go",
+    lazy = true,
     dependencies = "mfussenegger/nvim-dap",
-    config = function(_, opts)
-      require("dap-go").setup(opts)
-    end,
+    config = function() end,
   },
   {
     "scalameta/nvim-metals",
@@ -46,8 +44,13 @@ return {
   },
   {
     "mrcjkb/rustaceanvim",
-    version = "^5", -- Recommended
+    version = "^9", -- Recommended
     lazy = false, -- This plugin is already lazy
+    init = function()
+      vim.g.rustaceanvim = vim.tbl_deep_extend("force", vim.g.rustaceanvim or {}, {
+        dap = { autoload_configurations = false },
+      })
+    end,
   },
   {
     "mfussenegger/nvim-dap-python",

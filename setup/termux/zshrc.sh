@@ -60,30 +60,21 @@ wv() (
   git push --force -- "$remote" "HEAD:$target"
 )
 
-# Read vault: keep local edits in a stash while fast-forwarding to the remote.
+# Read vault: replace unstaged tracked edits with the fetched version.
 rv() (
   cdv || return
   _vault_ready || return
-  local branch remote target changes stash_id=''
+  local branch remote target
   branch=$(git symbolic-ref --quiet --short HEAD) || return
   remote=$(git config --get "branch.$branch.remote") || remote=origin
   target=$(git config --get "branch.$branch.merge") || target="refs/heads/$branch"
-  changes=$(git status --porcelain) || return
-  if [[ -n $changes ]]; then
-    git stash push --include-untracked -m termux-vault-read || return
-    stash_id=$(git rev-parse refs/stash) || return
-  fi
-  if ! git fetch -- "$remote" "$target" || ! git merge --ff-only FETCH_HEAD; then
-    [[ -z $stash_id ]] || print -u2 "Local edits are preserved in stash $stash_id (termux-vault-read)."
+  git fetch -- "$remote" "$target" || return
+  if ! git merge-base --is-ancestor HEAD FETCH_HEAD; then
+    print -u2 'Cannot fast-forward to the fetched branch; local edits are unchanged.'
     return 1
   fi
-  if [[ -n $stash_id ]]; then
-    if [[ $(git rev-parse refs/stash) != "$stash_id" ]]; then
-      print -u2 "Stash changed; restore $stash_id manually."
-      return 1
-    fi
-    git stash pop
-  fi
+  git restore --worktree -- . || return
+  git merge --ff-only FETCH_HEAD
 )
 
 # Keep the old long names working for existing shell habits.
@@ -101,5 +92,5 @@ if [[ -o interactive ]]; then
   echo '  clv  clone vault from GitHub'
   echo '  cdv  cd into vault'
   echo '  wv   commit local changes and overwrite remote (force-push)'
-  echo '  rv   stash local edits, fetch/fast-forward remote, pop stash'
+  echo '  rv   discard unstaged tracked edits and fast-forward from remote'
 fi
