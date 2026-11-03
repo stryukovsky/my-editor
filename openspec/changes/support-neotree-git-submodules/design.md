@@ -2,7 +2,7 @@
 
 ## Context
 
-See proposal.md for motivation. `configs.neotree_git_groups` replaces Neo-tree's Git status item loader. It runs `git status --porcelain=v1 -z --untracked-files=all`, converts spaces to dots, groups entries using XY status, and emits every leaf as `type = "file"`. Leaf metadata contains no gitlink identity or submodule dirtiness. Git status has no local `<CR>` override and inherits normal opening behavior.
+See proposal.md for motivation. `moonshine.neotree.git_groups` currently replaces Neo-tree's Git status item loader. It runs `git status --porcelain=v1 -z --untracked-files=all`, converts spaces to dots, groups entries using XY status, and emits every leaf as `type = "file"`. Leaf metadata contains no gitlink identity or submodule dirtiness. Git status has no local `<CR>` override and inherits normal opening behavior.
 
 A disposable local repository confirmed that tracked-only and untracked-only submodule dirtiness both become ` M` with the current command. Porcelain v2 distinguishes these as `S.M.` and `S..U`. With `submodule.<name>.ignore=all`, the current command omits the dirty entry; `--ignore-submodules=none` exposes it. These explain concrete information loss and one omission mechanism; other reported bugs still need the fixture matrix below rather than assumed causes.
 
@@ -12,13 +12,13 @@ There are no published specs. Preserve the pending filesystem-viewer contract an
 
 **Goals:** Preserve Git's separate index/worktree meanings, identify gitlinks even when directories are absent, and inspect repository state without mutating it.
 
-**Non-Goals:** Recursive status trees, submodule init/update/checkout commands, staging or revert redesign, filesystem-source status changes, or plugin forks.
+**Non-Goals:** Recursive status trees, submodule init/update/checkout commands, staging or revert redesign, filesystem-source status changes, or changes to filesystem-source commands.
 
 ## Decisions
 
 ### Parse structured Git status at the existing loader boundary
 
-Use NUL-delimited porcelain v2 with `--untracked-files=all --ignore-submodules=none` for the custom Git status source. Preserve ordinary, rename/copy, unmerged, and untracked records, including rename source paths. Split fixed metadata fields without splitting filenames on whitespace. Normalize XY for existing renderers and navigation, but retain the submodule field, modes, and object IDs separately.
+Use NUL-delimited porcelain v2 with `--untracked-files=all --ignore-submodules=none` in the fork's Git status source. Remove the config's obsolete loader replacement so the fork owns collection and grouping. Preserve ordinary, rename/copy, unmerged, and untracked records, including rename source paths. Split fixed metadata fields without splitting filenames on whitespace. Normalize XY for existing renderers and navigation, and retain gitlink identity and the submodule field on rows. Resolve object IDs fresh during inspection.
 
 Porcelain v1 was rejected because its submodule representation loses tracked/untracked distinctions. Directory existence and `.git` directories are not identity checks: submodules commonly use `.git` files and may not be populated. Detect gitlinks using mode `160000` in status/index/HEAD metadata, supplementing deleted or unmerged entries where needed. Do not classify arbitrary nested repositories as submodules.
 
@@ -32,7 +32,7 @@ Keep submodules as status leaves rather than expandable filesystem directories. 
 
 ### Override opening only in the Git status source
 
-Register a Git-status-specific open command and `<CR>` mapping through Neo-tree configuration. It checks explicit gitlink metadata, opens the state view for submodules, and delegates ordinary entries and section directories to their current command. Do not alter common or filesystem commands. Any direct mappings needed during implementation must use `require "mappings.map"`.
+Override the Git status source `open` command in the fork; its existing `<CR>` mapping already invokes it. It checks explicit gitlink metadata, opens the state view for submodules, and delegates ordinary entries and section directories to their current command. Do not alter common or filesystem commands. Any direct mappings needed during implementation must use `require "mappings.map"`.
 
 Use `node.path` and the captured superproject root rather than virtual node IDs or a root inferred from the child directory. This prevents running parent queries against the submodule repository.
 
@@ -54,4 +54,4 @@ A dedicated state buffer is preferred over opening a commit picker or raw folder
 
 ## Migration Plan
 
-Apply only tracked config/helper changes and reload Neovim. No data migration or dependency update is required. Rollback restores the prior loader and source command definitions. Verify with temporary local repositories and record commands and observed results in this change's `verification.md`; no permanent test framework is needed.
+Apply source changes in the user-owned Neo-tree checkout and remove the config loader override, then restart Neovim. No data migration or dependency update is required. Rollback restores the fork source files and config override. Use the fork's existing Plenary tests with temporary local repositories and record commands and results in this change's `verification.md`. These fork changes remain local until committed/published separately; the lockfile is unchanged.

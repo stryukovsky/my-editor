@@ -1,7 +1,7 @@
 local map = require "mappings.map"
 
 local function toggle()
-  require("configs.mappings_help").toggle()
+  require("moonshine.mappings_help").toggle()
 end
 
 local opts = { desc = "Show mappings help", silent = true, nowait = true }

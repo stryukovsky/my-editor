@@ -1,10 +1,10 @@
 local map = require "mappings.map"
-local minidiff = require "configs.minidiff"
+local minidiff = require "moonshine.diff"
 local navigation_repeat = require "utils.navigation_repeat"
 
 map("n", "<leader>gr", minidiff.reset_hunk, { desc = "git hunk reset" })
 map("n", "<leader>gh", function()
-  require("configs.large_hunks_viewer").view_hunk()
+  require("moonshine.diff.hunks").view_hunk()
 end, { desc = "git view hunk" })
 map("n", "<leader>gv", minidiff.select, { desc = "git select hunk" })
 map("n", "<leader>gR", minidiff.reset_buffer, { desc = "git reset buffer" })
@@ -59,9 +59,9 @@ end, { desc = "Jump to previous git conflict" })
 map("n", "<A-h>", minidiff.toggle_overlay, { desc = "git toggle hunk overlay" })
 
 map("n", "<leader>gMR", function()
-  require("configs.minidiff_review").open_picker()
+  require("moonshine.diff.review").open_picker()
 end, { desc = "git review MR of source into target" })
 
 map("n", "<leader>gH", function()
-  require("configs.minidiff_history").open()
+  require("moonshine.diff.history").open()
 end, { desc = "git review branch history" })

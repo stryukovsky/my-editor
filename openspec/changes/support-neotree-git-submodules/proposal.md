@@ -25,7 +25,7 @@ None. No published specifications exist. The pending `file-tree-viewer-controls`
 
 ## Impact
 
-- Update `lua/configs/neotree_git_groups.lua` for structured status and gitlink metadata, and `lua/configs/neotree.lua` for a Git-status-only open command.
-- Add a focused helper for submodule state collection and display; reuse `lua/configs/gitutils.lua` where appropriate.
-- Keep implementation in tracked configuration files; no installed-plugin edits, new dependencies, or manual lockfile changes.
+- Implement directly in the user-owned Neo-tree fork at `data/lazy/neo-tree.nvim`: Git status item parsing, source opening, and a submodule state helper.
+- Remove the obsolete local Git status loader override from `lua/configs/neotree.lua` so the fork implementation runs.
+- Add fork-local regression coverage and documentation; no new dependencies or manual lockfile changes.
 - Exclude new submodule management commands, recursive child-file browsing in the parent status tree, and changes to staging/revert semantics.

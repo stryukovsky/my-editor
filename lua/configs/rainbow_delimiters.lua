@@ -3,7 +3,7 @@ vim.g.rainbow_delimiters = {
     if vim.api.nvim_buf_line_count(bufnr) >= 5000 then
       return false
     end
-    local ok, bigfiles = pcall(require, "configs.bigfiles")
+    local ok, bigfiles = pcall(require, "moonshine.bigfiles")
     if ok and bigfiles.is_skipping(bufnr) then
       return false
     end

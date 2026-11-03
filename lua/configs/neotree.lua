@@ -8,8 +8,7 @@ local grug_far = require "grug-far"
 local system_file_explorer = require "utils.system_file_explorer"
 local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
-local notify = require "configs.notify"
-local git_actions = require "configs.git_commands"
+local notify = require "integrations.notify"
 local script = require "utils.script"
 
 -- Reuse terminal windows; the terminal stays available in the buffer bar.
@@ -177,7 +176,7 @@ local config = {
       if is_neo_tree_window then
         vim.cmd "vsplit"
       end
-      require("configs.terminal").open_new(path)
+      require("terminal_reimagined").open_new(path)
     end,
     ["make_executable"] = function(state)
       local node = state.tree:get_node()
@@ -276,7 +275,7 @@ local config = {
       end
     end,
     ["slash_search"] = function()
-      require("configs.slashing").prompt()
+      require("moonshine.slashing").prompt()
     end,
     ["telescope_grep"] = function(state)
       local node = state.tree:get_node()
@@ -413,9 +412,6 @@ local config = {
   },
   filesystem = {
     commands = {
-      git_add_file = git_actions.stage,
-      git_add_all = git_actions.stage_all,
-      git_unstage_file = git_actions.unstage,
       copy_to_clipboard = require("utils.neotree_clipboard").copy,
       copy_to_clipboard_visual = require("utils.neotree_clipboard").copy_visual,
       paste_from_clipboard = require("utils.neotree_clipboard").paste,
@@ -462,15 +458,6 @@ local config = {
     },
   },
   git_status = {
-    commands = {
-      git_add_file = git_actions.stage,
-      git_add_all = git_actions.stage_all,
-      git_unstage_file = git_actions.unstage,
-      git_revert_file = git_actions.revert,
-      git_commit = git_actions.commit,
-      git_push = git_actions.push,
-      git_pull = git_actions.pull,
-    },
     window = {
       mappings = {
         ["I"] = add_to_gitignore,
@@ -561,5 +548,4 @@ local config = {
   },
 }
 
-require("configs.neotree_git_groups").setup()
 require("neo-tree").setup(config)

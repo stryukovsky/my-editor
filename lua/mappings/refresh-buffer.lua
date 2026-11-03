@@ -1,5 +1,5 @@
 local map = require "mappings.map"
-local notify = require "configs.notify"
+local notify = require "integrations.notify"
 
 ---Cursor, scroll, and folds for every window showing this buffer.
 ---@param buf integer

@@ -21,6 +21,7 @@ with tempfile.TemporaryDirectory(prefix="completion-typing-") as temp:
     lua("""
       local root=...
       vim.opt.rtp:prepend(root)
+      vim.opt.rtp:append(vim.fn.glob(root .. "/moonshine.nvim/*", true, true))
       vim.opt.rtp:append(root..'/data/lazy/langmapper.nvim')
       vim.o.virtualedit='onemore';vim.o.timeoutlen=50;vim.o.ttimeoutlen=10
       vim.o.showmode=true

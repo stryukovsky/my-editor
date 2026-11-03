@@ -1,6 +1,9 @@
 -- Run: nvim --headless -u NONE -i NONE -l tests/input_completion.lua
 vim.opt.rtp:prepend(vim.fn.getcwd())
-local completion = require "configs.input_completion"
+vim.opt.rtp:append(
+  vim.fn.glob(vim.fn.getcwd() .. "/moonshine.nvim/*", true, true)
+)
+local completion = require "moonshine.input.completion"
 local root = vim.fn.tempname()
 vim.fn.mkdir(root .. "/src/nested", "p")
 

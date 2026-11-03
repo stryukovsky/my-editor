@@ -31,6 +31,7 @@ with tempfile.TemporaryDirectory(prefix='nvim-math-preview-') as directory:
     try:
         nvim.exec_lua('''
             local config, overlay = ...
+            vim.opt.rtp:append(vim.fn.glob(config .. "/moonshine.nvim/*", true, true))
             for _, path in ipairs({'/data/tree-sitter', '/data/lazy/nvim-treesitter/runtime',
                 '/data/lazy/render-markdown.nvim', ''}) do vim.opt.rtp:prepend(config .. path) end
             if type(overlay) == 'string' then vim.opt.rtp:prepend(overlay) end

@@ -2,6 +2,7 @@
 local root = arg[1] or vim.fn.getcwd()
 local config = vim.env.NVIM_CONFIG_ROOT or root
 vim.opt.rtp:prepend(root)
+vim.opt.rtp:append(vim.fn.glob(root .. "/moonshine.nvim/*", true, true))
 vim.opt.rtp:append(config)
 vim.opt.rtp:append(config .. "/data/tree-sitter")
 local languages = require "native_completion.languages"

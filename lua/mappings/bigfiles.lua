@@ -1,5 +1,5 @@
 local map = require "mappings.map"
-local bigfiles = require "configs.bigfiles"
+local bigfiles = require "moonshine.bigfiles"
 
 map("n", "<leader>big", function()
   bigfiles.toggle()

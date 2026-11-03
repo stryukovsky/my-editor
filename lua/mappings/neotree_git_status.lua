@@ -2,6 +2,8 @@ local map = require "mappings.map"
 
 local M = {}
 
+local source_commands = { c = "git_commit", p = "git_pull", P = "git_push" }
+
 local excluded_aliases = {
   x = true,
   C = true,
@@ -36,7 +38,11 @@ function M.attach(state)
       local suffix = vim.fn.keytrans(lhs:sub(#prefix + 1))
       -- Preserve panel commands and native top/bottom navigation.
       if not excluded_aliases[suffix] then
-        map("n", suffix, binding.callback or binding.rhs, {
+        local command = source_commands[suffix]
+        local callback = command and function()
+          state.commands[command](state)
+        end or binding.callback or binding.rhs
+        map("n", suffix, callback, {
           buffer = state.bufnr,
           desc = binding.desc,
           silent = binding.silent == 1,

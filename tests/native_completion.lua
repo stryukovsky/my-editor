@@ -1,6 +1,7 @@
 -- nvim --headless -u NONE -i NONE -l tests/native_completion.lua [project-root]
 local root = arg[1] or vim.fn.getcwd()
 vim.opt.rtp:prepend(root)
+vim.opt.rtp:append(vim.fn.glob(root .. "/moonshine.nvim/*", true, true))
 local config = vim.env.NVIM_CONFIG_ROOT or root
 vim.opt.rtp:append(config)
 vim.opt.rtp:append(config .. "/data/tree-sitter")

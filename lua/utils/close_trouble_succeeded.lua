@@ -16,7 +16,7 @@ function M.close_mode(mode)
   if not ok then
     return
   end
-  local session = require("configs.minidiff_review").session()
+  local session = require("moonshine.diff.review").session()
   for _, entry in ipairs(View.get { mode = mode } or {}) do
     local view = entry.view
     if view and view.close then
@@ -26,7 +26,7 @@ function M.close_mode(mode)
       local fu = view.first_update
       if not session and fu and fu.is_pending and fu:is_pending() then
         fu:next(function()
-          if not require("configs.minidiff_review").session() then
+          if not require("moonshine.diff.review").session() then
             pcall(function()
               view:close()
             end)
@@ -42,7 +42,7 @@ end
 --- review is still active — that list must be quit with `q` first, so other
 --- Trouble modes are left alone.
 function M.close_all()
-  local review = require "configs.minidiff_review"
+  local review = require "moonshine.diff.review"
   if review.session() then
     if not review.finish_review() then
       return false

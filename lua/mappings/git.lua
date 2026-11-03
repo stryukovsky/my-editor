@@ -1,5 +1,5 @@
 local map = require "mappings.map"
-local git = require "configs.git_commands"
+local git = require "moonshine.git.commands"
 
 local bindings = {
   { "<leader>gp", git.pull, "pull with rebase and autostash" },

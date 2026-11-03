@@ -66,7 +66,7 @@ local function review_jump(view, ctx)
   if not item then
     return
   end
-  require("configs.minidiff_review").jump(view, item)
+  require("moonshine.diff.review").jump(view, item)
 end
 
 local function review_next_file(view)
@@ -78,12 +78,12 @@ local function review_next_file(view)
   view:move { down = vim.v.count1 }
   local after = vim.api.nvim_win_get_cursor(win)
   if before[1] == after[1] then
-    require("configs.notify").send("MiniDiff review", "Last file in review list", vim.log.levels.INFO)
+    require("integrations.notify").send("MiniDiff review", "Last file in review list", vim.log.levels.INFO)
     return
   end
   local at = view:at()
   if at and at.item then
-    require("configs.minidiff_review").jump(view, at.item)
+    require("moonshine.diff.review").jump(view, at.item)
   end
 end
 
@@ -146,7 +146,7 @@ trouble.setup {
         p = review_noop,
         P = review_noop,
         q = function()
-          require("configs.minidiff_review").finish_review { force = true }
+          require("moonshine.diff.review").finish_review { force = true }
         end,
       },
     },
@@ -165,7 +165,7 @@ trouble.setup {
       }
     end,
     review_range = function()
-      local current = require("configs.minidiff_review").session()
+      local current = require("moonshine.diff.review").session()
       if not current then
         return { text = "" }
       end
@@ -252,3 +252,5 @@ trouble.setup {
     },
   },
 }
+
+require("integrations.trouble").setup()

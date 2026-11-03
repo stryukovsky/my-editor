@@ -32,7 +32,7 @@ local function highlight_current(is_visual)
   -- Set the search register and enable highlighting
   vim.fn.setreg("/", pattern)
   vim.opt.hlsearch = true
-    require("configs.slashing").activate()
+    require("moonshine.slashing").activate()
 end
 
 -- Map # to highlight word under cursor

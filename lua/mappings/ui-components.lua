@@ -8,7 +8,7 @@ local grug_far = require "grug-far"
 local close_telescope = require "mappings.close_telescope"
 local ui_prevent_mess = require "utils.ui_prevent_mess"
 local is_normal_buffer = require "utils.is_normal_buffer"
-local notify = require "configs.notify"
+local notify = require "integrations.notify"
 
 local ui_components_modes = { "n" }
 
@@ -42,7 +42,7 @@ local telescope_components = {
     shortcut = "<A-P>",
     command = function()
       -- Lists marked projects; [open] means a Kitty tab already exists (focus vs launch).
-      require("configs.projects").picker_all()
+      require("moonshine.projects").picker_all()
     end,
     desc = "UI telescope projects",
   },
@@ -132,7 +132,7 @@ for _, value in ipairs(telescope_components) do
 end
 
 map(ui_components_modes, "<A-z>", function()
-  require("configs.zenmode").toggle_ui()
+  require("integrations.zen").toggle_ui()
 end, { desc = "UI zen mode" })
 
 map("n", "<A-o>", function()
@@ -284,7 +284,7 @@ vim.api.nvim_create_autocmd("FileType", {
 -- "<cmd>Trouble diagnostics toggle focus=true<CR>"
 map(ui_components_modes, "<A-p>", function()
   ui_prevent_mess()
-  local review = require "configs.minidiff_review"
+  local review = require "moonshine.diff.review"
   if trouble.is_open "minidiff_review" or review.session() then
     if not review.finish_review() then
       return
@@ -319,7 +319,7 @@ end, { desc = "UI trouble diagnostics" })
 -- "<cmd>Trouble diagnostics toggle focus=true<CR>"
 map(ui_components_modes, "<A-i>", function()
   ui_prevent_mess()
-  local review = require "configs.minidiff_review"
+  local review = require "moonshine.diff.review"
   if trouble.is_open "minidiff_review" or review.session() then
     if not review.finish_review() then
       return

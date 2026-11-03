@@ -32,6 +32,7 @@ with tempfile.TemporaryDirectory(prefix='nvim-math-') as directory:
             vim.opt.rtp:prepend(config .. '/data/lazy/render-markdown.nvim')
             vim.opt.rtp:prepend(config)
             vim.opt.rtp:prepend(root)
+            vim.opt.rtp:append(vim.fn.glob(root .. "/moonshine.nvim/*", true, true))
             require 'configs.render-markdown'
             require('render-markdown.core.manager').init()
             require 'highlight'

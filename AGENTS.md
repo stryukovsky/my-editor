@@ -3,7 +3,7 @@
 Personal Neovim configuration managed by
 [lazy.nvim](https://github.com/folke/lazy.nvim).
 
-## File Templates (`lua/configs/templates.lua`)
+## File Templates (`moonshine.nvim/templates/lua/moonshine/templates/init.lua`)
 
 - Templates are defined in `templates/index.json` — each entry has `name`,
   `path` (relative to `templates/`), and `destination` (absolute target path to
@@ -28,6 +28,13 @@ Personal Neovim configuration managed by
   configs here
 - `lua/mappings/init.lua` loads all keymap modules — add new bindings here
 - Plugin specs live in `lua/plugins/` (core.lua, mason.lua, misc.lua, web.lua)
+- Local feature plugins live in `moonshine.nvim/<feature>/lua/`, registered
+  automatically by `lua/plugins/moonshine.lua`. Keep implementations here and
+  settings/setup calls in `lua/configs/`. Extracted modules use `moonshine.*`;
+  existing modules such as `debug_output` and `mini.diff` keep their names.
+- Helpers extending existing plugins live in `lua/integrations/` and use the
+  `integrations.*` namespace. Terminal features share `terminal_reimagined`;
+  ripgrep navigation lives in `moonshine.nvim/ripgreplsp`.
 
 ## Keymap Convention (Critical)
 

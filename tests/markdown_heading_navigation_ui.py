@@ -24,6 +24,7 @@ with tempfile.TemporaryDirectory(prefix='nvim-heading-navigation-') as directory
     try:
         nvim.exec_lua('''
             local config = ...
+            vim.opt.rtp:append(vim.fn.glob(config .. "/moonshine.nvim/*", true, true))
             for _, path in ipairs({ '/data/tree-sitter', '/data/lazy/nvim-treesitter/runtime',
                 '/data/lazy/render-markdown.nvim', '/data/lazy/langmapper.nvim', '/data/lazy/plenary.nvim',
                 '/data/lazy/nvim-web-devicons', '/data/lazy/nvim-notify', '' }) do

@@ -1,5 +1,10 @@
 # My Editor
 
+Local feature implementations live in [`moonshine.nvim/`](moonshine.nvim/README.md),
+with one plugin runtime per feature. `lua/configs/` holds settings and setup calls;
+`lua/plugins/moonshine.lua` registers the local plugins with lazy.nvim.
+Helpers extending existing plugins live in `lua/integrations/`.
+
 ## Install neovim itself
 
 https://github.com/neovim/neovim/releases/latest
@@ -401,7 +406,7 @@ components; repetition, query words, language keywords, comments, and strings do
 not boost it. It uses only the current line, not a project-wide frequency or
 semantic model. Language node groups, keyword exclusions, and parser fixtures
 live in
-[`lua/native_completion/languages/*.json`](lua/native_completion/languages/README.md).
+[`moonshine.nvim/native_completion/lua/native_completion/languages/*.json`](moonshine.nvim/native_completion/lua/native_completion/languages/README.md).
 The shared JSON Schema is `schemas/native-completion-language.schema.json`.
 
 Lua, TypeScript/TSX, Go, Rust, Scala, Java, Python, C, C++, and Solidity have
@@ -465,7 +470,7 @@ native acceptance, auto-imports, snippets, commands, documentation, popup
 limits, and English/Russian shortcuts. `pynvim` is a test dependency only.
 Integration also exercises the locally installed Lua, TypeScript, and Go servers
 when available. See the
-[mapping format and fixture guide](lua/native_completion/languages/README.md) to
+[mapping format and fixture guide](moonshine.nvim/native_completion/lua/native_completion/languages/README.md) to
 add another grammar without changing the Lua context engine.
 
 The input regression suite checks native rendered frames while typing, snippet
@@ -503,7 +508,7 @@ functions include `\min` and `\max`. Unknown commands, superscripts, subscripts
 and accents (such as `\bar p`) stay as written. Indexed roots such as
 `\sqrt[3]{x}` remain literal. Formula text and replacements share the normal
 text foreground, refreshed on theme changes. No external LaTeX converter is
-required. The implementation lives in `lua/configs/markdown-math.lua`. A small
+required. The implementation lives in `moonshine.nvim/markdown_tools/lua/moonshine/markdown/math.lua`. A small
 text-transform hook in the installed render-markdown fork converts preview math
 before layout; its recovery patch is retained with the OpenSpec change.
 

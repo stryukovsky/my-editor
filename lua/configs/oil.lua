@@ -1,5 +1,5 @@
 local oil = require "oil"
-local notify = require "configs.notify"
+local notify = require "integrations.notify"
 local system_file_explorer = require "utils.system_file_explorer"
 
 local compact_columns = { "icon" }
@@ -68,7 +68,7 @@ local function restore_tabline()
 end
 
 local function search_here()
-  require("configs.slashing").prompt()
+  require("moonshine.slashing").prompt()
 end
 
 local M = {}

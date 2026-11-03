@@ -152,6 +152,7 @@ with tempfile.TemporaryDirectory(prefix="native-completion-") as temp:
         lua("""
           local root,config=...
           vim.opt.rtp:prepend(root);vim.opt.rtp:append(config)
+          vim.opt.rtp:append(vim.fn.glob(root .. "/moonshine.nvim/*", true, true))
           vim.opt.rtp:append(config..'/data/tree-sitter')
           vim.opt.rtp:append(config..'/data/lazy/langmapper.nvim')
           vim.opt.rtp:append(config..'/data/lazy/material.nvim')
@@ -290,7 +291,7 @@ with tempfile.TemporaryDirectory(prefix="native-completion-") as temp:
         normal()
         print("PASS existing terminal path source and native acceptance repair")
 
-        lua("dofile(...).setup()", str(CONFIG / "lua/configs/input.lua"))
+        lua("dofile(...).setup()", str(CONFIG / "moonshine.nvim/input/lua/moonshine/input/init.lua"))
         lua("vim.ui.input({prompt='Disabled'},function(v) _G.input_result=v or 'cancelled' end)")
         wait(lambda: lua("return vim.fn.mode()") == "i", "disabled input insert")
         assert not lua("return vim.bo.autocomplete")

@@ -1,5 +1,5 @@
 local map = require "mappings.map"
-local notify = require "configs.notify"
+local notify = require "integrations.notify"
 
 local plantuml_ext = {
   puml = true,
@@ -40,9 +40,9 @@ map("n", "<leader>va", function()
   local kind = diagram_kind()
   local lines = buffer_lines()
   if kind == "mermaid" then
-    require("configs.mermaid").visualize(lines)
+    require("moonshine.markdown.mermaid").visualize(lines)
   elseif kind == "plantuml" then
-    require("configs.plantuml").visualize(lines)
+    require("moonshine.markdown.plantuml").visualize(lines)
   else
     notify.send("Visualize", "Not a PlantUML or Mermaid file", vim.log.levels.WARN)
   end
@@ -52,9 +52,9 @@ map("n", "<leader>vi", function()
   local kind = diagram_kind()
   local lines = buffer_lines()
   if kind == "mermaid" then
-    require("configs.mermaid").render_png(lines)
+    require("moonshine.markdown.mermaid").render_png(lines)
   elseif kind == "plantuml" then
-    require("configs.plantuml").render_png(lines)
+    require("moonshine.markdown.plantuml").render_png(lines)
   else
     notify.send("Visualize", "Not a PlantUML or Mermaid file", vim.log.levels.WARN)
   end

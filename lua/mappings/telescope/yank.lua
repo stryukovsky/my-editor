@@ -2,7 +2,7 @@
 -- (or multi-selected) entry. Keeps the picker open.
 
 local action_state = require "telescope.actions.state"
-local notify = require "configs.notify"
+local notify = require "integrations.notify"
 
 local M = {}
 

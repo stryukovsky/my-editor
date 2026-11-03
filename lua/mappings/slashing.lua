@@ -1,5 +1,5 @@
 local map = require "mappings.map"
-local slashing = require "configs.slashing"
+local slashing = require "moonshine.slashing"
 
 local function exit_visual_then(fn)
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "x", false)
@@ -7,10 +7,10 @@ local function exit_visual_then(fn)
 end
 
 map("n", "/", function()
-  if require("configs.macro-status").active() then
+  if require("moonshine.macro_status").active() then
     return "/"
   end
-  return '<Cmd>lua require("configs.slashing").prompt()<CR>'
+  return '<Cmd>lua require("moonshine.slashing").prompt()<CR>'
 end, { expr = true, desc = "Search forward" })
 
 map("n", "<A-f>", function()
@@ -26,10 +26,10 @@ map("n", "<A-Q>", function()
 end, { desc = "Search backward" })
 
 map("v", "/", function()
-  if require("configs.macro-status").active() then
+  if require("moonshine.macro_status").active() then
     return "/"
   end
-  return '<Esc><Cmd>lua require("configs.slashing").prompt { prompt = "Search in selection", visual = true }<CR>'
+  return '<Esc><Cmd>lua require("moonshine.slashing").prompt { prompt = "Search in selection", visual = true }<CR>'
 end, { expr = true, desc = "Search in visual selection" })
 
 map("v", "<A-q>", function()
@@ -39,10 +39,10 @@ map("v", "<A-q>", function()
 end, { desc = "Search in visual selection" })
 
 map({ "n", "x" }, "n", function()
-  return require("configs.macro-status").active() and "n" or '<Cmd>lua require("utils.navigation_repeat").repeat_next()<CR>'
+  return require("moonshine.macro_status").active() and "n" or '<Cmd>lua require("utils.navigation_repeat").repeat_next()<CR>'
 end, { expr = true, desc = "Repeat next navigation" })
 map({ "n", "x" }, "N", function()
-  return require("configs.macro-status").active() and "N" or '<Cmd>lua require("utils.navigation_repeat").repeat_previous()<CR>'
+  return require("moonshine.macro_status").active() and "N" or '<Cmd>lua require("utils.navigation_repeat").repeat_previous()<CR>'
 end, { expr = true, desc = "Repeat previous navigation" })
 
 map("n", "*", function()

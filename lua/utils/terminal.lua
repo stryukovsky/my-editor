@@ -1,4 +1,4 @@
-local notify = require "configs.notify"
+local notify = require "integrations.notify"
 
 local M = {}
 
@@ -28,7 +28,7 @@ function M.open(cwd, opts)
   end
 
   if M.is_kitty() then
-    return require("configs.kitten").launch {
+    return require("moonshine.projects.kitten").launch {
       type = "tab",
       cwd = cwd,
       location = "neighbor",

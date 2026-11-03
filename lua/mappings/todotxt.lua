@@ -5,8 +5,8 @@ end
 
 local map = require "mappings.map"
 local todotxt = require "todotxt"
-local notify = require "configs.notify"
-local gitutils = require "configs.gitutils"
+local notify = require "integrations.notify"
+local gitutils = require "moonshine.git"
 local open_scratch = require "utils.open_scratch"
 
 local function git_failure_message(command, stderr)
@@ -38,7 +38,7 @@ end
 
 map("n", "<leader>jv", function()
   vim.cmd("edit" .. todotxt.config.todotxt)
-  require("configs.zenmode").open_todotxt_file()
+  require("integrations.zen").open_todotxt_file()
 end, { desc = "Work: open file with todos" })
 
 map("n", "<leader>js+", function()

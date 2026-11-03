@@ -1,6 +1,6 @@
 local map = require "mappings.map"
 local async = require "plenary.async"
-local notify = require "configs.notify"
+local notify = require "integrations.notify"
 
 map("n", "<leader>mdt", function()
   require("render-markdown").buf_toggle()

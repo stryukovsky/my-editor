@@ -3,9 +3,9 @@ local is_normal_buffer = require "utils.is_normal_buffer"
 local is_buffer_terminal = require "utils.is_buffer_terminal"
 local is_initial_dashboard = require "utils.is_buffer_initial_dashboard"
 local script = require "utils.script"
-local terminal = require "configs.terminal"
+local terminal = require "terminal_reimagined"
 map("n", "<leader>ts", function()
-  require("configs.overseer").pick()
+  require("moonshine.tasks").pick()
 end, { desc = "Tasks: run project task" })
 map("t", "<Esc>", "<C-\\><C-n>", { noremap = true, silent = true })
 map("t", "<C-Esc>", "<Esc>", { noremap = true, silent = true, desc = "Terminal: send Escape to process" })

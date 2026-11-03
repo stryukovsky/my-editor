@@ -1,5 +1,5 @@
 local map = require "mappings.map"
-local templates = require "configs.templates"
+local templates = require "moonshine.templates"
 
 map("n", "<leader>te", function()
   local items = templates.list()

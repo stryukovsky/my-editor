@@ -1,6 +1,6 @@
 local map = require "mappings.map"
-local md_table_viewer = require "configs.md_table_viewer"
-local csv_table_viewer = require "configs.csv_table_viewer"
+local md_table_viewer = require "moonshine.markdown.table"
+local csv_table_viewer = require "integrations.csv_table_viewer"
 local navigation_repeat = require "utils.navigation_repeat"
 
 map("n", "<A-i>", function()

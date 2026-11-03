@@ -30,6 +30,7 @@ with tempfile.TemporaryDirectory(prefix='nvim-mermaid-') as directory:
     try:
         nvim.exec_lua('''
             local config = ...
+            vim.opt.rtp:append(vim.fn.glob(config .. "/moonshine.nvim/*", true, true))
             for _, path in ipairs({ '/data/tree-sitter', '/data/lazy/nvim-treesitter/runtime',
                 '/data/lazy/render-markdown.nvim', '/data/lazy/langmapper.nvim', '/data/lazy/plenary.nvim',
                 '/data/lazy/nvim-web-devicons', '/data/lazy/nvim-notify', '' }) do
@@ -139,8 +140,8 @@ with tempfile.TemporaryDirectory(prefix='nvim-mermaid-') as directory:
             local function count(kind)
                 local calls = vim.g.inspect_calls; calls[kind] = calls[kind] + 1; vim.g.inspect_calls = calls
             end
-            require('configs.csv_table_viewer').view_row = function() count('csv') end
-            require('configs.md_table_viewer').view_row = function() count('markdown') end
+            require('integrations.csv_table_viewer').view_row = function() count('csv') end
+            require('moonshine.markdown.table').view_row = function() count('markdown') end
             vim.diagnostic.open_float = function() count('diagnostic') end
         ''')
         press(' mdi')

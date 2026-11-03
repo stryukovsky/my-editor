@@ -150,6 +150,7 @@ def run(configured, directory):
         lua("""
           local root,configured=...
           vim.opt.rtp:prepend(root)
+          vim.opt.rtp:append(vim.fn.glob(root .. "/moonshine.nvim/*", true, true))
           vim.o.virtualedit='onemore';vim.o.timeoutlen=50;vim.o.ttimeoutlen=10
           vim.opt.completeopt={'menu','menuone','noselect'}
           if configured then

@@ -3,7 +3,7 @@ local map = require "mappings.map"
 local widgets = require "dap.ui.widgets"
 local dap = require "dap"
 local debug_output = require "debug_output"
-local notify = require "configs.notify"
+local notify = require "integrations.notify"
 local ui_prevent_mess = require "utils.ui_prevent_mess"
 -- local trouble = require "trouble"
 

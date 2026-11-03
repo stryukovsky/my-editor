@@ -15,8 +15,8 @@ function M.setup()
           group = "DashboardShortCut",
           key = "f",
           action = function()
-            local git_fetch = require "configs.periodic-git-fetch"
-            local notify = require "configs.notify"
+            local git_fetch = require "moonshine.git.fetch"
+            local notify = require "integrations.notify"
             if not git_fetch.is_git_repo() then
               notify.send("Git fetch", "Not a git repository", vim.log.levels.WARN)
               return
@@ -36,8 +36,8 @@ function M.setup()
           group = "DashboardShortCut",
           key = "p",
           action = function()
-            local git_fetch = require "configs.periodic-git-fetch"
-            local notify = require "configs.notify"
+            local git_fetch = require "moonshine.git.fetch"
+            local notify = require "integrations.notify"
             if not git_fetch.is_git_repo() then
               notify.send("Git pull", "Not a git repository", vim.log.levels.WARN)
               return
@@ -46,7 +46,7 @@ function M.setup()
               notify.send("Git pull", "Another Git operation is in progress", vim.log.levels.WARN)
               return
             end
-            require("configs.git_commands").pull()
+            require("moonshine.git.commands").pull()
           end,
         },
       },

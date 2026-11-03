@@ -66,7 +66,7 @@ map("n", "<leader>rn", function()
 end, opts "renamer")
 
 map("n", "<leader>py", function()
-  require("configs.python").setup()
+  require("moonshine.python").setup()
 end, opts "Python: setup")
 
 map("n", "K", function()

@@ -27,7 +27,10 @@ source $ZSH/oh-my-zsh.sh
 # export LANG=en_US.UTF-8
 
 # Preferred editor for local and remote sessions
-if [[ -n $SSH_CONNECTION ]]; then
+if [[ -n $NVIM && -n $NVIM_EDITOR_BIN ]]; then
+  # Preserve EDITOR/VISUAL inherited from the parent Neovim.
+  :
+elif [[ -n $SSH_CONNECTION ]]; then
   export EDITOR='vim'
 else
   export EDITOR='nvim'
@@ -151,6 +154,15 @@ runapp() {
   local cmd
   cmd=$(python3 "$HOME/.config/nvim/setup/fedora/runapp.py") || return
   [[ -n $cmd ]] && print -z -- "$cmd"
+}
+
+# Pick an installed app and edit its user-local .desktop file.
+configureapp() {
+  local desktop_file
+  desktop_file=$(python3 "$HOME/.config/nvim/setup/fedora/runapp.py" --path) || return
+  local -a editor
+  editor=("${(@Q)${(z)${EDITOR:-nvim}}}")
+  [[ -n $desktop_file ]] && "${editor[@]}" "$desktop_file"
 }
 
 # Guarantee global git hooks stay disabled in every new shell

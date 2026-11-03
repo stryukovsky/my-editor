@@ -5,8 +5,9 @@ vim.opt.rtp:prepend(config .. "/data/tree-sitter")
 vim.opt.rtp:prepend(config .. "/data/lazy/nvim-treesitter/runtime")
 vim.opt.rtp:prepend(config .. "/data/lazy/render-markdown.nvim")
 vim.opt.rtp:prepend(root)
+vim.opt.rtp:append(vim.fn.glob(root .. "/moonshine.nvim/*", true, true))
 require "configs.render-markdown"
-local math = require "configs.markdown-math"
+local math = require "moonshine.markdown.math"
 local lines = {
   [[unicode Ж $\alpha + \beta \leq \Gamma \times \infty$]],
   [[$\cdot \bullet \ldots \dots \cdots \vdots \ddots$]],

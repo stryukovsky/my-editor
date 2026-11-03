@@ -89,7 +89,7 @@ function M.read(path)
 end
 
 local function notify(message, level)
-  require("configs.notify").send(
+  require("integrations.notify").send(
     "Neo-tree",
     message,
     level or vim.log.levels.WARN

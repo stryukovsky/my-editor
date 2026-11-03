@@ -1,4 +1,4 @@
-local logviewer = require "configs.logviewer"
+local logviewer = require "moonshine.logviewer"
 local map = require "mappings.map"
 
 map("n", "<leader>logd", function()

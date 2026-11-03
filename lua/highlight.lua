@@ -181,7 +181,7 @@ local function override_highlights()
   hl(0, "FlashLabelOverriden", { bg = background, fg = foreground_active })
   hl(0, "HlSearchLensNear", { link = "Title" })
   hl(0, "HlSearchLens", { link = "Comment" })
-  require("configs.strict_grammar").apply_spellbad()
+  require("moonshine.strict_grammar").apply_spellbad()
 
   hl(0, "Cursor", { bg = foreground_active })
   hl(0, "Comment", { fg = "#9b8a72", italic = true })

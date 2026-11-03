@@ -85,7 +85,7 @@ require("statuscol").setup {
     DapBreakpointCondition = builtin.toggle_breakpoint,
     ["diagnostic/signs"] = builtin.diagnostic_click,
     MiniDiffViz = function(args)
-      local minidiff = require "configs.minidiff"
+      local minidiff = require "moonshine.diff"
       if args.button == "l" then
         minidiff.preview()
       elseif args.button == "m" then

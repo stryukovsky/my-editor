@@ -1,8 +1,8 @@
 local trouble = require "trouble"
 local dap_output = require "debug_output"
-local git_fetch = require "configs.periodic-git-fetch"
-local git_branch = require "configs.lualine_branch"
-local is_it_merge = require "configs.is_it_merge"
+local git_fetch = require "moonshine.git.fetch"
+local git_branch = require "moonshine.git.branch"
+local is_it_merge = require "moonshine.git.merge"
 local symbols = trouble.statusline {
   mode = "lsp_document_symbols",
   groups = {},
@@ -152,7 +152,7 @@ setup_lualine {
       git_fetch.lualine_component(),
       git_branch.lualine_component(),
       is_it_merge.lualine_component(),
-      require("configs.minidiff").lualine_hunks,
+      require("moonshine.diff").lualine_hunks,
     },
     lualine_c = {
       {

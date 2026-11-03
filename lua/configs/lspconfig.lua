@@ -12,7 +12,7 @@ local function skip_buffer(bufnr)
   if vim.b[bufnr].lsp_disabled == true then
     return true
   end
-  local ok, bigfiles = pcall(require, "configs.bigfiles")
+  local ok, bigfiles = pcall(require, "moonshine.bigfiles")
   return ok and bigfiles.is_skipping(bufnr)
 end
 

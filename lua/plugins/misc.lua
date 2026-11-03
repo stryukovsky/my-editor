@@ -28,7 +28,7 @@ return {
     "rcarriga/nvim-notify",
     lazy = false,
     config = function()
-      require("configs.notify").setup()
+      require("integrations.notify").setup()
     end,
   },
   {

@@ -1,7 +1,7 @@
 -- Custom ft needs the markdown parser, otherwise render-markdown has nothing to query.
 vim.treesitter.language.register("markdown", "todotxt-preview")
 
-local math = require "configs.markdown-math"
+local math = require "moonshine.markdown.math"
 
 require("render-markdown").setup {
   enabled = false,

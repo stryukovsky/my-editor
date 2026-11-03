@@ -1,6 +1,6 @@
 local map = require "mappings.map"
 local is_normal_buffer = require "utils.is_normal_buffer"
-local notify = require "configs.notify"
+local notify = require "integrations.notify"
 local ui_prevent_mess = require "utils.ui_prevent_mess"
 local navigation_repeat = require "utils.navigation_repeat"
 
@@ -29,7 +29,7 @@ end, { desc = "Navigation toggle relative numbering" })
 
 map("n", "<A-G>", function()
   vim.g.grammar_strict = not vim.g.grammar_strict
-  require("configs.strict_grammar").apply_spellbad()
+  require("moonshine.strict_grammar").apply_spellbad()
   local msg = vim.g.grammar_strict and "Grammar-strict on" or "Grammar-strict off"
   notify.replace("spell.grammar_strict", "Spell", msg, vim.log.levels.INFO)
 end, { desc = "Toggle grammar-strict spell highlight" })
@@ -70,13 +70,13 @@ map({ "n" }, "<A-.>", construct_handler "BufferNext", { desc = "Navigation next 
 map({ "n" }, "<A-<>", construct_handler "bprevious", { desc = "Navigation bprevious" })
 map({ "n" }, "<A-S-,>", construct_handler "bprevious", { desc = "Navigation bprevious" })
 map({ "n" }, "<A-S-.>", construct_handler "bnext", { desc = "Navigation bnext" })
--- <leader>tab → kitten @ launch --type=tab (cwd inherited). Projects go through configs.projects.
+-- <leader>tab → kitten @ launch --type=tab (cwd inherited). Projects go through moonshine.projects.
 map("n", "<leader>tb", function()
-  require("configs.kitten").launch { type = "tab" }
+  require("moonshine.projects.kitten").launch { type = "tab" }
 end, { desc = "Navigation new kitty tab" })
 map("n", "<leader>x", construct_handler "BufferClose!", { desc = "Navigation close buffer" })
 map("n", "<leader>X", function()
-  require("configs.barbar_api").close_unprotected()
+  require("integrations.barbar").close_unprotected()
 end, { desc = "Navigation close other buffers" })
 map("n", "<leader>,", construct_handler "BufferMovePrevious", { desc = "Navigation move buffer left" })
 map("n", "<leader>.", construct_handler "BufferMoveNext", { desc = "Navigation move buffer right" })

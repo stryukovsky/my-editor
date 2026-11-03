@@ -34,6 +34,7 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
         """
       local root,override=...
       vim.opt.rtp:prepend(root)
+      vim.opt.rtp:append(vim.fn.glob(root .. "/moonshine.nvim/*", true, true))
       for _,plugin in ipairs{'langmapper.nvim','friendly-snippets','material.nvim','lualine.nvim'} do
         vim.opt.rtp:append(root..'/data/lazy/'..plugin)
       end
@@ -42,10 +43,10 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
       require('langmapper').setup{hack_keymap=false}
       require('configs.completion').setup_mappings()
       if override ~= '' then
-        package.preload['configs.input_completion']=function() return dofile(override) end
+        package.preload['moonshine.input.completion']=function() return dofile(override) end
       end
-      require('configs.input').setup()
-      require('configs.terminal')
+      require('moonshine.input').setup()
+      require('terminal_reimagined')
       require('configs.material-theme')
       vim.o.background='light';vim.cmd.colorscheme('material-lighter')
       require('lualine').setup {
@@ -188,9 +189,9 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
             call(lua, "_G.input_checks.closed=vim.o.autocompletedelay")
             call(lua, "vim.cmd.enew();vim.fn.jobstart({'cat'},{term=true});vim.cmd.startinsert()")
             time.sleep(0.2)
-            call(lua, "vim.g.statusline_winid=vim.api.nvim_get_current_win();_G.input_checks.terminal_insert=require('configs.terminal').mode_label();_G.input_checks.terminal_winbar=vim.wo.winbar")
+            call(lua, "vim.g.statusline_winid=vim.api.nvim_get_current_win();_G.input_checks.terminal_insert=require('terminal_reimagined').mode_label();_G.input_checks.terminal_winbar=vim.wo.winbar")
             key("<C-\\><C-n>")
-            call(lua, "_G.input_checks.terminal_normal=require('configs.terminal').mode_label()")
+            call(lua, "_G.input_checks.terminal_normal=require('terminal_reimagined').mode_label()")
         finally:
             nvim.async_call(nvim.stop_loop)
 

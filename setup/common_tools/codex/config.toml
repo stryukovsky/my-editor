@@ -104,6 +104,9 @@ trust_level = "trusted"
 [projects."/home/dmitry/Work/obsidian-scroll-speed"]
 trust_level = "trusted"
 
+[projects."/home/dmitry/Work/bsc"]
+trust_level = "trusted"
+
 [tui]
 screen_reader_detection_done = true
 

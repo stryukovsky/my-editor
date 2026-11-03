@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+"""Edit files in the parent Neovim, waiting until their buffers are closed."""
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+
+
+def remote(server, method, payload):
+    data = json.dumps(payload, ensure_ascii=True).replace("'", "''")
+    expression = (
+        f'''json_encode(luaeval("require('configs.editor').{method}(_A)", '''
+        f"json_decode('{data}')))"
+    )
+    result = subprocess.run(
+        [os.environ.get("NVIM_EDITOR_BIN", "nvim"), "--server", server,
+         "--remote-expr", expression],
+        stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        text=True, timeout=5,
+    )
+    if result.returncode:
+        raise RuntimeError(result.stderr.strip() or "Could not reach parent Neovim")
+    return json.loads(result.stdout)
+
+
+def main():
+    args = sys.argv[1:]
+    if args[:1] == ["--"]:
+        args = args[1:]
+    server = os.environ.get("NVIM")
+    if not server or not args:
+        print("Usage: nvim-editor <file> ... (inside Neovim)", file=sys.stderr)
+        return 1
+    try:
+        paths = [str(Path(arg).absolute()) for arg in args]
+        buffers = remote(server, "open", paths)
+        while remote(server, "waiting", buffers):
+            time.sleep(0.2)
+        return 0
+    except (OSError, RuntimeError, ValueError, subprocess.TimeoutExpired) as exc:
+        print(f"nvim-editor: {exc}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

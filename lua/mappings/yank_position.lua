@@ -1,14 +1,14 @@
 local map = require "mappings.map"
-local notify = require "configs.notify"
+local notify = require "integrations.notify"
 local is_normal_buffer = require "utils.is_normal_buffer"
-local gitutils = require "configs.gitutils"
+local gitutils = require "moonshine.git"
 
 ---@param buf? integer
 ---@return { rel: string|nil, abs: string }|nil
 local function current_file(buf)
   buf = buf or vim.api.nvim_get_current_buf()
   if vim.b[buf].minidiff_review then
-    local session = require("configs.minidiff_review").session()
+    local session = require("moonshine.diff.review").session()
     if not session then
       return nil
     end

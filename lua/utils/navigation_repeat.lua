@@ -1,5 +1,5 @@
 local M = {}
-local notify = require "configs.notify"
+local notify = require "integrations.notify"
 local last_navigation_name
 -- last navigation function which advances by buffer
 local last_next
