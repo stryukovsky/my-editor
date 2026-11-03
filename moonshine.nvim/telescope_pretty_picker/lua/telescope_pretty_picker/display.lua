@@ -183,7 +183,7 @@ end
 function M.list_branches(cwd, opts)
   opts = opts or {}
   local format =
-    "%(HEAD)%00%(refname)%00%(authorname)%00%(upstream:lstrip=2)%00%(upstream:trackshort)%00%(upstream:remotename)%00%(committerdate:unix)"
+    "%(HEAD)%00%(refname)%00%(authorname)%00%(upstream:lstrip=2)%00%(upstream:trackshort)%00%(upstream:remotename)%00%(committerdate:unix)%00%(symref)"
   local args = { "for-each-ref", "--format", format, "--sort", "-committerdate" }
   if opts.pattern then
     args[#args + 1] = opts.pattern
@@ -212,7 +212,8 @@ function M.list_branches(cwd, opts)
     elseif vim.startswith(raw_ref, "refs/heads/") then
       prefix = "refs/heads/"
     end
-    if prefix then
+    -- Remote HEAD aliases are symbolic refs, not switchable branch names.
+    if prefix and (fields[8] or "") == "" then
       local upstream = fields[4] or ""
       local tracking, track_hl = M.tracking_display(upstream, fields[5] or "", fields[6] or "")
       local ts = tonumber(fields[7])

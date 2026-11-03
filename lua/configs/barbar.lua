@@ -1,3 +1,5 @@
+local previous_error = vim.v.errmsg
+
 require("barbar").setup {
   animation = false,
   auto_hide = false,
