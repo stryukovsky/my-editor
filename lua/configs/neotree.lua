@@ -150,10 +150,6 @@ local config = {
     },
   },
   commands = {
-    git_commit = git_actions.commit,
-    git_commit_and_push = git_actions.commit_and_push,
-    git_branch_create = git_actions.branch_create,
-    git_branch_rename = git_actions.branch_rename,
     ["open_new_window"] = function(state)
       local node = state.tree:get_node()
       if not node or not node:get_id() then
@@ -552,5 +548,17 @@ local config = {
     },
   },
 }
+
+-- Global commands only fill missing names in Neo-tree. Override each source so
+-- built-in Git handlers cannot replace Moonshine's input/completion integration.
+local git_ui_commands = {
+  git_commit = git_actions.commit,
+  git_commit_and_push = git_actions.commit_and_push,
+  git_branch_create = git_actions.branch_create,
+  git_branch_rename = git_actions.branch_rename,
+}
+for _, source in ipairs(config.sources) do
+  config[source].commands = vim.tbl_extend("force", config[source].commands or {}, git_ui_commands)
+end
 
 require("neo-tree").setup(config)
