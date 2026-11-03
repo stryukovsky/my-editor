@@ -1,4 +1,5 @@
 local git = require "moonshine.git"
+local scheduler = require "moonshine.git.scheduler"
 local M = {}
 
 -- Timer reference for stopping later
@@ -14,6 +15,7 @@ M.default_interval = 600000
 
 -- Store last successful fetch timestamp
 M.last_fetch_timestamp = nil
+M.fetching = false
 
 -- Commits the local branch is ahead of (↑) or behind (↓) its upstream.
 -- Refreshed asynchronously; the statusline and the code-window heading read this table.
@@ -41,63 +43,59 @@ end
 
 -- Git records unfinished operations and lock files in its per-worktree directory.
 function M.is_git_operation_in_progress()
-  local cwd = vim.fn.getcwd()
-  local commands = package.loaded["moonshine.git.commands"]
-  local root = git.root(cwd)
-  if not root or (commands and commands.busy[root]) or M.fetch_pending then
-    return true
-  end
-  local gitdir = git.run({ "rev-parse", "--absolute-git-dir" }, cwd)
-  if not gitdir then
-    return true
-  end
-  gitdir = vim.trim(gitdir)
-  for _, name in ipairs {
-    "rebase-merge",
-    "rebase-apply",
-    "MERGE_HEAD",
-    "CHERRY_PICK_HEAD",
-    "REVERT_HEAD",
-    "sequencer",
-    "BISECT_LOG",
-    "index.lock",
-    "HEAD.lock",
-  } do
-    if vim.uv.fs_stat(gitdir .. "/" .. name) then
-      return true
-    end
-  end
-  return false
+  local cwd = git.root()
+  return scheduler.busy ~= nil or not cwd or git.is_operation_in_progress(cwd)
 end
 
+local function set_fetching(fetching)
+  M.fetching = fetching
+  if package.loaded["lualine"] then
+    require("lualine").refresh()
+  end
+end
+
+-- Periodic callers skip busy ticks. Accepted fetches use the common queue.
 function M.git_fetch(callback)
-  if M.is_git_operation_in_progress() then
-    log_print_debug "Git operation in progress, skipping fetch"
-    if callback then
-      callback(false)
+  local function report(success)
+    local on_complete = callback
+    callback = nil
+    if on_complete then
+      on_complete(success)
     end
+  end
+  local cwd = git.root()
+  if not cwd or scheduler.busy or git.is_operation_in_progress(cwd) then
+    log_print_debug "Git operation in progress, skipping fetch"
+    report(false)
     return
   end
-  local cwd = vim.fn.getcwd()
-  M.fetch_pending = true
-  git.job {
-    args = { "fetch" },
-    cwd = cwd,
-    on_exit = function(code, stderr)
-      vim.schedule(function()
-        M.fetch_pending = false
-        if code == 0 then
-          M.last_fetch_timestamp = os.time()
-          M.refresh_sync_state(cwd, true)
-        else
-          log_print_debug("Git fetch failed: " .. stderr)
-        end
-        if callback then
-          callback(code == 0)
-        end
-      end)
-    end,
-  }
+  scheduler.submit("background fetch", cwd, function(lease)
+    if git.is_operation_in_progress(cwd) then
+      report(false)
+      return
+    end
+    set_fetching(true)
+    git.job {
+      args = { "fetch" },
+      cwd = cwd,
+      on_exit = function(code, stderr)
+        lease:schedule(function()
+          set_fetching(false)
+          if code == 0 then
+            M.last_fetch_timestamp = os.time()
+            M.refresh_sync_state(cwd, true)
+          else
+            log_print_debug("Git fetch failed: " .. stderr)
+          end
+          report(code == 0)
+        end)
+      end,
+    }
+    return true
+  end, function()
+    set_fetching(false)
+    report(false)
+  end)
 end
 
 -- Get current backoff interval
@@ -186,10 +184,7 @@ function M.setup()
   -- Start the periodic fetch when Neovim is fully loaded
   vim.api.nvim_create_autocmd("VimEnter", {
     callback = function()
-      -- Give some time for everything to initialize
-      vim.defer_fn(function()
-        M.start()
-      end, 5000) -- Start after 5 seconds
+      M.start()
     end,
   })
 
@@ -277,7 +272,9 @@ function M.lualine_component()
     end
 
     local last_fetch = M.last_fetch_timestamp
-    if last_fetch then
+    if M.fetching then
+      parts[#parts + 1] = "fetching..."
+    elseif last_fetch then
       parts[#parts + 1] = "fetched " .. format_ago(last_fetch)
     end
 

@@ -556,6 +556,9 @@ local git_ui_commands = {
   git_commit_and_push = git_actions.commit_and_push,
   git_branch_create = git_actions.branch_create,
   git_branch_rename = git_actions.branch_rename,
+  git_fetch = git_actions.fetch,
+  git_pull = git_actions.pull,
+  git_push = git_actions.push,
 }
 for _, source in ipairs(config.sources) do
   config[source].commands = vim.tbl_extend("force", config[source].commands or {}, git_ui_commands)

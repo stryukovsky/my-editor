@@ -6,6 +6,7 @@ local git = require "moonshine.git"
 local git_preview = require "telescope_pretty_picker.preview"
 local commons = require "telescope_pretty_picker.commons"
 local menu = require "telescope_pretty_picker.action_menu"
+local scheduler = require "moonshine.git.scheduler"
 
 local COMMIT_LIMIT = 1000
 local PROMPT_HINTS =
@@ -79,7 +80,7 @@ local function selected_head(context)
   return selection, cwd, head
 end
 
-local function git_rename(context)
+local function git_rename(context, lease)
   local selection, cwd, head = selected_head(context)
   if not selection then
     return
@@ -91,8 +92,8 @@ local function git_rename(context)
   end
   local subject, body = message:match "^([^\n]*)(.*)$"
   context.close()
-  vim.schedule(function()
-    vim.ui.input({
+  return lease:schedule(function()
+    return lease:input({
       prompt = "Rename commit: ",
       default = subject,
       filetype = "gitcommit",
@@ -285,14 +286,25 @@ local function pretty_git_commit_picker(opts, restore_selection)
         pretty_git_commit_picker,
         tell,
         {
-          { "Checkout commit (detached HEAD)", git_checkout },
-          { "Rename HEAD commit", git_rename, keys = { "a", "r" } },
+          {
+            "Checkout commit (detached HEAD)",
+            scheduler.wrap("checkout", git_checkout),
+          },
+          {
+            "Rename HEAD commit",
+            scheduler.wrap("amend", git_rename),
+            keys = { "a", "r" },
+          },
           {
             "Undo HEAD (keep changes staged)",
-            git_undo(false),
+            scheduler.wrap("undo commit", git_undo(false)),
             keys = { "x", "u" },
           },
-          { "Undo HEAD and stash changes", git_undo(true), keys = { "s" } },
+          {
+            "Undo HEAD and stash changes",
+            scheduler.wrap("undo and stash", git_undo(true)),
+            keys = { "s" },
+          },
           { "Yank commit SHA", menu.yank, keys = { "y" } },
         }
       )

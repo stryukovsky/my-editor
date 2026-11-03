@@ -99,4 +99,29 @@ function M.job(opts)
   end
 end
 
+-- Git lock files and unfinished operations belong to the target worktree.
+function M.is_operation_in_progress(cwd)
+  local gitdir = M.run({ "rev-parse", "--absolute-git-dir" }, cwd)
+  if not gitdir then
+    return true
+  end
+  gitdir = vim.trim(gitdir)
+  for _, name in ipairs {
+    "rebase-merge",
+    "rebase-apply",
+    "MERGE_HEAD",
+    "CHERRY_PICK_HEAD",
+    "REVERT_HEAD",
+    "sequencer",
+    "BISECT_LOG",
+    "index.lock",
+    "HEAD.lock",
+  } do
+    if vim.uv.fs_stat(gitdir .. "/" .. name) then
+      return true
+    end
+  end
+  return false
+end
+
 return M

@@ -6,6 +6,7 @@ local git = require "moonshine.git"
 local git_preview = require "telescope_pretty_picker.preview"
 local commons = require "telescope_pretty_picker.commons"
 local menu = require "telescope_pretty_picker.action_menu"
+local scheduler = require "moonshine.git.scheduler"
 
 local tell = commons.notifier "Git branches"
 
@@ -180,7 +181,7 @@ local git_rebase_branch = make_git_branch_action {
   end,
 }
 
-local function git_rename_branch(context)
+local function git_rename_branch(context, lease)
   local selection = context.selection
   if not selection then
     warn_no_selection()
@@ -193,8 +194,8 @@ local function git_rename_branch(context)
   local cwd = context.cwd
   local branch = selection.value
   context.close()
-  vim.schedule(function()
-    vim.ui.input(
+  return lease:schedule(function()
+    return lease:input(
       { prompt = "Rename branch: ", default = branch, cwd = cwd },
       function(value)
         if not value or vim.trim(value) == "" or value == branch then
@@ -335,11 +336,30 @@ local function pretty_git_branch_picker(opts, restore_selection)
         pretty_git_branch_picker,
         tell,
         {
-          { "Switch branch", git_switch_branch },
-          { "Delete branch", git_delete_branch, keys = { "d" } },
-          { "Merge branch", git_merge_branch, keys = { "m" } },
-          { "Rename branch", git_rename_branch, keys = { "r" } },
-          { "Rebase onto branch", git_rebase_branch, keys = { "R" } },
+          {
+            "Switch branch",
+            scheduler.wrap("Switch branch", git_switch_branch),
+          },
+          {
+            "Delete branch",
+            scheduler.wrap("Delete branch", git_delete_branch),
+            keys = { "d" },
+          },
+          {
+            "Merge branch",
+            scheduler.wrap("Merge branch", git_merge_branch),
+            keys = { "m" },
+          },
+          {
+            "Rename branch",
+            scheduler.wrap("Rename branch", git_rename_branch),
+            keys = { "r" },
+          },
+          {
+            "Rebase onto branch",
+            scheduler.wrap("Rebase onto branch", git_rebase_branch),
+            keys = { "R" },
+          },
           { "Yank branch name", menu.yank, keys = { "y" } },
         }
       )

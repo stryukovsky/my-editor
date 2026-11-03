@@ -1,6 +1,7 @@
 local git = require "moonshine.git"
 local notify = require "integrations.notify"
 local map = require "mappings.map"
+local scheduler = require "moonshine.git.scheduler"
 local M = {}
 
 local function tell(message, level)
@@ -92,16 +93,7 @@ function M.open(opts)
     M.open { cwd = cwd }
   end
   local function change(args, message)
-    local commands = package.loaded["moonshine.git.commands"]
     local fetch = package.loaded["moonshine.git.fetch"]
-    if (commands and commands.busy[cwd]) or (fetch and fetch.fetch_pending) then
-      tell(
-        "Another Git action is running; try again shortly",
-        vim.log.levels.WARN
-      )
-      reopen()
-      return
-    end
     local _, change_err = git.run(args, cwd)
     if change_err then
       tell(change_err, vim.log.levels.ERROR)
@@ -117,12 +109,12 @@ function M.open(opts)
     end
     reopen()
   end
-  local function input(prompt, default, callback)
-    vim.ui.input(
+  local function input(lease, prompt, default, callback)
+    return lease:input(
       { prompt = prompt, default = default, cwd = cwd },
       function(value)
         if value and vim.trim(value) ~= "" then
-          callback(vim.trim(value))
+          return callback(vim.trim(value))
         else
           reopen()
         end
@@ -130,11 +122,11 @@ function M.open(opts)
     )
   end
   local handlers = {
-    ["Remove remote"] = function(row)
+    ["Remove remote"] = function(row, lease)
       vim.ui.select(
         { "Cancel", "Remove " .. row.name },
         { prompt = "Remove remote and its tracking refs?" },
-        function(_, index)
+        lease:callback(function(_, index)
           if index == 2 then
             change(
               { "remote", "remove", "--", row.name },
@@ -143,19 +135,21 @@ function M.open(opts)
           else
             reopen()
           end
-        end
+        end)
       )
+      return true
     end,
-    ["Rename remote"] = function(row)
-      input("Rename remote: ", row.name, function(name)
+    ["Rename remote"] = function(row, lease)
+      return input(lease, "Rename remote: ", row.name, function(name)
         change(
           { "remote", "rename", "--", row.name, name },
           "Renamed remote: " .. row.name .. " → " .. name
         )
       end)
     end,
-    ["Replace URL"] = function(row)
-      input(
+    ["Replace URL"] = function(row, lease)
+      return input(
+        lease,
         "Replace " .. row.name .. " " .. row.kind .. " URL: ",
         row.url,
         function(url)
@@ -166,29 +160,42 @@ function M.open(opts)
         end
       )
     end,
-    ["HTTP → SSH"] = function(row)
+    ["HTTP → SSH"] = function(row, lease)
       local _, conversion_err = M.to_ssh(row.url, "git")
       if conversion_err then
         tell(conversion_err, vim.log.levels.WARN)
         reopen()
         return
       end
-      input("SSH user (provider transport user): ", "git", function(user)
-        local url, user_err = M.to_ssh(row.url, user)
-        if not url then
-          tell(user_err, vim.log.levels.WARN)
-          reopen()
-          return
+      return input(
+        lease,
+        "SSH user (provider transport user): ",
+        "git",
+        function(user)
+          local url, user_err = M.to_ssh(row.url, user)
+          if not url then
+            tell(user_err, vim.log.levels.WARN)
+            reopen()
+            return
+          end
+          return input(lease, "SSH URL: ", url, function(value)
+            change(
+              M.replace_args(row, value),
+              "Converted " .. row.name .. " " .. row.kind .. " URL to SSH"
+            )
+          end)
         end
-        input("SSH URL: ", url, function(value)
-          change(
-            M.replace_args(row, value),
-            "Converted " .. row.name .. " " .. row.kind .. " URL to SSH"
-          )
-        end)
-      end)
+      )
     end,
   }
+  local function run(action, row)
+    local accepted = scheduler.write(action, cwd, function(lease)
+      return handlers[action](row, lease)
+    end)
+    if not accepted then
+      reopen()
+    end
+  end
   local actions = require "telescope.actions"
   local action_state = require "telescope.actions.state"
   local function perform(prompt_bufnr, action)
@@ -199,7 +206,7 @@ function M.open(opts)
     actions.close(prompt_bufnr)
     vim.schedule(function()
       if action then
-        handlers[action](selection.value)
+        run(action, selection.value)
       else
         vim.ui.select(
           { "Rename remote", "Replace URL", "HTTP → SSH", "Remove remote" },
@@ -211,7 +218,7 @@ function M.open(opts)
           },
           function(choice)
             if choice then
-              handlers[choice](selection.value)
+              run(choice, selection.value)
             else
               reopen()
             end

@@ -6,6 +6,7 @@ local source_commands = {
   c = "git_commit",
   bc = "git_branch_create",
   br = "git_branch_rename",
+  f = "git_fetch",
   p = "git_pull",
   P = "git_push",
 }
@@ -14,7 +15,6 @@ local excluded_aliases = {
   x = true,
   C = true,
   h = true,
-  f = true,
   gg = true,
   G = true,
   S = true,

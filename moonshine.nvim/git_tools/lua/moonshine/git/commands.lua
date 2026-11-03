@@ -1,7 +1,7 @@
 local git = require "moonshine.git"
 local notify = require "integrations.notify"
-local M = { busy = {} }
-local queues = {}
+local scheduler = require "moonshine.git.scheduler"
+local M = {}
 
 local function root(state)
   if not state and vim.bo.filetype == "neo-tree" then
@@ -17,9 +17,21 @@ end
 local function result_message(action, stdout, stderr)
   local output = vim.trim(stdout .. "\n" .. stderr)
   local lower = output:lower()
-  if action.name == "push" and (lower:find "everything up%-to%-date" or lower:find("everything is up to date", 1, true)) then
+  if
+    action.name == "push"
+    and (
+      lower:find "everything up%-to%-date"
+      or lower:find("everything is up to date", 1, true)
+    )
+  then
     return "Everything is up to date"
-  elseif action.name == "pull" and (lower:find("already up to date", 1, true) or lower:find "already up%-to%-date") then
+  elseif
+    action.name == "pull"
+    and (
+      lower:find("already up to date", 1, true)
+      or lower:find "already up%-to%-date"
+    )
+  then
     return "Already up to date"
   elseif action.name == "stash" and lower:find("no local changes", 1, true) then
     return "No local changes to stash"
@@ -37,7 +49,10 @@ local function refresh(cwd)
     events.fire_event(events.GIT_EVENT)
   end
   vim.cmd "checktime"
-  vim.api.nvim_exec_autocmds("User", { pattern = "GitWorktreeChanged", modeline = false })
+  vim.api.nvim_exec_autocmds(
+    "User",
+    { pattern = "GitWorktreeChanged", modeline = false }
+  )
   local fetch = package.loaded["moonshine.git.fetch"]
   if fetch then
     fetch.refresh_sync_state(cwd, true)
@@ -45,32 +60,42 @@ local function refresh(cwd)
 end
 
 local run
-run = function(cwd, steps, action, enqueue)
-  if M.busy[cwd] then
-    if enqueue then
-      queues[cwd] = queues[cwd] or {}
-      queues[cwd][#queues[cwd] + 1] = { steps = steps, action = action }
-    else
-      notify.send("Git", "Another Git action is running", vim.log.levels.WARN)
-    end
+run = function(cwd, steps, action, lease)
+  if not lease then
+    local submit = (action.name == "fetch" or action.name == "pull")
+        and scheduler.submit
+      or scheduler.write
+    submit(action.name, cwd, function(token)
+      return run(cwd, steps, action, token)
+    end)
     return
   end
-  local fetch = package.loaded["moonshine.git.fetch"]
-  if fetch and fetch.fetch_pending then
-    notify.send("Git", "Background fetch is running; try again shortly", vim.log.levels.WARN)
+  if
+    (action.name == "fetch" or action.name == "pull")
+    and git.is_operation_in_progress(cwd)
+  then
+    notify.send(
+      "Git",
+      action.name .. " skipped: Git operation or lock in progress",
+      vim.log.levels.WARN
+    )
     return
   end
-  M.busy[cwd] = true
   local key = "git.action:" .. cwd
   notify.replace(key, "Git", action.progress, nil, { timeout = false })
-  local function finished(code, stderr, stdout)
-    M.busy[cwd] = nil
+  local finished = lease:callback(function(code, stderr, stdout)
     local message, level
     if code == 0 then
       message, level = result_message(action, stdout, stderr)
     else
       local output = vim.trim(stdout .. "\n" .. stderr)
-      if action.name == "commit" and (output:find("nothing to commit", 1, true) or output:find("no changes added to commit", 1, true)) then
+      if
+        action.name == "commit"
+        and (
+          output:find("nothing to commit", 1, true)
+          or output:find("no changes added to commit", 1, true)
+        )
+      then
         message, level = "Nothing to commit", vim.log.levels.WARN
       else
         message = action.failed .. (output ~= "" and ("\n" .. output) or "")
@@ -79,28 +104,21 @@ run = function(cwd, steps, action, enqueue)
     end
     notify.replace(key, "Git", message, level, { timeout = 4000 })
     refresh(cwd)
-    local queue = queues[cwd]
-    local next_action = queue and table.remove(queue, 1)
-    if queue and #queue == 0 then
-      queues[cwd] = nil
-    end
-    if next_action then
-      run(cwd, next_action.steps, next_action.action, true)
-    end
-  end
+  end)
   local function step(index)
     local ok, err = pcall(git.job, {
       cwd = cwd,
       args = steps[index],
       on_exit = function(code, stderr, stdout)
-        vim.schedule(function()
+        vim.schedule(lease:callback(function()
           if code == 0 and index < #steps then
             refresh(cwd)
             step(index + 1)
+            return true
           else
             finished(code, stderr, stdout)
           end
-        end)
+        end))
       end,
     })
     if not ok then
@@ -108,6 +126,7 @@ run = function(cwd, steps, action, enqueue)
     end
   end
   step(1)
+  return true
 end
 
 local function action(name, progress, done, failed)
@@ -122,51 +141,104 @@ local function command(state, args, info)
 end
 
 function M.pull(state)
-  command(state, { "pull", "--rebase", "--autostash" }, action("pull", "Pulling…", "Pulled changes", "Pull failed"))
+  command(
+    state,
+    { "pull", "--rebase", "--autostash" },
+    action("pull", "Pulling…", "Pulled changes", "Pull failed")
+  )
 end
 
 function M.push(state)
-  command(state, { "-c", "push.autoSetupRemote=true", "push" }, action("push", "Pushing…", "Pushed successfully", "Push failed"))
+  command(
+    state,
+    { "-c", "push.autoSetupRemote=true", "push" },
+    action("push", "Pushing…", "Pushed successfully", "Push failed")
+  )
 end
 
 function M.fetch(state)
-  command(state, { "fetch" }, action("fetch", "Fetching…", "Fetched remote changes", "Fetch failed"))
+  command(
+    state,
+    { "fetch" },
+    action("fetch", "Fetching…", "Fetched remote changes", "Fetch failed")
+  )
 end
 
 function M.merge_continue(state)
   command(
     state,
     { "-c", "core.editor=true", "merge", "--continue" },
-    action("merge", "Continuing merge…", "Merge completed", "Could not continue merge")
+    action(
+      "merge",
+      "Continuing merge…",
+      "Merge completed",
+      "Could not continue merge"
+    )
   )
 end
 
 function M.merge_abort(state)
-  command(state, { "merge", "--abort" }, action("merge", "Aborting merge…", "Merge aborted", "Could not abort merge"))
+  command(
+    state,
+    { "merge", "--abort" },
+    action(
+      "merge",
+      "Aborting merge…",
+      "Merge aborted",
+      "Could not abort merge"
+    )
+  )
 end
 
 function M.stash(state)
-  command(state, { "stash", "push", "--include-untracked" }, action("stash", "Stashing changes…", "Changes stashed", "Stash failed"))
+  command(
+    state,
+    { "stash", "push", "--include-untracked" },
+    action("stash", "Stashing changes…", "Changes stashed", "Stash failed")
+  )
 end
 
 function M.stash_pop(state)
-  command(state, { "stash", "pop" }, action("stash_pop", "Applying stash…", "Stash applied", "Could not apply stash"))
+  command(
+    state,
+    { "stash", "pop" },
+    action(
+      "stash_pop",
+      "Applying stash…",
+      "Stash applied",
+      "Could not apply stash"
+    )
+  )
 end
 
-local function input_command(state, prompt, args, info, default, filetype, following_steps)
+local function input_command(
+  state,
+  prompt,
+  args,
+  info,
+  default,
+  filetype,
+  following_steps
+)
   local cwd = root(state)
   if not cwd then
     return
   end
-  vim.ui.input({ prompt = prompt, default = default, filetype = filetype, cwd = cwd }, function(value)
-    if not value or vim.trim(value) == "" then
-      return
-    end
-    local command_args = vim.list_extend(vim.deepcopy(args), { value })
-    local details = vim.tbl_extend("force", info, { done = info.done .. value })
-    local steps = { command_args }
-    vim.list_extend(steps, following_steps or {})
-    run(cwd, steps, details)
+  scheduler.write(info.name, cwd, function(lease)
+    return lease:input(
+      { prompt = prompt, default = default, filetype = filetype, cwd = cwd },
+      function(value)
+        if not value or vim.trim(value) == "" then
+          return
+        end
+        local command_args = vim.list_extend(vim.deepcopy(args), { value })
+        local details =
+          vim.tbl_extend("force", info, { done = info.done .. value })
+        local steps = { command_args }
+        vim.list_extend(steps, following_steps or {})
+        return run(cwd, steps, details, lease)
+      end
+    )
   end)
 end
 
@@ -175,7 +247,12 @@ function M.branch_create(state)
     state,
     "New branch: ",
     { "switch", "-c" },
-    action("branch", "Creating branch…", "Switched to new branch: ", "Could not create branch")
+    action(
+      "branch",
+      "Creating branch…",
+      "Switched to new branch: ",
+      "Could not create branch"
+    )
   )
 end
 
@@ -184,7 +261,8 @@ function M.branch_rename(state)
   if not cwd then
     return
   end
-  local branch, err = git.run({ "symbolic-ref", "--quiet", "--short", "HEAD" }, cwd)
+  local branch, err =
+    git.run({ "symbolic-ref", "--quiet", "--short", "HEAD" }, cwd)
   if not branch then
     notify.send("Git", err, vim.log.levels.ERROR)
     return
@@ -193,7 +271,12 @@ function M.branch_rename(state)
     { path = cwd },
     "Rename current branch: ",
     { "branch", "-m" },
-    action("branch", "Renaming branch…", "Renamed branch to: ", "Could not rename branch"),
+    action(
+      "branch",
+      "Renaming branch…",
+      "Renamed branch to: ",
+      "Could not rename branch"
+    ),
     vim.trim(branch)
   )
 end
@@ -233,16 +316,25 @@ function M.checkpoint(state)
     notify.send("Git", "Nothing to checkpoint", vim.log.levels.WARN)
     return
   end
-  local branch, branch_err = git.run({ "rev-parse", "--abbrev-ref", "HEAD" }, cwd)
+  local branch, branch_err =
+    git.run({ "rev-parse", "--abbrev-ref", "HEAD" }, cwd)
   if not branch then
     notify.send("Git", branch_err, vim.log.levels.ERROR)
     return
   end
-  local message = ("chore(%s): checkpoint %s"):format(vim.trim(branch), os.date "%H:%M")
+  local message = ("chore(%s): checkpoint %s"):format(
+    vim.trim(branch),
+    os.date "%H:%M"
+  )
   run(
     cwd,
     { { "add", "--all" }, { "commit", "-m", message } },
-    action("commit", "Creating checkpoint…", "Checkpoint committed: " .. message, "Checkpoint failed")
+    action(
+      "commit",
+      "Creating checkpoint…",
+      "Checkpoint committed: " .. message,
+      "Checkpoint failed"
+    )
   )
 end
 
@@ -259,7 +351,10 @@ local function selected_paths(state, unstage)
   end
   local paths = { path }
   local extra = node.extra or {}
-  if extra.original_path and (unstage or extra.git_status == ".R" or extra.git_status == ".C") then
+  if
+    extra.original_path
+    and (unstage or extra.git_status == ".R" or extra.git_status == ".C")
+  then
     paths[#paths + 1] = extra.original_path
   end
   return paths, node.name or vim.fn.fnamemodify(path, ":t")
@@ -279,7 +374,16 @@ function M.stage(state, all)
   end
   local args = { "add", "-A", "--" }
   vim.list_extend(args, all and { cwd } or paths)
-  run(cwd, { args }, action("stage", "Staging…", all and "All changes staged" or ("Staged: " .. name), "Staging failed"), true)
+  run(
+    cwd,
+    { args },
+    action(
+      "stage",
+      "Staging…",
+      all and "All changes staged" or ("Staged: " .. name),
+      "Staging failed"
+    )
+  )
 end
 
 function M.stage_all(state)
@@ -296,9 +400,14 @@ function M.unstage(state)
     return
   end
   local head = git.run({ "rev-parse", "--verify", "HEAD" }, cwd)
-  local args = head and { "reset", "-q", "HEAD", "--" } or { "rm", "--cached", "-r", "-f", "--ignore-unmatch", "--" }
+  local args = head and { "reset", "-q", "HEAD", "--" }
+    or { "rm", "--cached", "-r", "-f", "--ignore-unmatch", "--" }
   vim.list_extend(args, paths)
-  run(cwd, { args }, action("unstage", "Unstaging…", "Unstaged: " .. name, "Unstaging failed"), true)
+  run(
+    cwd,
+    { args },
+    action("unstage", "Unstaging…", "Unstaged: " .. name, "Unstaging failed")
+  )
 end
 
 function M.revert(state)
@@ -310,12 +419,39 @@ function M.revert(state)
   if not cwd then
     return
   end
-  require("neo-tree.ui.inputs").confirm("Are you sure you want to revert " .. name .. "?", function(yes)
-    if yes then
-      local args = vim.list_extend({ "checkout", "HEAD", "--" }, paths)
-      run(cwd, { args }, action("revert", "Reverting changes…", "Reverted: " .. name, "Could not revert changes"))
-    end
+  scheduler.write("revert", cwd, function(lease)
+    require("neo-tree.ui.inputs").confirm(
+      "Are you sure you want to revert " .. name .. "?",
+      lease:callback(function(yes)
+        if yes then
+          local args = vim.list_extend({ "checkout", "HEAD", "--" }, paths)
+          return run(
+            cwd,
+            { args },
+            action(
+              "revert",
+              "Reverting changes…",
+              "Reverted: " .. name,
+              "Could not revert changes"
+            ),
+            lease
+          )
+        end
+      end)
+    )
+    return true
   end)
+end
+
+-- Reject at entry, including actions with preparatory reads before execution.
+for name, handler in pairs(M) do
+  if name ~= "fetch" and name ~= "pull" then
+    M[name] = function(...)
+      if not scheduler.blocked() then
+        return handler(...)
+      end
+    end
+  end
 end
 
 return M
