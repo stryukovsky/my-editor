@@ -30,7 +30,6 @@ clv() (
   local vault_dir=/storage/emulated/0/Documents/my-vault
   mkdir -p -- "${vault_dir:h}" || return
   git clone git@github.com:stryukovsky/my-vault.git "$vault_dir" || return
-  git -C "$vault_dir" config core.filemode false
 )
 
 _vault_ready() {
@@ -45,29 +44,29 @@ _vault_ready() {
   [[ -z $(git ls-files --unmerged) ]] || { print -u2 'Resolve unmerged vault files first.'; return 1; }
 }
 
-# Write vault: local files/history replace the tracked remote branch.
-wv() (
+_vault_sync() (
   cdv || return
   _vault_ready || return
   local branch remote target
-  branch=$(git symbolic-ref --quiet --short HEAD) || return
+  branch=$(git symbolic-ref --quiet --short HEAD) || {
+    print -u2 'Check out a vault branch before syncing.'
+    return 1
+  }
   remote=$(git config --get "branch.$branch.remote") || remote=origin
   target=$(git config --get "branch.$branch.merge") || target="refs/heads/$branch"
-  git add -A || return
-  if ! git diff --cached --quiet; then
-    git commit -m "vault: update $(date '+%Y-%m-%d %H:%M:%S')" || return
+  if [[ $remote == origin ]] && ! git remote get-url origin >/dev/null 2>&1; then
+    remote=git@github.com:stryukovsky/my-vault.git
   fi
-  git push --force -- "$remote" "HEAD:$target"
-)
 
-# Read vault: replace unstaged tracked edits with the fetched version.
-rv() (
-  cdv || return
-  _vault_ready || return
-  local branch remote target
-  branch=$(git symbolic-ref --quiet --short HEAD) || return
-  remote=$(git config --get "branch.$branch.remote") || remote=origin
-  target=$(git config --get "branch.$branch.merge") || target="refs/heads/$branch"
+  if [[ $1 == write ]]; then
+    git add -A || return
+    if ! git diff --cached --quiet; then
+      git commit -m "vault: update $(date '+%Y-%m-%d %H:%M:%S')" || return
+    fi
+    git push --force -- "$remote" "HEAD:$target"
+    return
+  fi
+
   git fetch -- "$remote" "$target" || return
   if ! git merge-base --is-ancestor HEAD FETCH_HEAD; then
     print -u2 'Cannot fast-forward to the fetched branch; local edits are unchanged.'
@@ -77,10 +76,8 @@ rv() (
   git merge --ff-only FETCH_HEAD
 )
 
-# Keep the old long names working for existing shell habits.
-pushvault() { wv "$@"; }
-pullvault() { rv "$@"; }
-alias pv=wv
+wv() { _vault_sync write; }
+rv() { _vault_sync read; }
 
 update-termux() {
   pkg update && pkg upgrade || return

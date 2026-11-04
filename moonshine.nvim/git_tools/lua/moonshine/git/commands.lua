@@ -216,8 +216,7 @@ local function input_command(
   prompt,
   args,
   info,
-  default,
-  filetype,
+  input_options,
   following_steps
 )
   local cwd = root(state)
@@ -226,7 +225,11 @@ local function input_command(
   end
   scheduler.write(info.name, cwd, function(lease)
     return lease:input(
-      { prompt = prompt, default = default, filetype = filetype, cwd = cwd },
+      vim.tbl_extend(
+        "force",
+        { prompt = prompt, cwd = cwd },
+        input_options or {}
+      ),
       function(value)
         if not value or vim.trim(value) == "" then
           return
@@ -277,7 +280,7 @@ function M.branch_rename(state)
       "Renamed branch to: ",
       "Could not rename branch"
     ),
-    vim.trim(branch)
+    { default = vim.trim(branch) }
   )
 end
 
@@ -292,8 +295,7 @@ function M.commit(state, and_push)
       and_push and "Committed and pushed: " or "Committed: ",
       and_push and "Commit/push failed" or "Commit failed"
     ),
-    nil,
-    "gitcommit",
+    { filetype = "gitcommit", multiline = false },
     and_push and { { "-c", "push.autoSetupRemote=true", "push" } } or nil
   )
 end
