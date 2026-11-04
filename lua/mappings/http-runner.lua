@@ -1,8 +1,29 @@
 local map = require "mappings.map"
 
+local active_curls = {}
+
+local function cancel_requests()
+  local count = 0
+  for pid, request in pairs(active_curls) do
+    local ok = vim.uv.kill(pid, "sigterm")
+    if ok then
+      request.cancelled = true
+      count = count + 1
+    end
+  end
+  return count
+end
+
+vim.api.nvim_create_autocmd("VimLeavePre", {
+  group = vim.api.nvim_create_augroup("HttpRunnerCurls", { clear = true }),
+  callback = cancel_requests,
+})
+
 -- Responses belong to the source buffer and survive switching buffers.
 
 local function run(debug_mode)
+  local source_buf = vim.api.nvim_get_current_buf()
+  local source_win = vim.api.nvim_get_current_win()
   local function log(msg, level)
     if
       not debug_mode
@@ -273,7 +294,7 @@ local function run(debug_mode)
     }
   end
 
-  local function execute(req)
+  local function execute(req, on_complete)
     log(
       "executing " .. req.method .. " " .. (req.url or "nil"),
       vim.log.levels.INFO
@@ -367,15 +388,27 @@ local function run(debug_mode)
       vim.log.levels.DEBUG
     )
 
-    -- Plenary raises from its job callback unless on_error handles curl failures.
-    local request_error
-    opts.on_error = function(err)
-      request_error = err
+    local request = {}
+    -- A curl killed before startup may never create its headers file. Plenary
+    -- still parses it when a signal reports exit code zero, so create it first.
+    local headers_path = vim.fn.tempname()
+    vim.fn.writefile({}, headers_path)
+    opts.dump = { "-D", headers_path }
+    local function finish(res)
+      vim.uv.fs_unlink(headers_path)
+      if request.pid then
+        active_curls[request.pid] = nil
+      end
+      vim.schedule(function()
+        if not request.cancelled then
+          on_complete(res)
+        end
+      end)
     end
-    local ok2, res = pcall(fn, req.url, opts)
-    if request_error or not ok2 then
-      local err = request_error or { message = tostring(res) }
-      return {
+    -- A callback makes Plenary start an asynchronous job without its sync timeout.
+    opts.callback = finish
+    opts.on_error = function(err)
+      finish {
         error = true,
         body = req.method
           .. " "
@@ -385,17 +418,13 @@ local function run(debug_mode)
           .. (err.exit and "\nCurl exit code: " .. err.exit or ""),
       }
     end
-
-    log(
-      "response status="
-        .. (res.status or "nil")
-        .. " body_len="
-        .. ((res.body or ""):len())
-        .. " headers_count="
-        .. #(res.headers or {}),
-      vim.log.levels.INFO
-    )
-    return res
+    local started, job = pcall(fn, req.url, opts)
+    if not started then
+      opts.on_error { message = tostring(job) }
+    elseif job and job.pid then
+      request.pid = job.pid
+      active_curls[job.pid] = request
+    end
   end
 
   local function show_response(res)
@@ -404,10 +433,7 @@ local function run(debug_mode)
       return
     end
 
-    log("opening response in current window", vim.log.levels.DEBUG)
-
     local buf = vim.api.nvim_create_buf(true, false)
-    vim.api.nvim_win_set_buf(0, buf)
 
     local content = {}
     table.insert(
@@ -433,6 +459,15 @@ local function run(debug_mode)
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
     vim.bo[buf].modified = false
     vim.bo[buf].filetype = "http-response"
+
+    if
+      vim.api.nvim_win_is_valid(source_win)
+      and vim.api.nvim_win_get_buf(source_win) == source_buf
+    then
+      vim.api.nvim_win_set_buf(source_win, buf)
+    else
+      vim.notify("http-runner: response available in buffer " .. buf)
+    end
 
     log("response displayed", vim.log.levels.DEBUG)
   end
@@ -588,14 +623,26 @@ local function run(debug_mode)
   end
 
   log("executing request", vim.log.levels.INFO)
-  local res = execute(req)
-  if res and not res.error and req.name then
-    saved[req.name] = { body = res.body }
-    vim.b[buf].http_runner_responses = saved
-  end
-  show_response(res)
+  execute(req, function(res)
+    if
+      res
+      and not res.error
+      and req.name
+      and vim.api.nvim_buf_is_valid(buf)
+    then
+      local responses = vim.b[buf].http_runner_responses or {}
+      responses[req.name] = { body = res.body }
+      vim.b[buf].http_runner_responses = responses
+    end
+    show_response(res)
+  end)
 end
 
 map("n", "<leader>rq", function()
   run(--[[ debug_mode = ]] false)
 end, { desc = "Execute HTTP request under cursor" })
+
+map("n", "<leader>rQ", function()
+  local count = cancel_requests()
+  vim.notify("http-runner: cancelled " .. count .. " active curl request(s)")
+end, { desc = "Cancel all HTTP requests in this Neovim instance" })
