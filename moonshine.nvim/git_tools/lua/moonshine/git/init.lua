@@ -2,7 +2,7 @@ local M = {}
 
 ---@param args string[]
 ---@param cwd? string
----@param opts? { ok_codes?: table<integer, boolean> }
+---@param opts? { ok_codes?: table<integer, boolean>, text?: boolean }
 ---@return string|nil stdout
 ---@return string|nil err
 function M.run(args, cwd, opts)
@@ -11,7 +11,7 @@ function M.run(args, cwd, opts)
   local ok_codes = opts.ok_codes or { [0] = true }
   local cmd = { "git", "-C", cwd }
   vim.list_extend(cmd, args)
-  local result = vim.system(cmd, { text = true }):wait()
+  local result = vim.system(cmd, { text = opts.text ~= false }):wait()
   if not ok_codes[result.code] then
     local err = vim.trim(
       (result.stderr or "") ~= "" and result.stderr

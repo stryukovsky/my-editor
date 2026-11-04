@@ -10,7 +10,7 @@ local scheduler = require "moonshine.git.scheduler"
 
 local COMMIT_LIMIT = 1000
 local PROMPT_HINTS =
-  "Enter actions, a/r rename, x/u undo, s undo+stash (HEAD), y yank"
+  "Enter actions, v view files, a/r rename, x/u undo, s undo+stash (HEAD), y yank"
 local tell = commons.notifier "Git commits"
 
 ---@param context table
@@ -23,6 +23,41 @@ local function selected(context)
     return nil, nil
   end
   return selection, context.cwd
+end
+
+---@param context table
+local function view_files(context)
+  local selection, cwd = selected(context)
+  if not selection then
+    return
+  end
+  local paths, err = git.run({
+    "diff-tree", "--root", "-m", "-r", "--no-commit-id",
+    "--name-only", "--no-renames", "-z", selection.value, "--",
+  }, cwd, { text = false })
+  if not paths then
+    tell(err, vim.log.levels.ERROR)
+  else
+    local files, seen = {}, {}
+    for path in vim.gsplit(paths, "\0", { plain = true, trimempty = true }) do
+      local filename = cwd .. "/" .. path
+      if not seen[filename] and vim.fn.filereadable(filename) == 1 then
+        seen[filename] = true
+        files[#files + 1] = filename
+      end
+    end
+    if #files > 0 then
+      context.close()
+      local trouble = require "trouble"
+      trouble.close "git_commit_files"
+      trouble.open { mode = "git_commit_files", commit_files = files, max_items = #files }
+      return
+    end
+    tell "No affected files in the current worktree"
+  end
+  if not context.prompt_bufnr then
+    context.reopen()
+  end
 end
 
 ---@param context table
@@ -290,6 +325,7 @@ local function pretty_git_commit_picker(opts, restore_selection)
             "Checkout commit (detached HEAD)",
             scheduler.wrap("checkout", git_checkout),
           },
+          { "View affected files (v)", view_files, keys = { "v" } },
           {
             "Rename HEAD commit",
             scheduler.wrap("amend", git_rename),

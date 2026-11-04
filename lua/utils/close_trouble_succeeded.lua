@@ -56,6 +56,8 @@ function M.close_all()
     "telescope",
     "telescope_files",
     "global_results",
+    "ripgrep_results",
+    "telescope_replacer",
     "file_results",
     "qflist",
     "quickfix",

@@ -1,12 +1,13 @@
 # Tasks
 
-## 1. Pretty picker and search
+## 1. Ripgrep results
 
-- [ ] 1.1 Register `:TelescopeReplacer` and add live ripgrep JSON search with styled occurrence rows and a preview. Verify literal metacharacters, case sensitivity, repeated matches on one line, and Unicode byte columns.
-- [ ] 1.2 Bound the search session and guard the Enter handoff. Verify that empty, incomplete, superseded, and over-limit results cannot start a review.
+- [x] 1.1 Route the live ripgrep handoff to a dedicated Trouble mode.
+- [x] 1.2 Add `f` to filter the current results through Telescope.
 
-## 2. Trouble review and editing
+## 2. Replacement preview
 
-- [ ] 2.1 Add the dedicated Trouble source and focused review mode. Verify that Enter from either picker mode selects the intended occurrence and that Trouble navigation jumps to the correct file and column.
-- [ ] 2.2 Implement target preflight and literal buffer edits. Verify that unrelated unsaved edits survive, changed target lines and readonly buffers are rejected, and changed byte lengths update remaining rows.
-- [ ] 2.3 Wire Normal-mode `r` and `R`. Verify single replacement, empty replacement, cancellation, default No, and confirmed replacement of all remaining rows across files, including folded results. Check that the edits can be undone and saved normally.
+- [x] 2.1 Add `r` to prompt once and show a separate Trouble preview, with one
+      row per occurrence and inline red matches and green replacements.
+- [x] 2.2 Apply the previewed replacement with `r` or confirmed `R`, retaining
+      target preflight, undo, and accurate remaining byte ranges.

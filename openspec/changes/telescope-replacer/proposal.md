@@ -1,24 +1,26 @@
-# Proposal
-
 ## Why
 
-Global search finds text across files, but replacing selected occurrences requires jumping to each file and editing it manually. A dedicated picker would let the user review literal matches in Trouble and edit them individually or in one confirmed batch.
+Ripgrep results already open in Trouble. Filtering and replacing from that list
+lets the user refine an existing search and inspect the proposed edits before
+changing buffers.
 
 ## What Changes
 
-- Add a pretty Telescope picker for live, case-sensitive literal search with ripgrep.
-- Open the results in a focused Trouble view on Enter.
-- Add Normal-mode `r` to replace the occurrence under the cursor and `R` to replace all remaining results after a Yes/No confirmation.
-- Apply replacements as undoable buffer edits for the user to save through Neovim.
+- Add `f` to ripgrep results in Trouble. It opens Telescope over the current
+  results and applies the matching or explicitly selected subset on Enter.
+- Add `r` to ripgrep results. It asks for replacement text and opens a separate
+  Trouble view with inline red matches and green replacement text.
+- In the preview, `r` applies one occurrence and `R` applies all remaining
+  occurrences after confirmation.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `telescope-replacer` covers literal search, occurrence review, and individual or confirmed batch replacement.
-
-### Modified Capabilities
+- `telescope-replacer` covers filtering ripgrep results, previewing changes,
+  and applying individual or confirmed batch replacements.
 
 ## Impact
 
-The feature uses the existing pretty picker, ripgrep, and Trouble source and mode integration. It adds a `:TelescopeReplacer` command.
+The existing live ripgrep picker hands off to a dedicated Trouble mode.
+Replacements are undoable edits in Neovim buffers that can be saved normally.

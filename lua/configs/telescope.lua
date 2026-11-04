@@ -82,7 +82,7 @@ require("telescope").setup {
   pickers = {
     live_grep = {
       -- Include hidden and ignored project files, while skipping Git internals.
-      additional_args = { "--hidden", "--no-ignore", "--glob", "!.git" },
+      additional_args = { "--no-config", "--crlf", "--hidden", "--no-ignore", "--glob", "!.git" },
       wrap_results = true,
       prompt_title = " Global search in project ",
       results_title = " Results accross all project",

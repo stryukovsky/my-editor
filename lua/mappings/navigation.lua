@@ -236,6 +236,7 @@ end, { desc = "Previous breakpoint" })
 
 local trouble_list_modes = {
   "global_results",
+  "ripgrep_results",
   "file_results",
   "telescope_files",
   "telescope",

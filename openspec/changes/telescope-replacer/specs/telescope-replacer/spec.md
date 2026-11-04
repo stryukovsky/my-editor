@@ -1,59 +1,52 @@
 # Telescope Replacer
 
-## Purpose
-
-Review exact text occurrences across files and replace individual matches or a confirmed batch from Trouble.
-
 ## ADDED Requirements
 
-### Requirement: Live literal search
+### Requirement: Filter ripgrep results from Trouble
 
-`:TelescopeReplacer` SHALL open a pretty Telescope picker that uses ripgrep to search the working directory captured at launch. The search SHALL be case-sensitive, treat the query as literal text, and show one result per occurrence with its file, line, column, and context. An empty query SHALL have no results.
+The live ripgrep handoff SHALL open a dedicated Trouble mode. Normal-mode
+`f` SHALL open Telescope over the current result items. Enter SHALL filter
+the Trouble view to the matching items or the explicit Telescope selection.
+The Trouble results SHALL highlight matched spans in green before replacement.
+Cancelling SHALL preserve the current results.
 
-#### Scenario: Search for literal punctuation
-- **WHEN** the query is `a.b` and the search contains `a.b a.b A.B axb`
-- **THEN** the picker shows the two lowercase literal occurrences as separate results
+#### Scenario: Narrow a ripgrep result list
+- **WHEN** the user searches in Telescope for one filename from the Trouble list and presses Enter
+- **THEN** Trouble shows the matching results from that file
 
-### Requirement: Review the result set in Trouble
+### Requirement: Preview replacement before editing
 
-Enter in Normal or Insert mode SHALL open the completed result set for the current query in a focused, navigable Trouble view. The results SHALL retain their source locations. Enter with no results SHALL leave the picker open. If the result set exceeds the review limit, the picker SHALL ask the user to narrow the search before transferring it.
+Normal-mode `r` in the ripgrep result view SHALL prompt for single-line
+replacement text and open a separate, focused Trouble preview. The preview
+SHALL show unchanged context once per occurrence, with removed text in red
+and inserted text in green. Opening the preview or cancelling the prompt SHALL leave source
+buffers unchanged.
 
-#### Scenario: Navigate search results
-- **WHEN** the user presses Enter on a completed search with matches
-- **THEN** Trouble opens focused on the selected match and the user can navigate and jump to the other occurrences
+#### Scenario: Preview repeated matches
+- **WHEN** a retained line contains two matches and the user enters replacement text
+- **THEN** the preview shows a separate proposed edit for each match
 
-### Requirement: Replace the current occurrence
+### Requirement: Apply individual or confirmed batch replacements
 
-Normal-mode `r` on a Trouble match SHALL prompt for replacement text and apply it literally to that occurrence. An empty replacement SHALL delete the occurrence. Cancelling SHALL preserve the result set and source text. The action SHALL have no effect on a group row.
+In the preview, Normal-mode `r` SHALL apply the focused occurrence.
+Normal-mode `R` SHALL confirm the number of all remaining occurrences,
+including folded rows, with No as the default. The actions SHALL use the
+previewed replacement literally and accept an empty replacement as deletion.
 
-#### Scenario: Replace only the focused match
-- **WHEN** a line contains two matches and the user presses `r` on the second and enters `$1`
-- **THEN** only the second occurrence changes to the literal text `$1` and its row is removed
+#### Scenario: Apply one previewed occurrence
+- **WHEN** the user presses `r` on a preview row
+- **THEN** only that occurrence changes and the row is removed
 
-### Requirement: Confirm replacement of all remaining occurrences
-
-Normal-mode `R` SHALL prompt for replacement text and show a Yes/No confirmation with the number of remaining occurrences in the review session, including folded rows. No SHALL be the default. Changes SHALL begin only after an affirmative answer.
-
-#### Scenario: Decline the batch
-- **WHEN** the user enters replacement text and answers No or dismisses the confirmation
-- **THEN** the action leaves buffers and results intact
-
-#### Scenario: Replace across files
-- **WHEN** the user confirms a batch after already replacing one occurrence with `r`
-- **THEN** all remaining occurrences in the review are replaced and their rows are removed
+#### Scenario: Confirm replacement of the remaining rows
+- **WHEN** the user confirms `R` after applying one occurrence with `r`
+- **THEN** the remaining occurrences are replaced and their rows are removed
 
 ### Requirement: Validate targets before editing
 
-Replacements SHALL be undoable Neovim buffer edits that the user can save normally. The replacer SHALL verify pending targets against current buffer contents before editing. If a target is stale or cannot be edited, the action SHALL report it, and a batch with a failed preflight SHALL leave every target untouched. Successful edits SHALL keep remaining rows accurate.
-
-#### Scenario: Preserve unrelated unsaved edits
-- **WHEN** a loaded target buffer contains an unsaved change outside the lines being replaced and those target lines remain valid
-- **THEN** the replacement preserves the unrelated change and leaves the buffer available for normal save and undo
+Replacements SHALL be undoable buffer edits. The replacer SHALL reject stale
+or uneditable targets before applying any edits in a batch, preserve unrelated
+unsaved changes, and refresh previews with the remaining byte ranges.
 
 #### Scenario: Refuse a stale batch
-- **WHEN** a target line has changed since the search and the user confirms `R`
-- **THEN** the batch reports the stale target and makes no replacement edits
-
-#### Scenario: Update the byte column after replacement
-- **WHEN** the user replaces the first of two matches on the same line with text of a different byte length
-- **THEN** the second row still navigates to and replaces the correct occurrence
+- **WHEN** any target line changes after the preview and the user confirms `R`
+- **THEN** the batch reports the stale target and leaves all targets untouched

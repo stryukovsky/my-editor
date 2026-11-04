@@ -44,16 +44,17 @@ local function edit_selection(selection)
 end
 
 local function collect_telescope_items(picker)
-  trouble_source.items = {}
+  local items = {}
   if #picker:get_multi_selection() > 0 then
     for _, item in ipairs(picker:get_multi_selection()) do
-      table.insert(trouble_source.items, trouble_source.item(item))
+      table.insert(items, trouble_source.item(item))
     end
   else
     for item in picker.manager:iter() do
-      table.insert(trouble_source.items, trouble_source.item(item))
+      table.insert(items, trouble_source.item(item))
     end
   end
+  return items
 end
 
 ---@param item trouble.Item|nil
@@ -105,7 +106,15 @@ return function(mode)
       if not close_trouble_succeeded() then
         return
       end
-      collect_telescope_items(picker)
+      local items = collect_telescope_items(picker)
+      local grep = mode == "ripgrep_results" and require "integrations.trouble.sources.ripgrep_results"
+      local pattern = grep and action_state.get_current_line()
+      local query = grep and picker:_get_prompt()
+      if grep then
+        grep.items = items
+      else
+        trouble_source.items = items
+      end
       local wanted = trouble_source.item(selection)
 
       ui_prevent_mess()
@@ -119,6 +128,8 @@ return function(mode)
       local view = trouble_api.open {
         focus = false,
         mode = mode,
+        new = grep ~= false,
+        max_items = grep and #items or nil,
         follow = false,
         restore = false,
         sorters = {},
@@ -130,6 +141,9 @@ return function(mode)
       if view then
         view:wait(function()
           select_picker_item(view, wanted)
+          if grep then
+            grep.attach(view, pattern, query)
+          end
         end)
       end
     end
