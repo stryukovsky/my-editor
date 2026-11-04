@@ -15,6 +15,8 @@ for _, key in ipairs { "d", "D", "c", "C", "x", "X", "s", "S", "." } do
   end, { expr = true, desc = "Delete/change without overwriting clipboard" })
 end
 
+map("x", "p", "P", { desc = "Replace selection without overwriting clipboard" })
+
 -- Helper to set search register without moving cursor
 local function highlight_current(is_visual)
   local pattern

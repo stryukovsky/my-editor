@@ -65,6 +65,14 @@ BROWSER_USE_CODEX_APP_VERSION = "26.1027.30824"
 NODE_REPL_TRUSTED_SERVICES = '{"browser":"/home/dmitry/.codex/plugins/cache/openai-bundled/browser/26.1027.30824/scripts/browser-service.mjs"}'
 CODEX_CLI_PATH = "/usr/lib/chatgpt/resources/codex"
 
+[mcp_servers.effectcraft]
+command = "/usr/bin/effectcraft-cli"
+args = ["mcp", "--project", "/home/dmitry/Work/my-animation/effectcraft-demo/hello-mcp.ecproj", "--automation-read-root", "/home/dmitry/Work/my-animation/effectcraft-demo", "--automation-write-root", "/home/dmitry/Work/my-animation/effectcraft-demo"]
+
+[mcp_servers.vectorcraft]
+command = "/usr/bin/vectorcraft-cli"
+args = ["mcp", "--connect", "127.0.0.1:7979"]
+
 [projects."/home/dmitry/Work/pytorch-learn"]
 trust_level = "trusted"
 
@@ -105,6 +113,9 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/home/dmitry/Work/bsc"]
+trust_level = "trusted"
+
+[projects."/home/dmitry/Work/my-animation"]
 trust_level = "trusted"
 
 [tui]

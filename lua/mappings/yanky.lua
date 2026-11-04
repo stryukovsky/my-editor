@@ -12,4 +12,5 @@ map({ "n", "v", "x" }, "<leader>P", function()
   telescope.extensions.yank_history.yank_history { initial_mode = "normal" }
 end, { desc = "yanky paste from history" })
 
-map({"n","x"}, "y", "<Plug>(YankyYank)")
+map("n", "y", "<Plug>(YankyYank)")
+map("x", "y", "<Plug>(YankyYank)gv", { desc = "Yank and keep selection" })

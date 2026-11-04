@@ -87,9 +87,9 @@ local function mode_title(prompt)
   }
 end
 
----Esc in insert leaves insert; Esc/q in normal cancel; CR submits.
+---Esc in insert leaves insert. Esc/q in normal cancel.
 ---@param buf integer
----@param opts { submit: fun(), cancel: fun(), submit_modes?: string|string[] }
+---@param opts { submit: fun(), cancel: fun(), submit_modes?: string|string[], multiline?: boolean }
 function M.bind_float_keys(buf, opts)
   pcall(vim.keymap.del, "i", "<Esc>", { buffer = buf })
   map("i", "<Esc>", function()
@@ -98,11 +98,18 @@ function M.bind_float_keys(buf, opts)
   map("n", "<Esc>", opts.cancel, { buffer = buf, nowait = true })
   map("n", "q", opts.cancel, { buffer = buf, nowait = true })
   map(
-    opts.submit_modes or { "i", "n" },
+    opts.multiline and "n" or opts.submit_modes or { "i", "n" },
     "<CR>",
     opts.submit,
     { buffer = buf, nowait = true }
   )
+  if opts.multiline then
+    map({ "i", "n", "s" }, "<C-s>", opts.submit, { buffer = buf, nowait = true, desc = "Submit input" })
+  else
+    for _, key in ipairs { "o", "O" } do
+      map("n", key, "i", { buffer = buf, nowait = true })
+    end
+  end
 end
 
 ---Restore editor mode captured before the float opened.
@@ -113,7 +120,7 @@ local function restore_mode(mode)
   elseif mode:sub(1, 1) == "R" then
     vim.cmd "startreplace"
   elseif mode:find "^[vV\22]" then
-    pcall(vim.cmd, "normal! gv")
+    pcall(vim.cmd.normal, { args = { "gv" }, bang = true })
   else
     -- normal / operator-pending / etc.
     if vim.fn.mode():find "^[iR]" then
@@ -122,15 +129,16 @@ local function restore_mode(mode)
   end
 end
 
----Float input. `opts.on_input(value)` runs on each edit, before confirm.
----`opts.filetype`: nonempty filetype opts into native completion and FileType hooks.
----Omitted/empty filetype keeps completion off. `opts.cwd` supplies Git context.
----@param opts { prompt?: string, default?: string, filetype?: string, cwd?: string, on_input?: function, virtual_text_mode?: string }
----@param on_confirm fun(value: string|nil)
----`opts.virtual_text_mode = "slash_search"`: `on_input` may return a match
----count (and `true` when that count is capped). The float draws `found: N`
----beside the text, including while insert mode is active.
 function M.setup()
+  ---Float input. `opts.on_input(value)` runs on each edit, before confirm.
+  ---A nonempty `opts.filetype` enables native completion and FileType hooks.
+  ---`opts.cwd` supplies Git context.
+  ---`opts.multiline` lets Enter insert a newline in insert mode. Ctrl-S submits.
+  ---With `opts.virtual_text_mode = "slash_search"`, `on_input` may return a match
+  ---count and a boolean indicating that it was capped. The float shows it inline.
+  ---@param opts? { prompt?: string, default?: string, filetype?: string, cwd?: string, on_input?: function, virtual_text_mode?: string, multiline?: boolean }
+  ---@param on_confirm? fun(value: string|nil)
+  ---@diagnostic disable-next-line: duplicate-set-field
   vim.ui.input = function(opts, on_confirm)
     opts = opts or {}
     on_confirm = on_confirm or function() end
@@ -140,20 +148,32 @@ function M.setup()
     local prev_view = vim.fn.winsaveview()
     local prompt = opts.prompt or "Input"
     local default = opts.default == nil and "" or tostring(opts.default)
+    local multiline = opts.multiline == true
+    local lines = multiline and vim.split(default, "\n", { plain = true }) or { default }
     local filetype = opts.filetype or ""
     vim.validate("filetype", filetype, "string")
     local completion = filetype ~= ""
     local cwd = opts.cwd or vim.fn.getcwd()
     local max_width = math.max(1, vim.o.columns - 4)
     local preferred = math.floor(vim.o.columns * 0.6)
-    local width =
-      math.min(max_width, math.max(preferred, display_width(default) + 8, 72))
-    local height = 1
-    local row = math.floor((vim.o.lines - height) / 2)
+    local width = math.max(preferred, 72)
+    for _, line in ipairs(lines) do
+      width = math.max(width, display_width(line) + 8)
+    end
+    width = math.min(max_width, width)
+    local function float_height(line_count)
+      return math.min(line_count, math.max(1, vim.o.lines - vim.o.cmdheight - 2))
+    end
+    local height = float_height(#lines)
+    local function float_row(content_height)
+      return math.max(0, math.floor((vim.o.lines - vim.o.cmdheight - content_height) / 2))
+    end
+    local row = multiline and float_row(height) or math.floor((vim.o.lines - height) / 2)
     local col = math.floor((vim.o.columns - width) / 2)
     local buffer = vim.api.nvim_create_buf(false, true)
     local completed = false
     local mode_autocmd ---@type integer?
+    local resize_autocmd ---@type integer?
 
     vim.bo[buffer].bufhidden = "wipe"
     vim.bo[buffer].buftype = "nofile"
@@ -161,7 +181,7 @@ function M.setup()
     -- Native completion respects this flag on InsertEnter.
     vim.b[buffer].input_completion = completion
     vim.b[buffer].completion = completion
-    vim.api.nvim_buf_set_lines(buffer, 0, -1, false, { default })
+    vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
 
     local window = vim.api.nvim_open_win(buffer, true, {
       relative = "editor",
@@ -175,6 +195,28 @@ function M.setup()
       title_pos = "center",
       zindex = 60,
     })
+
+    if multiline then
+      local function resize()
+        if not vim.api.nvim_win_is_valid(window) then
+          return
+        end
+        local new_height = float_height(vim.api.nvim_buf_line_count(buffer))
+        local new_row = float_row(new_height)
+        if new_height ~= height or new_row ~= row then
+          height, row = new_height, new_row
+          vim.api.nvim_win_set_config(window, { relative = "editor", height = height, row = row, col = col })
+        end
+      end
+      vim.api.nvim_buf_attach(buffer, false, {
+        on_lines = function(_, _, _, _, old_end, new_end)
+          if old_end ~= new_end then
+            vim.schedule(resize)
+          end
+        end,
+      })
+      resize_autocmd = vim.api.nvim_create_autocmd("VimResized", { callback = resize })
+    end
 
     local function refresh_title()
       if not vim.api.nvim_win_is_valid(window) then
@@ -208,6 +250,9 @@ function M.setup()
       if mode_autocmd then
         pcall(vim.api.nvim_del_autocmd, mode_autocmd)
         mode_autocmd = nil
+      end
+      if resize_autocmd then
+        vim.api.nvim_del_autocmd(resize_autocmd)
       end
 
       if vim.api.nvim_win_is_valid(window) then
@@ -263,12 +308,20 @@ function M.setup()
       callback = cancel,
     })
 
+    local function input_value()
+      if multiline then
+        return table.concat(vim.api.nvim_buf_get_lines(buffer, 0, -1, false), "\n")
+      end
+      return vim.api.nvim_get_current_line()
+    end
+
     M.bind_float_keys(buffer, {
       submit = function()
-        finish(vim.api.nvim_get_current_line())
+        finish(input_value())
       end,
       cancel = cancel,
       submit_modes = completion and "n" or { "i", "n" },
+      multiline = multiline,
     })
 
     if completion then
@@ -279,6 +332,9 @@ function M.setup()
         then
           return "<C-y>"
         end
+        if multiline then
+          return vim.fn.pumvisible() == 1 and "<C-e><CR>" or "<CR>"
+        end
         vim.schedule(function()
           if not completed and vim.api.nvim_win_is_valid(window) then
             finish(vim.api.nvim_buf_get_lines(buffer, 0, 1, false)[1] or "")
@@ -288,7 +344,7 @@ function M.setup()
       end, {
         buffer = buffer,
         expr = true,
-        desc = "Accept completion or submit input",
+        desc = multiline and "Accept completion or insert newline" or "Accept completion or submit input",
       })
       for key, direction in pairs { ["<Tab>"] = 1, ["<S-Tab>"] = -1 } do
         map({ "i", "s" }, key, function()
@@ -306,7 +362,7 @@ function M.setup()
         })
       end
       vim.bo[buffer].filetype = filetype
-      -- Filetype formatting must not wrap a one-line input into hidden lines.
+      -- Keep line breaks under the user's control.
       vim.bo[buffer].textwidth = 0
       vim.bo[buffer].formatoptions = ""
       if filetype == "gitcommit" then
@@ -331,16 +387,15 @@ function M.setup()
           if completed then
             return
           end
-          local line = vim.api.nvim_get_current_line()
-          local ok, count, capped = pcall(opts.on_input, line)
+          local ok, count, capped = pcall(opts.on_input, input_value())
           if
-            virtual_text_mode ~= VIRTUAL_TEXT_SLASH_SEARCH
+            multiline or virtual_text_mode ~= VIRTUAL_TEXT_SLASH_SEARCH
             or not vim.api.nvim_buf_is_valid(buffer)
           then
             return
           end
           if ok and type(count) == "number" then
-            show_slash_count(buffer, line, count, capped == true)
+            show_slash_count(buffer, vim.api.nvim_get_current_line(), count, capped == true)
           else
             clear_slash_count(buffer)
           end

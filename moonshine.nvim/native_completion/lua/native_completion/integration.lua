@@ -207,7 +207,7 @@ function M.setup_mappings()
     silent = true,
     desc = "Accept selected completion or insert newline",
   })
-  for _, key in ipairs { "<C-CR>", "<A-CR>" } do
+  for _, key in ipairs { "<C-CR>", "<S-CR>", "<A-CR>" } do
     map("i", key, function()
       if vim.fn.pumvisible() == 0 then
         return ""

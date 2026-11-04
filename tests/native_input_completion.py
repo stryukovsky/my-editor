@@ -187,6 +187,26 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
             call(lua, "vim.api.nvim_win_close(0,true)")
             time.sleep(0.25)
             call(lua, "_G.input_checks.closed=vim.o.autocompletedelay")
+            call(
+                lua,
+                """
+                _G.input_result='pending'
+                vim.ui.input({prompt='Commit', filetype='gitcommit', cwd=..., multiline=true},
+                  function(v) _G.input_result=v end)
+                """,
+                str(temporary),
+            )
+            time.sleep(0.25)
+            key("docs: explain input")
+            key("<CR>")
+            key("<CR>")
+            call(lua, "_G.input_checks.grown=vim.api.nvim_win_get_height(0)")
+            key("<BS>")
+            call(lua, "_G.input_checks.shrunk=vim.api.nvim_win_get_height(0)")
+            key("<CR>")
+            key("Describe the change.")
+            key("<C-s>", 0.25)
+            call(lua, "_G.input_checks.multiline=_G.input_result")
             call(lua, "vim.cmd.enew();vim.fn.jobstart({'cat'},{term=true});vim.cmd.startinsert()")
             time.sleep(0.2)
             call(lua, "vim.g.statusline_winid=vim.api.nvim_get_current_win();_G.input_checks.terminal_insert=require('terminal_reimagined').mode_label();_G.input_checks.terminal_winbar=vim.wo.winbar")
@@ -215,6 +235,8 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
         assert checks["restored"] == 137, checks
         assert checks["external"] == 73 and checks["cancelled"], checks
         assert checks["closed"] == 73, checks
+        assert checks["grown"] == 3 and checks["shrunk"] == 2, checks
+        assert checks["multiline"] == "docs: explain input\n\nDescribe the change.", checks
         assert "leave terminal" in checks["terminal_insert"], checks
         assert "enter terminal" in checks["terminal_normal"], checks
         assert "mode_label" in checks["terminal_winbar"], checks
@@ -226,6 +248,7 @@ with tempfile.TemporaryDirectory(prefix="input-completion-") as directory:
             "PASS completion delay restoration and terminal mode indicator preserved"
         )
         print("PASS changed file and parent folder completion acceptance in commit input")
+        print("PASS multiline commit input grows, shrinks, and submits blank lines intact")
     finally:
         try:
             nvim.command("qa!")

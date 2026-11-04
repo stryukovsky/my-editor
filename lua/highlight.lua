@@ -1,5 +1,9 @@
 local hl = vim.api.nvim_set_hl
 
+local function sync_visual_cursor(recording)
+  hl(0, "CursorV", recording and { reverse = true, bold = true } or { link = "Visual" })
+end
+
 local function sync_cursorline_nr()
   local mode_map = {
     n = "normal",
@@ -37,6 +41,7 @@ local function sync_cursorline_nr()
 end
 
 local function override_highlights()
+  hl(0, "VisualYankFlash", { bg = "#000000", fg = "#ffffff" })
   hl(0, "ScalarLinesSource", { bg = "#005faf", fg = "#ffffff" })
   hl(0, "ScalarLinesTarget", { bg = "#af0000", fg = "#ffffff" })
   hl(0, "PreProc", { link = "Comment" })
@@ -282,6 +287,8 @@ local function override_highlights()
           bold = true,
         })
       end
+    elseif mode_key == "v" then
+      sync_visual_cursor(vim.fn.reg_recording() ~= "")
     elseif mode_key ~= "c" then
       vim.api.nvim_set_hl(
         0,
@@ -291,7 +298,7 @@ local function override_highlights()
     end
     local blink = (mode_key == "n" or mode_key == "t" or mode_key == "c")
         and "-blinkwait700-blinkoff400-blinkon250"
-      or ""
+      or (mode_key == "v" and "-blinkon0" or "")
     table.insert(
       cursor_parts,
       mode_key .. ":block-Cursor" .. mode_key:upper() .. blink
@@ -331,6 +338,12 @@ vim.api.nvim_create_autocmd({ "ColorScheme", "UIEnter" }, {
 vim.api.nvim_create_autocmd("ModeChanged", {
   pattern = "*",
   callback = sync_cursorline_nr,
+})
+
+vim.api.nvim_create_autocmd({ "RecordingEnter", "RecordingLeave" }, {
+  callback = function(event)
+    sync_visual_cursor(event.event == "RecordingEnter")
+  end,
 })
 
 vim.fn.sign_define(
