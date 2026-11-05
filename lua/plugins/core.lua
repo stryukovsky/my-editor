@@ -51,9 +51,6 @@ return {
     "romgrk/barbar.nvim",
   },
   {
-    "tiagovla/scope.nvim",
-  },
-  {
     "stryukovsky/neo-tree.nvim",
     branch = "option-consider-untracked-as-git-change",
     dependencies = {

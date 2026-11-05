@@ -196,7 +196,7 @@ killport() {
 }
 
 # Edit pending commands in the parent Neovim instance.
-[[ -r "$HOME/.config/nvim/setup/zsh/command-editor.zsh" ]] && source "$HOME/.config/nvim/setup/zsh/command-editor.zsh"
+[[ -r "$HOME/.config/nvim/setup/common_tools/zsh/command-editor.zsh" ]] && source "$HOME/.config/nvim/setup/common_tools/zsh/command-editor.zsh"
 
 export SUDO_EDITOR=nvim
 export PATH="$PATH:/opt/liquibase"

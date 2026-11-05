@@ -8,7 +8,7 @@ if [[ -n $NVIM ]]; then
     zle edit-command-line
   }
   zle -N _nvim_edit_command_line
-  zstyle ':zle:*edit*command*line*' editor "${${(%):-%N}:A:h:h:h}/bin/terminal-command-editor"
+  zstyle ':zle:*edit*command*line*' editor "${${(%):-%N}:A:h:h:h:h}/bin/terminal-command-editor"
   bindkey -M emacs '^F' _nvim_edit_command_line
   bindkey -M emacs '^S' _nvim_edit_command_line
   bindkey -M viins '^F' _nvim_edit_command_line
