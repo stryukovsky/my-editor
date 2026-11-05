@@ -59,7 +59,7 @@ export SDKMAN_DIR="$HOME/.sdkman"
 source <(fzf --zsh)
 export FZF_DEFAULT_OPTS='--height 40% --tmux center,40% --layout reverse --border top'
 
-alias ls="lsd"
+alias ls="lsd -lah"
 alias top="btop"
 alias ff="ranger"
 alias mc="ranger"
