@@ -49,8 +49,8 @@ gsettings set org.gnome.desktop.a11y.magnifier mag-factor 2.0
 # Resolve shared Fedora setup assets.
 fedora_setup_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
-# The Lenovo Copilot key emits Super+Shift+F23. Preserve other custom shortcuts.
-python3 "$fedora_setup_dir/../../bin/kitty-top" --install-shortcut
+# Consume the Lenovo Copilot key without launching anything.
+python3 "$fedora_setup_dir/disable-copilot.py"
 
 # Keep a persistent copy of the desktop wallpaper for both light and dark mode.
 wallpaper_source="$fedora_setup_dir/../../MyBackground.jpg"
