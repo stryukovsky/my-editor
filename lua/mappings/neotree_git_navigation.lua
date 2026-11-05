@@ -48,7 +48,7 @@ local function navigate(state, direction, conflicts)
         end
       end
     end
-    ids = utils.sort_by_tree_display(ids)
+    table.sort(ids)
   end
   local index = 1
   for i, id in ipairs(ids) do

@@ -74,9 +74,12 @@ function M.footer(date)
     or vim.json.decode(
       table.concat(vim.fn.readfile(root .. "lectionary.json"), "\n")
     )
-  local references = calendar.readings(lectionary, date or os.date "*t")
-  local lines = { "", "Евангелие дня" }
+  date = date or os.date "*t"
+  local references = calendar.readings(lectionary, date)
+  local lines = { "" }
   local width = math.max(1, math.min(76, vim.api.nvim_win_get_width(0) - 6))
+  wrap(lines, calendar.week_label(date), width)
+  lines[#lines + 1] = "Евангелие дня"
   if #references == 0 then
     wrap(
       lines,

@@ -55,7 +55,8 @@ local function changed_paths(output)
   end
   while index <= #records do
     local record = records[index]
-    local status, path = record:sub(1, 2), record:sub(4)
+    local status = record:sub(1, 2)
+    local path = record:sub(4):gsub("/+$", "")
     if path ~= "" then
       add(path:match "[^/]+$", "Changed file")
       local parent = path:match "^(.*)/[^/]+$"

@@ -84,10 +84,54 @@ local function refresh_render_markdown(win)
   end, delay)
 end
 
+local zen_buffers = {}
+
+local function quiet_buffer()
+  local buf = vim.api.nvim_get_current_buf()
+  if zen_buffers[buf] then
+    return
+  end
+  local disabled_namespaces = {}
+  for ns in pairs(vim.diagnostic.get_namespaces()) do
+    if not vim.diagnostic.is_enabled { bufnr = buf, ns_id = ns } then
+      disabled_namespaces[#disabled_namespaces + 1] = ns
+    end
+  end
+  zen_buffers[buf] = {
+    disabled_namespaces = disabled_namespaces,
+    completion = vim.b.completion,
+    autocomplete = vim.bo.autocomplete,
+    diagnostics = vim.diagnostic.is_enabled { bufnr = buf },
+  }
+  vim.b.completion = false
+  vim.diagnostic.enable(false, { bufnr = buf })
+  require("native_completion.integration").refresh_completions()
+end
+
+local function restore_buffers()
+  for buf, state in pairs(zen_buffers) do
+    if vim.api.nvim_buf_is_valid(buf) then
+      vim.api.nvim_buf_call(buf, function()
+        vim.b.completion = state.completion
+        require("native_completion.integration").refresh_completions()
+        vim.bo.autocomplete = state.autocomplete
+        vim.diagnostic.enable(state.diagnostics, { bufnr = buf })
+        if state.diagnostics then
+          for _, ns in ipairs(state.disabled_namespaces) do
+            vim.diagnostic.enable(false, { bufnr = buf, ns_id = ns })
+          end
+        end
+      end)
+    end
+  end
+  zen_buffers = {}
+end
+
 function M.setup(opts)
   BACKDROP = opts.window.backdrop
   zen_mode.setup(vim.tbl_extend("force", opts, {
     on_open = function(win)
+      quiet_buffer()
       apply_zen_bg()
       apply_statuscol(win)
       if is_current_session_todotxt_file then
@@ -97,6 +141,9 @@ function M.setup(opts)
       vim.api.nvim_create_autocmd("BufWinEnter", {
         group = vim.api.nvim_create_augroup("ZenStatusCol", { clear = true }),
         callback = function()
+          if vim.api.nvim_get_current_win() == win then
+            quiet_buffer()
+          end
           vim.schedule(function()
             apply_statuscol(win)
           end)
@@ -105,6 +152,7 @@ function M.setup(opts)
     end,
     on_close = function()
       pcall(vim.api.nvim_del_augroup_by_name, "ZenStatusCol")
+      restore_buffers()
       local view_ok, view = pcall(require, "zen-mode.view")
       local parent = view_ok and view.parent or nil
       disable_todotxt_file_wrap()
@@ -141,13 +189,19 @@ function M.open_todotxt_file()
   }
 end
 
--- Toggle zen like other UI shortcuts: drop Telescope first, then open/close zen.
+-- Ignore other floats; zen's own floating window must still allow toggling out.
 -- Registers dialog_component_callback_close so the next Telescope/UI key closes zen.
 function M.toggle_ui()
+  local view_ok, view = pcall(require, "zen-mode.view")
+  local win = vim.api.nvim_get_current_win()
+  local config = vim.api.nvim_win_get_config(win)
+  if (config.relative ~= "" or config.external) and not (view_ok and win == view.win) then
+    return
+  end
+
   local close_telescope = require "mappings.close_telescope"
   local ui_prevent_mess = require "utils.ui_prevent_mess"
   local had_telescope = close_telescope()
-  local view_ok, view = pcall(require, "zen-mode.view")
   local zen_open = view_ok and view.is_open()
 
   if zen_open and not had_telescope then

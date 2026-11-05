@@ -31,17 +31,31 @@ local function sunday_after(day)
   return day + 7 - weekday(day)
 end
 
-local function paschal_index(day, year)
+local function cycle_pascha(day, year)
   local easter = pascha(year)
-  local triodion = easter - 70
-  if day < triodion then
-    year = year - 1
-    easter = pascha(year)
-  else
-    triodion = pascha(year + 1) - 70
+  if day < easter - 70 then
+    return pascha(year - 1), year - 1
   end
+  return easter, year
+end
 
-  local after_cross = sunday_after(day_number(year, 9, 14))
+function M.week_label(date)
+  local day = day_number(date.year, date.month, date.day, true)
+  local offset = day - (cycle_pascha(day, date.year) + 49)
+  if offset == 0 then
+    return "Пятидесятница"
+  end
+  local period = weekday(day) == 0 and "Неделя" or "Седмица"
+  local number = math.ceil(math.abs(offset) / 7)
+  local relation = offset < 0 and "до Пятидесятницы"
+    or "по Пятидесятнице"
+  return ("%s %d-я %s"):format(period, number, relation)
+end
+
+local function paschal_index(day, year)
+  local easter, cycle_year = cycle_pascha(day, year)
+  local triodion = pascha(cycle_year + 1) - 70
+  local after_cross = sunday_after(day_number(cycle_year, 9, 14))
   if day <= after_cross then
     local offset = day - easter
     -- With an early Pascha, repeat weeks 10 and/or 11 until the Lucan cycle begins.
@@ -52,7 +66,7 @@ local function paschal_index(day, year)
   end
 
   local offset = 168 + day - after_cross
-  local forefathers = sunday_before(day_number(year, 12, 25)) - 7
+  local forefathers = sunday_before(day_number(cycle_year, 12, 25)) - 7
   if day == forefathers then
     return 245
   elseif offset == 245 then

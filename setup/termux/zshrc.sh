@@ -29,55 +29,23 @@ cdv() {
 clv() (
   local vault_dir=/storage/emulated/0/Documents/my-vault
   mkdir -p -- "${vault_dir:h}" || return
-  git clone git@github.com:stryukovsky/my-vault.git "$vault_dir" || return
+  git clone --origin origin --branch main git@github.com:stryukovsky/my-vault.git "$vault_dir"
 )
 
-_vault_ready() {
-  local operation
-  [[ -e .git ]] || { print -u2 'Vault checkout missing; run clv first.'; return 1; }
-  for operation in MERGE_HEAD rebase-merge rebase-apply CHERRY_PICK_HEAD REVERT_HEAD; do
-    if [[ -e $(git rev-parse --git-path "$operation") ]]; then
-      print -u2 "Resolve the pending Git operation ($operation) first."
-      return 1
-    fi
-  done
-  [[ -z $(git ls-files --unmerged) ]] || { print -u2 'Resolve unmerged vault files first.'; return 1; }
-}
-
-_vault_sync() (
+wv() (
   cdv || return
-  _vault_ready || return
-  local branch remote target
-  branch=$(git symbolic-ref --quiet --short HEAD) || {
-    print -u2 'Check out a vault branch before syncing.'
-    return 1
-  }
-  remote=$(git config --get "branch.$branch.remote") || remote=origin
-  target=$(git config --get "branch.$branch.merge") || target="refs/heads/$branch"
-  if [[ $remote == origin ]] && ! git remote get-url origin >/dev/null 2>&1; then
-    remote=git@github.com:stryukovsky/my-vault.git
+  git add -A || return
+  if ! git diff --cached --quiet; then
+    git commit -m "vault: update $(date '+%Y-%m-%d %H:%M:%S')" || return
   fi
-
-  if [[ $1 == write ]]; then
-    git add -A || return
-    if ! git diff --cached --quiet; then
-      git commit -m "vault: update $(date '+%Y-%m-%d %H:%M:%S')" || return
-    fi
-    git push --force -- "$remote" "HEAD:$target"
-    return
-  fi
-
-  git fetch -- "$remote" "$target" || return
-  if ! git merge-base --is-ancestor HEAD FETCH_HEAD; then
-    print -u2 'Cannot fast-forward to the fetched branch; local edits are unchanged.'
-    return 1
-  fi
-  git restore --worktree -- . || return
-  git merge --ff-only FETCH_HEAD
+  git push --force git@github.com:stryukovsky/my-vault.git HEAD:refs/heads/main
 )
 
-wv() { _vault_sync write; }
-rv() { _vault_sync read; }
+rv() (
+  cdv || return
+  git fetch git@github.com:stryukovsky/my-vault.git refs/heads/main || return
+  git reset --hard FETCH_HEAD
+)
 
 update-termux() {
   pkg update && pkg upgrade || return
@@ -89,5 +57,5 @@ if [[ -o interactive ]]; then
   echo '  clv  clone vault from GitHub'
   echo '  cdv  cd into vault'
   echo '  wv   commit local changes and overwrite remote (force-push)'
-  echo '  rv   discard unstaged tracked edits and fast-forward from remote'
+  echo '  rv   overwrite local tracked files and history from remote main'
 fi

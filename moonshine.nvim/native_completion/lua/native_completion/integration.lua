@@ -37,6 +37,25 @@ local function refresh()
     or { "menu", "menuone", "noselect", "fuzzy", "nosort", "popup" }
 end
 
+function M.refresh_completions()
+  local buf = vim.api.nvim_get_current_buf()
+  local clients = vim.lsp.get_clients { bufnr = buf, method = "textDocument/completion" }
+  for _, client in ipairs(clients) do
+    vim.lsp.completion.enable(false, client.id, buf)
+  end
+  if vim.b.completion ~= false then
+    for _, client in ipairs(clients) do
+      vim.lsp.completion.enable(true, client.id, buf, {
+        autotrigger = not vim.b.terminal_command
+          and (vim.bo.buftype == "" or vim.b.input_completion == true),
+        cmp = ranking.compare,
+        convert = ranking.convert,
+      })
+    end
+  end
+  refresh()
+end
+
 local group = vim.api.nvim_create_augroup("NativeCompletion", { clear = true })
 vim.api.nvim_create_autocmd("CompleteChanged", {
   group = group,
@@ -114,16 +133,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
         end
         provider.triggerCharacters = triggers
       end
-      vim.lsp.completion.enable(true, client.id, ev.buf, {
-        autotrigger = not vim.b[ev.buf].terminal_command
-          and vim.b[ev.buf].completion ~= false
-          and (
-            vim.bo[ev.buf].buftype == ""
-            or vim.b[ev.buf].input_completion == true
-          ),
-        cmp = ranking.compare,
-        convert = ranking.convert,
-      })
+      M.refresh_completions()
       vim.bo[ev.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
       refresh()
     end

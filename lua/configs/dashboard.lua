@@ -59,6 +59,63 @@ function M.setup()
   }
 end
 
+local function center_dashboard_windows()
+  local widths = {}
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.bo[buf].filetype == "dashboard" then
+      local width = vim.api.nvim_win_get_width(win)
+      widths[buf] = math.min(widths[buf] or width, width)
+    end
+  end
+
+  for buf, width in pairs(widths) do
+    local modifiable = vim.bo[buf].modifiable
+    local changed = false
+    local banner_shift
+    for row, line in ipairs(vim.api.nvim_buf_get_lines(buf, 0, -1, false)) do
+      local indent, content = line:match "^( *)(%S.-)%s*$"
+      if content then
+        local padding = math.max(0, math.floor((width - vim.api.nvim_strwidth(content)) / 2))
+        -- The weekday banner is the first block. Move its rows by the same
+        -- amount so the leading and trailing spaces still shape the letters.
+        if banner_shift == nil then
+          banner_shift = vim.startswith(content, "█") and (padding - #indent) or false
+        end
+        if banner_shift then
+          padding = #indent + banner_shift
+        end
+        if #indent ~= padding then
+          if not changed then
+            vim.bo[buf].modifiable = true
+            changed = true
+          end
+          -- Replace only the padding so the shortcut and text highlights move with the text.
+          vim.api.nvim_buf_set_text(buf, row - 1, 0, row - 1, #indent, { string.rep(" ", padding) })
+        end
+      elseif banner_shift then
+        banner_shift = false
+      end
+    end
+    if changed then
+      vim.bo[buf].modifiable = modifiable
+      vim.bo[buf].modified = false
+    end
+  end
+end
+
+-- Hyper centers against the editor width. Recenter when a sidebar changes the window width.
+local layout = vim.api.nvim_create_augroup("DashboardWindowLayout", { clear = true })
+vim.api.nvim_create_autocmd("User", {
+  group = layout,
+  pattern = "DashboardLoaded",
+  callback = center_dashboard_windows,
+})
+vim.api.nvim_create_autocmd("WinResized", {
+  group = layout,
+  callback = center_dashboard_windows,
+})
+
 local function prepare_dashboard_buf()
   vim.cmd.stopinsert()
   if vim.bo.filetype == "dashboard" then

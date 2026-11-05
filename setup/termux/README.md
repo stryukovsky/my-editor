@@ -35,21 +35,19 @@ use it directly; clone does not replace an existing directory.
 | --- | --- |
 | `cdv` | Change to the vault directory. |
 | `clv` | Clone the vault from GitHub over SSH. |
-| `wv` | Stage all changes/deletions, commit if needed, and force-push the local branch over its tracked remote branch. |
-| `rv` | Fetch the tracked remote branch, discard unstaged tracked edits, then fast-forward to the fetched version. |
+| `wv` | Stage all changes/deletions, commit if needed, and force-push HEAD to GitHub main. |
+| `rv` | Fetch GitHub main and reset the current branch and tracked files to it. |
 
-`wv` deliberately overwrites remote history, including commits missing locally.
-It never pulls first. A clean working tree still pushes existing local commits.
-Both commands use the configured upstream remote and branch, falling back to
-`origin` and the current branch name if no upstream is configured.
+Both commands use `git@github.com:stryukovsky/my-vault.git` directly, so no
+configured remote or upstream is required. `clv` explicitly clones main with
+an origin remote.
 
-`rv` permanently discards unstaged changes to tracked files, including deletions,
-even when the remote has no new commits. Staged changes and untracked files are
-preserved; if they obstruct the fast-forward, Git stops the update. No stash is
-created or reapplied. A failed fetch or a fetched branch that cannot fast-forward
-the local branch stops before discarding edits. An update failure after that
-point does not restore discarded edits. `rv` does not push.
-Pending merges, rebases, or unresolved conflicts must be resolved first.
+`wv` overwrites remote main, including commits missing locally. A clean working
+tree still pushes existing local commits.
 
-The old `pushvault` / `pv` names now call `wv`; `pullvault` calls `rv`.
+`rv` runs `git reset --hard FETCH_HEAD` after a successful fetch. It discards
+staged and unstaged tracked changes and replaces local branch history with
+remote main. Untracked files can also be removed if they obstruct tracked files
+from the fetched commit. A failed fetch leaves local files unchanged.
+
 To select another package mirror later, run `termux-change-repo` again.
