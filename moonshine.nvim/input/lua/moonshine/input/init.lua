@@ -183,7 +183,9 @@ function M.setup()
     vim.b[buffer].completion = completion
     vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
 
-    local window = vim.api.nvim_open_win(buffer, true, {
+    -- Enter only after the scratch buffer is attached. WinEnter handlers must
+    -- not see the source terminal and add a winbar to this one-line float.
+    local window = vim.api.nvim_open_win(buffer, false, {
       relative = "editor",
       width = width,
       height = height,
@@ -195,6 +197,7 @@ function M.setup()
       title_pos = "center",
       zindex = 60,
     })
+    vim.api.nvim_set_current_win(window)
 
     if multiline then
       local function resize()

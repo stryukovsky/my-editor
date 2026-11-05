@@ -1,3 +1,11 @@
+#!/usr/bin/env bash
+
+gsettings set com.github.stunkymonkey.nautilus-open-any-terminal terminal kitty || exit 1
+# Desktop applications using xdg-terminal-exec should prefer Kitty too.
+mkdir -p -- "${XDG_CONFIG_HOME:-$HOME/.config}"
+printf 'kitty.desktop\n' > "${XDG_CONFIG_HOME:-$HOME/.config}/xdg-terminals.list"
+printf 'Run nautilus -q after any file operations finish to load the extension.\n'
+
 gsettings set org.gnome.mutter overlay-key ''
 gsettings set org.gnome.desktop.wm.preferences button-layout ':minimize,maximize,close'
 gsettings set org.gnome.desktop.input-sources xkb-options "['altwin:ctrl_rwin','caps:menu']"
@@ -38,7 +46,7 @@ gsettings set org.gnome.desktop.a11y.magnifier screen-position 'full-screen'
 gsettings set org.gnome.desktop.a11y.magnifier scroll-at-edges true
 gsettings set org.gnome.desktop.a11y.magnifier mag-factor 2.0
 
-# Install the Nautilus Open in Kitty action from this dotfiles checkout.
+# Resolve shared Fedora setup assets.
 fedora_setup_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
 # The Lenovo Copilot key emits Super+Shift+F23. Preserve other custom shortcuts.
@@ -54,12 +62,6 @@ if [[ -f $wallpaper_source ]]; then
   gsettings set org.gnome.desktop.background picture-uri-dark "$wallpaper_uri"
   gsettings set org.gnome.desktop.background picture-options 'zoom'
 fi
-
-nautilus_extension_dir="${XDG_DATA_HOME:-$HOME/.local/share}/nautilus-python/extensions"
-mkdir -p -- "$nautilus_extension_dir"
-# Match the system Ghostty module; the provider guards duplicate registrations.
-ln -sfn -- "$fedora_setup_dir/nautilus/kitty.py" "$nautilus_extension_dir/ghostty.py"
-echo 'Installed Open in Kitty. Run nautilus -q, then reopen Files to load it.'
 
 # Use permanent paths, never an AppImage's temporary /tmp/.mount_* executable.
 install_app_autostart() {
