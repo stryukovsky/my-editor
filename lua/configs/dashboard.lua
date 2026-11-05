@@ -52,9 +52,9 @@ function M.setup()
       },
       project = { enable = false },
       mru = { enable = false },
-      footer = {
-        "“The worker deserves his wages.” — Luke 10:7",
-      },
+      footer = function()
+        return require("moonshine.gospel").footer()
+      end,
     },
   }
 end

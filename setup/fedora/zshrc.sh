@@ -59,10 +59,17 @@ export SDKMAN_DIR="$HOME/.sdkman"
 source <(fzf --zsh)
 export FZF_DEFAULT_OPTS='--height 40% --tmux center,40% --layout reverse --border top'
 
+alias ls="lsd"
 alias top="btop"
 alias ff="ranger"
 alias mc="ranger"
 alias o="xdg-open"
+
+# LSD reads filename colors from LS_COLORS and metadata colors from colors.yaml.
+function lsd() {
+    local wheat_names='fi=38;2;93;81;64:di=1;38;2;140;106;27:ln=38;2;97;131;187:or=38;2;229;57;53:mi=38;2;229;57;53:ex=38;2;74;92;58'
+    LS_COLORS="${LS_COLORS:+$LS_COLORS:}$wheat_names" command lsd "$@"
+}
 
 # opencode
 export PATH=/home/dmitry/.opencode/bin:$PATH

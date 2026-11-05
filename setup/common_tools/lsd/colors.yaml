@@ -1,0 +1,44 @@
+# Material wheat, matching Kitty and Neovim's material-lighter.
+user: [118, 86, 19]
+group: [139, 125, 109]
+permission:
+  read: [74, 92, 58]
+  write: [140, 106, 27]
+  exec: [196, 90, 18]
+  exec-sticky: [163, 122, 204]
+  no-access: [155, 138, 114]
+  octal: [93, 81, 64]
+  acl: [97, 131, 187]
+  context: [97, 131, 187]
+attributes:
+  archive: [74, 92, 58]
+  read: [93, 81, 64]
+  hidden: [139, 125, 109]
+  system: [163, 122, 204]
+date:
+  hour-old: [74, 92, 58]
+  day-old: [140, 106, 27]
+  older: [139, 125, 109]
+size:
+  none: [155, 138, 114]
+  small: [93, 81, 64]
+  medium: [140, 106, 27]
+  large: [196, 90, 18]
+inode:
+  valid: [93, 81, 64]
+  invalid: [155, 138, 114]
+links:
+  valid: [93, 81, 64]
+  invalid: [155, 138, 114]
+tree-edge: [155, 138, 114]
+git-status:
+  default: [139, 125, 109]
+  unmodified: [139, 125, 109]
+  ignored: [155, 138, 114]
+  new-in-index: [74, 92, 58]
+  new-in-workdir: [74, 92, 58]
+  typechange: [163, 122, 204]
+  deleted: [229, 57, 53]
+  renamed: [97, 131, 187]
+  modified: [140, 106, 27]
+  conflicted: [196, 90, 18]

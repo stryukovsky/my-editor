@@ -80,6 +80,9 @@ ln -sfr setup/common_tools/btop/btop.conf ~/.config/btop/btop.conf
 mkdir -p ~/.config/kitty/
 ln -sfr setup/fedora/kitty.conf ~/.config/kitty/kitty.conf
 
+# LSD wheat theme (reload Zsh for filename colors)
+ln -srT setup/common_tools/lsd ~/.config/lsd
+
 mkdir -p ~/.config/ranger/
 ln -sfr setup/fedora/ranger/* ~/.config/ranger/
 ln -sfr setup/fedora/ranger/colorschemes ~/.config/ranger/colorschemes
