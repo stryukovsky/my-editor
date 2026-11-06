@@ -4,7 +4,7 @@
 from common import command, main, tool
 
 
-def prepare():
+def prepare() -> list[str]:
     return [command("env", "UV_NO_MODIFY_PATH=1", tool("uv"), "self", "update")]
 
 

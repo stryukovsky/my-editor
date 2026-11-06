@@ -5,7 +5,7 @@ import re
 from common import capture, command, main, nvm_source
 
 
-def prepare():
+def prepare() -> list[str]:
     source = nvm_source()
     previous = capture("bash", "-c", "\n".join([*source, "nvm version default"]))
     if not re.fullmatch(r"v\d+\.\d+\.\d+", previous):

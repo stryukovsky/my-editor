@@ -4,7 +4,7 @@
 from common import command, main, tool
 
 
-def prepare():
+def prepare() -> list[str]:
     return [command(tool("cs"), "update")]
 
 

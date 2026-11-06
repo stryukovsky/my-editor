@@ -4,7 +4,7 @@
 from common import main, nvm_source
 
 
-def prepare():
+def prepare() -> list[str]:
     return [
         *nvm_source(),
         "nvm use default",

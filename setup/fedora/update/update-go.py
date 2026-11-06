@@ -6,13 +6,13 @@ from pathlib import Path
 from common import capture, command, main, tool
 
 
-def prepare():
+def prepare() -> list[str]:
     go = tool("go")
     bin_dir = Path(
         os.environ.get("GOBIN")
         or (Path(capture(go, "env", "GOPATH").split(os.pathsep)[0]) / "bin")
     )
-    commands = []
+    commands: list[str] = []
     if not bin_dir.is_dir():
         return commands
     for binary in sorted(bin_dir.iterdir()):

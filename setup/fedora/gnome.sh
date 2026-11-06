@@ -11,6 +11,10 @@ gsettings set org.gnome.desktop.wm.preferences button-layout ':minimize,maximize
 gsettings set org.gnome.desktop.input-sources xkb-options "['altwin:ctrl_rwin','caps:menu']"
 gsettings set org.gnome.desktop.wm.keybindings close "['<Alt>F4','<Super>q']"
 
+# Free Alt+Space from the window menu and use it to switch input languages.
+gsettings set org.gnome.desktop.wm.keybindings activate-window-menu '[]'
+gsettings set org.gnome.desktop.wm.keybindings switch-input-source "['<Super>space','XF86Keyboard','<Alt>space']"
+
 # Launch/focus the first four pinned dock items with Super+A/S/D/F or Alt+1/2/3/4.
 # Free the conflicting GNOME shortcuts and keep Super+1/2/3/4 available.
 gsettings set org.gnome.shell.keybindings toggle-application-view '[]'

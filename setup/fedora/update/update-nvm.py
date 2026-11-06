@@ -7,8 +7,8 @@ import re
 from common import capture, command, main, nvm_source, tool
 
 
-def prepare():
-    nvm_source()  # Require an existing installation.
+def prepare() -> list[str]:
+    _ = nvm_source()  # Require an existing installation.
     directory = Path(os.environ.get("NVM_DIR", Path.home() / ".nvm"))
     if not (directory / ".git").exists():
         raise RuntimeError("This updater requires a Git installation of nvm")

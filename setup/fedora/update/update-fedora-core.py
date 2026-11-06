@@ -4,7 +4,7 @@
 from common import main, repository_commands
 
 
-def prepare():
+def prepare() -> list[str]:
     return repository_commands("fedora-core")
 
 

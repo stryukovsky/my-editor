@@ -7,7 +7,7 @@ import shlex
 from common import command, main
 
 
-def prepare():
+def prepare() -> list[str]:
     directory = Path(os.environ.get("SDKMAN_DIR", Path.home() / ".sdkman"))
     script = directory / "bin/sdkman-init.sh"
     if not script.is_file():

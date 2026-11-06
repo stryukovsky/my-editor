@@ -20,7 +20,8 @@ sudo dnf install -y nautilus-open-any-terminal nautilus-python kitty || exit 1
 
 
 # rpm fusion here
-dnf install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm -y
+dnf install https://mirror.yandex.ru/fedora/rpmfusion/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirror.yandex.ru/fedora/rpmfusion/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm -y
+sudo install -Dm644 "$(dirname "$(realpath "$0")")/rpmfusion-yandex.repo" /etc/dnf/repos.override.d/99-rpmfusion-yandex.repo
 dnf config-manager setopt fedora-cisco-openh264.enabled=0
 dnf swap ffmpeg-free ffmpeg --allowerasing -y
 

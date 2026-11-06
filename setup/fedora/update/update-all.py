@@ -6,17 +6,19 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+from typing import cast
 
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
+    _ = parser.add_argument(
         "--run",
         action="store_true",
         help="Execute updates instead of only printing commands",
     )
     args = parser.parse_args()
-    if args.run and os.geteuid() == 0:
+    run = cast(bool, args.run)
+    if run and os.geteuid() == 0:
         parser.error("Run as your regular user; system updates use sudo")
 
     # Update system packages and managers before the tools that depend on them.
@@ -44,11 +46,11 @@ def main():
         ),
         key=lambda path: (priority.get(path.name, len(order)), path.name),
     )
-    failed = []
+    failed: list[tuple[str, int]] = []
     for script in scripts:
         print(f"\n====== RUN {script.name} ======", flush=True)
         command = [sys.executable, str(script)]
-        if args.run:
+        if run:
             command.append("--run")
         result = subprocess.run(command)
         if result.returncode != 0:
@@ -59,7 +61,7 @@ def main():
         for name, code in failed:
             print(f"  {name} (exit {code})", file=sys.stderr)
         return 1
-    if args.run:
+    if run:
         print("OK", flush=True)
     return 0
 

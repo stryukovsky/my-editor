@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
 """Update enabled rpmfusion repositories."""
 
-from common import main, repository_commands
+from pathlib import Path
+from common import command, main, repository_commands
 
 
-def prepare():
-    return repository_commands("rpmfusion")
+def prepare() -> list[str]:
+    return [
+        command(
+            "sudo",
+            "install",
+            "-Dm644",
+            Path(__file__).resolve().parent.parent / "rpmfusion-yandex.repo",
+            "/etc/dnf/repos.override.d/99-rpmfusion-yandex.repo",
+        ),
+        *repository_commands("rpmfusion"),
+    ]
 
 
 if __name__ == "__main__":

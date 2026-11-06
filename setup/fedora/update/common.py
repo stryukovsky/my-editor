@@ -1,6 +1,7 @@
 """Shared command rendering and opt-in execution. Preparation is read-only."""
 
 import argparse
+from collections.abc import Callable
 import json
 import os
 from pathlib import Path
@@ -8,19 +9,24 @@ import shlex
 import shutil
 import subprocess
 import sys
+from typing import TypedDict, cast
 
 
-def command(*args):
+class Repository(TypedDict):
+    id: str
+
+
+def command(*args: str | Path) -> str:
     return shlex.join(str(arg) for arg in args)
 
 
-def capture(*args):
+def capture(*args: str) -> str:
     return subprocess.run(
         args, check=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     ).stdout.strip()
 
 
-def tool(name):
+def tool(name: str) -> str:
     roots = [
         Path.home() / ".local/bin",
         Path(os.environ.get("CARGO_HOME", Path.home() / ".cargo")) / "bin",
@@ -35,7 +41,7 @@ def tool(name):
     return binary
 
 
-def nvm_source():
+def nvm_source() -> list[str]:
     directory = Path(os.environ.get("NVM_DIR", Path.home() / ".nvm"))
     script = directory / "nvm.sh"
     if not script.is_file():
@@ -46,10 +52,13 @@ def nvm_source():
     ]
 
 
-def repository_commands(group):
+def repository_commands(group: str) -> list[str]:
     # DNF supplies the effective enabled state, including config-manager overrides.
-    repos = json.loads(capture(tool("dnf"), "repo", "list", "--enabled", "--json"))
-    selected = []
+    repos = cast(
+        list[Repository],
+        json.loads(capture(tool("dnf"), "repo", "list", "--enabled", "--json")),
+    )
+    selected: list[str] = []
     for repo in repos:
         name = repo["id"]
         if name.startswith("rpmfusion-"):
@@ -64,26 +73,34 @@ def repository_commands(group):
             selected.append(name)
     if not selected:
         return []
+    dnf = tool("dnf")
+    options = ["--setopt=timeout=10", "--setopt=minrate=1000", "--setopt=retries=1"]
+    repo_groups = (
+        sorted(selected) if group == "rpmfusion" else [",".join(sorted(selected))]
+    )
     return [
         command(
             "sudo",
-            tool("dnf"),
+            dnf,
             "upgrade",
             "-y",
             "--refresh",
-            "--repo=" + ",".join(sorted(selected)),
+            "--repo=" + repos,
+            *options,
         )
+        for repos in repo_groups
     ]
 
 
-def main(description, prepare):
+def main(description: str, prepare: Callable[[], list[str]]) -> int:
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument(
+    _ = parser.add_argument(
         "--run", action="store_true", help="Execute the prepared Bash commands"
     )
     args = parser.parse_args()
+    run = cast(bool, args.run)
     try:
-        if args.run and os.geteuid() == 0:
+        if run and os.geteuid() == 0:
             raise RuntimeError("Run as your regular user; system updates use sudo")
         commands = prepare()
         script = (
@@ -92,7 +109,7 @@ def main(description, prepare):
         if not commands:
             script += "# Nothing to update.\n"
         print(script, end="", flush=True)
-        if args.run:
+        if run:
             if commands:
                 # Preserve live output and stdin for interactive prompts. Bash's
                 # error trap adds context even when a command fails silently.
@@ -113,8 +130,8 @@ trap 'code=$?; printf "ERROR (exit %s): %s\\n" "$code" "$BASH_COMMAND" >&2' ERR
         print(f"{parser.prog}: ERROR: {error}", file=sys.stderr)
         if isinstance(error, subprocess.CalledProcessError):
             # Preparation commands may report useful details on either stream.
-            for output in (error.stdout, error.stderr):
-                if output:
+            for output in (cast(object, error.stdout), cast(object, error.stderr)):
+                if isinstance(output, str) and output:
                     print(
                         output,
                         end="" if output.endswith("\n") else "\n",

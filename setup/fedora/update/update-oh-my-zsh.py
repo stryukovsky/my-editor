@@ -6,7 +6,7 @@ from pathlib import Path
 from common import command, main, tool
 
 
-def prepare():
+def prepare() -> list[str]:
     directory = Path(os.environ.get("ZSH", Path.home() / ".oh-my-zsh"))
     script = directory / "tools/upgrade.sh"
     if not script.is_file():
