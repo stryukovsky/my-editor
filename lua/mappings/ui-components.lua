@@ -174,9 +174,6 @@ map(ui_components_modes, "<F13>", function()
     local node = state and state.tree and state.tree:get_node()
     file_path = node and node.path or ""
   end
-  if require("utils.reveal_in_git_status")(file_path) then
-    return
-  end
   local empty_file_path = file_path == ""
   local file_exists = false
   if not empty_file_path then
@@ -195,7 +192,7 @@ map(ui_components_modes, "<F13>", function()
   end
 
   focus_neotree("filesystem", --[[ needs_reveal ==  ]] file_exists, params)
-end, { desc = "UI neotree files", silent = true })
+end, { desc = "UI neotree reveal current file", silent = true })
 
 map(ui_components_modes, "<A-l>", function()
   ui_prevent_mess()

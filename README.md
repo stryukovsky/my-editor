@@ -11,6 +11,7 @@ https://github.com/neovim/neovim/releases/latest
 
 - Place appimage in `bin/` of this directory
 - Rename it to `nvim.appimage`
+- Do the `chmod 700 bin/nvim.appimage`
 
 # Start
 
@@ -49,19 +50,13 @@ And then reboot
 
 Firstly make sure system is up-to-date:
 
-Enable
-[rpm fusion](https://docs.fedoraproject.org/en-US/quick-docs/rpmfusion-setup/)
-packages.
-
-```
+```sh
 sudo dnf config-manager disable fedora-cisco-openh264
-sudo dnf upgrade -y
 ```
 
 Execute every line separately!!!
 
 ```sh
-chmod 700 bin/nvim.appimage
 sudo bash setup/fedora/setup.sh
 bash setup/common_tools/commons.sh
 
@@ -233,11 +228,11 @@ Install plugins
 - https://extensions.gnome.org/extension/6994/keyboard-reset/
 - https://extensions.gnome.org/extension/1007/window-is-ready-notification-remover/
 - https://extensions.gnome.org/extension/5353/window-state-manager/
-- https://extensions.gnome.org/extension/7048/rounded-window-corners-reborn/
 - https://extensions.gnome.org/extension/4559/quick-lang-switch/
-- https://extensions.gnome.org/extension/3193/blur-my-shell/
-- https://extensions.gnome.org/extension/19/user-themes/ After installed,
-  configure it:
+- https://extensions.gnome.org/extension/19/user-themes/
+
+
+After installed, configure it:
 
 ```sh
 bash setup/fedora/gnome.sh
@@ -245,7 +240,9 @@ bash setup/fedora/gnome.sh
 
 ## Fedora apps
 
-https://github.com/storytold/pdfcraft https://github.com/localsend/localsend
+https://github.com/storytold/pdfcraft 
+
+https://github.com/localsend/localsend
 
 ## Fedora themes
 
