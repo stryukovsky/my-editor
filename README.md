@@ -53,16 +53,6 @@ Enable
 [rpm fusion](https://docs.fedoraproject.org/en-US/quick-docs/rpmfusion-setup/)
 packages.
 
-RPM Fusion metalinks often hand out mirrors that time out from Russia. Pin them
-to RU mirrors. `rpmfusion-*-release` updates restore the stock `.repo` files, so
-run this again after those packages update. The `/country=/!` guard skips lines
-that already have a country, so a second run does not append `&country=RU`
-twice.
-
-```sh
-sudo sed -i.bak '/country=/!s|\(^metalink=.*basearch\)|\1\&country=RU|' /etc/yum.repos.d/rpmfusion-*.repo
-```
-
 ```
 sudo dnf config-manager disable fedora-cisco-openh264
 sudo dnf upgrade -y
@@ -102,7 +92,22 @@ bash setup/common_tools/git.sh
 **Note**: read all stuff related to fedora below. Especially drivers and root
 password
 
+## Swap
+
+See `SWAPMEM.md` 
+
+## Docker
+
+Reduce docker ram usage: 
+
+```sh 
+sudo python setup/fedora/docker-reduce-ram.py
+```
+
 ## Updating Fedora and development tools
+
+TL;DR: `update_all` command from zshrc
+
 
 Each update unit has a Python script in
 [`setup/fedora/update/`](setup/fedora/update/). Scripts print the prepared Bash

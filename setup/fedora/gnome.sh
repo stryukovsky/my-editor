@@ -19,10 +19,10 @@ gsettings set org.gnome.desktop.wm.keybindings switch-input-source "['<Super>spa
 # Free the conflicting GNOME shortcuts and keep Super+1/2/3/4 available.
 gsettings set org.gnome.shell.keybindings toggle-application-view '[]'
 gsettings set org.gnome.shell.keybindings toggle-quick-settings '[]'
-gsettings set org.gnome.shell.keybindings switch-to-application-1 "['<Super>1','<Super>a','<Alt>1']"
-gsettings set org.gnome.shell.keybindings switch-to-application-2 "['<Super>2','<Super>s','<Alt>2']"
-gsettings set org.gnome.shell.keybindings switch-to-application-3 "['<Super>3','<Super>d','<Alt>3']"
-gsettings set org.gnome.shell.keybindings switch-to-application-4 "['<Super>4','<Super>f','<Alt>4']"
+gsettings set org.gnome.shell.keybindings switch-to-application-1 "['<Super>1','<Alt>1']"
+gsettings set org.gnome.shell.keybindings switch-to-application-2 "['<Super>2','<Alt>2']"
+gsettings set org.gnome.shell.keybindings switch-to-application-3 "['<Super>3','<Alt>3']"
+gsettings set org.gnome.shell.keybindings switch-to-application-4 "['<Super>4','<Alt>4']"
 
 gsettings set org.gnome.desktop.interface clock-format '24h'
 
@@ -32,13 +32,6 @@ gsettings set org.gnome.desktop.peripherals.pointingstick accel-profile 'flat'
 gsettings set org.gnome.desktop.peripherals.pointingstick speed -1.0
 gsettings set org.gnome.GPaste save-history false
 gsettings set org.gnome.desktop.interface enable-hot-corners false
-
-# PdfCraft's AppImage desktop integration installs pdfcraft.desktop.
-if [[ -f ${XDG_DATA_HOME:-$HOME/.local/share}/applications/pdfcraft.desktop || -f /usr/share/applications/pdfcraft.desktop ]]; then
-  xdg-mime default pdfcraft.desktop application/pdf
-else
-  printf 'Skipping PDF default: install PdfCraft desktop integration first.\n'
-fi
 
 gsettings set org.gnome.desktop.sound allow-volume-above-100-percent 'true'
 
