@@ -195,6 +195,10 @@ killport() {
   kill -- "${pids[@]}"
 }
 
+update_all(){
+    python ~/.config/nvim/setup/fedora/update/update-all.py --run
+}
+
 # Edit pending commands in the parent Neovim instance.
 [[ -r "$HOME/.config/nvim/setup/common_tools/zsh/command-editor.zsh" ]] && source "$HOME/.config/nvim/setup/common_tools/zsh/command-editor.zsh"
 

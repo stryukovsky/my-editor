@@ -11,11 +11,13 @@ kitty tree-sitter gpaste-client gpaste-ui python3-devel plantuml ImageMagick \
 ImageMagick-devel cmake ninja-build clang clang-tools-extra sushi unrar -y
 
 sudo dnf install dnf-plugins-core -y
+
 sudo dnf copr enable -y daniel-g-carrasco/wayland-scroll-factor
+sudo dnf install wayland-scroll-factor -y
+
 sudo dnf copr enable -y monkeygold/nautilus-open-any-terminal &&
 sudo dnf install -y nautilus-open-any-terminal nautilus-python kitty || exit 1
 
-sudo dnf install wayland-scroll-factor -y
 
 # rpm fusion here
 dnf install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm -y
