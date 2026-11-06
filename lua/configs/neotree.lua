@@ -104,18 +104,6 @@ end
 local config = {
   event_handlers = {
     {
-      event = "before_git_status",
-      handler = function(args)
-        -- List files inside untracked directories so ]g/[g can visit them.
-        -- Preserve --untracked-files=no for the initial fast async scan.
-        for i, arg in ipairs(args.status_args) do
-          if arg == "--untracked-files=normal" then
-            args.status_args[i] = "--untracked-files=all"
-          end
-        end
-      end,
-    },
-    {
       event = "after_render",
       handler = function(state)
         require("mappings.neotree_git_status").attach(state)

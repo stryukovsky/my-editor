@@ -6,6 +6,15 @@ local function navigate(state, direction, conflicts)
   if not state.tree or not state.winid or not vim.api.nvim_win_is_valid(state.winid) then
     return
   end
+  if state.name == "filesystem" and not conflicts then
+    local commands = require "neo-tree.sources.filesystem.commands"
+    if direction == 1 then
+      commands.next_git_modified(state)
+    else
+      commands.prev_git_modified(state)
+    end
+    return
+  end
   local current = state.tree:get_node()
   if not current then
     return
