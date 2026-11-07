@@ -5,6 +5,25 @@ with one plugin runtime per feature. `lua/configs/` holds settings and setup cal
 `lua/plugins/moonshine.lua` registers the local plugins with lazy.nvim.
 Helpers extending existing plugins live in `lua/integrations/`.
 
+## Lean 4
+
+`lean.nvim` loads when opening a `.lean` file and provides the Lean language
+server, an on-demand goal infoview, and Unicode abbreviations
+(for example, `\alpha` followed by a space produces `α`).
+Existing LSP completion and navigation work in Lean buffers. `<A-i>` toggles
+the infoview from Lean files or the infoview itself; it does not open automatically.
+
+Install [elan](https://github.com/leanprover/elan#installation), Lean's toolchain
+manager, and ensure `~/.elan/bin` is on PATH before launching Neovim.
+Projects select their compiler with `lean-toolchain`; Lean is not installed via
+Mason. Run `lake build` from the project root to build dependencies.
+Use `:checkhealth lean` to diagnose the setup.
+
+Lean buffer shortcuts use `<leader>Le` (capital `L`): `i` toggles the infoview,
+`j` jumps to it, `g` shows the goal, `p` pins the goal, `c` clears pins,
+`r` restarts the file, and `a` accepts an infoview suggestion. `K` opens Lean's
+interactive hover.
+
 ## Install neovim itself
 
 https://github.com/neovim/neovim/releases/latest

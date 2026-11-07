@@ -97,10 +97,8 @@ function M.capture(state)
   if not ok or not parser then
     return empty
   end
-  local parsed = pcall(parser.parse, parser, { state.row, state.row + 1 })
-  if not parsed then
-    return empty
-  end
+  -- Use syntax already maintained by the editor. Forcing a synchronous parse
+  -- here can stall typing; the validity check below falls back to neutral rank.
   local result = { kind = "unknown", spans = {} }
   local probe = math.max(0, state.col - 1)
   -- Move back to a UTF-8 codepoint boundary before asking for a syntax node.

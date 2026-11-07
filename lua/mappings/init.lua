@@ -39,6 +39,7 @@ if not termux_version then
 end
 
 require "mappings.lspconfig"
+require "mappings.lean"
 require "mappings.dap"
 require "mappings.ui-components"
 require "mappings.search"

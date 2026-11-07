@@ -21,24 +21,6 @@ def _path_in_scope(scope, name):
     return os.path.normpath(os.path.join(scope, name))
 
 
-def _visible_children(directory):
-    directory.load_content(schedule=False)
-    return list(directory.files or [])
-
-
-def _only_child_directory(children):
-    """The single directory child, or None when descent must stop.
-
-    Stop on an empty directory, several children, or a single file child.
-    """
-    if len(children) != 1:
-        return None
-    child = children[0]
-    if not child.is_directory:
-        return None
-    return child
-
-
 _MODE_BITS = (
     (0o400, "r"),
     (0o200, "w"),
@@ -369,7 +351,7 @@ class open_in_new_tab(Command):
 
 
 class descend(Command):
-    """Enter a directory, skipping a chain of single-child directories. Open a file with rifle."""
+    """Enter one directory level, or open a file with rifle."""
 
     def execute(self):
         current = self.fm.thisfile
@@ -379,22 +361,12 @@ class descend(Command):
             self.fm.execute_file(current)
             return
 
-        seen = set()
         self.fm.cd(current.path)
-        while True:
-            directory = self.fm.thisdir
-            real = os.path.realpath(directory.path)
-            if real in seen:
-                break
-            seen.add(real)
-            child = _only_child_directory(_visible_children(directory))
-            if child is None:
-                children = directory.files or []
-                if children:
-                    directory.move(to=0)
-                    directory.correct_pointer()
-                break
-            self.fm.cd(child.path)
+        directory = self.fm.thisdir
+        directory.load_content(schedule=False)
+        if directory.files:
+            directory.move(to=0)
+            directory.correct_pointer()
 
 
 class touch_or_mkdir(Command):

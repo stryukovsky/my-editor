@@ -1,5 +1,9 @@
 return {
   {
+    "Julian/lean.nvim",
+    event = { "BufReadPre *.lean", "BufNewFile *.lean" },
+  },
+  {
     "booperlv/nvim-gomove",
   },
   {

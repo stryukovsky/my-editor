@@ -20,4 +20,8 @@ curl -L https://foundry.paradigm.xyz | bash
 
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
+curl -sSf https://elan.lean-lang.org/elan-init.sh |
+  sh -s -- -y --default-toolchain leanprover/lean4:stable
+
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+

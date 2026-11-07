@@ -15,10 +15,12 @@ map("n", "<A-i>", function()
     end
   elseif ft == "csv" or ft == "tsv" then
     csv_table_viewer.view_row()
+  elseif ft == "lean" or ft == "leaninfo" then
+    require("lean.infoview").toggle()
   else
     vim.diagnostic.open_float()
   end
-end, { desc = "Markdown preview / CSV row / diagnostic" })
+end, { desc = "Markdown preview / CSV row / Lean infoview / diagnostic" })
 
 map("n", "<leader>mdi", function()
   if vim.bo.filetype == "markdown" then

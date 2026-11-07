@@ -14,4 +14,5 @@ return {
   "neotest-summary",
   "zenmode-bg",
   "dap-terminal",
+  "leaninfo",
 }

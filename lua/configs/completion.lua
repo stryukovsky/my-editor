@@ -1,6 +1,6 @@
 -- LSP drives its own asynchronous completion; other buffers use native sources.
 vim.o.autocomplete = true
-vim.o.autocompletedelay = 100
+vim.o.autocompletedelay = 180
 vim.o.pumborder = "rounded"
 vim.o.pumblend = 0
 vim.o.pumheight = 10

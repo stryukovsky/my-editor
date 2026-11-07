@@ -3,7 +3,10 @@ local map = require "mappings.map"
 
 function _G.NativeExtraComplete(findstart, base)
   if vim.b.terminal_command then
-    return require("terminal_reimagined.command.native").complete(findstart, base)
+    return require("terminal_reimagined.command.native").complete(
+      findstart,
+      base
+    )
   end
   if vim.b.input_completion and vim.bo.filetype == "gitcommit" then
     return require("moonshine.input.completion").complete(findstart, base)
@@ -13,6 +16,7 @@ end
 
 local ranking = require "native_completion"
 local midword = require "native_completion.midword"
+local trigger = require "native_completion.trigger"
 
 local function refresh()
   local floating = vim.api.nvim_win_get_config(0).relative ~= ""
@@ -39,15 +43,15 @@ end
 
 function M.refresh_completions()
   local buf = vim.api.nvim_get_current_buf()
-  local clients = vim.lsp.get_clients { bufnr = buf, method = "textDocument/completion" }
+  local clients =
+    vim.lsp.get_clients { bufnr = buf, method = "textDocument/completion" }
   for _, client in ipairs(clients) do
     vim.lsp.completion.enable(false, client.id, buf)
   end
   if vim.b.completion ~= false then
     for _, client in ipairs(clients) do
       vim.lsp.completion.enable(true, client.id, buf, {
-        autotrigger = not vim.b.terminal_command
-          and (vim.bo.buftype == "" or vim.b.input_completion == true),
+        autotrigger = false, -- Debounced by native_completion.trigger.
         cmp = ranking.compare,
         convert = ranking.convert,
       })
@@ -63,35 +67,27 @@ vim.api.nvim_create_autocmd("CompleteChanged", {
 })
 vim.api.nvim_create_autocmd({ "BufLeave", "WinLeave", "InsertLeave" }, {
   group = group,
-  callback = midword.clear,
+  callback = function()
+    midword.clear()
+    trigger.clear()
+  end,
 })
 -- Register before LSP enables its buffer-local native acceptance handler.
 vim.api.nvim_create_autocmd("CompleteDone", {
   group = group,
   callback = midword.finish,
 })
-vim.api.nvim_create_autocmd(
-  { "TextChangedI", "TextChangedP", "CursorMovedI", "InsertEnter" },
-  {
-    group = group,
-    callback = function()
-      if vim.b.completion ~= false then
-        ranking.prepare()
-      end
-    end,
-  }
-)
+vim.api.nvim_create_autocmd({ "TextChangedI", "TextChangedP" }, {
+  group = group,
+  callback = trigger.schedule,
+})
 vim.api.nvim_create_autocmd(
   { "BufEnter", "FileType", "LspAttach", "LspDetach" },
   {
     group = group,
     callback = function()
       ranking.invalidate()
-      vim.schedule(function()
-        if vim.b.completion ~= false then
-          ranking.prepare()
-        end
-      end)
+      trigger.clear()
     end,
   }
 )
@@ -99,7 +95,9 @@ vim.api.nvim_create_autocmd({ "CompleteChanged", "WinNew" }, {
   group = group,
   callback = function()
     vim.schedule(function()
-      local win = vim.fn.complete_info().preview_winid
+      -- The default also copies every candidate and its LSP payload on each
+      -- menu update. Only the preview handle is needed here.
+      local win = vim.fn.complete_info({ "preview_winid" }).preview_winid
       if win and win > 0 and vim.api.nvim_win_is_valid(win) then
         vim.wo[win].winhighlight =
           "Normal:PmenuPreview,NormalFloat:PmenuPreview,FloatBorder:PmenuPreviewBorder"
@@ -120,19 +118,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(ev)
     local client = vim.lsp.get_client_by_id(ev.data.client_id)
     if client and client:supports_method("textDocument/completion", ev.buf) then
-      -- Use the public LSP trigger path instead of re-entering completion via 'o'.
-      local provider = client.server_capabilities.completionProvider
-      if not vim.b[ev.buf].terminal_command then
-        local triggers = provider.triggerCharacters or {}
-        for char in
-          ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"):gmatch "."
-        do
-          if not vim.tbl_contains(triggers, char) then
-            triggers[#triggers + 1] = char
-          end
-        end
-        provider.triggerCharacters = triggers
-      end
       M.refresh_completions()
       vim.bo[ev.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
       refresh()
@@ -192,7 +177,8 @@ function M.setup_mappings()
       and #vim.lsp.get_clients { bufnr = 0, method = "textDocument/completion" }
         > 0
     then
-      return "<C-x><C-o>"
+      vim.schedule(trigger.request)
+      return ""
     end
     return "<C-n>"
   end, { expr = true, desc = "Show native completion" })

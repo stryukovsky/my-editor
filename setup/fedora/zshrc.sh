@@ -204,3 +204,5 @@ update_all(){
 
 export SUDO_EDITOR=nvim
 export PATH="$PATH:/opt/liquibase"
+source "$HOME/.elan/env"
+

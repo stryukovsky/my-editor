@@ -28,7 +28,7 @@ The viewer SHALL move the selection one entry down on `j` and one entry up on `k
 - **THEN** the selection moves to the previous sibling and the entry is not opened
 
 ### Requirement: Descend or open
-`l` and Enter SHALL descend into a directory or open a file. On a directory with exactly one child, and that child is a directory, the action SHALL repeat until that condition is false.
+`l` and Enter SHALL descend into a directory or open a file. In Neo-tree, on a directory with exactly one child, and that child is a directory, the action SHALL repeat until that condition is false. Ranger SHALL enter exactly one directory level per action.
 
 #### Scenario: Open a file
 - **WHEN** the user presses `l` or Enter on a file
@@ -39,12 +39,12 @@ The viewer SHALL move the selection one entry down on `j` and one entry up on `k
 - **THEN** that directory expands, its first child is selected, and the tree root stays unchanged
 
 #### Scenario: Enter a directory in Ranger
-- **WHEN** the user presses `l` or Enter on a Ranger directory that has more than one child, or whose only child is a file
-- **THEN** that directory becomes the current directory and its first child is selected
+- **WHEN** the user presses `l` or Enter on a Ranger directory
+- **THEN** that directory becomes the current directory and its first child, if any, is selected; a single directory child is not entered automatically
 
 #### Scenario: Skip a single-child directory chain
-- **WHEN** the user presses `l` or Enter on a directory whose only child is a directory
-- **THEN** the viewer continues through each single-child directory and stops on the first directory that is empty, has several children, or has a single file child
+- **WHEN** the user presses `l` or Enter on a Neo-tree directory whose only child is a directory
+- **THEN** Neo-tree continues through each single-child directory and stops on the first directory that is empty, has several children, or has a single file child
 
 ### Requirement: Ascend
 `h` SHALL move toward the parent. Neo-tree SHALL collapse an expanded directory before jumping to its parent. Ranger SHALL move to the parent column.
