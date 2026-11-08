@@ -1,7 +1,7 @@
 local map = require "mappings.map"
 local trouble = require "trouble"
-local close_trouble_succeeded = require "utils.close_trouble_succeeded"
-local ui_prevent_mess = require "utils.ui_prevent_mess"
+local close_trouble_succeeded = require "moonshine.utils.close_trouble_succeeded"
+local ui_prevent_mess = require "moonshine.utils.ui_prevent_mess"
 
 local telescope_builtin = require "telescope.builtin"
 local function opts(desc)

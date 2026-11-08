@@ -16,7 +16,7 @@ end
 ---@param bufnr? integer
 function M.show(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
-  require "utils.ui_prevent_mess"()
+  require "moonshine.utils.ui_prevent_mess"()
   local pickers = require "telescope.pickers"
   local finders = require "telescope.finders"
   local conf = require("telescope.config").values

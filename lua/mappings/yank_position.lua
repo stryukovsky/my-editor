@@ -1,6 +1,6 @@
 local map = require "mappings.map"
 local notify = require "integrations.notify"
-local is_normal_buffer = require "utils.is_normal_buffer"
+local is_normal_buffer = require "moonshine.utils.is_normal_buffer"
 local gitutils = require "moonshine.git"
 
 ---@param buf? integer

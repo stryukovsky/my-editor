@@ -308,7 +308,7 @@ local function pretty_git_branch_picker(opts, restore_selection)
     return
   end
 
-  require "utils.ui_prevent_mess"()
+  require "moonshine.utils.ui_prevent_mess"()
   local make_display = display.branch_displayer(display.branch_widths(results))
 
   local picker = pickers.new(opts, {

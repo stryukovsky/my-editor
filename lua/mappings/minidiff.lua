@@ -1,6 +1,6 @@
 local map = require "mappings.map"
 local minidiff = require "moonshine.diff"
-local navigation_repeat = require "utils.navigation_repeat"
+local navigation_repeat = require "moonshine.utils.navigation_repeat"
 
 map("n", "<leader>gr", minidiff.reset_hunk, { desc = "git hunk reset" })
 map("n", "<leader>gh", function()

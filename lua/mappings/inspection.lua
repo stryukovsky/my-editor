@@ -1,7 +1,7 @@
 local map = require "mappings.map"
 local md_table_viewer = require "moonshine.markdown.table"
 local csv_table_viewer = require "integrations.csv_table_viewer"
-local navigation_repeat = require "utils.navigation_repeat"
+local navigation_repeat = require "moonshine.utils.navigation_repeat"
 
 map("n", "<A-i>", function()
   local ft = vim.bo.filetype

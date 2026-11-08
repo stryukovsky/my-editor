@@ -167,7 +167,7 @@ function M.setup(opts)
   -- Close zen if a tab change would leave its floats behind.
   vim.api.nvim_create_autocmd("TabLeave", {
     callback = function()
-      require "utils.ui_prevent_mess"()
+      require "moonshine.utils.ui_prevent_mess"()
     end,
   })
 end
@@ -200,7 +200,7 @@ function M.toggle_ui()
   end
 
   local close_telescope = require "mappings.close_telescope"
-  local ui_prevent_mess = require "utils.ui_prevent_mess"
+  local ui_prevent_mess = require "moonshine.utils.ui_prevent_mess"
   local had_telescope = close_telescope()
   local zen_open = view_ok and view.is_open()
 

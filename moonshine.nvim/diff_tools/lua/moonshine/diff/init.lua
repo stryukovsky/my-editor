@@ -123,8 +123,8 @@ function M.nav(direction)
         "Last hunk, focusing Neo-tree git status",
         vim.log.levels.INFO
       )
-      require "utils.ui_prevent_mess"()
-      require "utils.focus_neotree"("git_status", false, {})
+      require "moonshine.utils.ui_prevent_mess"()
+      require "moonshine.utils.focus_neotree"("git_status", false, {})
       return
     end
   end

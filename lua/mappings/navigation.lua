@@ -1,8 +1,8 @@
 local map = require "mappings.map"
-local is_normal_buffer = require "utils.is_normal_buffer"
+local is_normal_buffer = require "moonshine.utils.is_normal_buffer"
 local notify = require "integrations.notify"
-local ui_prevent_mess = require "utils.ui_prevent_mess"
-local navigation_repeat = require "utils.navigation_repeat"
+local ui_prevent_mess = require "moonshine.utils.ui_prevent_mess"
+local navigation_repeat = require "moonshine.utils.navigation_repeat"
 
 local function toggle_wrap()
   local enabled = not vim.wo.wrap

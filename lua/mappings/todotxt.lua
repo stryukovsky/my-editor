@@ -7,7 +7,7 @@ local map = require "mappings.map"
 local todotxt = require "todotxt"
 local notify = require "integrations.notify"
 local gitutils = require "moonshine.git"
-local open_scratch = require "utils.open_scratch"
+local open_scratch = require "moonshine.utils.open_scratch"
 
 local function git_failure_message(command, stderr)
   if not stderr or stderr == "" then

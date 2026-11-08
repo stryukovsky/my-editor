@@ -294,7 +294,7 @@ local function pretty_git_commit_picker(opts, restore_selection)
     return
   end
 
-  require "utils.ui_prevent_mess"()
+  require "moonshine.utils.ui_prevent_mess"()
   local make_display = display.commit_displayer(display.commit_widths(commits))
 
   local picker = pickers.new(opts, {

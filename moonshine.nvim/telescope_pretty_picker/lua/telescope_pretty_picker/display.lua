@@ -1,7 +1,7 @@
 -- Shared git *result row* formatting for Telescope pickers (left-hand list).
 -- Preview pane rendering is `telescope_pretty_picker.preview`.
 
-local pretty_date = require "utils.pretty_date"
+local pretty_date = require "moonshine.utils.pretty_date"
 local git = require "moonshine.git"
 
 local M = {}

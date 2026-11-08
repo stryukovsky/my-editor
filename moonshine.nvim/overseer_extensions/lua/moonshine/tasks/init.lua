@@ -68,7 +68,7 @@ local function recent_first(templates, root)
 end
 
 function M.pick()
-  require "utils.ui_prevent_mess"()
+  require "moonshine.utils.ui_prevent_mess"()
   local root = require("moonshine.projects").current_root() or vim.fn.getcwd()
   local search = { dir = root, filetype = vim.bo.filetype }
   -- The built-in picker skips selection when there is only one template.

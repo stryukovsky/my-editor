@@ -1,5 +1,5 @@
 local map = require "mappings.map"
-local open_scratch = require "utils.open_scratch"
+local open_scratch = require "moonshine.utils.open_scratch"
 
 local function is_error_level(level)
   if type(level) == "number" then

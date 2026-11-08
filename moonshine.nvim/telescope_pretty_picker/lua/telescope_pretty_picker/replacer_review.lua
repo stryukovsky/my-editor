@@ -153,7 +153,7 @@ end
 function M.open(matches, selected, replacement)
   local session = { matches = matches, replacement = replacement }
   current = session
-  require "utils.ui_prevent_mess"()
+  require "moonshine.utils.ui_prevent_mess"()
   local trouble = require "trouble"
   trouble.close "telescope_replacer"
   local view = trouble.open {

@@ -1,7 +1,7 @@
 local MiniDiff = require "mini.diff"
 local notify = require "integrations.notify"
 local gitutils = require "moonshine.git"
-local pretty_date = require "utils.pretty_date"
+local pretty_date = require "moonshine.utils.pretty_date"
 
 local M = {}
 
@@ -166,7 +166,7 @@ local function sync_review_win()
 end
 
 local function open_review_view()
-  require("utils.ui_prevent_mess")()
+  require("moonshine.utils.ui_prevent_mess")()
   require("trouble").open { mode = "minidiff_review", focus = true }
   vim.schedule(sync_review_win)
 end
@@ -184,7 +184,7 @@ local function focus_review_win()
 end
 
 function M.focus_list()
-  if require("utils.ui_prevent_mess")() then
+  if require("moonshine.utils.ui_prevent_mess")() then
     vim.defer_fn(function()
       if session then
         focus_review_win()
@@ -196,7 +196,7 @@ function M.focus_list()
 end
 
 local function close_review_view()
-  require("utils.close_trouble_succeeded").close_mode "minidiff_review"
+  require("moonshine.utils.close_trouble_succeeded").close_mode "minidiff_review"
 end
 
 local function wipe_buffers(buffers)
@@ -424,7 +424,7 @@ end
 ---@return integer|nil
 local function usable_editor_win()
   local skip_ft = {}
-  for _, ft in ipairs(require "utils.technical_ui_filetypes") do
+  for _, ft in ipairs(require "moonshine.utils.technical_ui_filetypes") do
     skip_ft[ft] = true
   end
 
@@ -615,7 +615,7 @@ local function start_session(old_name, new_name, cwd)
   end
 
   M.finish_review { force = true }
-  require "utils.close_trouble_succeeded"()
+  require "moonshine.utils.close_trouble_succeeded"()
   if _G.bottom_component_callback_close then
     pcall(_G.bottom_component_callback_close)
   end
@@ -750,7 +750,7 @@ end
 ---@param cwd string
 ---@param on_pick fun(ref: string)
 local function pick_ref(title, cwd, on_pick)
-  require("utils.ui_prevent_mess")()
+  require("moonshine.utils.ui_prevent_mess")()
   local pickers = require "telescope.pickers"
   local finders = require "telescope.finders"
   local conf = require("telescope.config").values

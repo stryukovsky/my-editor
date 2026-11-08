@@ -10,7 +10,6 @@ return {
   "oil",
   "TelescopePrompt",
   "trouble",
-  "grug-far",
   "neotest-summary",
   "zenmode-bg",
   "dap-terminal",

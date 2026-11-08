@@ -14,7 +14,7 @@
 --   in Ghostty: launch a new terminal window
 
 local notify = require "integrations.notify"
-local terminal = require "utils.terminal"
+local terminal = require "moonshine.utils.terminal"
 
 local M = {}
 
@@ -278,7 +278,7 @@ local function open_picker(opts)
     return
   end
 
-  require("utils.ui_prevent_mess")()
+  require("moonshine.utils.ui_prevent_mess")()
   local pickers = require "telescope.pickers"
   local finders = require "telescope.finders"
   local conf = require("telescope.config").values

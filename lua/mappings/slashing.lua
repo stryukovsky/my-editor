@@ -39,10 +39,10 @@ map("v", "<A-q>", function()
 end, { desc = "Search in visual selection" })
 
 map({ "n", "x" }, "n", function()
-  return require("moonshine.macro_status").active() and "n" or '<Cmd>lua require("utils.navigation_repeat").repeat_next()<CR>'
+  return require("moonshine.macro_status").active() and "n" or '<Cmd>lua require("moonshine.utils.navigation_repeat").repeat_next()<CR>'
 end, { expr = true, desc = "Repeat next navigation" })
 map({ "n", "x" }, "N", function()
-  return require("moonshine.macro_status").active() and "N" or '<Cmd>lua require("utils.navigation_repeat").repeat_previous()<CR>'
+  return require("moonshine.macro_status").active() and "N" or '<Cmd>lua require("moonshine.utils.navigation_repeat").repeat_previous()<CR>'
 end, { expr = true, desc = "Repeat previous navigation" })
 
 map("n", "*", function()

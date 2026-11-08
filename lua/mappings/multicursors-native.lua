@@ -7,7 +7,7 @@ local map = require "mappings.map"
 local escape = require "utils.escape"
 local namespace = vim.api.nvim_create_namespace "nvim.multicursor"
 local technical_filetypes = {}
-for _, filetype in ipairs(require "utils.technical_ui_filetypes") do
+for _, filetype in ipairs(require "moonshine.utils.technical_ui_filetypes") do
   technical_filetypes[filetype] = true
 end
 

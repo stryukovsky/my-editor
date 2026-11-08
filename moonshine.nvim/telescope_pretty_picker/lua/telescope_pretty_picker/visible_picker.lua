@@ -192,7 +192,7 @@ local function visible_picker(opts)
   local finders = require "telescope.finders"
   local conf = require("telescope.config").values
 
-  require "utils.ui_prevent_mess"()
+  require "moonshine.utils.ui_prevent_mess"()
   local action = wrap_telescope_action(open_or_focus(state))
 
   pickers

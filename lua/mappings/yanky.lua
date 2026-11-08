@@ -1,5 +1,5 @@
 local telescope = require "telescope"
-local ui_prevent_mess = require "utils.ui_prevent_mess"
+local ui_prevent_mess = require "moonshine.utils.ui_prevent_mess"
 
 local map = require "mappings.map"
 map({ "n", "v", "x" }, "<leader>pp", function()

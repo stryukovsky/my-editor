@@ -1,6 +1,6 @@
 -- Ripgrep-backed "LSP-ish" navigation for heavy projects.
 -- Uses telescope live_grep, scoped to the current file extension.
-local is_normal_buffer = require "utils.is_normal_buffer"
+local is_normal_buffer = require "moonshine.utils.is_normal_buffer"
 local M = {}
 local notify = require "integrations.notify"
 

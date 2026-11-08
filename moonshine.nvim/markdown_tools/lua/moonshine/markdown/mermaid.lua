@@ -1,7 +1,7 @@
 local M = {}
 local async = require "plenary.async"
 local notify = require "integrations.notify"
-local open_scratch = require "utils.open_scratch"
+local open_scratch = require "moonshine.utils.open_scratch"
 
 local cache = {}
 local cache_order = {}

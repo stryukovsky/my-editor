@@ -3,7 +3,7 @@ local map = require "mappings.map"
 
 function _G.NativeExtraComplete(findstart, base)
   if vim.b.terminal_command then
-    return require("terminal_reimagined.command.native").complete(
+    return require("terminal_reimagined.command_inside_vim_editor.completion.native").complete(
       findstart,
       base
     )

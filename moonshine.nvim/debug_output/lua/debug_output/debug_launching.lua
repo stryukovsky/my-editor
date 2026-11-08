@@ -196,7 +196,7 @@ function M.launch()
       notify.send("Debug", "No launch configurations found", vim.log.levels.WARN)
       return
     end
-    require("utils.ui_prevent_mess")()
+    require("moonshine.utils.ui_prevent_mess")()
     show_picker(entries)
   end)
 end

@@ -2,9 +2,7 @@
 local filesystem = require "neo-tree.sources.filesystem"
 local escape = require "utils.escape"
 local renderer = require "neo-tree.ui.renderer"
-local telescope = require "telescope.builtin"
 local commands = require "neo-tree.sources.common.commands"
-local grug_far = require "grug-far"
 local system_file_explorer = require "utils.system_file_explorer"
 local neotree_utils = require "neo-tree.utils"
 local fs = require "neo-tree.sources.filesystem"
@@ -13,7 +11,7 @@ local git_actions = require "moonshine.git.commands"
 local script = require "utils.script"
 
 -- Reuse terminal windows; the terminal stays available in the buffer bar.
-local open_files_do_not_replace_types = require "utils.technical_ui_filetypes"
+local open_files_do_not_replace_types = require "moonshine.utils.technical_ui_filetypes"
 
 local function telescope_scope_opts(path)
   local relative_path = vim.fn.fnamemodify(path, ":.")
@@ -24,17 +22,6 @@ local function telescope_scope_opts(path)
     results_title = " Results in " .. relative_path,
     preview_title = "󰈙 Preview in " .. relative_path,
   }
-end
-
-local function getTelescopeOpts(state, path)
-  local opts = telescope_scope_opts(path)
-  opts.attach_mappings = function(_, map)
-    local maps = require("mappings.telescope.neotree_fs")(state)
-    map("n", "<cr>", maps.n["<cr>"])
-    map("i", "<cr>", maps.i["<cr>"])
-    return true
-  end
-  return opts
 end
 
 local function add_to_gitignore(state)
@@ -160,7 +147,7 @@ local config = {
       if node.type ~= "directory" then
         path = vim.fn.fnamemodify(path, ":h")
       end
-      require("utils.terminal").open(path, { source = "Neo-tree" })
+      require("moonshine.utils.terminal").open(path, { source = "Neo-tree" })
     end,
     ["open_new_terminal"] = function(state)
       local node = state.tree:get_node()
@@ -233,11 +220,6 @@ local config = {
         vim.print("Unknown platform " .. sysname)
       end
     end,
-    ["replace_in_directory"] = function(state)
-      local node = state.tree:get_node()
-      local path = node:get_id()
-      grug_far.open { prefills = { paths = path } }
-    end,
     ["open_parent_folder"] = function(state)
       local node = state.tree:get_node()
       local path = node:get_id()
@@ -284,8 +266,8 @@ local config = {
       if node.type ~= "directory" then
         path = vim.fn.fnamemodify(path, ":h")
       end
-      require("utils.ui_prevent_mess")()
-      telescope.live_grep(getTelescopeOpts(state, path))
+      require("moonshine.utils.ui_prevent_mess")()
+      require("telescope_pretty_picker").show_search(telescope_scope_opts(path))
     end,
     ["create_fs_item"] = function(state)
       -- after creation of even nested item it will be focused
@@ -424,7 +406,6 @@ local config = {
         ["<leader>tn"] = "open_new_terminal",
         ["O"] = "open_parent_folder",
         ["F"] = "telescope_grep",
-        ["R"] = "replace_in_directory",
         ["<A-F>"] = "telescope_grep",
         ["<A-i>"] = "show_file_details",
         ["I"] = add_to_gitignore,

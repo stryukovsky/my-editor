@@ -1,5 +1,5 @@
 local notify = require "integrations.notify"
-local navigation_repeat = require "utils.navigation_repeat"
+local navigation_repeat = require "moonshine.utils.navigation_repeat"
 
 local M = {
   active = nil,
@@ -242,7 +242,7 @@ function M.view()
   local conf = require("telescope.config").values
   local previewers = require "telescope.previewers"
 
-  require("utils.ui_prevent_mess")()
+  require("moonshine.utils.ui_prevent_mess")()
   pickers
     .new({}, {
       prompt_title = "Codebase Scenarios",

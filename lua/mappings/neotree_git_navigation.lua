@@ -1,5 +1,5 @@
 local map = require "mappings.map"
-local repeat_navigation = require "utils.navigation_repeat"
+local repeat_navigation = require "moonshine.utils.navigation_repeat"
 local M = {}
 
 local function navigate(state, direction, conflicts)

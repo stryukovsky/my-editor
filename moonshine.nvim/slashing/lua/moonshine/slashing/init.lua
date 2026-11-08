@@ -1,4 +1,4 @@
-local navigation_repeat = require "utils.navigation_repeat"
+local navigation_repeat = require "moonshine.utils.navigation_repeat"
 
 local M = {}
 

@@ -92,7 +92,7 @@ function M.open()
       }
     end,
   }
-  require "utils.ui_prevent_mess"()
+  require "moonshine.utils.ui_prevent_mess"()
   local picker
   picker = require("telescope.pickers").new({}, {
     prompt_title = "Activate DAP adapter",

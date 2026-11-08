@@ -36,7 +36,7 @@ require("statuscol").setup {
   thousands = ".", -- or line number thousands separator string ("." / ",")
   relculright = true, -- whether to right-align the cursor line number with 'relativenumber' set
   -- Builtin 'statuscolumn' options
-  ft_ignore = require "utils.technical_ui_filetypes", -- Lua table with 'filetype' values for which 'statuscolumn' will be unset
+  ft_ignore = require "moonshine.utils.technical_ui_filetypes", -- Lua table with 'filetype' values for which 'statuscolumn' will be unset
   bt_ignore = { "terminal" }, -- Lua table with 'buftype' values for which 'statuscolumn' will be unset
   -- Default segments (fold -> sign -> line number + separator), explained below
   segments = {
@@ -96,7 +96,7 @@ require("statuscol").setup {
 }
 
 -- An empty statuscolumn still reserves space for folds, signs and line numbers.
-local ignored_filetypes = require "utils.technical_ui_filetypes"
+local ignored_filetypes = require "moonshine.utils.technical_ui_filetypes"
 local hidden_gutters = {}
 local gutter_options =
   { "statuscolumn", "foldcolumn", "signcolumn", "number", "relativenumber" }

@@ -116,8 +116,6 @@ require("material").setup {
       WinBar = { bg = colors.editor.bg, fg = colors.editor.accent, bold = true },
       WinBarNC = { bg = colors.editor.bg, fg = colors.editor.accent, bold = true },
       OilCurrentDirectory = { bg = colors.editor.bg, fg = colors.editor.accent, bold = true },
-      GrugFarHelpHeader = { bg = colors.editor.bg, fg = colors.editor.accent, bold = true },
-      GrugFarHelpHeaderKey = { bg = colors.editor.bg, fg = colors.editor.accent, bold = true },
       -- Wheat conflict hunks. Labels are a step darker than the body.
       GitConflictCurrent = { bg = "#e5d5a6", fg = "#5d5140" },
       GitConflictCurrentLabel = { bg = "#d4c08a", fg = "#765613", bold = true },

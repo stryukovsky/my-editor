@@ -30,10 +30,7 @@ local pretty = {
   go = "Go",
   java = "Java",
   sbt = "Sbt",
-  bash = "Bash",
-  zsh = "Zsh",
   fish = "Fish",
-  sh = "Shell",
   nvim = "Neovim",
   vim = "Vim",
   less = "Less",
@@ -41,6 +38,7 @@ local pretty = {
   claude = "Claude",
   codex = "Codex",
 }
+local shells = { bash = true, zsh = true, fish = true, sh = true }
 
 local function read(path)
   local file = io.open(path, "rb")
@@ -152,6 +150,7 @@ function M.current(pid)
   if type(pid) ~= "number" or pid <= 0 then
     return
   end
+  local shell_pid = pid
   local stat = read("/proc/" .. pid .. "/stat")
   if not stat then
     return
@@ -167,10 +166,13 @@ function M.current(pid)
     return
   end
   local argv = vim.split(cmdline, "\0", { plain = true, trimempty = true })
-  if vim.fn.fnamemodify(argv[1] or "", ":t") == "ssh" then
-    return ssh_peer(pid) or M.label(argv)
+  local name = vim.fn.fnamemodify(argv[1] or "", ":t"):gsub("^%-", "")
+  -- A separately launched shell (e.g. `bash script.sh`) is also a command.
+  local process = { pid = pid, active = pid ~= shell_pid or not shells[name] }
+  if name == "ssh" then
+    return ssh_peer(pid) or M.label(argv), process
   end
-  return M.label(argv)
+  return M.label(argv), process
 end
 
 return M

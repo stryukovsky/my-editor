@@ -2,8 +2,8 @@ local trouble_source = require "trouble.sources.telescope"
 local trouble_api = require "trouble"
 local action_state = require "telescope.actions.state"
 local actions = require "telescope.actions"
-local close_trouble_succeeded = require "utils.close_trouble_succeeded"
-local ui_prevent_mess = require "utils.ui_prevent_mess"
+local close_trouble_succeeded = require "moonshine.utils.close_trouble_succeeded"
+local ui_prevent_mess = require "moonshine.utils.ui_prevent_mess"
 
 ---@return string|nil, integer, integer
 local function selection_location(selection)

@@ -100,7 +100,7 @@ function M.show(action, opts)
     return
   end
   sort_sessions(sessions)
-  require("utils.ui_prevent_mess")()
+  require("moonshine.utils.ui_prevent_mess")()
 
   pickers
     .new({}, {

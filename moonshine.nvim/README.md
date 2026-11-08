@@ -11,6 +11,8 @@ They expose modules eagerly; feature initialization stays in the existing
 - `moonshine.nvim/<feature>/lua/`: feature implementations and supporting modules.
 - `lua/mappings/`: bindings through `mappings.map`.
 - `lua/utils/`: shared configuration helpers.
+- `moonshine.nvim/utils/lua/moonshine/utils/`: shared helpers used by Moonshine
+  features, exposed as `moonshine.utils.*` for features and configuration alike.
 
 Existing modules keep their names (`debug_output`, `mini.diff`,
 `native_completion`, `lsp-riced`, and others). Features extracted from configs
@@ -19,8 +21,14 @@ use `moonshine.*`, including `moonshine.git`, `moonshine.input`,
 Overseer extensions retain their discovery namespace. Trouble sources are
 registered explicitly by `integrations.trouble` from its configuration.
 Terminal buffers and command editing share the `terminal_reimagined` plugin;
-command editing lives in `terminal_reimagined.command`. Ripgrep navigation uses
+command editing lives in `terminal_reimagined.command_inside_vim_editor`. Ripgrep navigation uses
 `moonshine.ripgreplsp`.
+
+`configs.terminal_reimagined` calls `setup()`. The terminal entrypoint creates
+shells with `open_new()` and supports custom labels with `set_name()`.
+`identity` owns unique names, `indicator` owns the mode bar and OSC forwarding,
+and `monitor` tracks foreground processes independently of automatic naming.
+`notifications` sends desktop alerts for commands observed running over one second.
 
 `dap_tools` owns on-demand debug adapter activation. `<leader>da` ranks languages
 by project marker files and previews their debuggee configurations. Several

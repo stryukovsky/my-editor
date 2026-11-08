@@ -3,11 +3,10 @@ local map = require "mappings.map"
 local neotest = require "neotest"
 local trouble = require "trouble"
 local oil = require "configs.oil"
-local focus_neotree = require "utils.focus_neotree"
-local grug_far = require "grug-far"
+local focus_neotree = require "moonshine.utils.focus_neotree"
 local close_telescope = require "mappings.close_telescope"
-local ui_prevent_mess = require "utils.ui_prevent_mess"
-local is_normal_buffer = require "utils.is_normal_buffer"
+local ui_prevent_mess = require "moonshine.utils.ui_prevent_mess"
+local is_normal_buffer = require "moonshine.utils.is_normal_buffer"
 local notify = require "integrations.notify"
 
 local ui_components_modes = { "n" }
@@ -208,21 +207,6 @@ _G.bottom_component_callback_close = function() end
 --
 -- special case for neotree only
 local right_component_callback_close = function() end
-
-local function close_grug_far()
-  grug_far.hide_instance "far"
-end
-
-map(ui_components_modes, "<A-R>", function()
-  ui_prevent_mess()
-  if is_normal_buffer() then
-    if _G.bottom_component_callback_close() == false then
-      return
-    end
-    _G.bottom_component_callback_close = close_grug_far
-    grug_far.toggle_instance { instanceName = "far", staticTitle = "Find and Replace" }
-  end
-end, { desc = "UI find and replace toggle" })
 
 -- neotest
 local neotest_summary_opened = false

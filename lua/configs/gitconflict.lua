@@ -1,7 +1,7 @@
 ---@diagnostic disable: missing-fields
 local gitconflict = require "git-conflict"
-local close_trouble_succeeded = require "utils.close_trouble_succeeded"
-local ui_prevent_mess = require "utils.ui_prevent_mess"
+local close_trouble_succeeded = require "moonshine.utils.close_trouble_succeeded"
+local ui_prevent_mess = require "moonshine.utils.ui_prevent_mess"
 
 -- setup() calls nvim_get_hl_by_name before the colorscheme exists.
 local hl = vim.api.nvim_set_hl

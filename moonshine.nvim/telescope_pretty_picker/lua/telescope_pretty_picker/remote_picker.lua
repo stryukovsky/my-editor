@@ -228,7 +228,7 @@ function M.open(opts)
     end)
   end
 
-  require "utils.ui_prevent_mess"()
+  require "moonshine.utils.ui_prevent_mess"()
   local conf = require("telescope.config").values
   require("telescope.pickers")
     .new({ cwd = cwd, initial_mode = "normal" }, {

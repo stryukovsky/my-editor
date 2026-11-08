@@ -1,5 +1,5 @@
 local map = require "mappings.map"
-local is_normal_buffer = require "utils.is_normal_buffer"
+local is_normal_buffer = require "moonshine.utils.is_normal_buffer"
 local is_buffer_terminal = require "utils.is_buffer_terminal"
 local is_initial_dashboard = require "utils.is_buffer_initial_dashboard"
 local script = require "utils.script"
@@ -72,7 +72,6 @@ map("n", "<leader>ex", function()
 end, { desc = "Terminal: run current Bash or Python script" })
 
 map("n", "<Leader>tr", function()
-  terminal.release_name(vim.b.terminal_unique_name)
   local base = "  " .. vim.fn.input { prompt = "New buf name: " }
   terminal.set_name(0, base)
 end, { desc = "Terminal: rename buffer" })

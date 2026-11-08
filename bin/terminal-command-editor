@@ -20,7 +20,7 @@ def remote(server, expression):
 
 def expression(method, payload):
     data = json.dumps(payload, ensure_ascii=True).replace("'", "''")
-    return f'''luaeval("require('terminal_reimagined.command').{method}(_A)", json_decode('{data}'))'''
+    return f'''luaeval("require('terminal_reimagined.command_inside_vim_editor').{method}(_A)", json_decode('{data}'))'''
 
 
 def main():

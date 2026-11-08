@@ -1,7 +1,7 @@
 -- Ripgrep / ast-grep "LSP-ish" navigation for heavy projects.
 -- Scoped to the current file extension (rg) or language (ast-grep).
 
-local is_normal_buffer = require "utils.is_normal_buffer"
+local is_normal_buffer = require "moonshine.utils.is_normal_buffer"
 local M = {}
 local notify = require "integrations.notify"
 
@@ -319,7 +319,7 @@ end
 ---@param matches table[]
 ---@param title string
 local function open_sg_picker(matches, title)
-  require("utils.ui_prevent_mess")()
+  require("moonshine.utils.ui_prevent_mess")()
   local pickers = require "telescope.pickers"
   local finders = require "telescope.finders"
   local conf = require("telescope.config").values

@@ -2,7 +2,7 @@ local M = {}
 function M.complete(findstart, _)
   local line = vim.api.nvim_get_current_line()
   local col = vim.fn.col "." - 1
-  local files = require "terminal_reimagined.command.files"
+  local files = require "terminal_reimagined.command_inside_vim_editor.completion.files"
   local start, token = files.word(line:sub(1, col))
   if findstart == 1 then
     return start
@@ -13,7 +13,7 @@ function M.complete(findstart, _)
     cursor = { vim.fn.line ".", col },
   }
   local items = {}
-  for _, provider in ipairs { files, require "terminal_reimagined.command.completion" } do
+  for _, provider in ipairs { files, require "terminal_reimagined.command_inside_vim_editor.completion.completion" } do
     provider.new():get_completions(ctx, function(result)
       for _, item in ipairs(result.items) do
         local word = item.textEdit and item.textEdit.newText or item.label

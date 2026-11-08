@@ -100,8 +100,6 @@ local function override_highlights()
   hl(0, "OilCurrentDirectory", { link = "WinBar" })
   hl(0, "WinBar", { bg = background, fg = medium_orange_fg, bold = true })
   hl(0, "WinBarNC", { bg = background, fg = medium_orange_fg, bold = true })
-  hl(0, "GrugFarHelpHeader", { link = "WinBar" })
-  hl(0, "GrugFarHelpHeaderKey", { link = "WinBar" })
 
   local current_buffer_bg =
     vim.api.nvim_get_hl(0, { name = "BufferDefaultCurrent" }).bg
