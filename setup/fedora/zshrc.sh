@@ -203,7 +203,7 @@ update_all(){
 [[ -r "$HOME/.config/nvim/setup/common_tools/zsh/command-editor.zsh" ]] && source "$HOME/.config/nvim/setup/common_tools/zsh/command-editor.zsh"
 
 export SUDO_EDITOR=nvim
-export PATH="$PATH:/opt/liquibase"
+export PATH="$PATH:$HOME/Tools/liquibase"
 
 if [ -d "$HOME/.elan" ]; then
     source "$HOME/.elan/env"
