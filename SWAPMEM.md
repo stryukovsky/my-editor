@@ -1,3 +1,11 @@
+# Move mostly all docker memory to swap
+
+run with sudo script:  
+
+```sh
+sudo python setup/fedora/docker-reduce-ram.py
+```
+
 # SSD-backed swap on Fedora / Btrfs
 
 Create a 48 GiB swapfile on your drive. Run these commands once, stopping if

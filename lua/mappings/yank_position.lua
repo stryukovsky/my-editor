@@ -96,6 +96,13 @@ map("n", "<leader>yF", function()
   end
 end, { desc = "yank absolute file path" })
 
+map("n", "<leader>yP", function()
+  local file = require_file()
+  if file then
+    yank(string.format("%s:%d", file.abs, vim.fn.line "."))
+  end
+end, { desc = "yank absolute path:line" })
+
 local SEVERITY_LABEL = {
   [vim.diagnostic.severity.ERROR] = "Error",
   [vim.diagnostic.severity.WARN] = "Warn",

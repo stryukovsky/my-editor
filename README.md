@@ -249,7 +249,7 @@ Install plugins
 - https://extensions.gnome.org/extension/5353/window-state-manager/
 - https://extensions.gnome.org/extension/4559/quick-lang-switch/
 - https://extensions.gnome.org/extension/19/user-themes/
-
+- https://extensions.gnome.org/extension/4105/notification-banner-position/
 
 After installed, configure it:
 
