@@ -61,8 +61,8 @@ BROWSER_USE_TINYSKY_ENABLED = "1"
 NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = ""
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = ""
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.1027.30824"
-NODE_REPL_TRUSTED_SERVICES = '{"browser":"/home/dmitry/.codex/plugins/cache/openai-bundled/browser/26.1027.30824/scripts/browser-service.mjs"}'
+BROWSER_USE_CODEX_APP_VERSION = "26.1103.60933"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/home/dmitry/.codex/plugins/cache/openai-bundled/browser/26.1103.60933/scripts/browser-service.mjs"}'
 CODEX_CLI_PATH = "/usr/lib/chatgpt/resources/codex"
 
 [mcp_servers.effectcraft]
@@ -116,6 +116,15 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/home/dmitry/Work/my-animation"]
+trust_level = "trusted"
+
+[projects."/home/dmitry/Work/java-antlr-financial"]
+trust_level = "trusted"
+
+[projects."/home/dmitry/Work/go-backend-learn"]
+trust_level = "trusted"
+
+[projects."/home/dmitry/Work/core"]
 trust_level = "trusted"
 
 [tui]
