@@ -326,7 +326,7 @@ function M.toggle()
     return
   end
   local win = vim.api.nvim_get_current_win()
-  local preview = vim.api.nvim_create_buf(false, true)
+  local preview = vim.api.nvim_create_buf(true, true)
   local session = {
     source = source,
     preview = preview,
@@ -347,6 +347,7 @@ function M.toggle()
       .. "/"
       .. vim.fn.fnamemodify(vim.api.nvim_buf_get_name(source), ":t")
   )
+  vim.bo[preview].buftype = ""
   vim.bo[preview].bufhidden = "hide"
   vim.bo[preview].swapfile = false
   vim.bo[preview].undolevels = -1

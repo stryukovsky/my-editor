@@ -345,7 +345,9 @@ map("x", "<C-J>", "<Plug>GoVSMDown", {})
 map("x", "<C-K>", "<Plug>GoVSMUp", {})
 map("x", "<C-L>", "<Plug>GoVSMRight", {})
 
-map("n", "zZ", "zszH", { desc = "Center cursor horizontally" })
+map("n", "zx", function()
+  require("integrations.mini_animate").center_horizontal()
+end, { desc = "Center cursor horizontally" })
 
 map({ "x", "n" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 map({ "x", "n" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })

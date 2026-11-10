@@ -24,6 +24,12 @@ Terminal buffers and command editing share the `terminal_reimagined` plugin;
 command editing lives in `terminal_reimagined.command_inside_vim_editor`. Ripgrep navigation uses
 `moonshine.ripgreplsp`.
 
+`mini_animate` vendors `mini.animate` from [nvim-mini/mini.animate](https://github.com/nvim-mini/mini.animate) (MIT).
+`lua/configs/minianimate.lua` enables cursor, vertical scroll, resize, and
+window open/close animations. Native `zz`, `<C-d>`, and `<C-u>` scrolls are
+animated automatically; `zx` uses `integrations.mini_animate` to animate
+horizontal centering with the same scroll timing.
+
 `configs.terminal_reimagined` calls `setup()`. The terminal entrypoint creates
 shells with `open_new()` and supports custom labels with `set_name()`.
 `identity` owns unique names, `indicator` owns the mode bar and OSC forwarding,
