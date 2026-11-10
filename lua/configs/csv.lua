@@ -7,7 +7,7 @@ return {
     spacing = 2,
     header_lnum = 1,
     sticky_header = {
-      enabled = true,
+      enabled = false, -- The upstream overlay assumes single-screen-line rows.
       separator = "─",
     },
   },

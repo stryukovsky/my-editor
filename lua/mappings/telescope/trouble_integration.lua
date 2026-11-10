@@ -28,19 +28,37 @@ local function selection_location(selection)
 end
 
 -- No terminal check: if `:e` works, the window is a usable editor.
----@return boolean
+---@return integer? win, integer? buf
 local function edit_selection(selection)
   local filename, line, col = selection_location(selection)
   if not filename then
-    return false
+    return nil
+  end
+
+  -- Neo-tree redirects :edit asynchronously and restores its own buffer first.
+  -- Open in an editor directly so both the buffer and cursor belong to it.
+  if vim.bo.filetype == "neo-tree" then
+    local editor
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+      local buf = vim.api.nvim_win_get_buf(win)
+      if vim.bo[buf].buftype == "" and vim.api.nvim_win_get_config(win).relative == "" then
+        editor = win
+        break
+      end
+    end
+    if editor then
+      vim.api.nvim_set_current_win(editor)
+    else
+      vim.cmd "botright vnew"
+    end
   end
 
   local ok = pcall(vim.cmd.edit, vim.fn.fnameescape(filename))
   if not ok then
-    return false
+    return nil
   end
   pcall(vim.api.nvim_win_set_cursor, 0, { line, col })
-  return true
+  return vim.api.nvim_get_current_win(), vim.api.nvim_get_current_buf()
 end
 
 local function collect_telescope_items(picker)
@@ -116,10 +134,12 @@ return function(mode)
         trouble_source.items = items
       end
       local wanted = trouble_source.item(selection)
+      local _, selected_line, selected_col = selection_location(selection)
 
       ui_prevent_mess()
       actions.close(bufnr)
-      if not edit_selection(selection) then
+      local edit_win, edit_buf = edit_selection(selection)
+      if not edit_win then
         return
       end
 
@@ -141,6 +161,18 @@ return function(mode)
       if view then
         view:wait(function()
           select_picker_item(view, wanted)
+          -- Opening the results layout can restore a window's previous view.
+          -- Apply the match after that work, to the captured editor only.
+          vim.schedule(function()
+            if vim.api.nvim_win_is_valid(edit_win) and vim.api.nvim_win_get_buf(edit_win) == edit_buf then
+              local line = math.max(1, math.min(selected_line, vim.api.nvim_buf_line_count(edit_buf)))
+              local col = math.max(0, selected_col)
+              vim.api.nvim_win_set_cursor(edit_win, { line, col })
+              vim.api.nvim_win_call(edit_win, function()
+                vim.cmd "normal! zv"
+              end)
+            end
+          end)
           if grep then
             grep.attach(view, pattern, query)
           end

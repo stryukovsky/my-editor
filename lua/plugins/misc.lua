@@ -36,8 +36,12 @@ return {
     end,
   },
   {
-    "hat0uma/csvview.nvim",
+    "stryukovsky/csvview.nvim",
     opts = require "configs.csv",
+    config = function(_, opts)
+      require("integrations.csv_wrap").setup()
+      require("csvview").setup(opts)
+    end,
     cmd = { "CsvViewEnable", "CsvViewDisable", "CsvViewToggle" },
   },
   { "stryukovsky/lspeek.nvim", branch = "feature/add-fragile-mode" },
