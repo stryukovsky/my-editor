@@ -8,7 +8,7 @@ gnome-extensions-app fd-find libpq-devel uchardet-devel fuse fuse-libs \
 audacious pandoc texlive-scheme-full texlive-collection-langcyrillic \
 texlive-collection-latexextra gnome-tweaks ranger mpv maven evince atool gpaste \
 kitty tree-sitter gpaste-client gpaste-ui python3-devel plantuml ImageMagick \
-ImageMagick-devel cmake ninja-build clang clang-tools-extra sushi unrar -y
+ImageMagick-devel cmake ninja-build clang clang-tools-extra sushi unrar vmpk -y
 
 sudo dnf install dnf-plugins-core -y
 
@@ -24,6 +24,10 @@ dnf install https://mirror.yandex.ru/fedora/rpmfusion/free/fedora/rpmfusion-free
 sudo install -Dm644 "$(dirname "$(realpath "$0")")/rpmfusion-yandex.repo" /etc/dnf/repos.override.d/99-rpmfusion-yandex.repo
 dnf config-manager setopt fedora-cisco-openh264.enabled=0
 dnf swap ffmpeg-free ffmpeg --allowerasing -y
+
+sudo dnf install 'dnf-command(config-manager)'
+sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+sudo dnf install gh
 
 dnf install flatpak -y
 flatpak install flathub it.mijorus.gearlever -y

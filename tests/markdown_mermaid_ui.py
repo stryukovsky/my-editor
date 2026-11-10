@@ -140,7 +140,7 @@ with tempfile.TemporaryDirectory(prefix='nvim-mermaid-') as directory:
             local function count(kind)
                 local calls = vim.g.inspect_calls; calls[kind] = calls[kind] + 1; vim.g.inspect_calls = calls
             end
-            require('integrations.csv_table_viewer').view_row = function() count('csv') end
+            require('moonshine.csv_render').toggle = function() count('csv') end
             require('moonshine.markdown.table').view_row = function() count('markdown') end
             vim.diagnostic.open_float = function() count('diagnostic') end
         ''')

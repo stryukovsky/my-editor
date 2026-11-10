@@ -443,6 +443,7 @@ local config = {
     window = {
       mappings = {
         ["I"] = add_to_gitignore,
+        ["f"] = "slash_search",
         ["S"] = "git_add_all",
         ["s"] = "git_add_file",
         ["u"] = "git_unstage_file",

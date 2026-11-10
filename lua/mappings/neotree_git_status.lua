@@ -12,6 +12,7 @@ local source_commands = {
 }
 
 local excluded_aliases = {
+  f = true, -- Keep the panel's slash_search mapping; fetch remains on <leader>gf.
   x = true,
   C = true,
   h = true,

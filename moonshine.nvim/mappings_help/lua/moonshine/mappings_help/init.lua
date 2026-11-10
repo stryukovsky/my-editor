@@ -46,7 +46,7 @@ local SECTIONS = {
       { "<A-j>", "TODOs" },
       { "<A-R>", "find and replace" },
       { "<A-p>", "trouble diagnostics" },
-      { "<A-i>", "Markdown preview / CSV row / diagnostic" },
+      { "<A-i>", "Markdown / CSV preview / diagnostic" },
       { "<leader>mdi", "inspect Markdown table row" },
       { "<leader>mdt", "toggle Markdown rendering (current buffer)" },
       { "<leader>va", "diagram as ASCII" },

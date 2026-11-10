@@ -1,6 +1,5 @@
 local map = require "mappings.map"
 local md_table_viewer = require "moonshine.markdown.table"
-local csv_table_viewer = require "integrations.csv_table_viewer"
 local navigation_repeat = require "moonshine.utils.navigation_repeat"
 
 map("n", "<A-i>", function()
@@ -14,13 +13,13 @@ map("n", "<A-i>", function()
       render.buf_enable()
     end
   elseif ft == "csv" or ft == "tsv" then
-    csv_table_viewer.view_row()
+    require("moonshine.csv_render").toggle()
   elseif ft == "lean" or ft == "leaninfo" then
     require("lean.infoview").toggle()
   else
     vim.diagnostic.open_float()
   end
-end, { desc = "Markdown preview / CSV row / Lean infoview / diagnostic" })
+end, { desc = "Markdown / CSV preview / Lean infoview / diagnostic" })
 
 map("n", "<leader>mdi", function()
   if vim.bo.filetype == "markdown" then

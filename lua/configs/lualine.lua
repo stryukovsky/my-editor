@@ -187,23 +187,23 @@ setup_lualine {
   tabline = {},
   winbar = {},
   inactive_winbar = {},
-  extensions = {
-    {
-      sections = {
-        lualine_a = {
-          function()
-            return "NEO-TREE"
-          end,
-        },
-        lualine_b = {
-          git_fetch.lualine_component(),
-          git_branch.lualine_component(),
-        },
-        lualine_c = { get_neotree_path }, -- Displays relative path from CWD
-      },
-      filetypes = { "neo-tree" },
-    },
-  },
+  -- extensions = {
+  --   {
+  --     sections = {
+  --       lualine_a = {
+  --         function()
+  --           return "NEO-TREE"
+  --         end,
+  --       },
+  --       lualine_b = {
+  --         git_fetch.lualine_component(),
+  --         git_branch.lualine_component(),
+  --       },
+  --       lualine_c = { get_neotree_path }, -- Displays relative path from CWD
+  --     },
+  --     filetypes = { "neo-tree" },
+  --   },
+  -- },
   "trouble",
   "oil",
   "toggleterm",

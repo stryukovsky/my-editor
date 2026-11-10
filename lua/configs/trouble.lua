@@ -125,6 +125,11 @@ trouble.setup {
       auto_refresh = false,
       follow = true,
     },
+    lsp_implementations = {
+      desc = "Frozen LSP implementations",
+      auto_refresh = false,
+      follow = false,
+    },
     minidiff_review = {
       desc = "MiniDiff review files",
       source = "minidiff_review",

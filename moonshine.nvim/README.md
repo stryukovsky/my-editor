@@ -7,7 +7,7 @@ They expose modules eagerly; feature initialization stays in the existing
 
 - `lua/configs/`: editor settings, plugin options, and setup calls.
 - `lua/integrations/`: helpers that extend existing plugins (Neo-tree, Notify,
-  Trouble, Zen-mode, CSV viewing, and Barbar).
+  Trouble, Zen-mode, and Barbar).
 - `moonshine.nvim/<feature>/lua/`: feature implementations and supporting modules.
 - `lua/mappings/`: bindings through `mappings.map`.
 - `lua/utils/`: shared configuration helpers.
@@ -36,6 +36,20 @@ matching languages keep the picker open after Enter so they can be activated
 together. All adapter activation and presets are owned by `dap_tools`. Rust
 uses CodeLLDB; Java/Scala use their LSP connections only when launching.
 `<leader>dd` remains the launch picker.
+
+`csv-render` exposes `moonshine.csv_render`. `<A-i>` in CSV/TSV opens a read-only
+Unicode table in the current window; `<A-i>`, `q`, or Escape returns to the
+source at the selected cell. It parses quoted delimiters, escaped quotes, and
+multiline fields without depending on csvview.nvim or a Markdown parser.
+Up to ten columns share the window width and wrap inside cells. Wider tables
+use natural column widths capped at 40 cells, with horizontal scrolling and
+window wrapping disabled (`zl` / `zh`, `zL` / `zH`). Settings live in
+`lua/configs/csv.lua`. Source changes and window resizing refresh the preview;
+large files render in cancellable batches.
+The header stays pinned with window-local virtual lines while scrolling,
+including wrapped header cells and horizontal column alignment.
+Column headings are limited to five text lines, with `...` marking truncation;
+data cells keep their full contents.
 
 To add a feature, create `<feature>/lua/<module>/init.lua` here and put its
 options/setup call in `lua/configs/` when needed. The local spec discovers the

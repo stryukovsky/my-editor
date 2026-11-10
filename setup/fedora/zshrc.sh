@@ -195,6 +195,10 @@ killport() {
   kill -- "${pids[@]}"
 }
 
+loadenv() {
+    set -a && source .env && set +a
+}
+
 update_all(){
     python ~/.config/nvim/setup/fedora/update/update-all.py --run
 }
@@ -208,4 +212,5 @@ export PATH="$PATH:$HOME/Tools/liquibase"
 if [ -d "$HOME/.elan" ]; then
     source "$HOME/.elan/env"
 fi
+
 
