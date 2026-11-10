@@ -27,7 +27,7 @@ dnf swap ffmpeg-free ffmpeg --allowerasing -y
 
 sudo dnf install 'dnf-command(config-manager)'
 sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-sudo dnf install gh
+sudo dnf install gh -y
 
 dnf install flatpak -y
 flatpak install flathub it.mijorus.gearlever -y
