@@ -345,6 +345,10 @@ map("x", "<C-J>", "<Plug>GoVSMDown", {})
 map("x", "<C-K>", "<Plug>GoVSMUp", {})
 map("x", "<C-L>", "<Plug>GoVSMRight", {})
 
+map("n", "zz", function()
+  require("integrations.mini_animate").center_vertical(vim.v.count)
+end, { desc = "Center cursor vertically" })
+
 map("n", "zx", function()
   require("integrations.mini_animate").center_horizontal()
 end, { desc = "Center cursor horizontally" })

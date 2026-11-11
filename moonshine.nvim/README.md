@@ -25,10 +25,10 @@ command editing lives in `terminal_reimagined.command_inside_vim_editor`. Ripgre
 `moonshine.ripgreplsp`.
 
 `mini_animate` vendors `mini.animate` from [nvim-mini/mini.animate](https://github.com/nvim-mini/mini.animate) (MIT).
-`lua/configs/minianimate.lua` enables cursor, vertical scroll, resize, and
-window open/close animations. Native `zz`, `<C-d>`, and `<C-u>` scrolls are
-animated automatically; `zx` uses `integrations.mini_animate` to animate
-horizontal centering with the same scroll timing.
+`lua/configs/minianimate.lua` disables all automatic animations.
+Only the normal-mode `zz` and `zx` mappings use `integrations.mini_animate`
+to animate vertical and horizontal centering. Ordinary navigation, including
+`<C-d>` and `<C-u>`, stays instant.
 
 `configs.terminal_reimagined` calls `setup()`. The terminal entrypoint creates
 shells with `open_new()` and supports custom labels with `set_name()`.

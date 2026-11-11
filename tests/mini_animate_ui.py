@@ -14,6 +14,7 @@ with tempfile.TemporaryDirectory() as tmp:
             vim.opt.rtp:append(root .. '/data/lazy/langmapper.nvim')
             require('configs.minianimate')
             local map = require 'mappings.map'
+            map('n', 'zz', function() require('integrations.mini_animate').center_vertical(vim.v.count) end)
             map('n', 'zx', function() require('integrations.mini_animate').center_horizontal() end)
             vim.wo.wrap = false
             vim.wo.number = false
@@ -37,8 +38,9 @@ with tempfile.TemporaryDirectory() as tmp:
             for _ in range(40):
                 samples.append(view()['topline'])
                 time.sleep(.01)
-            assert n.vars['scroll_done'] > done, (keys, samples)
-            assert len(set(samples)) > 2, (keys, samples)
+            assert n.vars['scroll_done'] == done, (keys, samples)
+            assert len(set(samples)) == 1, (keys, samples)
+            assert not n.exec_lua('return MiniAnimate.is_active("scroll") or MiniAnimate.is_active("cursor")')
             assert view()['topline'] != before['topline']
         n.exec_lua('vim.api.nvim_win_set_cursor(0, {100, 0}); vim.cmd("normal! zt")')
         settle()
@@ -48,7 +50,19 @@ with tempfile.TemporaryDirectory() as tmp:
         for _ in range(40):
             samples.append(view()['topline'])
             time.sleep(.01)
-        assert n.vars['scroll_done'] > done and len(set(samples)) > 2, samples
+        assert len(set(samples)) > 2, samples
+        assert view()['lnum'] == 100, view()
+        n.input('120zz')
+        settle()
+        assert view()['lnum'] == 120, view()
+        n.exec_lua('vim.api.nvim_win_set_cursor(0, {100, 0}); vim.cmd("normal! zt")')
+        n.input('zz')
+        time.sleep(.06)
+        n.input('j')
+        time.sleep(.05)
+        stopped = view()
+        settle()
+        assert view() == stopped, ('vertical cancel', stopped, view())
         n.exec_lua('vim.api.nvim_win_set_cursor(0, {100, 250}); vim.cmd("normal! zs")')
         settle()
         before=view()
@@ -74,6 +88,12 @@ with tempfile.TemporaryDirectory() as tmp:
         n.input('zx')
         settle()
         assert view()['leftcol'] == expected['leftcol'] - 1, view()
-        print('PASS: zz, C-d, C-u and zx show intermediate scroll frames; zx preserves cursor, cancels on navigation, and respects disable flag')
+        assert n.exec_lua('''
+            for _, kind in ipairs({'cursor', 'scroll', 'resize', 'open', 'close'}) do
+                if MiniAnimate.config[kind].enable then return false end
+            end
+            return true
+        '''), 'automatic animations must be disabled'
+        print('PASS: only zz/zx animate; native half-page scrolling stays instant; centering preserves counts, cancels on navigation, and respects disable flag')
     finally:
         n.close()

@@ -63,14 +63,10 @@ local ten_doc = render.build({ { cells = ten } }, 120, opts)
 for _, line in ipairs(ten_doc.lines) do
   eq(vim.fn.strdisplaywidth(line), 111)
 end
-local heading_doc = render.build(
-  {
-    { cells = { string.rep("中", 120) } },
-    { cells = { string.rep("中", 120) } },
-  },
-  20,
-  opts
-)
+local heading_doc = render.build({
+  { cells = { string.rep("中", 120) } },
+  { cells = { string.rep("中", 120) } },
+}, 20, opts)
 eq(#heading_doc.headers, 5)
 assert(heading_doc.lines[6]:find("...", 1, true))
 assert(#heading_doc.lines > 20, "data cells must retain their full content")
