@@ -34,38 +34,38 @@ local function connected_clients(path)
 end
 
 local function rename(state, clients)
-  local node = state.tree:get_node()
+  local lsp_rename = require "neo-tree.sources.filesystem.lib.lsp_rename"
+  local hooks
+  if #clients > 0 then
+    hooks = lsp_rename.hooks(clients)
+  end
+  require("neo-tree.sources.filesystem.commands").rename(state, hooks)
+end
+
+local function rename_clients(clients, path)
   local lsp_rename = require "neo-tree.sources.filesystem.lib.lsp_rename"
   local recipients, warnings = {}, {}
-  if #clients == 0 then
-    warnings[#warnings + 1] = "No connected LSP can update references."
-  else
-    for _, client in ipairs(clients) do
-      local methods = lsp_rename.methods(client, node.path)
-      local advertised = lsp_rename.methods(client)
-      if methods.willRename or methods.didRename then
-        recipients[#recipients + 1] = client
-      elseif advertised.willRename or advertised.didRename then
-        warnings[#warnings + 1] = client.name
-          .. ": file rename is not supported for this path."
-      else
-        warnings[#warnings + 1] = client.name
-          .. ": this LSP does not support file rename."
-      end
+  for _, client in ipairs(clients) do
+    local methods = lsp_rename.methods(client, path)
+    local advertised = lsp_rename.methods(client)
+    if methods.willRename or methods.didRename then
+      recipients[#recipients + 1] = client
+    elseif advertised.willRename or advertised.didRename then
+      warnings[#warnings + 1] = client.name
+        .. ": file rename is not supported for this path."
+    else
+      warnings[#warnings + 1] = client.name
+        .. ": this LSP does not support file rename."
     end
   end
   if #warnings > 0 then
-    local message = table.concat(warnings, "\n")
-      .. "\nReferences may not be updated. Proceed with filesystem rename?"
-    if vim.fn.confirm(message, "&Yes\n&No", 2) ~= 1 then
-      return
-    end
+    vim.notify(
+      table.concat(warnings, "\n") .. "\nReferences may not be updated.",
+      vim.log.levels.WARN,
+      { title = "Neo-tree rename" }
+    )
   end
-  local hooks
-  if #recipients > 0 then
-    hooks = lsp_rename.hooks(recipients)
-  end
-  require("neo-tree.sources.filesystem.commands").rename(state, hooks)
+  return recipients
 end
 
 local function select_clients(clients, callback)
@@ -130,12 +130,13 @@ function M.rename(state)
     return
   end
   local clients = connected_clients(node.path)
-  if #clients < 2 then
-    rename(state, clients)
+  local recipients = rename_clients(clients, node.path)
+  if #recipients < 2 then
+    rename(state, recipients)
     return
   end
   local source = node.path
-  select_clients(clients, function(selected)
+  select_clients(recipients, function(selected)
     -- A closed/replaced tree must not rename a different selection.
     if not state.bufnr or not vim.api.nvim_buf_is_valid(state.bufnr) then
       return
