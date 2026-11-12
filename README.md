@@ -120,6 +120,10 @@ ln -sfr setup/fedora/ranger/colorschemes ~/.config/ranger/colorschemes
 mkdir -p ~/.codex
 ln -sfr setup/common_tools/codex/config.toml ~/.codex/config.toml
 
+# OpenCode V2 UI settings
+mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
+ln -sfr setup/common_tools/opencode/cli.json "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/cli.json"
+
 bash setup/common_tools/finalize.sh
 bash setup/common_tools/ai.sh
 bash setup/common_tools/git.sh
