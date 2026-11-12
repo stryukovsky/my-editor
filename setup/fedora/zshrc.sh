@@ -208,7 +208,7 @@ update_all(){
 
 export SUDO_EDITOR=nvim
 export PATH="$PATH:$HOME/Tools/liquibase"
-
+export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
 if [ -d "$HOME/.elan" ]; then
     source "$HOME/.elan/env"
 fi

@@ -47,9 +47,15 @@ return {
     version = "^9", -- Recommended
     lazy = false, -- This plugin is already lazy
     init = function()
-      vim.g.rustaceanvim = vim.tbl_deep_extend("force", vim.g.rustaceanvim or {}, {
-        dap = { autoload_configurations = false },
-      })
+      vim.g.rustaceanvim =
+        vim.tbl_deep_extend("force", vim.g.rustaceanvim or {}, {
+          dap = { autoload_configurations = false },
+          server = {
+            capabilities = {
+              workspace = { fileOperations = { willRename = true } },
+            },
+          },
+        })
     end,
   },
   {

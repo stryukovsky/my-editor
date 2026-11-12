@@ -30,7 +30,7 @@ function M.activate(id, context)
       error("Missing debug adapter executable: " .. entry.command)
     end
     if id == "python" then
-      require("dap_tools.python").activate(context.root)
+      require("dap_tools.languages.python").activate(context.root)
     elseif id == "javascript" then
       dap.adapters.node = vim.deepcopy(require("dap_tools.presets").node)
       dap.adapters["pwa-node"] = dap.adapters.node

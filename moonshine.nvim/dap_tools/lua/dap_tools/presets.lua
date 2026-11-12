@@ -129,11 +129,15 @@ M.codelldb = {
 }
 
 function M.python()
+  local function python_path()
+    return require("dap_tools.languages.python").resolve()
+  end
   return {
     {
       type = "python",
       request = "launch",
       name = "Run Command",
+      pythonPath = python_path,
       program = "${file}",
       cwd = "${workspaceFolder}",
       envFile = "${workspaceFolder}/.env",
@@ -143,6 +147,7 @@ function M.python()
       type = "python",
       request = "launch",
       name = "Run file",
+      pythonPath = python_path,
       program = "${file}",
       cwd = "${workspaceFolder}",
       envFile = "${workspaceFolder}/.env",

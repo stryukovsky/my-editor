@@ -395,6 +395,7 @@ local config = {
   },
   filesystem = {
     commands = {
+      lsp_rename = require("integrations.neotree_lsp_rename").rename,
       copy_to_clipboard = require("utils.neotree_clipboard").copy,
       copy_to_clipboard_visual = require("utils.neotree_clipboard").copy_visual,
       paste_from_clipboard = require("utils.neotree_clipboard").paste,
@@ -418,7 +419,7 @@ local config = {
         ["d"] = "delete",
         ["A"] = "add_directory", -- also accepts the config.show_path and config.insert_as options.
         ["m"] = "edit_mode",
-        ["r"] = "rename",
+        ["r"] = "lsp_rename",
         ["<leader>rn"] = "rename",
         ["p"] = "paste_from_clipboard",
         ["x"] = "cut_to_clipboard",
@@ -516,7 +517,7 @@ local config = {
     },
     window = {
       mappings = {
-        ["<cr>"] = "go_deep",
+        ["<cr>"] = "open",
         ["r"] = "rename",
         ["<leader>rn"] = "rename",
         ["y"] = "copy_path",

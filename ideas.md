@@ -6,3 +6,5 @@ fix bug: <leader>ex terminal isnt creating buffer with terminal buftype and dash
 icons instead of Zsh (1) terminal
 lsp go to definition with floating: make it remember where i navigated even after opening of buffer, simply when <cr> then do the navigation not to the point but to the cursor where clicked <cr>, file is same, line and column needed 
 neotree git status multiline selection staging
+
+ricing the y or no confirmation

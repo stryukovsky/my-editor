@@ -57,6 +57,29 @@ vscode-solidity-server texlab jdtls xmlformatter java-debug-adapter json-lsp
 
 JDTLS NEEDS VPN!!!
 
+Neo-tree filesystem `r` uses LSP file-rename assistance for connected clients in
+the selected entry's project. With one client it checks support directly; with
+several it opens a Telescope picker (Tab selects
+multiple clients, Enter confirms, Escape cancels). `<leader>rn` keeps ordinary
+rename behavior. Each selected server without a matching file-rename capability
+is named in a Yes/No confirmation before filesystem rename (default: No).
+No connected LSP also requires confirmation. Unsupported servers receive no requests;
+supported selected servers still assist when you proceed.
+
+See the [file-rename server support inventory](openspec/changes/neotree-lsp-file-rename/server-support.md)
+for all language servers in the Mason command above. TypeScript, basedpyright,
+Rust, and Java support `workspace/willRenameFiles` (possible edits before rename);
+Lua supports `workspace/didRenameFiles` (notification after success). Symbol
+rename support is separate. The installed `vscode-solidity-server` package is
+Juan Blanco's server, while the current Solidity configuration runs `forge`.
+
+The Neo-tree fork provides per-invocation rename callbacks and a focused LSP
+rename module. The config owns the client picker and confirmations; the fork
+matches capability filters, requests reference edits before rename, and notifies
+servers after success. No file-operations dependency, patches, or automatic
+subscriptions are needed. LSP edits stay unsaved. Request errors/timeouts are
+reported as warnings; filesystem rename remains best-effort.
+
 # Fedora / Asahi Fedora linux:
 
 Important stuff with root password

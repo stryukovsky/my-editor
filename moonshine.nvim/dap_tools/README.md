@@ -12,11 +12,15 @@ preview. When several languages match, Enter activates without closing the
 picker; press q or Esc when finished. Failed activation leaves it open too.
 Activation lasts for the current Neovim session and preserves custom configs.
 
-Executables are provided by the existing Mason installations. Python prefers
-the installed debugpy adapter, then Mason's debugpy environment, then debugpy
-in the project virtualenv/system Python. It does not install packages during
-activation. Project Python is also used for debuggee execution and the matching
-Python LSP settings.
+Executables are provided by the existing Mason installations. Python resolution
+lives in `languages/python.lua`: cwd `.venv` is checked first, followed by `venv`,
+`env`, `.env`, `virtualenv`, `.virtualenv`, and custom-named immediate child
+environments containing `pyvenv.cfg`. The project root is checked next, then
+`VIRTUAL_ENV`, `CONDA_PREFIX`, and PATH (`python3`, then `python`). Only executable
+interpreters qualify. The resolved interpreter starts debugpy and is resolved
+again at launch for predefined debuggees. Explicit launch.json interpreter
+settings remain unchanged. The adapter interpreter must have `debugpy` installed.
+Activation does not install packages or change Python LSP settings.
 
 `dap_tools` is the single entry point for adapter activation and predefined
 debuggee configurations. Rust shares CodeLLDB with C/C++ and offers executable,

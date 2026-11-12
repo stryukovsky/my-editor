@@ -100,6 +100,20 @@ vim.lsp.config("jdtls", {
   },
 })
 
+-- File operations are opt-in per server, independent of symbol rename.
+-- README Mason servers without these methods: html, cssls, jsonls, bashls,
+-- gopls, clangd, sqls, texlab, and vscode-solidity-server (not enabled here).
+-- Neo-tree asks before renaming without their assistance; do not fake support.
+-- rust-analyzer advertises willRename via rustaceanvim in plugins/mason.lua.
+for _, name in ipairs { "ts_ls", "basedpyright", "jdtls" } do
+  vim.lsp.config(name, {
+    capabilities = { workspace = { fileOperations = { willRename = true } } },
+  })
+end
+vim.lsp.config("lua_ls", {
+  capabilities = { workspace = { fileOperations = { didRename = true } } },
+})
+
 for _, lsp_name in ipairs(M.servers) do
   vim.lsp.enable(lsp_name)
 end
