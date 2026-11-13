@@ -33,7 +33,7 @@ o.winborder = "rounded"
 -- Indenting
 o.expandtab = true
 o.shiftwidth = 4
-opt.tabstop = 1
+opt.tabstop = 4
 o.smartindent = true
 o.softtabstop = 1
 

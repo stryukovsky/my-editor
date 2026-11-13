@@ -2,7 +2,10 @@ local map = require "mappings.map"
 local minidiff = require "moonshine.diff"
 local navigation_repeat = require "moonshine.utils.navigation_repeat"
 
-map("n", "<leader>gr", minidiff.reset_hunk, { desc = "git hunk reset" })
+map("n", "<leader>gr", function()
+  minidiff.reset_hunk()
+  vim.cmd.w()
+end, { desc = "git hunk reset" })
 map("n", "<leader>gh", function()
   require("moonshine.diff.hunks").view_hunk()
 end, { desc = "git view hunk" })
@@ -14,15 +17,11 @@ map("n", "<leader>gS", function()
 end, { desc = "git stage all changes" })
 
 local function navigate_hunk(direction)
-  navigation_repeat.set(
-    function()
-      minidiff.nav(1)
-    end,
-    function()
-      minidiff.nav(-1)
-    end,
-    "git hunk"
-  )
+  navigation_repeat.set(function()
+    minidiff.nav(1)
+  end, function()
+    minidiff.nav(-1)
+  end, "git hunk")
   minidiff.nav(direction)
 end
 
