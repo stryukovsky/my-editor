@@ -11,7 +11,7 @@ if not termux_version then
 end
 
 require "configs.telescope_pretty_picker"
-require "configs.marks"
+require "configs.jumper"
 require "configs.barbar"
 require "configs.scope"
 require "moonshine.projects"

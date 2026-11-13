@@ -16,8 +16,6 @@ def prepare() -> list[str]:
         f"export SDKMAN_DIR={shlex.quote(str(directory))}",
         command("source", script),
         "sdk selfupdate",
-        "sdk update",
-        "sdk upgrade",
     ]
 
 

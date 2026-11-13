@@ -6,7 +6,7 @@ import atexit
 
 import curses
 from ranger.gui.colorscheme import ColorScheme
-from ranger.gui.color import default, normal, bold, yellow, red, green, cyan, magenta, white, black, BRIGHT
+from ranger.gui.color import default, normal, bold, yellow, red, green, cyan, magenta, white, black, blue, BRIGHT
 
 _BASE = 200
 _HEX = (
@@ -23,6 +23,10 @@ _HEX = (
     "#39adb5",  # cyan
     "#a37acc",  # magenta
     "#d8c8aa",  # border
+    "#e2edce",  # copied file background
+    "#f6d9d4",  # cut file background
+    "#3169a5",  # visual selection background
+    "#ffffff",  # visual selection text
 )
 _saved = []
 _installed = False
@@ -86,6 +90,10 @@ class Scheme(ColorScheme):
         self.cyan = cyan
         self.magenta = magenta
         self.border = white
+        self.copied_bg = default
+        self.cut_bg = default
+        self.visual_bg = blue
+        self.visual_fg = white
         self._ready = False
 
     def _colors(self):
@@ -113,6 +121,10 @@ class Scheme(ColorScheme):
         self.cyan = _BASE + 10
         self.magenta = _BASE + 11
         self.border = _BASE + 12
+        self.copied_bg = _BASE + 13
+        self.cut_bg = _BASE + 14
+        self.visual_bg = _BASE + 15
+        self.visual_fg = _BASE + 16
         self.progress_bar_color = self.accent
 
     def use(self, context):
@@ -149,11 +161,6 @@ class Scheme(ColorScheme):
             if context.tag_marker and not context.selected:
                 attr |= bold
                 fg = self.red
-            if not context.selected and (context.cut or context.copied):
-                fg = self.inactive
-            if context.main_column and context.marked and not context.selected:
-                attr |= bold
-                fg = self.accent
             if context.badinfo:
                 fg = self.magenta
             if context.inactive_pane:
@@ -238,5 +245,18 @@ class Scheme(ColorScheme):
                 fg = self.accent
             elif context.vcsdiverged:
                 fg = self.magenta
+
+        # Clipboard state takes priority over file type, VCS, and the cursor.
+        if context.in_browser and (context.cut or context.copied):
+            fg = self.red if context.cut else self.green
+            if not context.selected:
+                bg = self.cut_bg if context.cut else self.copied_bg
+            attr |= bold
+
+        # Marked (visual-selected) files keep the same highlight under the cursor.
+        if context.in_browser and context.marked:
+            fg = self.visual_fg
+            bg = self.visual_bg
+            attr |= bold
 
         return fg, bg, attr

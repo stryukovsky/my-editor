@@ -11,6 +11,7 @@ return {
   "TelescopePrompt",
   "trouble",
   "neotest-summary",
+  "neotest-output-panel",
   "zenmode-bg",
   "dap-terminal",
   "leaninfo",

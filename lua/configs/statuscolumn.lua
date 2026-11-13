@@ -27,6 +27,14 @@ local function signfunc(args, segment)
   return builtin.signfunc(normal_virtual_line_args(args), segment)
 end
 
+local function markfunc(args)
+  if args.virtnum ~= 0 then
+    return " "
+  end
+  local letters = require("moonshine.jumper").letters(args.buf, args.lnum)
+  return letters ~= "" and letters or " "
+end
+
 require("statuscol").setup {
   setopt = true, -- Whether to set the 'statuscolumn' option, may be set to false for those who
   -- want to use the click handlers in their own 'statuscolumn': _G.Sc[SFL]a().
@@ -67,6 +75,9 @@ require("statuscol").setup {
       },
       text = { signfunc },
       click = "v:lua.ScSa",
+    },
+    {
+      text = { markfunc },
     },
     {
       text = { "┊" },

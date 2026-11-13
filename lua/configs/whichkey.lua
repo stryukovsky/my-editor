@@ -66,7 +66,7 @@ wk.add({
     { "<leader>e", group = "Exec script right now!" },
     { "<leader>v", group = "Visualize" },
     { "<leader>r", group = "Rename, Refresh and cuRl" },
-    { "<leader>m", group = "markdown" },
+    { "<leader>m", group = "Markdown & Marks" },
     { "<leader>j", group = "Jobs (todo file)" },
     { "<leader>R", group = "Refactor" },
   },

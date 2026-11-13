@@ -5,7 +5,7 @@ import stat
 import subprocess
 import tempfile
 from pathlib import Path
-
+from ranger.gui.widgets.browsercolumn import BrowserColumn
 
 def _scope_directory(fm):
     """Directory to search: the selection, or its parent when the selection is a file."""
