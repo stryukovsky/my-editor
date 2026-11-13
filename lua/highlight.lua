@@ -45,6 +45,12 @@ local function override_highlights()
   hl(0, "ScalarLinesSource", { bg = "#005faf", fg = "#ffffff" })
   hl(0, "ScalarLinesTarget", { bg = "#af0000", fg = "#ffffff" })
   hl(0, "PreProc", { link = "Comment" })
+  hl(
+    0,
+    "IblIndent",
+    { fg = vim.o.background == "light" and "#e7dcc4" or "#2c3742", nocombine = true }
+  )
+  hl(0, "MiniIndentscopeSymbol", { fg = vim.o.background == "light" and "#c9bdb0" or "#52616f" })
   local medium_orange_fg = "#c49a2e"
   local dark_orange_fg = { fg = "#c45a12" }
 

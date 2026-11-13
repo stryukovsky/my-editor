@@ -1,4 +1,5 @@
 return {
+  { "lukas-reineke/indent-blankline.nvim", main = "ibl", lazy = false },
   {
     "Julian/lean.nvim",
     event = { "BufReadPre *.lean", "BufNewFile *.lean" },
