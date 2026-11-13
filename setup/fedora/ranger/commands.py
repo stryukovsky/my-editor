@@ -584,6 +584,30 @@ class toggle_preview(Command):
         self.fm.settings.preview_files = not self.fm.settings.preview_files
 
 
+class inspect(Command):
+    """Toggle cumulative sizes for directories in the current listing."""
+
+    def execute(self):
+        directory = self.fm.thisdir
+        if directory is None:
+            return
+        directory.load_content(schedule=False)
+        enabled = not getattr(directory, "_inspect_sizes", False)
+        directory._inspect_sizes = enabled
+        for item in directory.files or []:
+            if not item.is_directory:
+                continue
+            if enabled:
+                item.look_up_cumulative_size()
+            else:
+                item.cumulative_size_calculated = False
+                item.__dict__.pop("size", None)
+                item.__dict__.pop("infostring", None)
+                _ = item.infostring  # Restore Ranger's normal directory count.
+        self.fm.ui.status.request_redraw()
+        self.fm.ui.redraw_main_column()
+
+
 class clear_all_selections(Command):
     def execute(self):
         self.fm.copy_buffer = set()
