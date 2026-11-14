@@ -1,6 +1,6 @@
 local MiniDiff = require "mini.diff"
 local notify = require "integrations.notify"
-
+local feedback = require "moonshine.diff.assure_git_hunks_are_ready"
 local M = {}
 
 local NS = vim.api.nvim_create_namespace "LargeHunkViewer"
@@ -69,12 +69,19 @@ local function lock_buf(buf)
   vim.bo[buf].modifiable = false
   vim.bo[buf].readonly = true
   vim.bo[buf].modified = false
-  vim.api.nvim_create_autocmd({ "BufWriteCmd", "FileWriteCmd", "FileAppendCmd" }, {
-    buffer = buf,
-    callback = function()
-      notify.send("Hunk viewer", "Hunk buffers cannot be saved", vim.log.levels.WARN)
-    end,
-  })
+  vim.api.nvim_create_autocmd(
+    { "BufWriteCmd", "FileWriteCmd", "FileAppendCmd" },
+    {
+      buffer = buf,
+      callback = function()
+        notify.send(
+          "Hunk viewer",
+          "Hunk buffers cannot be saved",
+          vim.log.levels.WARN
+        )
+      end,
+    }
+  )
 end
 
 ---@param win integer
@@ -135,10 +142,12 @@ local function word_ranges(old_line, new_line)
   local old_ranges, new_ranges = {}, {}
   for _, d in ipairs(diff) do
     if d[2] > 0 then
-      old_ranges[#old_ranges + 1] = { old_starts[d[1]], old_ends[d[1] + d[2] - 1] }
+      old_ranges[#old_ranges + 1] =
+        { old_starts[d[1]], old_ends[d[1] + d[2] - 1] }
     end
     if d[4] > 0 then
-      new_ranges[#new_ranges + 1] = { new_starts[d[3]], new_ends[d[3] + d[4] - 1] }
+      new_ranges[#new_ranges + 1] =
+        { new_starts[d[3]], new_ends[d[3] + d[4] - 1] }
     end
   end
   return old_ranges, new_ranges
@@ -183,9 +192,20 @@ end
 ---@return { old_from: integer, old_count: integer, new_from: integer, new_count: integer }[]
 local function align_hunks(old_lines, new_lines)
   if #old_lines == 0 or #new_lines == 0 then
-    return { { old_from = 1, old_count = #old_lines, new_from = 1, new_count = #new_lines } }
+    return {
+      {
+        old_from = 1,
+        old_count = #old_lines,
+        new_from = 1,
+        new_count = #new_lines,
+      },
+    }
   end
-  local diff = vim.diff(table.concat(old_lines, "\n") .. "\n", table.concat(new_lines, "\n") .. "\n", LINE_DIFF_OPTS)
+  local diff = vim.diff(
+    table.concat(old_lines, "\n") .. "\n",
+    table.concat(new_lines, "\n") .. "\n",
+    LINE_DIFF_OPTS
+  )
   local hunks = {}
   for _, d in ipairs(diff) do
     hunks[#hunks + 1] = {
@@ -211,7 +231,11 @@ local function apply_highlights(buf, old_lines, new_lines)
   end
 
   for _, aligned in ipairs(align_hunks(old_lines, new_lines)) do
-    if aligned.old_count > 0 and aligned.new_count > 0 and aligned.old_count == aligned.new_count then
+    if
+      aligned.old_count > 0
+      and aligned.new_count > 0
+      and aligned.old_count == aligned.new_count
+    then
       for i = 0, aligned.old_count - 1 do
         local old_line = old_lines[aligned.old_from + i] or ""
         local new_line = new_lines[aligned.new_from + i] or ""
@@ -245,10 +269,13 @@ function M.view_hunk()
   if vim.b[src].large_hunk_viewer then
     return
   end
+  if not feedback.ready(src) then
+    return
+  end
 
   local hunk, data = hunk_at_cursor(src)
   if not hunk or not data then
-    notify.send("Hunk viewer", "No hunk under cursor", vim.log.levels.INFO)
+    feedback.message(src, "No hunk under cursor")
     return
   end
 
@@ -263,7 +290,8 @@ function M.view_hunk()
   local new_lines = {}
   if hunk.buf_count > 0 then
     local start0 = math.max(hunk.buf_start - 1, 0)
-    new_lines = vim.api.nvim_buf_get_lines(src, start0, start0 + hunk.buf_count, false)
+    new_lines =
+      vim.api.nvim_buf_get_lines(src, start0, start0 + hunk.buf_count, false)
   end
 
   ---@type string[]

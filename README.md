@@ -1,27 +1,28 @@
 # My Editor
 
-Local feature implementations live in [`moonshine.nvim/`](moonshine.nvim/README.md),
-with one plugin runtime per feature. `lua/configs/` holds settings and setup calls;
-`lua/plugins/moonshine.lua` registers the local plugins with lazy.nvim.
-Helpers extending existing plugins live in `lua/integrations/`.
+Local feature implementations live in
+[`moonshine.nvim/`](moonshine.nvim/README.md), with one plugin runtime per
+feature. `lua/configs/` holds settings and setup calls;
+`lua/plugins/moonshine.lua` registers the local plugins with lazy.nvim. Helpers
+extending existing plugins live in `lua/integrations/`.
 
 ## Lean 4
 
 `lean.nvim` loads when opening a `.lean` file and provides the Lean language
-server, an on-demand goal infoview, and Unicode abbreviations
-(for example, `\alpha` followed by a space produces `α`).
-Existing LSP completion and navigation work in Lean buffers. `<A-i>` toggles
-the infoview from Lean files or the infoview itself; it does not open automatically.
+server, an on-demand goal infoview, and Unicode abbreviations (for example,
+`\alpha` followed by a space produces `α`). Existing LSP completion and
+navigation work in Lean buffers. `<A-i>` toggles the infoview from Lean files or
+the infoview itself; it does not open automatically.
 
-Install [elan](https://github.com/leanprover/elan#installation), Lean's toolchain
-manager, and ensure `~/.elan/bin` is on PATH before launching Neovim.
+Install [elan](https://github.com/leanprover/elan#installation), Lean's
+toolchain manager, and ensure `~/.elan/bin` is on PATH before launching Neovim.
 Projects select their compiler with `lean-toolchain`; Lean is not installed via
-Mason. Run `lake build` from the project root to build dependencies.
-Use `:checkhealth lean` to diagnose the setup.
+Mason. Run `lake build` from the project root to build dependencies. Use
+`:checkhealth lean` to diagnose the setup.
 
 Lean buffer shortcuts use `<leader>Le` (capital `L`): `i` toggles the infoview,
-`j` jumps to it, `g` shows the goal, `p` pins the goal, `c` clears pins,
-`r` restarts the file, and `a` accepts an infoview suggestion. `K` opens Lean's
+`j` jumps to it, `g` shows the goal, `p` pins the goal, `c` clears pins, `r`
+restarts the file, and `a` accepts an infoview suggestion. `K` opens Lean's
 interactive hover.
 
 ## Install neovim itself
@@ -59,19 +60,21 @@ JDTLS NEEDS VPN!!!
 
 Neo-tree filesystem `r` uses LSP file-rename assistance for connected clients in
 the selected entry's project. With one client it checks support directly; with
-several it opens a Telescope picker (Tab selects
-multiple clients, Enter confirms, Escape cancels). `<leader>rn` keeps ordinary
-rename behavior. Each selected server without a matching file-rename capability
-is named in a Yes/No confirmation before filesystem rename (default: No).
-No connected LSP also requires confirmation. Unsupported servers receive no requests;
-supported selected servers still assist when you proceed.
+several it opens a Telescope picker (Tab selects multiple clients, Enter
+confirms, Escape cancels). `<leader>rn` keeps ordinary rename behavior. Each
+selected server without a matching file-rename capability is named in a Yes/No
+confirmation before filesystem rename (default: No). No connected LSP also
+requires confirmation. Unsupported servers receive no requests; supported
+selected servers still assist when you proceed.
 
-See the [file-rename server support inventory](openspec/changes/neotree-lsp-file-rename/server-support.md)
+See the
+[file-rename server support inventory](openspec/changes/neotree-lsp-file-rename/server-support.md)
 for all language servers in the Mason command above. TypeScript, basedpyright,
-Rust, and Java support `workspace/willRenameFiles` (possible edits before rename);
-Lua supports `workspace/didRenameFiles` (notification after success). Symbol
-rename support is separate. The installed `vscode-solidity-server` package is
-Juan Blanco's server, while the current Solidity configuration runs `forge`.
+Rust, and Java support `workspace/willRenameFiles` (possible edits before
+rename); Lua supports `workspace/didRenameFiles` (notification after success).
+Symbol rename support is separate. The installed `vscode-solidity-server`
+package is Juan Blanco's server, while the current Solidity configuration runs
+`forge`.
 
 The Neo-tree fork provides per-invocation rename callbacks and a focused LSP
 rename module. The config owns the client picker and confirmations; the fork
@@ -113,6 +116,9 @@ ln -sfr setup/fedora/kitty.conf ~/.config/kitty/kitty.conf
 # LSD wheat theme (reload Zsh for filename colors)
 ln -srT setup/common_tools/lsd ~/.config/lsd
 
+mkdir -p ~/.agents/
+ln -sfr ai/skills ~/.agents/skills
+
 mkdir -p ~/.config/ranger/
 ln -sfr setup/fedora/ranger/* ~/.config/ranger/
 ln -sfr setup/fedora/ranger/colorschemes ~/.config/ranger/colorschemes
@@ -135,20 +141,19 @@ password
 
 ## Swap
 
-See `SWAPMEM.md` 
+See `SWAPMEM.md`
 
 ## Docker
 
-Reduce docker ram usage: 
+Reduce docker ram usage:
 
-```sh 
+```sh
 sudo python setup/fedora/docker-reduce-ram.py
 ```
 
 ## Updating Fedora and development tools
 
 TL;DR: `update_all` command from zshrc
-
 
 Each update unit has a Python script in
 [`setup/fedora/update/`](setup/fedora/update/). Scripts print the prepared Bash
@@ -286,7 +291,7 @@ bash setup/fedora/gnome.sh
 
 ## Fedora apps
 
-https://github.com/storytold/pdfcraft 
+https://github.com/storytold/pdfcraft
 
 https://github.com/localsend/localsend
 
@@ -429,8 +434,8 @@ slashes. For `test/my-research/PoolManager.swap.t.sol`, suggestions are
 `PoolManager.swap.t.sol`, `my-research`, and `test`, without path prefixes or
 trailing slashes. Repeated names are suggested once. Staged, unstaged, deleted,
 and untracked files are included, with renamed files using their new names.
-Names are loaded when the prompt opens and can be fuzzy matched anywhere in
-the message. Templates expand their first line only, preserving the single-line
+Names are loaded when the prompt opens and can be fuzzy matched anywhere in the
+message. Templates expand their first line only, preserving the single-line
 prompt. Enter accepts a selected suggestion; press Enter again to submit.
 Tab/Shift-Tab move through snippet placeholders. Ctrl-Space opens completion
 manually. Detached HEAD/non-Git directories omit the branch suggestion.
@@ -476,21 +481,21 @@ keys do not share a ranking scale.
 The menu is limited to 10 item rows and 70 content columns, shrinking on narrow
 screens. Display labels are limited to 45 cells and descriptions to 24 cells.
 Native completion status messages (including “Pattern not found” and scanning
-notices) are suppressed with `shortmess+=cC` so typing leaves the command area quiet.
-Formatting changes display fields only: full insertion, native snippets,
+notices) are suppressed with `shortmess+=cC` so typing leaves the command area
+quiet. Formatting changes display fields only: full insertion, native snippets,
 auto-import edits, commands, documentation, and distinct same-label items
 remain. The existing wheat palette and rounded opaque popup are retained.
 
 In ordinary editing buffers, LSP completion reuses an identical existing
-identifier suffix: accepting `print` at `pri|nt(value)` produces
-`print|(value)` (`|` marks the cursor). A different or longer suffix is retained.
-Explicit server edit ranges take precedence: a full-word range replaces the
-suffix, while a range ending at the cursor preserves it. On the verified runtime,
+identifier suffix: accepting `print` at `pri|nt(value)` produces `print|(value)`
+(`|` marks the cursor). A different or longer suffix is retained. Explicit
+server edit ranges take precedence: a full-word range replaces the suffix, while
+a range ending at the cursor preserves it. On the verified runtime,
 insert/replace items use their insert range. Snippets retain native expansion
-and placeholder navigation; imports and commands remain native side effects.
-The correction runs only on acceptance and shares its undo block; cancellation,
-terminal commands, and typed floating inputs keep their existing behavior.
-Run `uv run --with pynvim python tests/native_completion_midword.py` for the
+and placeholder navigation; imports and commands remain native side effects. The
+correction runs only on acceptance and shares its undo block; cancellation,
+terminal commands, and typed floating inputs keep their existing behavior. Run
+`uv run --with pynvim python tests/native_completion_midword.py` for the
 native/configured acceptance matrix, including Cyrillic and UTF-8/UTF-16 ranges.
 
 In ordinary enabled editing buffers, `<C-x><C-n>` cancels an open LSP selection
@@ -524,8 +529,8 @@ native acceptance, auto-imports, snippets, commands, documentation, popup
 limits, and English/Russian shortcuts. `pynvim` is a test dependency only.
 Integration also exercises the locally installed Lua, TypeScript, and Go servers
 when available. See the
-[mapping format and fixture guide](moonshine.nvim/native_completion/lua/native_completion/languages/README.md) to
-add another grammar without changing the Lua context engine.
+[mapping format and fixture guide](moonshine.nvim/native_completion/lua/native_completion/languages/README.md)
+to add another grammar without changing the Lua context engine.
 
 The input regression suite checks native rendered frames while typing, snippet
 acceptance, submission, and completion-delay restoration on input cleanup.
@@ -562,7 +567,8 @@ functions include `\min` and `\max`. Unknown commands, superscripts, subscripts
 and accents (such as `\bar p`) stay as written. Indexed roots such as
 `\sqrt[3]{x}` remain literal. Formula text and replacements share the normal
 text foreground, refreshed on theme changes. No external LaTeX converter is
-required. The implementation lives in `moonshine.nvim/markdown_tools/lua/moonshine/markdown/math.lua`. A small
+required. The implementation lives in
+`moonshine.nvim/markdown_tools/lua/moonshine/markdown/math.lua`. A small
 text-transform hook in the installed render-markdown fork converts preview math
 before layout; its recovery patch is retained with the OpenSpec change.
 

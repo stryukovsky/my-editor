@@ -472,6 +472,8 @@ MiniDiff.enable = function(buf_id)
 
   -- Register enabled buffer with cached data for performance
   H.update_buf_cache(buf_id)
+  H.states[buf_id] = nil
+  H.set_state(buf_id, 'unavailable', 'No reference text available')
 
   -- Add buffer watchers
   vim.api.nvim_buf_attach(buf_id, false, {
@@ -509,6 +511,8 @@ MiniDiff.disable = function(buf_id)
   local buf_cache = H.cache[buf_id]
   if buf_cache == nil then return end
   H.cache[buf_id] = nil
+  H.bufs_to_update[buf_id] = nil
+  H.set_state(buf_id, 'unavailable', 'Diff is not enabled for this buffer')
 
   pcall(vim.api.nvim_del_augroup_by_id, buf_cache.augroup)
   vim.b[buf_id].minidiff_summary, vim.b[buf_id].minidiff_summary_string = nil, nil
@@ -558,6 +562,20 @@ MiniDiff.export = function(format, opts)
   opts = vim.tbl_deep_extend('force', { scope = 'all' }, opts or {})
   if format == 'qf' then return H.export_qf(opts) end
   H.error('`format` should be one of "qf".')
+end
+
+--- Get buffer lifecycle state
+---
+--- Local extension: |MiniDiff.get_buf_state()| returns a cheap, independent
+--- snapshot with `status` (loading/updating/ready/unavailable/failed) and optional
+--- `reason`. Nil means no lifecycle state is recorded. `MiniDiffStateChanged`
+--- User events carry the target buffer in `data.buf` and fire only on changes.
+--- Progress includes queued work; synchronous diff computation cannot animate.
+MiniDiff.get_buf_state = function(buf_id)
+  buf_id = H.validate_buf_id(buf_id)
+  local state = H.states[buf_id]
+  if state == nil then return nil end
+  return { status = state.status, reason = state.reason }
 end
 
 --- Get buffer data
@@ -649,6 +667,7 @@ MiniDiff.set_ref_text = function(buf_id, text)
 
   -- Immediately update diff
   H.cache[buf_id].ref_text = text
+  H.cache[buf_id].ref_error = nil
   H.schedule_diff_update(buf_id, 0)
 end
 
@@ -713,7 +732,10 @@ MiniDiff.gen_source.git = function()
   -- `disable()` from `on_detach` is not enough as there can be no source
   -- attached (like for files not in Git repo).
   local augroup = vim.api.nvim_create_augroup('MiniDiffSourceGit', { clear = true })
-  local clear_buf_cache = function(ev) H.git_cache[ev.buf] = nil end
+  local clear_buf_cache = function(ev)
+    H.git_invalidate_cache(H.git_cache[ev.buf])
+    H.git_cache[ev.buf] = nil
+  end
   local au_opts = { group = augroup, callback = clear_buf_cache, desc = 'Clear Git cache' }
   vim.api.nvim_create_autocmd({ 'BufUnload' }, au_opts)
 
@@ -936,6 +958,12 @@ MiniDiff.fail_attach = function(buf_id)
   end
 
   -- Try attaching next source
+  pcall(H.get_active_source(buf_cache).detach, buf_id)
+  buf_cache.ref_pending = nil
+  buf_cache.ref_error = nil
+  buf_cache.ref_text = nil
+  buf_cache.has_result = nil
+  H.set_state(buf_id, 'unavailable', 'No reference text available')
   buf_cache.source_id = buf_cache.source_id + 1
   local attach_output = H.get_active_source(H.cache[buf_id]).attach(buf_id)
   if attach_output == false then MiniDiff.fail_attach(buf_id) end
@@ -961,6 +989,9 @@ H.bufs_to_update = {}
 
 -- Cache per enabled buffer
 H.cache = {}
+
+-- Small lifecycle snapshots, separate from the potentially large hunk cache.
+H.states = {}
 
 -- Cache per buffer for attached `git` source
 H.git_cache = {}
@@ -1087,6 +1118,10 @@ H.create_autocommands = function()
   -- NOTE: Try auto enabling buffer on every `BufEnter` to not have `:edit`
   -- disabling buffer, as it calls `on_detach()` from buffer watcher
   au('BufEnter', '*', H.auto_enable, 'Enable diff')
+  au('BufWipeout', '*', function(ev)
+    if H.cache[ev.buf] then MiniDiff.disable(ev.buf) end
+    H.states[ev.buf] = nil
+  end, 'Clear diff lifecycle')
   au('VimResized', '*', H.on_resize, 'Track Neovim resizing')
   au('ColorScheme', '*', H.create_default_hl, 'Ensure colors')
 end
@@ -1178,6 +1213,20 @@ end
 -- Enabling -------------------------------------------------------------------
 H.is_buf_enabled = function(buf_id) return H.cache[buf_id] ~= nil end
 
+H.set_state = function(buf_id, status, reason)
+  local previous = H.states[buf_id]
+  if previous and previous.status == status and previous.reason == reason then return end
+  H.states[buf_id] = { status = status, reason = reason }
+  if not vim.api.nvim_buf_is_valid(buf_id) then return end
+  vim.api.nvim_exec_autocmds('User', { pattern = 'MiniDiffStateChanged', data = { buf = buf_id } })
+end
+
+H.pending_state = function(buf_id)
+  local cache = H.cache[buf_id]
+  if cache == nil then return end
+  H.set_state(buf_id, cache.has_result and 'updating' or 'loading')
+end
+
 H.update_buf_cache = function(buf_id)
   local new_cache = H.cache[buf_id] or {}
 
@@ -1201,7 +1250,9 @@ H.setup_buf_autocommands = function(buf_id)
   local augroup = vim.api.nvim_create_augroup('MiniDiffBuffer' .. buf_id, { clear = true })
   H.cache[buf_id].augroup = augroup
 
-  local buf_update = vim.schedule_wrap(function() H.update_buf_cache(buf_id) end)
+  local buf_update = vim.schedule_wrap(function()
+    if H.cache[buf_id] ~= nil then H.update_buf_cache(buf_id) end
+  end)
   local bufwinenter_opts = { group = augroup, buffer = buf_id, callback = buf_update, desc = 'Update buffer cache' }
   vim.api.nvim_create_autocmd('BufWinEnter', bufwinenter_opts)
 
@@ -1303,23 +1354,31 @@ H.set_decoration_provider = function(ns_id_viz, ns_id_overlay)
   vim.api.nvim_set_decoration_provider(ns_id_viz, { on_win = on_win })
 end
 
-H.schedule_diff_update = vim.schedule_wrap(function(buf_id, delay_ms)
-  H.bufs_to_update[buf_id] = true
+H.schedule_diff_update = function(buf_id, delay_ms)
+  local cache = H.cache[buf_id]
+  if cache == nil then return end
+  H.pending_state(buf_id)
+  H.queue_diff_update(buf_id, delay_ms, cache)
+end
+
+H.queue_diff_update = vim.schedule_wrap(function(buf_id, delay_ms, cache)
+  if H.cache[buf_id] ~= cache then return end
+  H.bufs_to_update[buf_id] = cache
   H.timer_diff_update:stop()
   H.timer_diff_update:start(delay_ms, 0, H.process_scheduled_buffers)
 end)
 
 H.process_scheduled_buffers = vim.schedule_wrap(function()
-  for buf_id, _ in pairs(H.bufs_to_update) do
-    H.update_buf_diff(buf_id)
+  for buf_id, cache in pairs(H.bufs_to_update) do
+    H.update_buf_diff(buf_id, cache)
   end
   H.bufs_to_update = {}
 end)
 
-H.update_buf_diff = vim.schedule_wrap(function(buf_id)
+H.update_buf_diff = vim.schedule_wrap(function(buf_id, expected_cache)
   -- Make early returns
   local buf_cache = H.cache[buf_id]
-  if buf_cache == nil then return end
+  if buf_cache == nil or buf_cache ~= expected_cache then return end
   if not vim.api.nvim_buf_is_valid(buf_id) then
     H.cache[buf_id] = nil
     return
@@ -1328,6 +1387,9 @@ H.update_buf_diff = vim.schedule_wrap(function(buf_id)
     local summary = { source_name = H.get_active_source(buf_cache).name }
     buf_cache.hunks, buf_cache.viz_lines, buf_cache.overlay_lines, buf_cache.summary = {}, {}, {}, summary
     vim.b[buf_id].minidiff_summary, vim.b[buf_id].minidiff_summary_string = summary, ''
+    if not buf_cache.ref_pending then
+      H.set_state(buf_id, buf_cache.ref_error and 'failed' or 'unavailable', buf_cache.ref_error or 'No reference text available')
+    end
     return
   end
 
@@ -1338,10 +1400,15 @@ H.update_buf_diff = vim.schedule_wrap(function(buf_id)
   H.vimdiff_opts.linematch = options.linematch
 
   local buf_text, buf_lines = H.get_buftext(buf_id)
-  local diff = vim.diff(buf_cache.ref_text, buf_text, H.vimdiff_opts)
+  local ok, diff = pcall(vim.diff, buf_cache.ref_text, buf_text, H.vimdiff_opts)
+  if not ok then
+    H.set_state(buf_id, 'failed', tostring(diff))
+    return
+  end
 
   -- Recompute hunks with summary and draw information
   H.update_hunk_data(diff, buf_cache, buf_lines)
+  buf_cache.has_result = true
 
   -- Set buffer-local variables with summary for easier external usage
   local summary = buf_cache.summary
@@ -1353,6 +1420,9 @@ H.update_buf_diff = vim.schedule_wrap(function(buf_id)
   if summary.change > 0 then table.insert(summary_string, '~' .. summary.change) end
   if summary.delete > 0 then table.insert(summary_string, '-' .. summary.delete) end
   vim.b[buf_id].minidiff_summary_string = table.concat(summary_string, ' ')
+  if not buf_cache.ref_pending then
+    H.set_state(buf_id, buf_cache.ref_error and 'failed' or 'ready', buf_cache.ref_error)
+  end
 
   -- Request highlighting clear to be done in decoration provider
   buf_cache.needs_clear = true
@@ -1729,42 +1799,28 @@ H.git_start_watching_index = function(buf_id, path)
   -- via "create fresh 'index.lock' file, apply modifications, change file name
   -- to 'index'". Hence watch the whole '.git' (first level) and react only if
   -- change was in 'index' file.
-  local stdout = vim.loop.new_pipe()
   local args = { 'rev-parse', '--path-format=absolute', '--git-dir' }
-  local spawn_opts = { args = args, cwd = vim.fn.fnamemodify(path, ':h'), stdio = { nil, stdout, nil } }
-
-  -- If path is not in Git, disable buffer but make sure that it will not try
-  -- to re-attach until buffer is properly disabled
-  local on_not_in_git = vim.schedule_wrap(function()
-    if not vim.api.nvim_buf_is_valid(buf_id) then
-      H.cache[buf_id] = nil
-      return
-    end
-    MiniDiff.fail_attach(buf_id)
-  end)
-
-  local process, stdout_feed = nil, {}
-  local on_exit = function(exit_code)
-    process:close()
-
-    -- Watch index only if there was no error retrieving path to it
-    if exit_code ~= 0 or stdout_feed[1] == nil then return on_not_in_git() end
-
-    -- Set up index watching
-    local git_dir_path = table.concat(stdout_feed, ''):gsub('\n+$', '')
-    H.git_setup_index_watch(buf_id, git_dir_path)
-
-    -- Set reference text immediately
+  local cache, git_cache = H.cache[buf_id], H.git_cache[buf_id]
+  cache.ref_pending = true
+  cache.ref_error = nil
+  H.pending_state(buf_id)
+  H.git_read_reference(args, vim.fn.fnamemodify(path, ':h'), function(code, text, err)
+    if H.cache[buf_id] ~= cache or H.git_cache[buf_id] ~= git_cache then return end
+    cache.ref_pending = nil
+    cache.ref_error = err
+    if err then return H.set_state(buf_id, 'failed', err) end
+    if code ~= 0 or text == '' then return MiniDiff.fail_attach(buf_id) end
+    H.git_setup_index_watch(buf_id, text:gsub('\n+$', ''))
     H.git_set_ref_text(buf_id)
-  end
-
-  process = vim.loop.spawn('git', spawn_opts, on_exit)
-  H.git_read_stream(stdout, stdout_feed)
+  end)
 end
 
 H.git_setup_index_watch = function(buf_id, git_dir_path)
   local buf_fs_event, timer = vim.loop.new_fs_event(), vim.loop.new_timer()
-  local buf_git_set_ref_text = function() H.git_set_ref_text(buf_id) end
+  local cache = H.git_cache[buf_id]
+  local buf_git_set_ref_text = function()
+    if H.git_cache[buf_id] == cache then H.git_set_ref_text(buf_id) end
+  end
 
   local watch_index = function(_, filename, _)
     if filename ~= 'index' then return end
@@ -1774,44 +1830,64 @@ H.git_setup_index_watch = function(buf_id, git_dir_path)
   end
   buf_fs_event:start(git_dir_path, { recursive = false }, watch_index)
 
-  H.git_invalidate_cache(H.git_cache[buf_id])
-  H.git_cache[buf_id] = { fs_event = buf_fs_event, timer = timer }
+  cache.fs_event, cache.timer = buf_fs_event, timer
 end
 
-H.git_set_ref_text = vim.schedule_wrap(function(buf_id)
-  if not vim.api.nvim_buf_is_valid(buf_id) then return end
-  local buf_set_ref_text = vim.schedule_wrap(function(text) pcall(MiniDiff.set_ref_text, buf_id, text) end)
+H.git_set_ref_text = function(buf_id)
+  local cache, git_cache = H.cache[buf_id], H.git_cache[buf_id]
+  if cache == nil or git_cache == nil then return end
+  -- Capture identity before scheduling: disable/reload must invalidate even a
+  -- reference read which has not started its process yet.
+  vim.schedule(function()
+    if H.cache[buf_id] ~= cache or H.git_cache[buf_id] ~= git_cache then return end
+    git_cache.request = (git_cache.request or 0) + 1
+    local request = git_cache.request
+    cache.ref_pending = true
+    cache.ref_error = nil
+    H.pending_state(buf_id)
+    local function buf_set_ref_text(code, text, err)
+      if H.cache[buf_id] ~= cache or H.git_cache[buf_id] ~= git_cache or git_cache.request ~= request then return end
+      cache.ref_pending = nil
+      cache.ref_error = err
+      if err then return H.set_state(buf_id, 'failed', err) end
+      MiniDiff.set_ref_text(buf_id, code == 0 and text:gsub('\r\n', '\n') or nil)
+    end
 
-  -- NOTE: Do not cache buffer's name to react to its possible rename
-  local path = H.get_buf_realpath(buf_id)
-  if path == '' then return buf_set_ref_text(nil) end
-  local cwd, basename = vim.fn.fnamemodify(path, ':h'), vim.fn.fnamemodify(path, ':t')
+    -- NOTE: Do not cache buffer's name to react to its possible rename
+    local path = H.get_buf_realpath(buf_id)
+    if path == '' then return buf_set_ref_text(1, '') end
+    local cwd, basename = vim.fn.fnamemodify(path, ':h'), vim.fn.fnamemodify(path, ':t')
 
-  -- Set
-  local stdout = vim.loop.new_pipe()
-  local spawn_opts = { args = { 'show', ':0:./' .. basename }, cwd = cwd, stdio = { nil, stdout, nil } }
+    H.git_read_reference({ 'show', ':0:./' .. basename }, cwd, buf_set_ref_text)
+  end)
+end
 
-  local process, stdout_feed = nil, {}
-  local on_exit = function(exit_code)
-    process:close()
-
-    -- Unset reference text in case of any error. This results into not showing
-    -- hunks at all. Possible reasons to do so:
-    -- - 'Not in index' files (new, ignored, etc.).
-    -- - 'Neither in index nor on disk' files (after checking out commit which
-    --   does not yet have file created).
-    -- - 'Relative can not be used outside working tree' (when opening file
-    --   inside '.git' directory).
-    if exit_code ~= 0 or stdout_feed[1] == nil then return buf_set_ref_text(nil) end
-
-    -- Set reference text accounting for possible 'crlf' end of line in index
-    local text = table.concat(stdout_feed, ''):gsub('\r\n', '\n')
-    buf_set_ref_text(text)
+-- Reference reads settle only after both exit and EOF (including empty files).
+H.git_read_reference = function(args, cwd, callback)
+  local stdout, chunks = vim.loop.new_pipe(), {}
+  local process, code, eof, read_error
+  local finish = function()
+    if code == nil or not eof then return end
+    vim.schedule(function() callback(code, table.concat(chunks), read_error) end)
   end
-
-  process = vim.loop.spawn('git', spawn_opts, on_exit)
-  H.git_read_stream(stdout, stdout_feed)
-end)
+  local err
+  process, err = vim.loop.spawn('git', { args = args, cwd = cwd, stdio = { nil, stdout, nil } }, function(exit_code)
+    process:close()
+    code = exit_code
+    finish()
+  end)
+  if process == nil then
+    stdout:close()
+    return vim.schedule(function() callback(1, '', 'Could not start Git: ' .. tostring(err)) end)
+  end
+  stdout:read_start(function(stream_error, data)
+    if data then chunks[#chunks + 1] = data end
+    if data ~= nil and stream_error == nil then return end
+    read_error, eof = stream_error, true
+    stdout:close()
+    finish()
+  end)
+end
 
 H.git_get_path_data = function(path)
   -- Get path data needed for proper patch header
@@ -1896,6 +1972,9 @@ H.git_invalidate_cache = function(cache)
   if cache == nil then return end
   pcall(vim.loop.fs_event_stop, cache.fs_event)
   pcall(vim.loop.timer_stop, cache.timer)
+  for _, handle in pairs({ cache.fs_event, cache.timer }) do
+    if not handle:is_closing() then handle:close() end
+  end
 end
 
 -- Utilities ------------------------------------------------------------------

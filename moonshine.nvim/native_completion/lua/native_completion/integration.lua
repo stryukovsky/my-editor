@@ -17,6 +17,7 @@ end
 local ranking = require "native_completion"
 local midword = require "native_completion.midword"
 local trigger = require "native_completion.trigger"
+local documentation = require "native_completion.documentation"
 
 local function refresh()
   local floating = vim.api.nvim_win_get_config(0).relative ~= ""
@@ -93,21 +94,7 @@ vim.api.nvim_create_autocmd(
 )
 vim.api.nvim_create_autocmd({ "CompleteChanged", "WinNew" }, {
   group = group,
-  callback = function()
-    vim.schedule(function()
-      -- The default also copies every candidate and its LSP payload on each
-      -- menu update. Only the preview handle is needed here.
-      local win = vim.fn.complete_info({ "preview_winid" }).preview_winid
-      if win and win > 0 and vim.api.nvim_win_is_valid(win) then
-        vim.wo[win].winhighlight =
-          "Normal:PmenuPreview,NormalFloat:PmenuPreview,FloatBorder:PmenuPreviewBorder"
-        local border = vim.api.nvim_win_get_config(win).border
-        if not border or border[1] ~= "╭" then
-          vim.api.nvim_win_set_config(win, { border = "rounded" })
-        end
-      end
-    end)
-  end,
+  callback = documentation.schedule,
 })
 vim.api.nvim_create_autocmd(
   { "BufEnter", "WinEnter", "InsertEnter", "FileType" },
@@ -216,10 +203,12 @@ function M.setup_mappings()
       desc = "Accept selected or first completion",
     })
   end
+  -- Arrow selection leaves the typed text/cursor alone until acceptance;
+  -- Ctrl-N/P insert every candidate and churn the word suffix while browsing.
   for key, direction in pairs {
-    ["<C-j>"] = "<C-n>",
-    ["<Down>"] = "<C-n>",
-    ["<Up>"] = "<C-p>",
+    ["<C-j>"] = "<Down>",
+    ["<Down>"] = "<Down>",
+    ["<Up>"] = "<Up>",
   } do
     map("i", key, function()
       return vim.fn.pumvisible() == 1 and direction or key
@@ -227,7 +216,7 @@ function M.setup_mappings()
   end
   map("i", "<C-k>", function()
     if vim.fn.pumvisible() == 1 then
-      return "<C-p>"
+      return "<Up>"
     end
     vim.schedule(vim.lsp.buf.signature_help)
     return ""

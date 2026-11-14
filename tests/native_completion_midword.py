@@ -189,7 +189,7 @@ def run(configured, directory):
             if entry["key"] == "first" and configured:
                 keys("<C-CR>")
             else:
-                keys("<C-n>")
+                keys("<C-j>" if configured else "<C-n>")
                 keys("<C-e>" if entry["action"] == "cancel" else "<CR>" if configured else "<C-y>")
             wait(lambda: lua("return vim.fn.pumvisible()") == 0, "accept/cancel")
             snippet_active = lua("return vim.snippet.active{direction=1}")

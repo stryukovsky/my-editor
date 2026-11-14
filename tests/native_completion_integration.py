@@ -67,7 +67,7 @@ def server():
                     items.append(other)
             result = {"isIncomplete": False, "items": items}
         elif method == "completionItem/resolve":
-            result = dict(params, documentation={"kind": "markdown", "value": "Resolved fixture documentation"})
+            result = dict(params, documentation={"kind": "markdown", "value": "# Resolved fixture\n\n**Documentation**"})
             with open(options["events"], "a") as log:
                 log.write("resolve\n")
         elif method == "workspace/executeCommand":
@@ -157,6 +157,7 @@ with tempfile.TemporaryDirectory(prefix="native-completion-") as temp:
           vim.opt.rtp:append(config..'/data/lazy/langmapper.nvim')
           vim.opt.rtp:append(config..'/data/lazy/material.nvim')
           vim.opt.rtp:append(config..'/data/lazy/friendly-snippets')
+          vim.opt.rtp:append(config..'/data/lazy/render-markdown.nvim')
           vim.o.virtualedit='onemore';vim.o.timeoutlen=50;vim.o.ttimeoutlen=10
           require('langmapper').setup {hack_keymap=false}
         """, str(ROOT), str(CONFIG))
@@ -166,6 +167,7 @@ with tempfile.TemporaryDirectory(prefix="native-completion-") as temp:
           local path=root..'/lua/configs/completion.lua'
           local completion=dofile(path)
           completion.setup_mappings()
+          require('configs.render-markdown')
           dofile(config..'/lua/configs/material-theme.lua')
           vim.o.background='light';vim.cmd.colorscheme('material-lighter')
         """, str(ROOT), str(CONFIG))
@@ -209,6 +211,13 @@ with tempfile.TemporaryDirectory(prefix="native-completion-") as temp:
         keys("<C-n>")
         wait(lambda: events.exists() and "resolve" in events.read_text(), "resolved docs")
         wait(lambda: lua("return (vim.fn.complete_info().preview_winid or 0)>0"), "documentation preview")
+        wait(lambda: lua("""
+          local info=vim.fn.complete_info({'selected'})
+          local border=vim.api.nvim_win_get_config(info.preview_winid).border
+          local ns=vim.api.nvim_get_namespaces()['render-markdown.nvim']
+          return type(border)=='table' and border[1]=='╭' and ns
+            and #vim.api.nvim_buf_get_extmarks(info.preview_bufnr,ns,0,-1,{})>0
+        """), "resolved documentation rounded border and Markdown rendering")
         keys("<CR>")
         wait(lambda: lua("return vim.snippet.active()"), "native snippet")
         assert lua("return vim.api.nvim_buf_get_lines(0,0,-1,false)") == ['import { imported } from "fixture";', '// module', "imported(value)"], lua("return vim.api.nvim_buf_get_lines(0,0,-1,false)")
