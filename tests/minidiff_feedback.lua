@@ -86,6 +86,10 @@ H.git_read_reference = function(args, cwd, callback)
     callback(0, "")
     return
   end
+  if args[1] == "ls-files" then
+    callback(0, "100644 tracked-stage-zero-entry\0")
+    return
+  end
   requests[#requests + 1] = callback
 end
 H.git_setup_index_watch = function() end
@@ -224,16 +228,20 @@ local actions = {
 local function blocked(expected)
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
   for _, action in ipairs(actions) do
-    action(-1)
-    assert(
-      messages[#messages][3]:find(expected, 1, true),
-      messages[#messages][3]
-    )
-    check(
-      vim.api.nvim_buf_get_lines(buf, 0, -1, false),
-      lines,
-      "blocked action preserves text"
-    )
+    -- Explicit navigation now settles local text edits synchronously. Other
+    -- actions must still refuse pending data rather than replay mutations.
+    if expected ~= "updating" or action ~= integration.nav then
+      action(-1)
+      assert(
+        messages[#messages][3]:find(expected, 1, true),
+        messages[#messages][3]
+      )
+      check(
+        vim.api.nvim_buf_get_lines(buf, 0, -1, false),
+        lines,
+        "blocked action preserves text"
+      )
+    end
   end
 end
 blocked "unavailable"

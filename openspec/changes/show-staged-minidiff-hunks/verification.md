@@ -1,7 +1,34 @@
 # Verification
 
+## Mixed-layer regression iteration
+
+Added `tests/minidiff_layers.lua` and observed these failures before fixing them:
+
+- Ordinary source text containing Git's binary/unmerged diagnostic phrases disabled staged hunks.
+- Navigation during the text-change debounce missed a newly edited unsaved hunk.
+- Switching buffers restarted unchanged Git reads and introduced avoidable loading cycles.
+- A successful staged read exposed ready data before projected navigation anchors existed.
+- A staged callback arriving after an index-read failure could restore ready staged data using the old index reference.
+- Untracked files and new unsaved files lacked an empty index baseline and could not be navigated.
+
+Fixes keep the existing hunk controls and mutation boundaries. Explicit navigation
+settles queued local computation synchronously but never waits for Git reads or
+replays a blocked jump. Staged readiness now includes projection completion and
+both reference-read outcomes. Git watchers and focus refresh remain active;
+ordinary buffer switches no longer force a new loading cycle.
+
+Missing index references are classified before using an empty baseline. Ignored
+files and unmerged index entries are not treated as new additions. New named
+buffers can attach before their file is first written.
+
+The new suite covers saved unstaged edits plus separate unsaved edits alongside
+staged edits; staging the saved state without saving the buffer; both callback
+orders; failed index reads; no deferred navigation; untracked/new unsaved files;
+ignored files; and insertion/deletion/replacement projection boundaries.
+
 ## Passed
 
+- `nvim --headless -u NONE -l tests/minidiff_layers.lua`
 - `nvim --headless -u NONE -l tests/minidiff_staged.lua`
   - Independent staged snapshots retain index-coordinate hunks and projected buffer anchors.
   - Whole-file staging leaves distinct markers and navigation targets with zero unstaged hunks.

@@ -621,6 +621,15 @@ MiniDiff.get_staged_state = function(buf_id)
   return staged and { status = staged.status, reason = staged.reason } or nil
 end
 
+--- Settle queued buffer edits before explicit navigation. Never wait for Git
+--- IO or run an action later; reference loading retains its normal guard.
+MiniDiff.flush_buf_diff = function(buf_id)
+  buf_id = H.validate_buf_id(buf_id)
+  local cache, state = H.cache[buf_id], H.states[buf_id]
+  if not cache or not cache.has_result or cache.ref_pending or type(cache.ref_text) ~= 'string' then return end
+  if state and state.status == 'updating' then H.update_buf_diff_now(buf_id, cache) end
+end
+
 --- Display/navigation ranges only. Never pass these to mutation APIs.
 MiniDiff.get_navigation_hunk_ranges = function(buf_id)
   buf_id = H.validate_buf_id(buf_id)
@@ -737,6 +746,7 @@ MiniDiff.gen_source.git = function()
 
     -- Possibly resolve symlinks to get data from the original repo
     local path = H.get_buf_realpath(buf_id)
+    if path == '' then path = vim.api.nvim_buf_get_name(buf_id) end
     if path == '' then return false end
 
     -- Claim Git cache to not try to attach to the non-Git path several times.
@@ -1150,7 +1160,7 @@ H.create_autocommands = function()
   -- NOTE: Try auto enabling buffer on every `BufEnter` to not have `:edit`
   -- disabling buffer, as it calls `on_detach()` from buffer watcher
   au('BufEnter', '*', H.auto_enable, 'Enable diff')
-  au({ 'BufEnter', 'FocusGained' }, '*', function(ev)
+  au('FocusGained', '*', function(ev)
     if H.git_cache[ev.buf] then H.git_set_ref_text(ev.buf) end
   end, 'Revalidate Git snapshots')
   au('BufWipeout', '*', function(ev)
@@ -1414,7 +1424,7 @@ H.process_scheduled_buffers = vim.schedule_wrap(function()
   H.bufs_to_update = {}
 end)
 
-H.update_buf_diff = vim.schedule_wrap(function(buf_id, expected_cache)
+H.update_buf_diff_now = function(buf_id, expected_cache)
   -- Make early returns
   local buf_cache = H.cache[buf_id]
   if buf_cache == nil or buf_cache ~= expected_cache then return end
@@ -1474,7 +1484,9 @@ H.update_buf_diff = vim.schedule_wrap(function(buf_id, expected_cache)
   -- Force redraw. NOTE: Using 'redraw' not always works (`<Cmd>update<CR>`
   -- from keymap with "save" source will not redraw) while 'redraw!' flickers.
   H.redraw_buffer(buf_id)
-end)
+end
+
+H.update_buf_diff = vim.schedule_wrap(H.update_buf_diff_now)
 
 H.update_hunk_data = function(diff, buf_cache, buf_lines)
   local do_overlay = buf_cache.overlay
@@ -1526,8 +1538,9 @@ end
 H.update_staged_viz = function(buf_id, cache, line_count)
   local git = H.git_cache[buf_id]
   local staged = git and git.staged
-  if not staged or staged.status ~= 'ready' then return end
+  if not staged or (staged.status ~= 'ready' and not git.staged_ready) then return end
   staged.buffer_hunks = require('mini.diff.staged').project(staged.hunks, cache.hunks, line_count)
+  staged.status, git.staged_ready = 'ready', nil
   local unstaged_lines = vim.tbl_extend('force', {}, cache.viz_lines)
   for _, hunk in ipairs(staged.buffer_hunks) do
     local from, to = H.get_hunk_buf_range(hunk)
@@ -1944,6 +1957,7 @@ H.git_set_ref_text = function(buf_id)
     if git_cache.watch_logs then git_cache.watch_logs() end
     if git_cache.watch_ref then git_cache.watch_ref() end
     git_cache.staged = { status = git_cache.staged and 'updating' or 'loading', hunks = {}, buffer_hunks = {} }
+    git_cache.staged_ready = nil
     local index_done, staged_done, index_missing = false, false, false
     local function current()
       return H.cache[buf_id] == cache and H.git_cache[buf_id] == git_cache and git_cache.request == request
@@ -1951,12 +1965,23 @@ H.git_set_ref_text = function(buf_id)
     local function publish_staged()
       if not current() or not index_done or not staged_done then return end
       local staged = git_cache.staged
+      if cache.ref_error then
+        staged.status, staged.reason = 'failed', cache.ref_error
+        staged.hunks, staged.buffer_hunks = {}, {}
+      elseif staged.status == 'loading' or staged.status == 'updating' then
+        git_cache.staged_ready = true
+      end
       -- A successfully read staged deletion proves the absent index path has
       -- an empty baseline. An arbitrary failed index read does not.
-      if index_missing and not cache.ref_error and staged.status == 'ready' and #staged.hunks > 0 then
-        local deleted = true
+      if index_missing and git_cache.staged_ready then
+        local deleted = #staged.hunks > 0
         for _, hunk in ipairs(staged.hunks) do deleted = deleted and hunk.type == 'delete' end
-        if deleted then MiniDiff.set_ref_text(buf_id, '') end
+        if deleted then
+          MiniDiff.set_ref_text(buf_id, '')
+        else
+          staged.status, staged.reason = 'unavailable', 'No usable index reference'
+          git_cache.staged_ready = nil
+        end
       end
       H.schedule_diff_update(buf_id, 0)
       vim.api.nvim_buf_call(buf_id, function()
@@ -1989,7 +2014,21 @@ H.git_set_ref_text = function(buf_id)
     end
     local cwd, basename = vim.fn.fnamemodify(path, ':h'), vim.fn.fnamemodify(path, ':t')
 
-    H.git_read_reference({ 'show', ':0:./' .. basename }, cwd, buf_set_ref_text)
+    H.git_read_reference({ 'show', ':0:./' .. basename }, cwd, function(code, text, err)
+      if not current() then return end
+      if code == 0 or err then return buf_set_ref_text(code, text, err) end
+      -- Missing stage zero can mean untracked, ignored, or unmerged. Only a
+      -- confirmed nonignored path absent from the index gets an empty baseline.
+      H.git_read_reference({ 'ls-files', '--stage', '-z', '--', ':(literal)' .. basename }, cwd, function(list_code, entries, list_err)
+        if not current() then return end
+        if list_code ~= 0 or list_err or entries ~= '' then return buf_set_ref_text(code, '', list_err) end
+        H.git_read_reference({ 'check-ignore', '--quiet', '--', basename }, cwd, function(ignore_code, _, ignore_err)
+          if not current() then return end
+          if ignore_code == 1 and not ignore_err then return buf_set_ref_text(0, '') end
+          buf_set_ref_text(code, '', ignore_err)
+        end)
+      end)
+    end)
     -- Git handles unborn HEAD and paths absent from HEAD without inventing an
     -- empty baseline after an arbitrary failed `git show HEAD:path` operation.
     local args = { 'diff', '--cached', '--no-color', '--no-ext-diff', '--no-textconv', '--no-renames',
@@ -2000,7 +2039,7 @@ H.git_set_ref_text = function(buf_id)
       local hunks, reason
       if code == 0 and not err then hunks, reason = require('mini.diff.staged').parse(patch) end
       git_cache.staged = {
-        status = hunks and 'ready' or 'failed',
+        status = hunks and (cache.has_result and 'updating' or 'loading') or 'failed',
         reason = err or reason or (not hunks and 'Could not read staged diff' or nil),
         hunks = hunks or {}, buffer_hunks = {},
       }

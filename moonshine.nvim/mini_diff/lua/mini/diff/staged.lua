@@ -2,14 +2,21 @@
 local M = {}
 
 function M.parse(patch)
-  if patch:find("Binary files", 1, true) or patch:find("GIT binary patch", 1, true) then
-    return nil, "Binary staged diff is unavailable"
-  end
-  if patch:find("* Unmerged path", 1, true) or patch:find("diff --cc", 1, true) then
-    return nil, "Unmerged index entries are unsupported"
-  end
+
+
+
+
+
   local hunks = {}
   for line in patch:gmatch("[^\n]+") do
+    -- Only unprefixed metadata can classify a patch. Source lines may contain
+    -- these exact strings behind their +/-/context prefix.
+    if line:match("^Binary files .* differ$") or line == "GIT binary patch" then
+      return nil, "Binary staged diff is unavailable"
+    end
+    if line:match("^%* Unmerged path ") or line:match("^diff %-%-cc ") or line:match("^diff %-%-combined ") then
+      return nil, "Unmerged index entries are unsupported"
+    end
     local old, old_count, new, new_count = line:match("^@@ %-(%d+)(,?%d*) %+(%d+)(,?%d*) @@")
     if old then
       old_count = old_count == "" and 1 or tonumber(old_count:sub(2))

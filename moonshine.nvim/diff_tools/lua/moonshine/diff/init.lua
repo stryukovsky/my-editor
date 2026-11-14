@@ -163,6 +163,7 @@ function M.nav(direction)
     vim.cmd "normal! zz"
     return
   end
+  MiniDiff.flush_buf_diff(0)
   if not feedback.ready(0, true) then
     return
   end
