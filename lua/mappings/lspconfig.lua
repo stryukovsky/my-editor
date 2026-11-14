@@ -4,11 +4,22 @@ local close_trouble_succeeded = require "moonshine.utils.close_trouble_succeeded
 local ui_prevent_mess = require "moonshine.utils.ui_prevent_mess"
 
 local telescope_builtin = require "telescope.builtin"
+local check_multicursor_is_used = require "utils.check_multicursor_is_used"
+
+local function map_lsp(mode, lhs, callback, options)
+  map(mode, lhs, function()
+    if check_multicursor_is_used() then
+      return
+    end
+    callback()
+  end, options)
+end
+
 local function opts(desc)
   return { desc = "LSP " .. desc }
 end
 
-map("n", "<leader>lr", function()
+map_lsp("n", "<leader>lr", function()
   close_trouble_succeeded()
   ui_prevent_mess()
   trouble.open {
@@ -17,7 +28,7 @@ map("n", "<leader>lr", function()
   }
 end, opts "find references (usages)")
 
-map("n", "<leader>lu", function()
+map_lsp("n", "<leader>lu", function()
   close_trouble_succeeded()
   ui_prevent_mess()
   trouble.open {
@@ -26,7 +37,7 @@ map("n", "<leader>lu", function()
   }
 end, opts "find references (usages)")
 
-map("n", "<leader>li", function()
+map_lsp("n", "<leader>li", function()
   close_trouble_succeeded()
   ui_prevent_mess()
   trouble.open {
@@ -35,49 +46,49 @@ map("n", "<leader>li", function()
   }
 end, opts "implementations")
 
-map("n", "<leader>ltd", function()
+map_lsp("n", "<leader>ltd", function()
   require("lspeek").peek_type_definition()
 end, opts "type definitions")
 
-map("n", "<leader>ld", function()
+map_lsp("n", "<leader>ld", function()
   require("lspeek").peek_definition()
 end, opts "definitions")
 
-map("n", "<leader>lci", function()
+map_lsp("n", "<leader>lci", function()
   ui_prevent_mess()
   telescope_builtin.lsp_incoming_calls { bufnr = 0 }
 end, opts "show incoming calls")
 
-map("n", "<leader>lco", function()
+map_lsp("n", "<leader>lco", function()
   ui_prevent_mess()
   telescope_builtin.lsp_outgoing_calls { bufnr = 0 }
 end, opts "show outcoming calls")
 
-map("n", "<leader>lhu", function()
+map_lsp("n", "<leader>lhu", function()
   vim.lsp.buf.typehierarchy("supertypes")
 end, opts "type hierarchy superclasses")
 
-map("n", "<leader>lhd", function()
+map_lsp("n", "<leader>lhd", function()
   vim.lsp.buf.typehierarchy("subtypes")
 end, opts "type hierarchy subclasses")
 
-map("n", "<leader>rn", function()
+map_lsp("n", "<leader>rn", function()
   vim.lsp.buf.rename()
 end, opts "renamer")
 
-map("n", "K", function()
+map_lsp("n", "K", function()
   vim.lsp.buf.signature_help()
 end, { silent = true, noremap = true, desc = "LSP toggle signature" })
 
-map("i", "<C-k>", function()
+map_lsp("i", "<C-k>", function()
   vim.lsp.buf.signature_help()
 end, { silent = true, noremap = true, desc = "LSP toggle signature" })
 
 local hover_params = { max_height = 25, max_width = 120 }
 
-map("n", "H", function()
+map_lsp("n", "H", function()
   vim.lsp.buf.hover(hover_params)
 end, opts "Hover")
-map("i", "<C-h>", function()
+map_lsp("i", "<C-h>", function()
   vim.lsp.buf.hover(hover_params)
 end, opts "Hover")
