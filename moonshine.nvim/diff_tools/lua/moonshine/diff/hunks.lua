@@ -275,7 +275,7 @@ function M.view_hunk()
 
   local hunk, data = hunk_at_cursor(src)
   if not hunk or not data then
-    feedback.message(src, "No hunk under cursor")
+    feedback.no_hunk(src)
     return
   end
 

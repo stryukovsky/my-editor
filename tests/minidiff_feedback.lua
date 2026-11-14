@@ -82,6 +82,10 @@ local read_reference, setup_watch =
   H.git_read_reference, H.git_setup_index_watch
 local requests = {}
 H.git_read_reference = function(args, cwd, callback)
+  if args[1] == "diff" then
+    callback(0, "")
+    return
+  end
   requests[#requests + 1] = callback
 end
 H.git_setup_index_watch = function() end
@@ -206,7 +210,7 @@ package.loaded["integrations.notify"] = {
 package.loaded["moonshine.diff.review"] = { setup = function() end }
 package.loaded["moonshine.diff.history"] = { setup = function() end }
 local integration = require "moonshine.diff"
-local feedback = require "moonshine.diff.feedback"
+local feedback = require "moonshine.diff.assure_git_hunks_are_ready"
 buf = vim.api.nvim_get_current_buf()
 vim.b[buf].minidiff_config = { source = diff.gen_source.none() }
 diff.enable(buf)

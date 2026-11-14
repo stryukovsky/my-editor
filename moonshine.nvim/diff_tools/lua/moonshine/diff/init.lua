@@ -71,7 +71,7 @@ function M.reset_hunk()
   end
   local range = MiniDiff.get_contiguous_hunk_range_at_cursor(0)
   if not range then
-    feedback.message(0, "No hunk under cursor")
+    feedback.no_hunk(0)
     return
   end
   feedback.run(0, function()
@@ -100,7 +100,7 @@ function M.select()
     return
   end
   if not MiniDiff.get_contiguous_hunk_range_at_cursor(0) then
-    return feedback.message(0, "No hunk under cursor")
+    return feedback.no_hunk(0)
   end
   feedback.run(0, MiniDiff.textobject)
 end
@@ -118,6 +118,17 @@ function M.toggle_overlay()
   )
 end
 
+local function navigation_position()
+  local ranges = MiniDiff.get_navigation_hunk_ranges(0) or {}
+  local line = vim.api.nvim_win_get_cursor(0)[1]
+  for i, range in ipairs(ranges) do
+    if range.from <= line and line <= range.to then
+      return #ranges, i
+    end
+  end
+  return #ranges
+end
+
 function M.lualine_hunks()
   local state = MiniDiff.get_buf_state(0)
   -- These labels cover reference IO and queued work. Synchronous vim.diff()
@@ -131,12 +142,14 @@ function M.lualine_hunks()
   if not state or state.status ~= "ready" then
     return ""
   end
-  local summary = vim.b.minidiff_summary
-  local total = summary and summary.n_ranges or 0
+  local staged = MiniDiff.get_staged_state(0)
+  if staged and staged.status ~= "ready" then
+    return "staged: " .. staged.status .. ((staged.status == "loading" or staged.status == "updating") and "…" or "")
+  end
+  local total, idx = navigation_position()
   if total == 0 then
     return ""
   end
-  local _, idx = MiniDiff.get_contiguous_hunk_range_at_cursor(0)
   if idx then
     return string.format("hunks: %d/%d", idx, total)
   end
@@ -150,13 +163,11 @@ function M.nav(direction)
     vim.cmd "normal! zz"
     return
   end
-  if not feedback.ready(0) then
+  if not feedback.ready(0, true) then
     return
   end
   if direction > 0 then
-    local _, idx = MiniDiff.get_contiguous_hunk_range_at_cursor(0)
-    local total = vim.b.minidiff_summary and vim.b.minidiff_summary.n_ranges
-      or 0
+    local total, idx = navigation_position()
     if idx and idx == total then
       if vim.b.minidiff_review then
         notify.send(
@@ -177,7 +188,7 @@ function M.nav(direction)
       return
     end
   end
-  MiniDiff.goto_hunk(direction > 0 and "next" or "prev")
+  MiniDiff.goto_hunk(direction > 0 and "next" or "prev", { staged = true })
   vim.cmd "normal! zz"
 end
 

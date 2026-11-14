@@ -604,6 +604,37 @@ MiniDiff.get_buf_data = function(buf_id)
   })
 end
 
+--- Independent HEAD -> index snapshot. `hunks` use index coordinates;
+--- `buffer_hunks` are display anchors projected through unsaved buffer edits.
+--- The ordinary diff data and all mutation APIs remain index -> buffer only.
+MiniDiff.get_staged_data = function(buf_id)
+  buf_id = H.validate_buf_id(buf_id)
+  local git = H.git_cache[buf_id]
+  return git and vim.deepcopy(git.staged) or nil
+end
+
+--- Cheap staged readiness snapshot for presentation and action guards.
+MiniDiff.get_staged_state = function(buf_id)
+  buf_id = H.validate_buf_id(buf_id)
+  local git = H.git_cache[buf_id]
+  local staged = git and git.staged
+  return staged and { status = staged.status, reason = staged.reason } or nil
+end
+
+--- Display/navigation ranges only. Never pass these to mutation APIs.
+MiniDiff.get_navigation_hunk_ranges = function(buf_id)
+  buf_id = H.validate_buf_id(buf_id)
+  local cache = H.cache[buf_id]
+  if not cache then return nil end
+  local hunks = vim.deepcopy(cache.hunks)
+  local git = H.git_cache[buf_id]
+  local staged = git and git.staged
+  if staged and staged.status == 'ready' then
+    vim.list_extend(hunks, staged.buffer_hunks or {})
+  end
+  return H.get_contiguous_hunk_ranges(hunks)
+end
+
 --- Contiguous hunk ranges
 ---
 --- Adjacent hunks are merged into one range. Same data as used by
@@ -836,6 +867,7 @@ end
 ---     "prev" and "next". Default: cursor line.
 ---   - <wrap> `(boolean)` - Whether to wrap around edges.
 ---     Default: `options.wrap` value of the config.
+---   - <staged> `(boolean)` - Include staged display anchors. Default: false.
 MiniDiff.goto_hunk = function(direction, opts)
   local buf_id = vim.api.nvim_get_current_buf()
   local buf_cache = H.cache[buf_id]
@@ -855,7 +887,7 @@ MiniDiff.goto_hunk = function(direction, opts)
   if type(opts.wrap) ~= 'boolean' then H.error('`opts.wrap` should be boolean.') end
 
   -- Prepare ranges to iterate.
-  local ranges = H.get_contiguous_hunk_ranges(buf_cache.hunks)
+  local ranges = opts.staged and MiniDiff.get_navigation_hunk_ranges(buf_id) or H.get_contiguous_hunk_ranges(buf_cache.hunks)
   if #ranges == 0 then return H.notify('No hunks to go to', 'INFO') end
 
   -- Iterate
@@ -1118,6 +1150,9 @@ H.create_autocommands = function()
   -- NOTE: Try auto enabling buffer on every `BufEnter` to not have `:edit`
   -- disabling buffer, as it calls `on_detach()` from buffer watcher
   au('BufEnter', '*', H.auto_enable, 'Enable diff')
+  au({ 'BufEnter', 'FocusGained' }, '*', function(ev)
+    if H.git_cache[ev.buf] then H.git_set_ref_text(ev.buf) end
+  end, 'Revalidate Git snapshots')
   au('BufWipeout', '*', function(ev)
     if H.cache[ev.buf] then MiniDiff.disable(ev.buf) end
     H.states[ev.buf] = nil
@@ -1136,6 +1171,10 @@ H.create_default_hl = function()
   hi('MiniDiffSignAdd',        { link = 'Added' })
   hi('MiniDiffSignChange',     { link = 'Changed' })
   hi('MiniDiffSignDelete',     { link = 'Removed' })
+  hi('MiniDiffSignStagedAdd',    { link = 'MiniDiffSignAdd' })
+  hi('MiniDiffSignStagedChange', { link = 'MiniDiffSignChange' })
+  hi('MiniDiffSignStagedDelete', { link = 'MiniDiffSignDelete' })
+  hi('MiniDiffSignMixed',        { link = 'MiniDiffSignChange' })
   hi('MiniDiffOverAdd',        { link = 'DiffAdd' })
   hi('MiniDiffOverChange',     { link = 'DiffText' })
   hi('MiniDiffOverChangeBuf',  { link = 'MiniDiffOverChange'})
@@ -1408,6 +1447,7 @@ H.update_buf_diff = vim.schedule_wrap(function(buf_id, expected_cache)
 
   -- Recompute hunks with summary and draw information
   H.update_hunk_data(diff, buf_cache, buf_lines)
+  H.update_staged_viz(buf_id, buf_cache, #buf_lines)
   buf_cache.has_result = true
 
   -- Set buffer-local variables with summary for easier external usage
@@ -1481,6 +1521,26 @@ H.update_hunk_data = function(diff, buf_cache, buf_lines)
   buf_cache.hunks, buf_cache.viz_lines, buf_cache.overlay_lines = hunks, viz_lines, overlay_lines
   buf_cache.summary = { add = n_add, change = n_change, delete = n_delete, n_ranges = n_ranges }
   buf_cache.summary.source_name = H.get_active_source(buf_cache).name
+end
+
+H.update_staged_viz = function(buf_id, cache, line_count)
+  local git = H.git_cache[buf_id]
+  local staged = git and git.staged
+  if not staged or staged.status ~= 'ready' then return end
+  staged.buffer_hunks = require('mini.diff.staged').project(staged.hunks, cache.hunks, line_count)
+  local unstaged_lines = vim.tbl_extend('force', {}, cache.viz_lines)
+  for _, hunk in ipairs(staged.buffer_hunks) do
+    local from, to = H.get_hunk_buf_range(hunk)
+    local kind = hunk.type:sub(1, 1):upper() .. hunk.type:sub(2)
+    for line = from, to do
+      local mixed = unstaged_lines[line] ~= nil
+      local opts = vim.deepcopy(cache.extmark_opts[hunk.type])
+      if cache.config.view.style == 'sign' then opts.sign_text = mixed and '╋' or '┆' end
+      local field = H.style_extmark_data[cache.config.view.style].field
+      opts[field] = mixed and 'MiniDiffSignMixed' or ('MiniDiffSignStaged' .. kind)
+      cache.viz_lines[line] = opts
+    end
+  end
 end
 
 H.clear_all_diff = function(buf_id)
@@ -1766,7 +1826,7 @@ end
 H.hunk_order = function(a, b)
   -- Ensure buffer order and that "change" hunks are listed earlier "delete"
   -- ones from the same line (important for `reset_hunks()`)
-  return a.buf_start < b.buf_start or (a.buf_start == b.buf_start and a.type == 'change')
+  return a.buf_start < b.buf_start or (a.buf_start == b.buf_start and a.type == 'change' and b.type ~= 'change')
 end
 
 -- Export ---------------------------------------------------------------------
@@ -1823,7 +1883,7 @@ H.git_setup_index_watch = function(buf_id, git_dir_path)
   end
 
   local watch_index = function(_, filename, _)
-    if filename ~= 'index' then return end
+    if filename ~= 'index' and filename ~= 'HEAD' and filename ~= 'packed-refs' and filename ~= 'logs' then return end
     -- Debounce to not overload during incremental staging (like in script)
     timer:stop()
     timer:start(50, 0, buf_git_set_ref_text)
@@ -1831,6 +1891,42 @@ H.git_setup_index_watch = function(buf_id, git_dir_path)
   buf_fs_event:start(git_dir_path, { recursive = false }, watch_index)
 
   cache.fs_event, cache.timer = buf_fs_event, timer
+  -- HEAD's reflog changes on commits and branch switches, including worktrees.
+  -- It may not exist before the first commit; retry when Git creates `logs`.
+  cache.watch_logs = function()
+    if cache.logs_event then return end
+    local event = vim.loop.new_fs_event()
+    local ok = event:start(git_dir_path .. '/logs', {}, watch_index)
+    if ok then cache.logs_event = event else event:close() end
+  end
+  cache.watch_logs()
+  -- Watch the symbolic HEAD target as well: reflogs may be disabled, and in
+  -- linked worktrees branch refs live in the common Git directory.
+  local common_dir = git_dir_path
+  local ok, lines = pcall(vim.fn.readfile, git_dir_path .. '/commondir')
+  if ok and lines[1] then
+    common_dir = lines[1]:sub(1, 1) == '/' and lines[1] or (git_dir_path .. '/' .. lines[1])
+    local event = vim.loop.new_fs_event()
+    if event:start(common_dir, {}, watch_index) then cache.common_event = event else event:close() end
+  end
+  cache.watch_ref = function()
+    local read_ok, head = pcall(vim.fn.readfile, git_dir_path .. '/HEAD')
+    local ref = read_ok and head[1] and head[1]:match('^ref: (refs/.+)$') or nil
+    local target = ref and (common_dir .. '/' .. ref) or nil
+    if target == cache.ref_path and cache.ref_event then return end
+    if cache.ref_event then cache.ref_event:close(); cache.ref_event = nil end
+    cache.ref_path = target
+    if not target then return end
+    local event = vim.loop.new_fs_event()
+    local basename = vim.fn.fnamemodify(target, ':t')
+    local started = event:start(vim.fn.fnamemodify(target, ':h'), {}, function(_, filename)
+      if filename ~= basename then return end
+      timer:stop()
+      timer:start(50, 0, buf_git_set_ref_text)
+    end)
+    if started then cache.ref_event = event else event:close() end
+  end
+  cache.watch_ref()
 end
 
 H.git_set_ref_text = function(buf_id)
@@ -1845,20 +1941,71 @@ H.git_set_ref_text = function(buf_id)
     cache.ref_pending = true
     cache.ref_error = nil
     H.pending_state(buf_id)
+    if git_cache.watch_logs then git_cache.watch_logs() end
+    if git_cache.watch_ref then git_cache.watch_ref() end
+    git_cache.staged = { status = git_cache.staged and 'updating' or 'loading', hunks = {}, buffer_hunks = {} }
+    local index_done, staged_done, index_missing = false, false, false
+    local function current()
+      return H.cache[buf_id] == cache and H.git_cache[buf_id] == git_cache and git_cache.request == request
+    end
+    local function publish_staged()
+      if not current() or not index_done or not staged_done then return end
+      local staged = git_cache.staged
+      -- A successfully read staged deletion proves the absent index path has
+      -- an empty baseline. An arbitrary failed index read does not.
+      if index_missing and not cache.ref_error and staged.status == 'ready' and #staged.hunks > 0 then
+        local deleted = true
+        for _, hunk in ipairs(staged.hunks) do deleted = deleted and hunk.type == 'delete' end
+        if deleted then MiniDiff.set_ref_text(buf_id, '') end
+      end
+      H.schedule_diff_update(buf_id, 0)
+      vim.api.nvim_buf_call(buf_id, function()
+        vim.api.nvim_exec_autocmds('User', { pattern = 'MiniDiffStateChanged' })
+      end)
+    end
     local function buf_set_ref_text(code, text, err)
-      if H.cache[buf_id] ~= cache or H.git_cache[buf_id] ~= git_cache or git_cache.request ~= request then return end
+      if not current() then return end
+      index_done = true
+      index_missing = code ~= 0
       cache.ref_pending = nil
       cache.ref_error = err
-      if err then return H.set_state(buf_id, 'failed', err) end
+      if err then
+        H.set_state(buf_id, 'failed', err)
+        git_cache.staged = { status = 'failed', reason = err, hunks = {}, buffer_hunks = {} }
+        H.update_buf_diff(buf_id, cache)
+        return
+      end
       MiniDiff.set_ref_text(buf_id, code == 0 and text:gsub('\r\n', '\n') or nil)
+      publish_staged()
     end
 
     -- NOTE: Do not cache buffer's name to react to its possible rename
     local path = H.get_buf_realpath(buf_id)
-    if path == '' then return buf_set_ref_text(1, '') end
+    if path == '' then path = vim.api.nvim_buf_get_name(buf_id) end
+    if path == '' then
+      staged_done = true
+      git_cache.staged = { status = 'unavailable', reason = 'No file path', hunks = {}, buffer_hunks = {} }
+      return buf_set_ref_text(1, '')
+    end
     local cwd, basename = vim.fn.fnamemodify(path, ':h'), vim.fn.fnamemodify(path, ':t')
 
     H.git_read_reference({ 'show', ':0:./' .. basename }, cwd, buf_set_ref_text)
+    -- Git handles unborn HEAD and paths absent from HEAD without inventing an
+    -- empty baseline after an arbitrary failed `git show HEAD:path` operation.
+    local args = { 'diff', '--cached', '--no-color', '--no-ext-diff', '--no-textconv', '--no-renames',
+      '--unified=0', '--inter-hunk-context=0', '--diff-algorithm=histogram', '--', ':(literal)' .. basename }
+    H.git_read_reference(args, cwd, function(code, patch, err)
+      if not current() then return end
+      staged_done = true
+      local hunks, reason
+      if code == 0 and not err then hunks, reason = require('mini.diff.staged').parse(patch) end
+      git_cache.staged = {
+        status = hunks and 'ready' or 'failed',
+        reason = err or reason or (not hunks and 'Could not read staged diff' or nil),
+        hunks = hunks or {}, buffer_hunks = {},
+      }
+      publish_staged()
+    end)
   end)
 end
 
@@ -1972,7 +2119,7 @@ H.git_invalidate_cache = function(cache)
   if cache == nil then return end
   pcall(vim.loop.fs_event_stop, cache.fs_event)
   pcall(vim.loop.timer_stop, cache.timer)
-  for _, handle in pairs({ cache.fs_event, cache.timer }) do
+  for _, handle in pairs({ cache.fs_event, cache.timer, cache.logs_event, cache.ref_event, cache.common_event }) do
     if not handle:is_closing() then handle:close() end
   end
 end
