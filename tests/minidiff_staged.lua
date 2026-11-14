@@ -1,10 +1,9 @@
 -- Run with: nvim --headless -u NONE -l tests/minidiff_staged.lua
 vim.opt.rtp:prepend(vim.fn.getcwd() .. "/moonshine.nvim/mini_diff")
-vim.opt.rtp:prepend(vim.fn.getcwd() .. "/moonshine.nvim/diff_tools")
 vim.opt.rtp:prepend(vim.fn.getcwd() .. "/moonshine.nvim/utils")
 local diff = require "mini.diff"
 diff.setup { view = { style = "sign" }, delay = { text_change = 10 }, options = { wrap_goto = true, linematch = 0 } }
-local helpers = require "mini.diff.staged"
+local helpers = { parse = require("mini.diff.hunks_loader.staged").parse, project = require("mini.diff.navigation.staged").project }
 local function equal(actual, expected, label)
   assert(vim.deep_equal(actual, expected), label .. ": " .. vim.inspect(actual))
 end

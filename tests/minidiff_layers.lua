@@ -1,9 +1,8 @@
 -- Run with: nvim --headless -u NONE -l tests/minidiff_layers.lua
 vim.opt.rtp:prepend(vim.fn.getcwd() .. "/moonshine.nvim/mini_diff")
-vim.opt.rtp:prepend(vim.fn.getcwd() .. "/moonshine.nvim/diff_tools")
 local diff = require "mini.diff"
 diff.setup { view = { style = "sign" }, delay = { text_change = 300 }, options = { wrap_goto = true, linematch = 0 } }
-local helpers = require "mini.diff.staged"
+local helpers = { parse = require("mini.diff.hunks_loader.staged").parse, project = require("mini.diff.navigation.staged").project }
 local failures = {}
 local function check(condition, label)
   if not condition then failures[#failures + 1] = label end

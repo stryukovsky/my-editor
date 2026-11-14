@@ -201,7 +201,6 @@ diff.set_ref_text(buf, "changed\n")
 wait_ready(buf)
 vim.api.nvim_buf_delete(buf, { force = true })
 assert(H.cache[buf] == nil)
-vim.opt.rtp:prepend(vim.fn.getcwd() .. "/moonshine.nvim/diff_tools")
 local messages = {}
 package.loaded["integrations.notify"] = {
   replace = function(key, title, message, level)

@@ -511,6 +511,7 @@ MiniDiff.disable = function(buf_id)
   local buf_cache = H.cache[buf_id]
   if buf_cache == nil then return end
   H.cache[buf_id] = nil
+  require('mini.diff.hunks_cache').clear(buf_id)
   H.bufs_to_update[buf_id] = nil
   H.set_state(buf_id, 'unavailable', 'Diff is not enabled for this buffer')
 
@@ -536,12 +537,7 @@ end
 ---@param buf_id __diff_buf_id
 MiniDiff.toggle_overlay = function(buf_id)
   buf_id = H.validate_buf_id(buf_id)
-  local buf_cache = H.cache[buf_id]
-  if buf_cache == nil then H.error(string.format('Buffer %d is not enabled.', buf_id)) end
-
-  buf_cache.overlay = not buf_cache.overlay
-  H.clear_all_diff(buf_id)
-  H.schedule_diff_update(buf_id, 0)
+  return require('mini.diff.hunk_mode').toggle_buffer(buf_id, H)
 end
 
 --- Export hunks
@@ -635,13 +631,7 @@ MiniDiff.get_navigation_hunk_ranges = function(buf_id)
   buf_id = H.validate_buf_id(buf_id)
   local cache = H.cache[buf_id]
   if not cache then return nil end
-  local hunks = vim.deepcopy(cache.hunks)
-  local git = H.git_cache[buf_id]
-  local staged = git and git.staged
-  if staged and staged.status == 'ready' then
-    vim.list_extend(hunks, staged.buffer_hunks or {})
-  end
-  return H.get_contiguous_hunk_ranges(hunks)
+  return require('mini.diff.navigation.global_navigation').ranges(buf_id)
 end
 
 --- Contiguous hunk ranges
@@ -752,13 +742,17 @@ MiniDiff.gen_source.git = function()
     -- Claim Git cache to not try to attach to the non-Git path several times.
     -- NOTE: Do this after `path==''` check since the same buffer can be reused
     -- for opening actual file (`nvim` -> `:edit file`).
-    H.git_cache[buf_id] = {}
+    H.git_cache[buf_id] = require('mini.diff.hunks_cache').git_attachment(buf_id)
     H.git_start_watching_index(buf_id, path)
   end
 
   local detach = function(buf_id)
     local cache = H.git_cache[buf_id]
     H.git_cache[buf_id] = nil
+    local snapshots = require('mini.diff.hunks_cache')
+    snapshots.staged.clear(buf_id)
+    snapshots.unsaved.clear(buf_id)
+    snapshots.untracked.clear(buf_id)
     H.git_invalidate_cache(cache)
   end
 
@@ -898,23 +892,7 @@ MiniDiff.goto_hunk = function(direction, opts)
 
   -- Prepare ranges to iterate.
   local ranges = opts.staged and MiniDiff.get_navigation_hunk_ranges(buf_id) or H.get_contiguous_hunk_ranges(buf_cache.hunks)
-  if #ranges == 0 then return H.notify('No hunks to go to', 'INFO') end
-
-  -- Iterate
-  local res_ind, did_wrap = H.iterate_hunk_ranges(ranges, direction, opts)
-  if res_ind == nil then return H.notify('No hunk ranges in direction ' .. vim.inspect(direction), 'INFO') end
-  local res_line = ranges[res_ind].from
-  if did_wrap then H.notify('Wrapped around edge in direction ' .. vim.inspect(direction), 'INFO') end
-
-  -- Add to jumplist
-  vim.cmd([[normal! m']])
-
-  -- Jump
-  local _, col = vim.fn.getline(res_line):find('^%s*')
-  vim.api.nvim_win_set_cursor(0, { res_line, col })
-
-  -- Open just enough folds
-  vim.cmd('normal! zv')
+  return require('mini.diff.navigation.global_navigation').move(ranges, direction, opts, H.notify)
 end
 
 --- Perform action over region
@@ -1021,10 +999,7 @@ H.default_source = { MiniDiff.gen_source.git() }
 H.timer_diff_update = vim.loop.new_timer()
 
 -- Namespaces per highlighter name
-H.ns_id = {
-  viz = vim.api.nvim_create_namespace('MiniDiffViz'),
-  overlay = vim.api.nvim_create_namespace('MiniDiffOverlay'),
-}
+H.ns_id = require('mini.diff.rendering').namespaces
 
 -- Cache of buffers waiting for debounced diff update
 H.bufs_to_update = {}
@@ -1033,7 +1008,7 @@ H.bufs_to_update = {}
 H.cache = {}
 
 -- Small lifecycle snapshots, separate from the potentially large hunk cache.
-H.states = {}
+H.states = require('mini.diff.hunks_cache').states_adapter()
 
 -- Cache per buffer for attached `git` source
 H.git_cache = {}
@@ -1277,7 +1252,7 @@ H.pending_state = function(buf_id)
 end
 
 H.update_buf_cache = function(buf_id)
-  local new_cache = H.cache[buf_id] or {}
+  local new_cache = require('mini.diff.hunks_cache').attachment(buf_id, H.cache[buf_id])
 
   local buf_config = H.get_config({}, buf_id)
   new_cache.config = buf_config
@@ -1304,6 +1279,10 @@ H.setup_buf_autocommands = function(buf_id)
   end)
   local bufwinenter_opts = { group = augroup, buffer = buf_id, callback = buf_update, desc = 'Update buffer cache' }
   vim.api.nvim_create_autocmd('BufWinEnter', bufwinenter_opts)
+  vim.api.nvim_create_autocmd('BufWritePost', {
+    group = augroup, buffer = buf_id, desc = 'Refresh saved hunk baseline',
+    callback = function() if H.cache[buf_id] then H.schedule_diff_update(buf_id, 0) end end,
+  })
 
   local reset_if_enabled = vim.schedule_wrap(function(data)
     if not H.is_buf_enabled(data.buf) then return end
@@ -1359,50 +1338,6 @@ H.convert_view_to_extmark_opts = function(view)
 end
 
 -- Processing -----------------------------------------------------------------
-H.set_decoration_provider = function(ns_id_viz, ns_id_overlay)
-  local on_win = function(_, _, buf_id, top, bottom)
-    local buf_cache = H.cache[buf_id]
-    if buf_cache == nil then return false end
-
-    local viz_lines, overlay_lines = buf_cache.viz_lines, buf_cache.overlay_lines
-    if buf_cache.needs_clear then
-      H.clear_all_diff(buf_id)
-      buf_cache.needs_clear, buf_cache.dummy_extmark = false, nil
-      -- Ensure that sign column is visible even if hunks are outside of window
-      -- view (matters with `signcolumn=auto`)
-      if buf_cache.config.view.style == 'sign' and not vim.tbl_isempty(viz_lines) then
-        local dummy_opts = { sign_text = '  ', priority = 0, right_gravity = false }
-        dummy_opts.sign_hl_group, dummy_opts.cursorline_hl_group = 'SignColumn', 'CursorLineSign'
-        buf_cache.dummy_extmark = vim.api.nvim_buf_set_extmark(buf_id, ns_id_viz, 0, 0, dummy_opts)
-      end
-    end
-
-    local has_viz_extmarks = false
-    for i = top + 1, bottom + 1 do
-      if viz_lines[i] ~= nil then
-        H.set_extmark(buf_id, ns_id_viz, i - 1, 0, viz_lines[i])
-        viz_lines[i] = nil
-        has_viz_extmarks = true
-      end
-      if overlay_lines[i] ~= nil then
-        -- Allow several overlays at one line (like for "delete" and "change")
-        for j = 1, #overlay_lines[i] do
-          H.draw_overlay_line(buf_id, ns_id_overlay, i - 1, overlay_lines[i][j])
-        end
-        overlay_lines[i] = nil
-      end
-    end
-
-    -- Make sure to clear dummy extmark when it is not needed (otherwise it
-    -- affects signcolumn for cases like `yes:2` and `auto:2`)
-    if buf_cache.dummy_extmark ~= nil and has_viz_extmarks then
-      vim.api.nvim_buf_del_extmark(buf_id, ns_id_viz, buf_cache.dummy_extmark)
-      buf_cache.dummy_extmark = nil
-    end
-  end
-  vim.api.nvim_set_decoration_provider(ns_id_viz, { on_win = on_win })
-end
-
 H.schedule_diff_update = function(buf_id, delay_ms)
   local cache = H.cache[buf_id]
   if cache == nil then return end
@@ -1449,14 +1384,18 @@ H.update_buf_diff_now = function(buf_id, expected_cache)
   H.vimdiff_opts.linematch = options.linematch
 
   local buf_text, buf_lines = H.get_buftext(buf_id)
-  local ok, diff = pcall(vim.diff, buf_cache.ref_text, buf_text, H.vimdiff_opts)
+  local ok, result = pcall(require('mini.diff.hunks_loader.unstaged').compute, buf_cache.ref_text, buf_text, H.vimdiff_opts)
   if not ok then
-    H.set_state(buf_id, 'failed', tostring(diff))
+    H.set_state(buf_id, 'failed', tostring(result))
     return
   end
 
   -- Recompute hunks with summary and draw information
-  H.update_hunk_data(diff, buf_cache, buf_lines)
+  buf_cache.hunks, buf_cache.summary = result.hunks, result.summary
+  buf_cache.summary.source_name = H.get_active_source(buf_cache).name
+  if H.get_active_source(buf_cache).name == 'git' then require('mini.diff.hunks_loader').capture(buf_id, buf_text, H.vimdiff_opts) end
+  H.update_hunk_data(result.indices, buf_cache, buf_lines)
+  if H.git_cache[buf_id] then require('mini.diff.navigation.staged').update(buf_id, buf_cache.hunks, #buf_lines, H.git_cache[buf_id]) end
   H.update_staged_viz(buf_id, buf_cache, #buf_lines)
   buf_cache.has_result = true
 
@@ -1487,227 +1426,6 @@ H.update_buf_diff_now = function(buf_id, expected_cache)
 end
 
 H.update_buf_diff = vim.schedule_wrap(H.update_buf_diff_now)
-
-H.update_hunk_data = function(diff, buf_cache, buf_lines)
-  local do_overlay = buf_cache.overlay
-  local ref_lines = do_overlay and vim.split(buf_cache.ref_text, '\n') or nil
-
-  local extmark_opts, priority = buf_cache.extmark_opts, buf_cache.config.view.priority
-  local hunks, viz_lines, overlay_lines = {}, {}, {}
-  local n_add, n_change, n_delete = 0, 0, 0
-  local n_ranges, last_range_to = 0, -math.huge
-  for i, d in ipairs(diff) do
-    -- Hunk
-    local n_ref, n_buf = d[2], d[4]
-    local hunk_type = n_ref == 0 and 'add' or (n_buf == 0 and 'delete' or 'change')
-    local hunk = { type = hunk_type, ref_start = d[1], ref_count = n_ref, buf_start = d[3], buf_count = n_buf }
-    hunks[i] = hunk
-
-    -- Hunk summary
-    local hunk_n_change = math.min(n_ref, n_buf)
-    n_add = n_add + n_buf - hunk_n_change
-    n_change = n_change + hunk_n_change
-    n_delete = n_delete + n_ref - hunk_n_change
-
-    -- Number of contiguous ranges.
-    -- NOTE: this relies on `vim.diff()` output being sorted by `buf_start`.
-    local range_from = math.max(d[3], 1)
-    local range_to = range_from + math.max(n_buf, 1) - 1
-    n_ranges = n_ranges + ((range_from <= last_range_to + 1) and 0 or 1)
-    last_range_to = math.max(last_range_to, range_to)
-
-    -- Register lines for draw. At least one line should visualize hunk.
-    local viz_ext_opts = extmark_opts[hunk_type]
-    for l_num = range_from, range_to do
-      -- Prefer showing "change" hunk over other types
-      if viz_lines[l_num] == nil or hunk_type == 'change' then viz_lines[l_num] = viz_ext_opts end
-    end
-
-    if do_overlay then
-      if hunk_type == 'add' then H.append_overlay_add(overlay_lines, hunk, priority) end
-      if hunk_type == 'change' then H.append_overlay_change(overlay_lines, hunk, ref_lines, buf_lines, priority) end
-      if hunk_type == 'delete' then H.append_overlay_delete(overlay_lines, hunk, ref_lines, priority) end
-    end
-  end
-
-  buf_cache.hunks, buf_cache.viz_lines, buf_cache.overlay_lines = hunks, viz_lines, overlay_lines
-  buf_cache.summary = { add = n_add, change = n_change, delete = n_delete, n_ranges = n_ranges }
-  buf_cache.summary.source_name = H.get_active_source(buf_cache).name
-end
-
-H.update_staged_viz = function(buf_id, cache, line_count)
-  local git = H.git_cache[buf_id]
-  local staged = git and git.staged
-  if not staged or (staged.status ~= 'ready' and not git.staged_ready) then return end
-  staged.buffer_hunks = require('mini.diff.staged').project(staged.hunks, cache.hunks, line_count)
-  staged.status, git.staged_ready = 'ready', nil
-  local unstaged_lines = vim.tbl_extend('force', {}, cache.viz_lines)
-  for _, hunk in ipairs(staged.buffer_hunks) do
-    local from, to = H.get_hunk_buf_range(hunk)
-    local kind = hunk.type:sub(1, 1):upper() .. hunk.type:sub(2)
-    for line = from, to do
-      local mixed = unstaged_lines[line] ~= nil
-      local opts = vim.deepcopy(cache.extmark_opts[hunk.type])
-      if cache.config.view.style == 'sign' then opts.sign_text = mixed and '╋' or '┆' end
-      local field = H.style_extmark_data[cache.config.view.style].field
-      opts[field] = mixed and 'MiniDiffSignMixed' or ('MiniDiffSignStaged' .. kind)
-      cache.viz_lines[line] = opts
-    end
-  end
-end
-
-H.clear_all_diff = function(buf_id)
-  H.clear_namespace(buf_id, H.ns_id.viz, 0, -1)
-  H.clear_namespace(buf_id, H.ns_id.overlay, 0, -1)
-end
-
--- Overlay --------------------------------------------------------------------
-H.append_overlay = function(overlay_lines, l_num, data)
-  local t = overlay_lines[l_num] or {}
-  table.insert(t, data)
-  overlay_lines[l_num] = t
-end
-
-H.append_overlay_add = function(overlay_lines, hunk, priority)
-  -- Append one by one to have them reveal granularly when scrolling up
-  for lnum = hunk.buf_start, hunk.buf_start + hunk.buf_count - 1 do
-    H.append_overlay(overlay_lines, lnum, { type = 'add', priority = priority })
-  end
-end
-
-H.append_overlay_change = function(overlay_lines, hunk, ref_lines, buf_lines, priority)
-  -- For one-to-one change, show lines separately with word diff highlighted
-  -- This is usually the case when `linematch` is on
-  if hunk.buf_count == hunk.ref_count then
-    for i = 0, hunk.ref_count - 1 do
-      local ref_n, buf_n = hunk.ref_start + i, hunk.buf_start + i
-      -- Defer actually computing word diff until in decoration provider as it
-      -- will compute only for displayed lines
-      local data =
-        { type = 'change_worddiff', ref_line = ref_lines[ref_n], buf_line = buf_lines[buf_n], priority = priority }
-      H.append_overlay(overlay_lines, buf_n, data)
-    end
-    return
-  end
-
-  -- If not one-to-one change, show reference lines above first real one
-  local changed_lines = {}
-  for i = hunk.ref_start, hunk.ref_start + hunk.ref_count - 1 do
-    local l = { { ref_lines[i] .. H.overlay_suffix, 'MiniDiffOverChange' } }
-    table.insert(changed_lines, l)
-  end
-  local data = { type = 'change', lines = changed_lines, show_above = true, priority = priority }
-  H.append_overlay(overlay_lines, hunk.buf_start, data)
-
-  -- - Append one by one to have them reveal granularly when scrolling up
-  for lnum = hunk.buf_start + 1, hunk.buf_start + hunk.buf_count - 1 do
-    H.append_overlay(overlay_lines, lnum, { type = 'change', priority = priority })
-  end
-end
-
-H.append_overlay_delete = function(overlay_lines, hunk, ref_lines, priority)
-  local deleted_lines = {}
-  for i = hunk.ref_start, hunk.ref_start + hunk.ref_count - 1 do
-    table.insert(deleted_lines, { { ref_lines[i], 'MiniDiffOverDelete' }, { H.overlay_suffix, 'MiniDiffOverDelete' } })
-  end
-  local l_num, show_above = math.max(hunk.buf_start, 1), hunk.buf_start == 0
-  local data = { type = 'delete', lines = deleted_lines, show_above = show_above, priority = priority }
-  H.append_overlay(overlay_lines, l_num, data)
-end
-
-H.draw_overlay_line = function(buf_id, ns_id, row, data)
-  -- "Change worddif" hunk: compute word diff and show it above and over text
-  if data.type == 'change_worddiff' then return H.draw_overlay_line_worddiff(buf_id, ns_id, row, data) end
-
-  local opts = { priority = data.priority }
-
-  -- "Add"/"Change" hunks highlight whole lines in affected buffer range
-  if data.type ~= 'delete' then
-    opts.end_row, opts.end_col, opts.hl_eol = row + 1, 0, true
-    opts.hl_group = data.type == 'add' and 'MiniDiffOverAdd' or 'MiniDiffOverContextBuf'
-  end
-
-  -- "Change"/"Delete" hunks show affected reference range as virtual lines
-  opts.virt_lines, opts.virt_lines_above, opts.virt_lines_overflow =
-    data.lines, data.show_above, H.extmark_virt_lines_overflow
-  H.set_extmark(buf_id, ns_id, row, 0, opts)
-end
-
-H.draw_overlay_line_worddiff = function(buf_id, ns_id, row, data)
-  local ref_line, buf_line, priority = data.ref_line, data.buf_line, data.priority
-  local ref_parts, buf_parts = H.compute_worddiff_changed_parts(ref_line, buf_line)
-
-  -- Show changes in reference as two-colored virtual line above
-  local virt_line, index = {}, 1
-  for i = 1, #ref_parts do
-    local part = ref_parts[i]
-    if index < part[1] then table.insert(virt_line, { ref_line:sub(index, part[1] - 1), 'MiniDiffOverContext' }) end
-    table.insert(virt_line, { ref_line:sub(part[1], part[2]), 'MiniDiffOverChange' })
-    index = part[2] + 1
-  end
-  if index <= ref_line:len() then table.insert(virt_line, { ref_line:sub(index), 'MiniDiffOverContext' }) end
-  table.insert(virt_line, { H.overlay_suffix, 'MiniDiffOverContext' })
-
-  --stylua: ignore
-  local ref_opts = {
-    virt_lines = { virt_line }, virt_lines_above = true, virt_lines_overflow = H.extmark_virt_lines_overflow,
-    priority = priority,
-  }
-  H.set_extmark(buf_id, ns_id, row, 0, ref_opts)
-
-  -- Show changes in buffer line as one whole-line highlighting with separate
-  -- highlighting for changed regions on top (as priority of context is lower)
-  local off = vim.bo[buf_id].bomb and (H.bom_bytes[vim.bo[buf_id].fileencoding] or ''):len() or 0
-  for i = 1, #buf_parts do
-    local part = buf_parts[i]
-    local buf_opts = { end_row = row, end_col = part[2] - off, hl_group = 'MiniDiffOverChangeBuf', priority = priority }
-    H.set_extmark(buf_id, ns_id, row, part[1] - 1 - off, buf_opts)
-  end
-  local context_opts =
-    { end_row = row + 1, end_col = 0, hl_group = 'MiniDiffOverContextBuf', hl_eol = true, priority = priority - 1 }
-  H.set_extmark(buf_id, ns_id, row, 0, context_opts)
-end
-
-H.compute_worddiff_changed_parts = function(ref_line, buf_line)
-  local ref_sliced, ref_byte_starts, ref_byte_ends = H.slice_line(ref_line)
-  local buf_sliced, buf_byte_starts, buf_byte_ends = H.slice_line(buf_line)
-  local diff = vim.diff(ref_sliced, buf_sliced, H.worddiff_opts)
-  local ref_ranges, buf_ranges = {}, {}
-  for i = 1, #diff do
-    local d = diff[i]
-    if d[2] > 0 then table.insert(ref_ranges, { ref_byte_starts[d[1]], ref_byte_ends[d[1] + d[2] - 1] }) end
-    if d[4] > 0 then table.insert(buf_ranges, { buf_byte_starts[d[3]], buf_byte_ends[d[3] + d[4] - 1] }) end
-  end
-
-  return ref_ranges, buf_ranges
-end
-
-H.str_utfindex = function(s, i) return vim.str_utfindex(s, 'utf-32', i) end
-if vim.fn.has('nvim-0.11') == 0 then H.str_utfindex = function(s, i) return (vim.str_utfindex(s, i)) end end
-
-H.slice_line = function(line)
-  -- Intertwine every proper character with '\n'
-  local line_len = line:len()
-  local sliced, starts, ends
-  -- Make short route for a very common case of no multibyte characters
-  if H.str_utfindex(line) == line_len then
-    sliced, starts, ends = line:gsub('(.)', '%1\n'), {}, {}
-    for i = 1, string.len(line) do
-      starts[i], ends[i] = i, i
-    end
-  else
-    sliced, starts, ends = {}, vim.str_utf_pos(line), {}
-    for i = 1, #starts - 1 do
-      table.insert(sliced, line:sub(starts[i], starts[i + 1] - 1))
-      table.insert(ends, starts[i + 1] - 1)
-    end
-    table.insert(sliced, line:sub(starts[#starts], line_len))
-    table.insert(ends, line_len)
-    sliced = table.concat(sliced, '\n') .. '\n'
-  end
-
-  return sliced, starts, ends
-end
 
 -- Hunks ----------------------------------------------------------------------
 H.get_hunk_buf_range = function(hunk)
@@ -1781,60 +1499,7 @@ H.yank_hunks_ref = function(ref_text, hunks, register)
   vim.fn.setreg(register, hunk_ref_lines, 'l')
 end
 
-H.get_contiguous_hunk_ranges = function(hunks)
-  if #hunks == 0 then return {} end
-  hunks = vim.deepcopy(hunks)
-  table.sort(hunks, H.hunk_order)
-
-  local h1_from, h1_to = H.get_hunk_buf_range(hunks[1])
-  local res = { { from = h1_from, to = h1_to } }
-  for i = 2, #hunks do
-    local h, cur_region = hunks[i], res[#res]
-    local h_from, h_to = H.get_hunk_buf_range(h)
-    if h_from <= cur_region.to + 1 then
-      cur_region.to = math.max(cur_region.to, h_to)
-    else
-      table.insert(res, { from = h_from, to = h_to })
-    end
-  end
-  return res
-end
-
-H.iterate_hunk_ranges = function(ranges, direction, opts)
-  local n = #ranges
-
-  -- Compute initial index
-  local init_ind
-  if direction == 'first' then init_ind = 0 end
-  if direction == 'prev' then init_ind = H.get_range_id_prev(ranges, opts.line_start) end
-  if direction == 'next' then init_ind = H.get_range_id_next(ranges, opts.line_start) end
-  if direction == 'last' then init_ind = n + 1 end
-
-  local is_on_edge = (direction == 'prev' and init_ind == 1) or (direction == 'next' and init_ind == n)
-  if not opts.wrap and is_on_edge then return nil end
-
-  -- Compute destination index
-  local is_move_forward = direction == 'first' or direction == 'next'
-  local res_ind = init_ind + opts.n_times * (is_move_forward and 1 or -1)
-  local did_wrap = opts.wrap and (res_ind < 1 or n < res_ind)
-  res_ind = opts.wrap and ((res_ind - 1) % n + 1) or math.min(math.max(res_ind, 1), n)
-
-  return res_ind, did_wrap
-end
-
-H.get_range_id_next = function(ranges, line_start)
-  for i = #ranges, 1, -1 do
-    if ranges[i].from <= line_start then return i end
-  end
-  return 0
-end
-
-H.get_range_id_prev = function(ranges, line_start)
-  for i = 1, #ranges do
-    if line_start <= ranges[i].to then return i end
-  end
-  return #ranges + 1
-end
+H.get_contiguous_hunk_ranges = require('mini.diff.navigation.global_navigation').contiguous
 
 H.hunk_order = function(a, b)
   -- Ensure buffer order and that "change" hunks are listed earlier "delete"
@@ -1943,109 +1608,7 @@ H.git_setup_index_watch = function(buf_id, git_dir_path)
 end
 
 H.git_set_ref_text = function(buf_id)
-  local cache, git_cache = H.cache[buf_id], H.git_cache[buf_id]
-  if cache == nil or git_cache == nil then return end
-  -- Capture identity before scheduling: disable/reload must invalidate even a
-  -- reference read which has not started its process yet.
-  vim.schedule(function()
-    if H.cache[buf_id] ~= cache or H.git_cache[buf_id] ~= git_cache then return end
-    git_cache.request = (git_cache.request or 0) + 1
-    local request = git_cache.request
-    cache.ref_pending = true
-    cache.ref_error = nil
-    H.pending_state(buf_id)
-    if git_cache.watch_logs then git_cache.watch_logs() end
-    if git_cache.watch_ref then git_cache.watch_ref() end
-    git_cache.staged = { status = git_cache.staged and 'updating' or 'loading', hunks = {}, buffer_hunks = {} }
-    git_cache.staged_ready = nil
-    local index_done, staged_done, index_missing = false, false, false
-    local function current()
-      return H.cache[buf_id] == cache and H.git_cache[buf_id] == git_cache and git_cache.request == request
-    end
-    local function publish_staged()
-      if not current() or not index_done or not staged_done then return end
-      local staged = git_cache.staged
-      if cache.ref_error then
-        staged.status, staged.reason = 'failed', cache.ref_error
-        staged.hunks, staged.buffer_hunks = {}, {}
-      elseif staged.status == 'loading' or staged.status == 'updating' then
-        git_cache.staged_ready = true
-      end
-      -- A successfully read staged deletion proves the absent index path has
-      -- an empty baseline. An arbitrary failed index read does not.
-      if index_missing and git_cache.staged_ready then
-        local deleted = #staged.hunks > 0
-        for _, hunk in ipairs(staged.hunks) do deleted = deleted and hunk.type == 'delete' end
-        if deleted then
-          MiniDiff.set_ref_text(buf_id, '')
-        else
-          staged.status, staged.reason = 'unavailable', 'No usable index reference'
-          git_cache.staged_ready = nil
-        end
-      end
-      H.schedule_diff_update(buf_id, 0)
-      vim.api.nvim_buf_call(buf_id, function()
-        vim.api.nvim_exec_autocmds('User', { pattern = 'MiniDiffStateChanged' })
-      end)
-    end
-    local function buf_set_ref_text(code, text, err)
-      if not current() then return end
-      index_done = true
-      index_missing = code ~= 0
-      cache.ref_pending = nil
-      cache.ref_error = err
-      if err then
-        H.set_state(buf_id, 'failed', err)
-        git_cache.staged = { status = 'failed', reason = err, hunks = {}, buffer_hunks = {} }
-        H.update_buf_diff(buf_id, cache)
-        return
-      end
-      MiniDiff.set_ref_text(buf_id, code == 0 and text:gsub('\r\n', '\n') or nil)
-      publish_staged()
-    end
-
-    -- NOTE: Do not cache buffer's name to react to its possible rename
-    local path = H.get_buf_realpath(buf_id)
-    if path == '' then path = vim.api.nvim_buf_get_name(buf_id) end
-    if path == '' then
-      staged_done = true
-      git_cache.staged = { status = 'unavailable', reason = 'No file path', hunks = {}, buffer_hunks = {} }
-      return buf_set_ref_text(1, '')
-    end
-    local cwd, basename = vim.fn.fnamemodify(path, ':h'), vim.fn.fnamemodify(path, ':t')
-
-    H.git_read_reference({ 'show', ':0:./' .. basename }, cwd, function(code, text, err)
-      if not current() then return end
-      if code == 0 or err then return buf_set_ref_text(code, text, err) end
-      -- Missing stage zero can mean untracked, ignored, or unmerged. Only a
-      -- confirmed nonignored path absent from the index gets an empty baseline.
-      H.git_read_reference({ 'ls-files', '--stage', '-z', '--', ':(literal)' .. basename }, cwd, function(list_code, entries, list_err)
-        if not current() then return end
-        if list_code ~= 0 or list_err or entries ~= '' then return buf_set_ref_text(code, '', list_err) end
-        H.git_read_reference({ 'check-ignore', '--quiet', '--', basename }, cwd, function(ignore_code, _, ignore_err)
-          if not current() then return end
-          if ignore_code == 1 and not ignore_err then return buf_set_ref_text(0, '') end
-          buf_set_ref_text(code, '', ignore_err)
-        end)
-      end)
-    end)
-    -- Git handles unborn HEAD and paths absent from HEAD without inventing an
-    -- empty baseline after an arbitrary failed `git show HEAD:path` operation.
-    local args = { 'diff', '--cached', '--no-color', '--no-ext-diff', '--no-textconv', '--no-renames',
-      '--unified=0', '--inter-hunk-context=0', '--diff-algorithm=histogram', '--', ':(literal)' .. basename }
-    H.git_read_reference(args, cwd, function(code, patch, err)
-      if not current() then return end
-      staged_done = true
-      local hunks, reason
-      if code == 0 and not err then hunks, reason = require('mini.diff.staged').parse(patch) end
-      git_cache.staged = {
-        status = hunks and (cache.has_result and 'updating' or 'loading') or 'failed',
-        reason = err or reason or (not hunks and 'Could not read staged diff' or nil),
-        hunks = hunks or {}, buffer_hunks = {},
-      }
-      publish_staged()
-    end)
-  end)
+  return require('mini.diff.hunks_loader').refresh(buf_id, H, MiniDiff)
 end
 
 -- Reference reads settle only after both exit and EOF (including empty files).
@@ -2216,15 +1779,6 @@ end
 -- Try getting buffer's full real path (after resolving symlinks)
 H.get_buf_realpath = function(buf_id) return vim.loop.fs_realpath(vim.api.nvim_buf_get_name(buf_id)) or '' end
 
--- nvim__redraw replaced nvim__buf_redraw_range during the 0.10 release cycle
-H.redraw_buffer = function(buf_id)
-  vim.api.nvim__buf_redraw_range(buf_id, 0, -1)
-
-  -- Redraw statusline to have possible statusline component up to date
-  vim.cmd('redrawstatus')
-end
-if vim.api.nvim__redraw ~= nil then
-  H.redraw_buffer = function(buf_id) vim.api.nvim__redraw({ buf = buf_id, valid = true, statusline = true }) end
-end
+require('mini.diff.rendering').install(H)
 
 return MiniDiff

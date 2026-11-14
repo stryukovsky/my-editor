@@ -35,6 +35,10 @@ Personal Neovim configuration managed by
 - Helpers extending existing plugins live in `lua/integrations/` and use the
   `integrations.*` namespace. Terminal features share `terminal_reimagined`;
   ripgrep navigation lives in `moonshine.nvim/ripgreplsp`.
+- MiniDiff engine and Moonshine diff/review/history integration share
+  `moonshine.nvim/mini_diff/`. Its `mini.diff` modules separate `hunks_loader`,
+  `hunks_cache`, `navigation`, `rendering`, `preview`, and `hunk_mode` ownership.
+  See `moonshine.nvim/mini_diff/README.md` for comparison rules and focused tests.
 
 ## Keymap Convention (Critical)
 
