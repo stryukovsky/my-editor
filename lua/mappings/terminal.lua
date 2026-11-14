@@ -60,8 +60,9 @@ map("n", "<leader>ex", function()
 
   local directory = vim.fn.fnamemodify(path, ":h")
   local filename = vim.fn.fnamemodify(path, ":t")
-  vim.cmd.terminal()
-  vim.bo.buflisted = true
+  if not terminal.open_new() then
+    return
+  end
   terminal.set_name(0, "  Run " .. filename)
   vim.api.nvim_chan_send(vim.b.terminal_job_id, ("cd -- %s && %s -- %s\n"):format(
     vim.fn.shellescape(directory),
