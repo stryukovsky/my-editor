@@ -785,3 +785,4 @@ Statusline
 yanky
 liquibase
 upsert
+errgroup

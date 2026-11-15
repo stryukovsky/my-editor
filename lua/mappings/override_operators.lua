@@ -15,6 +15,12 @@ for _, key in ipairs { "d", "D", "c", "C", "x", "X", "s", "S", "." } do
   end, { expr = true, desc = "Delete/change without overwriting clipboard" })
 end
 
+-- Uppercase D deliberately yanks deletions using the usual registers.
+map("n", "D", "d", { desc = "Delete with yank using a motion" })
+map("n", "Dd", "dd", { desc = "Delete line with yank" })
+map("n", "DD", "dd", { desc = "Delete line with yank" })
+map("x", "D", "d", { desc = "Delete selection with yank" })
+
 map("x", "p", "P", { desc = "Replace selection without overwriting clipboard" })
 
 -- Helper to set search register without moving cursor

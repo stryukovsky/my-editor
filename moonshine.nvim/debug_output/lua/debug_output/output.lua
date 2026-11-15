@@ -87,6 +87,11 @@ local function register_buffer(session_id, buf)
       if buffers then
         buffers[buf] = nil
       end
+      -- Barbar's queued BufDelete redraw can run in the old buffer context.
+      -- Refresh once that redraw has finished and the new buffer is current.
+      vim.defer_fn(function()
+        require("barbar.ui.render").update()
+      end, 0)
     end,
   })
 end
