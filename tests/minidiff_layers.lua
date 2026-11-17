@@ -141,7 +141,9 @@ check(vim.fn.line(".") == 1, "untracked unsaved hunk is not navigable")
 git("add", "new.txt")
 settled(1, 1)
 check(vim.api.nvim_buf_get_lines(buf, 0, -1, false)[2] == "new unsaved line", "staging a new file preserves its extra unsaved edit")
-check(#diff.get_navigation_hunk_ranges(buf) == 1, "adjacent new-file layers form one hunk target")
+local new_ranges = diff.get_navigation_hunk_ranges(buf)
+check(#new_ranges == 2 and new_ranges[1].from == 1 and new_ranges[1].to == 1
+  and new_ranges[2].from == 2 and new_ranges[2].to == 2, "adjacent new-file layers remain separate targets")
 
 vim.cmd.edit(root .. "/not-created.txt")
 buf = vim.api.nvim_get_current_buf()

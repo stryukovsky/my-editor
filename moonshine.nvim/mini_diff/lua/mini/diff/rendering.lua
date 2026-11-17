@@ -110,16 +110,17 @@ function M.install(H)
       local from, to = H.get_hunk_buf_range(hunk)
       local kind = hunk.type:sub(1, 1):upper() .. hunk.type:sub(2)
       for line = from, to do
-        local mixed, opts =
-          unstaged_lines[line] ~= nil,
-          vim.deepcopy(cache.extmark_opts[hunk.type])
-        if cache.config.view.style == "sign" then
-          opts.sign_text = mixed and "╋" or "┆"
+        -- Both layers use the same drawable range/deletion-anchor rules.
+        -- Keep the actual unstaged change visible instead of overwriting it.
+        if not unstaged_lines[line] then
+          local opts = vim.deepcopy(cache.extmark_opts[hunk.type])
+          if cache.config.view.style == "sign" then
+            opts.sign_text = "┆"
+          end
+          opts[H.style_extmark_data[cache.config.view.style].field] = "MiniDiffSignStaged"
+            .. kind
+          cache.viz_lines[line] = opts
         end
-        opts[H.style_extmark_data[cache.config.view.style].field] = mixed
-            and "MiniDiffSignMixed"
-          or ("MiniDiffSignStaged" .. kind)
-        cache.viz_lines[line] = opts
       end
     end
   end

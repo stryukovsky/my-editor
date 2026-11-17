@@ -14,7 +14,7 @@ review/history integration. The former `diff_tools` runtime root is no longer us
   rejects obsolete tokens, buffer revisions, saved revisions, and renamed paths.
   `_read`/`_write` and attachment adapters are private engine plumbing, not consumer APIs.
 - `lua/mini/diff/navigation/`: per-kind projection/eligibility rules and
-  `global_navigation.lua` for grouping, position/counts, movement, repeat entry
+  `global_navigation.lua` for layer-aware segmentation, position/counts, movement, repeat entry
   points, and final-target handoff.
 - `lua/mini/diff/rendering.lua`: gutter/inline decorations, word highlights,
   preview painting, redraws, and decoration cleanup. It owns derived drawing data only.
@@ -37,6 +37,24 @@ Legacy `MiniDiff` snapshot/mutation APIs use the effective comparison. Navigatio
 may include projected staged anchors; mutation and preview never receive those
 anchors as reset/selection ranges. Review/manual sources do not run ordinary
 Git or saved-file loaders.
+
+## Overlapping staged and unstaged changes
+
+Effective unstaged hunks take precedence over projected staged ranges for
+navigation and gutter signs. Staged ranges are split around unstaged hunks;
+the remaining staged-only portions are separate navigation stops, even when
+directly adjacent to unstaged stops. Contiguous hunks within one layer still
+group together. Counts, repeat, and end-of-file handoff use this same list.
+
+For example, a staged whole-file addition at lines 1–20 with a later unstaged
+edit at 8–9 has stops at 1–7 (staged), 8–9 (unstaged), and 10–20 (staged).
+Unstaged add/change/delete signs remain visible in `MiniDiffViz`, including
+deletion anchors; staged-only lines retain their staged signs. Overlap no longer
+replaces an unstaged sign with a mixed marker. Inline overlays are unchanged.
+
+These segments are derived display data only. HEAD → index hunks and effective
+index → buffer hunks stay intact. Reset, preview, and selection continue using
+the actual effective unstaged hunks rather than split staged segments.
 
 ## Regression checks
 

@@ -80,7 +80,7 @@ equal(diff.get_staged_data(buf).buffer_hunks[1].buf_start, 5, "unsaved insertion
 vim.api.nvim_buf_set_lines(buf, 0, -1, false, baseline)
 settled(2, 2)
 equal(#diff.get_navigation_hunk_ranges(buf), 2, "reverse edits retain staged targets without duplicate stops")
-equal(vim.trim(marker(3).sign_text), "╋", "mixed marker")
+equal(marker(3).sign_hl_group, "MiniDiffSignChange", "reverse edit keeps unstaged marker")
 vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "all locally removed" })
 settled(2, 1)
 for _, hunk in ipairs(diff.get_staged_data(buf).buffer_hunks) do
@@ -209,13 +209,140 @@ root = main_root
 root = root .. "/unborn"
 assert(vim.fn.mkdir(root, "p") == 1)
 git "init"
-vim.fn.writefile({ "new file" }, root .. "/new.txt")
+vim.fn.writefile(baseline, root .. "/new.txt")
 git("add", "new.txt")
 vim.cmd.edit(root .. "/new.txt")
 buf = vim.api.nvim_get_current_buf()
 settled(1, 0)
 equal(diff.get_staged_data(buf).hunks[1].type, "add", "unborn staged addition")
 equal(marker(1).sign_hl_group, "MiniDiffSignStagedAdd", "addition highlight")
+
+-- A staged whole-file addition must not swallow newer unstaged edits.
+local staged_addition = diff.get_staged_data(buf).hunks
+local addition_index = git("show", ":new.txt")
+local function edit_addition(lines, count)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  diff.flush_buf_diff(buf)
+  settled(1, count)
+  vim.cmd.redraw()
+end
+local function segments(expected, label)
+  local actual = {}
+  for _, range in ipairs(diff.get_navigation_hunk_ranges(buf)) do
+    actual[#actual + 1] = { range.from, range.to }
+  end
+  equal(actual, expected, label)
+end
+local inside = vim.deepcopy(baseline)
+inside[5] = "unstaged five"
+edit_addition(inside, 1)
+segments({ { 1, 4 }, { 5, 5 }, { 6, 12 } }, "split staged addition around edit")
+equal(marker(5).sign_hl_group, "MiniDiffSignChange", "overlap keeps unstaged change sign")
+equal(vim.trim(marker(5).sign_text), vim.trim(H.cache[buf].extmark_opts.change.sign_text), "overlap keeps unstaged change glyph")
+equal(marker(4).sign_hl_group, "MiniDiffSignStagedAdd", "preceding staged sign")
+equal(marker(6).sign_hl_group, "MiniDiffSignStagedAdd", "following staged sign")
+vim.cmd.write()
+settled(1, 1)
+segments({ { 1, 4 }, { 5, 5 }, { 6, 12 } }, "saving preserves split edit locations")
+inside[9] = "unstaged nine"
+edit_addition(inside, 2)
+segments({ { 1, 4 }, { 5, 5 }, { 6, 8 }, { 9, 9 }, { 10, 12 } }, "multiple contained edits")
+for _, enabled in ipairs { true, false } do
+  integration.toggle_overlay()
+  wait(function() return diff.get_buf_data(buf).overlay == enabled end, "overlap overlay toggle")
+  diff.flush_buf_diff(buf)
+  vim.cmd.redraw()
+  equal(marker(5).sign_hl_group, "MiniDiffSignChange", "overlay toggle retains unstaged precedence")
+  equal(marker(6).sign_hl_group, "MiniDiffSignStagedAdd", "overlay toggle retains staged remainder")
+  segments({ { 1, 4 }, { 5, 5 }, { 6, 8 }, { 9, 9 }, { 10, 12 } }, "overlay toggle preserves segments")
+end
+
+-- Mappings, repeat, counts, and handoff all use these same adjacent stops.
+focused = false
+vim.api.nvim_win_set_cursor(0, { 1, 0 })
+equal(integration.lualine_hunks(), "hunks: 1/5", "first staged segment position")
+mappings["]g"]()
+equal(vim.fn.line("."), 5, "mapping reaches contained unstaged edit")
+equal(integration.lualine_hunks(), "hunks: 2/5", "contained unstaged position")
+navigation_repeat.repeat_next()
+equal(vim.fn.line("."), 6, "repeat reaches staged remainder")
+navigation_repeat.repeat_next()
+equal(vim.fn.line("."), 9, "repeat reaches second unstaged edit")
+navigation_repeat.repeat_next()
+equal(vim.fn.line("."), 10, "repeat reaches final staged remainder")
+assert(not focused, "no early handoff within split addition")
+equal(integration.lualine_hunks(), "hunks: 5/5", "final staged segment position")
+navigation_repeat.repeat_previous()
+equal(vim.fn.line("."), 9, "backward repeat respects layer boundary")
+mappings["[g"]()
+equal(vim.fn.line("."), 6, "previous mapping reaches staged segment")
+vim.api.nvim_win_set_cursor(0, { 1, 0 })
+mappings["[g"]()
+equal(vim.fn.line("."), 10, "split segment backward wrap")
+navigation_repeat.repeat_next()
+assert(focused, "handoff only after final split segment")
+
+-- Split staged ranges never become mutation or selection ranges.
+vim.api.nvim_win_set_cursor(0, { 4, 0 })
+equal(diff.get_contiguous_hunk_range_at_cursor(buf), nil, "staged segment has no action range")
+integration.reset_hunk()
+equal(vim.api.nvim_buf_get_lines(buf, 0, -1, false), inside, "staged segment reset does nothing")
+integration.preview()
+equal(vim.api.nvim_get_current_buf(), buf, "staged segment has no unstaged preview")
+vim.api.nvim_win_set_cursor(0, { 5, 0 })
+equal(diff.get_contiguous_hunk_range_at_cursor(buf), { from = 5, to = 5 }, "real unstaged action range")
+integration.preview()
+local overlap_preview = vim.api.nvim_get_current_buf()
+assert(overlap_preview ~= buf, "contained unstaged preview opened")
+equal(vim.api.nvim_buf_get_lines(overlap_preview, 0, -1, false), { baseline[5], inside[5] }, "preview contains only real unstaged hunk")
+vim.api.nvim_set_current_buf(buf)
+vim.api.nvim_buf_delete(overlap_preview, { force = true })
+vim.api.nvim_win_set_cursor(0, { 5, 0 })
+integration.select()
+equal({ vim.fn.line("v"), vim.fn.line(".") }, { 5, 5 }, "selection excludes staged segments")
+vim.cmd "normal! \27"
+integration.reset_hunk()
+settled(1, 1)
+local reset = vim.deepcopy(inside)
+reset[5] = baseline[5]
+equal(vim.api.nvim_buf_get_lines(buf, 0, -1, false), reset, "reset changes only selected unstaged hunk")
+equal(git("show", ":new.txt"), addition_index, "split navigation and actions preserve index")
+equal(diff.get_staged_data(buf).hunks, staged_addition, "staged snapshot remains intact")
+
+local inserted = vim.deepcopy(baseline)
+table.insert(inserted, 1, "new first line")
+edit_addition(inserted, 1)
+segments({ { 1, 1 }, { 2, 13 } }, "insertion above staged range remains separate")
+equal(marker(1).sign_hl_group, "MiniDiffSignAdd", "unstaged insertion sign")
+equal(vim.trim(marker(1).sign_text), vim.trim(H.cache[buf].extmark_opts.add.sign_text), "unstaged insertion glyph")
+equal(marker(2).sign_hl_group, "MiniDiffSignStagedAdd", "shifted staged addition sign")
+inserted = vim.deepcopy(baseline)
+table.insert(inserted, 5, "new middle line")
+edit_addition(inserted, 1)
+segments({ { 1, 4 }, { 5, 5 }, { 6, 13 } }, "interior insertion splits staged span")
+equal(marker(5).sign_hl_group, "MiniDiffSignAdd", "interior unstaged add sign")
+
+local deleted = vim.deepcopy(baseline)
+table.remove(deleted, 5)
+edit_addition(deleted, 1)
+segments({ { 1, 3 }, { 4, 4 }, { 5, 11 } }, "deletion anchor splits staged span")
+equal(marker(4).sign_hl_group, "MiniDiffSignDelete", "overlapping deletion anchor stays unstaged")
+equal(vim.trim(marker(4).sign_text), vim.trim(H.cache[buf].extmark_opts.delete.sign_text), "unstaged deletion anchor glyph")
+deleted = vim.deepcopy(baseline)
+table.remove(deleted, 1)
+edit_addition(deleted, 1)
+segments({ { 1, 1 }, { 2, 11 } }, "start deletion anchor remains reachable")
+
+local replaced = {}
+for i = 1, #baseline do replaced[i] = "replacement " .. i end
+edit_addition(replaced, 1)
+segments({ { 1, 12 } }, "complete overlap has one unstaged target")
+equal(marker(1).sign_hl_group, "MiniDiffSignChange", "complete overlap stays unstaged")
+edit_addition({}, 1)
+segments({ { 1, 1 } }, "removed staged file has one valid deletion anchor")
+equal(marker(1).sign_hl_group, "MiniDiffSignChange", "empty buffer replacement stays unstaged")
+edit_addition(baseline, 0)
+segments({ { 1, 12 } }, "staged-only addition remains one target")
 
 local parsed = helpers.parse("@@ -2,2 +1,0 @@\n")
 equal(parsed[1].type, "delete", "staged deletion")

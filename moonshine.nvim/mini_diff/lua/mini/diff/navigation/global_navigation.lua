@@ -26,6 +26,46 @@ function M.contiguous(hunks)
   return result
 end
 
+-- Keep effective unstaged ranges whole. Only derived staged display ranges are
+-- clipped; neither layer's source hunks become mutation/selection ranges here.
+function M.segments(unstaged, staged)
+  local unstaged_ranges, staged_ranges =
+    M.contiguous(unstaged), M.contiguous(staged)
+  local result = {}
+  for _, range in ipairs(unstaged_ranges) do
+    result[#result + 1] =
+      { from = range.from, to = range.to, layer = "unstaged" }
+  end
+  local first = 1
+  for _, range in ipairs(staged_ranges) do
+    local from = range.from
+    while unstaged_ranges[first] and unstaged_ranges[first].to < from do
+      first = first + 1
+    end
+    for index = first, #unstaged_ranges do
+      local edit = unstaged_ranges[index]
+      if edit.from > range.to then
+        break
+      end
+      if edit.from > from then
+        result[#result + 1] =
+          { from = from, to = edit.from - 1, layer = "staged" }
+      end
+      from = math.max(from, edit.to + 1)
+      if from > range.to then
+        break
+      end
+    end
+    if from <= range.to then
+      result[#result + 1] = { from = from, to = range.to, layer = "staged" }
+    end
+  end
+  table.sort(result, function(a, b)
+    return a.from < b.from
+  end)
+  return result
+end
+
 function M.ranges(buf)
   local effective = require("mini.diff.navigation.unstaged").hunks(buf)
   local saved, unsaved =
@@ -34,8 +74,7 @@ function M.ranges(buf)
   vim.list_extend(hunks, saved)
   vim.list_extend(hunks, unsaved)
   vim.list_extend(hunks, require("mini.diff.navigation.untracked").hunks(buf))
-  vim.list_extend(hunks, require("mini.diff.navigation.staged").hunks(buf))
-  return M.contiguous(hunks)
+  return M.segments(hunks, require("mini.diff.navigation.staged").hunks(buf))
 end
 
 function M.position(buf, line)

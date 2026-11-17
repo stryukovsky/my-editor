@@ -45,6 +45,66 @@ diff.setup {
 local function equal(actual, expected, label)
   assert(vim.deep_equal(actual, expected), label .. ": " .. vim.inspect(actual))
 end
+local function hunk(from, count)
+  return { buf_start = from, buf_count = count }
+end
+local segment_cases = {
+  { {}, {}, {} },
+  {
+    {},
+    { hunk(2, 2), hunk(4, 1) },
+    { { from = 2, to = 4, layer = "staged" } },
+  },
+  {
+    { hunk(2, 2), hunk(4, 1) },
+    {},
+    { { from = 2, to = 4, layer = "unstaged" } },
+  },
+  {
+    { hunk(3, 1), hunk(4, 1) },
+    { hunk(1, 6) },
+    {
+      { from = 1, to = 2, layer = "staged" },
+      { from = 3, to = 4, layer = "unstaged" },
+      { from = 5, to = 6, layer = "staged" },
+    },
+  },
+  {
+    { hunk(1, 6) },
+    { hunk(2, 1), hunk(5, 1) },
+    { { from = 1, to = 6, layer = "unstaged" } },
+  },
+  {
+    { hunk(0, 0) },
+    { hunk(0, 0) },
+    { { from = 1, to = 1, layer = "unstaged" } },
+  },
+  {
+    { hunk(4, 0) },
+    { hunk(2, 3) },
+    {
+      { from = 2, to = 3, layer = "staged" },
+      { from = 4, to = 4, layer = "unstaged" },
+    },
+  },
+  {
+    { hunk(2, 1) },
+    { hunk(3, 1) },
+    {
+      { from = 2, to = 2, layer = "unstaged" },
+      { from = 3, to = 3, layer = "staged" },
+    },
+  },
+}
+for index, case in ipairs(segment_cases) do
+  local before = vim.deepcopy(case)
+  equal(
+    navigation.segments(case[1], case[2]),
+    case[3],
+    "layer segment case " .. index
+  )
+  equal(case, before, "segmentation never mutates source hunks")
+end
 local function wait(predicate, label)
   assert(vim.wait(4000, predicate, 10), label)
 end
