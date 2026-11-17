@@ -148,10 +148,6 @@ function cursor() {
     vpn_on_hiddify && caveman run -- cursor-agent
 }
 
-function opencode() {
-    vpn_on_hiddify && ~/.opencode/bin/opencode2
-}
-
 function codx() {
     vpn_on_hiddify && ~/.local/bin/codex -a never
 }
