@@ -70,3 +70,4 @@ require "configs.zenmode"
 require "configs.todotxt"
 require "configs.csv"
 require("moonshine.input").setup()
+require "configs.confirm"

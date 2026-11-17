@@ -1,0 +1,1 @@
+require("moonshine.confirm").setup()
