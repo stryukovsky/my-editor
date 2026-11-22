@@ -1,8 +1,4 @@
--- Native Q, zq{motion}, gQ and Ctrl-click are provided by Neovim 0.13.
-if vim.fn.has "nvim-0.13" == 0 then
-  return
-end
-
+-- Native Q, zq{motion}, gQ and Ctrl-click are provided by Neovim.
 local map = require "mappings.map"
 local escape = require "utils.escape"
 local namespace = vim.api.nvim_create_namespace "nvim.multicursor"
@@ -12,7 +8,7 @@ for _, filetype in ipairs(require "moonshine.utils.technical_ui_filetypes") do
 end
 
 -- Keep plugin-local mappings intact and guard only the native defaults.
-for _, key in ipairs { "Q", "zq", "gQ", "<C-LeftMouse>" } do
+for _, key in ipairs { "q", "Q", "zq", "gQ", "<C-LeftMouse>" } do
   map({ "n", "x" }, key, function()
     local buf = vim.api.nvim_get_current_buf()
     if key == "<C-LeftMouse>" then
@@ -21,13 +17,11 @@ for _, key in ipairs { "Q", "zq", "gQ", "<C-LeftMouse>" } do
         buf = vim.api.nvim_win_get_buf(win)
       end
     end
-    if
-      vim.bo[buf].buftype ~= "" or technical_filetypes[vim.bo[buf].filetype]
-    then
+    if vim.bo[buf].buftype ~= "" or technical_filetypes[vim.bo[buf].filetype] then
       return ""
     end
-    return key
-  end, { expr = true, desc = "Multicursor: editing buffers only" })
+    return key == "q" and "1q=" or key
+  end, { expr = true, desc = key == "q" and "Multicursor: enable follow mode" or "Multicursor: editing buffers only" })
 end
 
 map("n", "<Esc>", function()

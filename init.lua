@@ -4,12 +4,6 @@ vim.opt.termguicolors = true
 
 local config_dir = vim.fn.stdpath "config"
 
-
-
-
-
-
-
 vim.g.netrw_home = config_dir .. "/data"
 
 local original_stdpath = vim.fn.stdpath

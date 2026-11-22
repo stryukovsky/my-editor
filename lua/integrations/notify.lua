@@ -4,7 +4,9 @@ local M = {}
 local replace_ids = {}
 
 function M.setup()
-  vim.notify = require "notify"
+  local notify = require "notify"
+  notify.setup { stages = "static" }
+  vim.notify = notify
 end
 
 ---@param title string
