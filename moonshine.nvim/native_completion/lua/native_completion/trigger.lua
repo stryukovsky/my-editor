@@ -46,10 +46,15 @@ function M.request()
     return
   end
   last_request = input()
-  require("native_completion").prepare()
-  -- Native completion sends asynchronous requests and applies results to the menu.
-  -- Retain its snippet, resolve, text-edit, and incomplete-list handling.
-  vim.lsp.completion.get()
+  local snapshot = require("native_completion").prepare()
+  local token, requested = generation, last_request
+  local tick = api.nvim_buf_get_changedtick(requested.buf)
+  require("native_completion.loading").get(clients, snapshot, function()
+    return token == generation
+      and eligible()
+      and api.nvim_buf_get_changedtick(requested.buf) == tick
+      and vim.deep_equal(requested, input())
+  end)
 end
 
 function M.schedule()
