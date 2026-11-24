@@ -5,7 +5,7 @@ from common import command, main, tool
 
 
 def prepare() -> list[str]:
-    return [command(tool("flatpak"), "update", "--system")]
+    return [command(tool("flatpak"), "update", "--system", "-y")]
 
 
 if __name__ == "__main__":

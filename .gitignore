@@ -9,7 +9,6 @@ scalacli
 metals
 !setup/fedora/metals/
 jupyter
-opencode
 uv
 gvfs-metadata
 recently-used.xbel
@@ -25,3 +24,4 @@ bin/lazydocker
 bin/mermaid-ascii
 bin/tee
 bin/xxd
+setup/common_tools/opencode/service.json

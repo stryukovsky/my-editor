@@ -39,7 +39,7 @@ def server():
                          {"label": "createUser", "kind": 3, "sortText": "1"}]
             elif mode == "many":
                 items = [{"label": "imported" + str(i) + "界" * 60, "kind": 3,
-                          "detail": "module\n" + "x" * 100} for i in range(100)]
+                          "detail": "module\n" + "x" * 100} for i in range(options.get("count", 100))]
             elif mode == "empty":
                 items = []
             else:

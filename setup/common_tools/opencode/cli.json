@@ -1,5 +1,9 @@
 {
   "$schema": "https://opencode.ai/v2/cli.json",
+  "attention": {
+    "notifications": true,
+    "sound": true
+  },
   "tabs": {
     "mode": "on",
     "scope": "cwd",
@@ -9,9 +13,14 @@
   "keybinds": {
     "session.tab.previous": { "name": ",", "meta": true },
     "session.tab.next": "alt+.",
-    "session.new": ["alt+n", "<leader>n"]
+    "session.new": ["alt+n", "<leader>n"],
+    "session.half.page.up": ["ctrl+u", "ctrl+alt+u"],
+    "session.half.page.down": ["ctrl+d", "ctrl+alt+d"],
+    "input.delete.to.line.start": false,
+    "input.delete": "delete,shift+delete",
+    "app.exit": "ctrl+c,<leader>q"
   },
   "theme": {
-    "name": "gruvbox"
+    "name": "kanagawa"
   }
 }

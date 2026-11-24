@@ -50,7 +50,19 @@ local function mark_checks()
   check(jumper.letters(first, 2), "pq", "multiple letters on line")
   assert(jumper.delete "q")
   check(jumper.letters(first, 2), "p", "removed letter")
+  local original_cmd, redraws = vim.cmd, 0
+  vim.cmd = setmetatable({}, {
+    __index = original_cmd,
+    __call = function(_, command)
+      if command == "redrawstatus" then
+        redraws = redraws + 1
+      end
+      return original_cmd(command)
+    end,
+  })
   vim.api.nvim_buf_set_lines(first, 0, 0, false, { "inserted" })
+  vim.cmd = original_cmd
+  check(redraws, 0, "edits do not force synchronous status redraw")
   check(jumper.get("p").row, 3, "edit tracks line")
   check(jumper.letters(first, 3), "p", "mark letter follows edit")
   check(jumper.letters(first, 2), "", "old line clears")

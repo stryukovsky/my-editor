@@ -113,7 +113,9 @@ local function hydrate(buf)
     vim.b[buf].jumper_attached = true
     vim.api.nvim_buf_attach(buf, false, {
       on_lines = function()
-        invalidate(buf)
+        -- The edit already schedules a redraw; forcing one here can render
+        -- the buffer midway through insert-mode completion.
+        dirty[buf] = true
       end,
       on_detach = function()
         tracked[buf] = nil
