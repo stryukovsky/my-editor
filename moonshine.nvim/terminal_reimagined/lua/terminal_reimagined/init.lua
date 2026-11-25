@@ -59,4 +59,38 @@ function M.open_new(cwd)
   return true
 end
 
+--- Run a script in a pinned shell terminal, then unpin when it finishes.
+function M.run_script(path, interpreter)
+  if not M.open_new() then
+    return false
+  end
+  local buf = vim.api.nvim_get_current_buf()
+  M.set_name(buf, "  Run " .. vim.fn.fnamemodify(path, ":t"))
+  local finished = "\027]777;moonshine-script-finished"
+  vim.api.nvim_create_autocmd({ "TermRequest", "TermClose" }, {
+    buffer = buf,
+    callback = function(event)
+      local sequence = event.data and event.data.sequence or vim.v.termrequest
+      if event.event == "TermRequest" and sequence ~= finished then
+        return
+      end
+      if vim.api.nvim_buf_is_valid(buf) then
+        vim.b[buf].buffer_pinned = false
+        require("moonshine.buffers").refresh()
+      end
+      return true
+    end,
+  })
+  -- A terminal request catches even commands too short for process polling.
+  vim.api.nvim_chan_send(
+    vim.b[buf].terminal_job_id,
+    ("cd -- %s && %s -- %s; printf '\\033]777;moonshine-script-finished\\007'\n"):format(
+      vim.fn.shellescape(vim.fn.fnamemodify(path, ":h")),
+      interpreter,
+      vim.fn.shellescape("./" .. vim.fn.fnamemodify(path, ":t"))
+    )
+  )
+  return true
+end
+
 return M

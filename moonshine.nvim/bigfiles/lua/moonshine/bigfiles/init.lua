@@ -314,7 +314,8 @@ vim.api.nvim_create_autocmd({ "BufEnter", "BufReadPost" }, {
     if skip_minidiff(args.buf) then
       return
     end
-    if is_skipping(args.buf) or vim.b[args.buf].large_file then
+    -- is_skipping initializes from size but preserves an explicit manual enable.
+    if is_skipping(args.buf) then
       disable_minidiff(args.buf)
     end
   end,

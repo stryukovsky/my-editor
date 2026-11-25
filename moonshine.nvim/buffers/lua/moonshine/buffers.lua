@@ -6,10 +6,11 @@ function M.refresh()
 end
 
 function M.list()
-  local buffers, seen = {}, {}
+  local buffers, unpinned, seen = {}, {}, {}
   local function add(buf)
     if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted and vim.bo[buf].buftype ~= "quickfix" then
-      buffers[#buffers + 1] = buf
+      local group = M.is_pinned(buf) and buffers or unpinned
+      group[#group + 1] = buf
       seen[buf] = true
     end
   end
@@ -21,6 +22,7 @@ function M.list()
       add(buf)
     end
   end
+  vim.list_extend(buffers, unpinned)
   order = buffers
   return buffers
 end
@@ -54,7 +56,14 @@ function M.move(direction)
   local buffers = M.list()
   for i, buf in ipairs(buffers) do
     if buf == vim.api.nvim_get_current_buf() then
-      local target = math.max(1, math.min(#buffers, i + direction * vim.v.count1))
+      local first, last = i, i
+      while first > 1 and M.is_pinned(buffers[first - 1]) == M.is_pinned(buf) do
+        first = first - 1
+      end
+      while last < #buffers and M.is_pinned(buffers[last + 1]) == M.is_pinned(buf) do
+        last = last + 1
+      end
+      local target = math.max(first, math.min(last, i + direction * vim.v.count1))
       table.remove(buffers, i)
       table.insert(buffers, target, buf)
       break
