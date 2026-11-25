@@ -238,6 +238,16 @@ setup_lualine {
   "mason",
 }
 
+-- Paint buffer selection immediately instead of waiting for lualine's queue.
+vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "TabEnter" }, {
+  group = refresh_group,
+  callback = function()
+    if vim.api.nvim_win_get_config(0).relative == "" then
+      require("lualine").refresh { place = { "tabline" }, force = true }
+    end
+  end,
+})
+
 -- FileType is not a lualine refresh event; only refresh for editor buffers.
 vim.api.nvim_create_autocmd("FileType", {
   group = refresh_group,
