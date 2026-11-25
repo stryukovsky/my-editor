@@ -12,7 +12,6 @@ end
 
 require "configs.telescope_pretty_picker"
 require "configs.jumper"
-require "configs.barbar"
 require "configs.scope"
 require "moonshine.projects"
 require "configs.treesitter"

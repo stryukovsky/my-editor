@@ -89,7 +89,7 @@ return {
             silent = true,
             desc = "Overseer: terminate task",
           })
-          -- The ID avoids collisions between jobs with the same name. Barbar uses
+          -- The ID avoids collisions between jobs with the same name. Lualine uses
           -- the final path segment as the title, keeping the icon and task name.
           local title = job_icon(task)
             .. " "
@@ -98,8 +98,8 @@ return {
             buf,
             ("overseer://%s/%s"):format(task.id, title)
           )
-          if not task:is_complete() and not require("barbar.state").is_pinned(buf) then
-            require("barbar.api").toggle_pin(buf)
+          if not task:is_complete() and not require("moonshine.buffers").is_pinned(buf) then
+            require("moonshine.buffers").toggle_pin(buf)
           end
           if vim.api.nvim_win_is_valid(win) then
             vim.api.nvim_win_set_buf(win, buf)
@@ -113,9 +113,9 @@ return {
         if
           log_buf
           and vim.api.nvim_buf_is_valid(log_buf)
-          and require("barbar.state").is_pinned(log_buf)
+          and require("moonshine.buffers").is_pinned(log_buf)
         then
-          require("barbar.api").toggle_pin(log_buf)
+          require("moonshine.buffers").toggle_pin(log_buf)
         end
       end,
       on_reset = clear_close_autocmd,

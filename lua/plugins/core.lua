@@ -48,9 +48,6 @@ return {
     "folke/which-key.nvim",
   },
   {
-    "romgrk/barbar.nvim",
-  },
-  {
     "stryukovsky/neo-tree.nvim",
     branch = "option-consider-untracked-as-git-change",
     dependencies = {

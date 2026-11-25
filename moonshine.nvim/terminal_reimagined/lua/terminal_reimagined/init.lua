@@ -23,7 +23,9 @@ local function show(buf)
   vim.bo[buf].bufhidden = "hide"
   vim.bo[buf].buflisted = true
   vim.api.nvim_set_current_buf(buf)
-  vim.cmd.BufferPin()
+  if not require("moonshine.buffers").is_pinned(buf) then
+    require("moonshine.buffers").toggle_pin(buf)
+  end
   vim.b[buf].terminal_auto_name = true
   vim.b[buf].terminal_process_label = nil
   local label = require("moonshine.utils.terminal_process_name").current(

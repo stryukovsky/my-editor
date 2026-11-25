@@ -200,7 +200,7 @@ local function close_review_view()
 end
 
 local function wipe_buffers(buffers)
-  require("integrations.barbar").close_buffers(buffers)
+  require("moonshine.buffers").close_buffers(buffers)
 end
 
 ---@param opts? { force?: boolean }
@@ -400,7 +400,7 @@ local function ensure_buf(file)
   MiniDiff.enable(buf)
   if MiniDiff.get_buf_data(buf) == nil then
     session.buffers[file.path] = nil
-    require("integrations.barbar").close_buffer(buf)
+    require("moonshine.buffers").close_buffer(buf)
     notify.send("MiniDiff review", "Could not enable mini.diff on " .. file.path, vim.log.levels.ERROR)
     return nil
   end

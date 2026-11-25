@@ -165,7 +165,6 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
 
 opt.number = true
 opt.relativenumber = true
-g.barbar_auto_setup = false -- disable auto-setup
 
 local function escape(str)
   -- You need to escape these characters to work correctly

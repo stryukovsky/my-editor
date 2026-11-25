@@ -42,7 +42,7 @@ function _G.get_oil_winbar()
   return "%#WinBar# Current location: " .. vim.api.nvim_buf_get_name(bufnr)
 end
 
--- This replaces Barbar only while Oil is open. The expression is redrawn after
+-- This replaces lualine only while Oil is open. The expression is redrawn after
 -- resizes, so the repeated label always fills the current editor width.
 function _G.get_oil_tabline()
   local label = "  OIL   "
@@ -52,7 +52,9 @@ end
 local function show_oil_tabline()
   if oil_tabline == nil then
     oil_tabline = vim.o.tabline
+    require("lualine").hide { place = { "tabline" } }
   end
+  vim.o.showtabline = 2
   vim.o.tabline = "%!v:lua.get_oil_tabline()"
 end
 
@@ -63,7 +65,8 @@ local function restore_tabline()
   vim.o.tabline = oil_tabline
   oil_tabline = nil
   pcall(function()
-    require("barbar.ui.render").update()
+    require("lualine").hide { place = { "tabline" }, unhide = true }
+    require("moonshine.buffers").refresh()
   end)
 end
 

@@ -64,8 +64,13 @@ local function construct_handler(cmd)
   end
 end
 -- buffer navigation
-map({ "n" }, "<A-,>", construct_handler "BufferPrevious", { desc = "Navigation prev buffer" })
-map({ "n" }, "<A-.>", construct_handler "BufferNext", { desc = "Navigation next buffer" })
+local buffers = require "moonshine.buffers"
+map({ "n" }, "<A-,>", function()
+  buffers.navigate(-1)
+end, { desc = "Navigation prev buffer" })
+map({ "n" }, "<A-.>", function()
+  buffers.navigate(1)
+end, { desc = "Navigation next buffer" })
 -- `<A->>` is not a valid keycode (`>` closes the notation). `>` / `<` are Shift+`.` / `,`.
 map({ "n" }, "<A-<>", construct_handler "bprevious", { desc = "Navigation bprevious" })
 map({ "n" }, "<A-S-,>", construct_handler "bprevious", { desc = "Navigation bprevious" })
@@ -74,17 +79,27 @@ map({ "n" }, "<A-S-.>", construct_handler "bnext", { desc = "Navigation bnext" }
 map("n", "<leader>tb", function()
   require("moonshine.projects.kitten").launch { type = "tab" }
 end, { desc = "Navigation new kitty tab" })
-map("n", "<leader>x", construct_handler "BufferClose!", { desc = "Navigation close buffer" })
+map("n", "<leader>x", function()
+  buffers.close_buffer()
+end, { desc = "Navigation close buffer" })
 map("n", "<leader>X", function()
-  require("integrations.barbar").close_unprotected()
+  buffers.close_unprotected()
 end, { desc = "Navigation close other buffers" })
-map("n", "<leader>,", construct_handler "BufferMovePrevious", { desc = "Navigation move buffer left" })
-map("n", "<leader>.", construct_handler "BufferMoveNext", { desc = "Navigation move buffer right" })
-map("n", "<leader><", construct_handler "BufferMovePrevious", { desc = "Navigation move buffer left" })
-map("n", "<leader>>", construct_handler "BufferMoveNext", { desc = "Navigation move buffer right" })
+for _, key in ipairs { "<leader>,", "<leader><" } do
+  map("n", key, function()
+    buffers.move(-1)
+  end, { desc = "Navigation move buffer left" })
+end
+for _, key in ipairs { "<leader>.", "<leader>>" } do
+  map("n", key, function()
+    buffers.move(1)
+  end, { desc = "Navigation move buffer right" })
+end
 
-map("n", "<A-space>", construct_handler "BufferPick", { desc = "Pick buffer" })
-map("n", "<leader>pin", construct_handler "BufferPin", { desc = "Navigation pin buffer" })
+map("n", "<A-space>", buffers.pick, { desc = "Pick buffer" })
+map("n", "<leader>pin", function()
+  buffers.toggle_pin()
+end, { desc = "Navigation pin buffer" })
 
 local function goto_spell(direction)
   local motion = direction > 0 and "]s" or "[s"
@@ -356,4 +371,3 @@ end, { desc = "Center cursor horizontally" })
 map({ "x", "n" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 map({ "x", "n" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 map("n", "p", "P", { desc = "override paste" })
-

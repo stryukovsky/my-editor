@@ -184,7 +184,34 @@ setup_lualine {
     lualine_y = { dap_output.lualine_component() },
     lualine_z = { "location", "selectioncount" },
   },
-  tabline = {},
+  tabline = {
+    lualine_a = {
+      {
+        require("moonshine.buffers").component(),
+        mode = 0,
+        icons_enabled = false,
+        buffers_color = { inactive = "MoonshineTabInactive" },
+        max_length = function()
+          return vim.o.columns - (vim.fn.tabpagenr "$" > 1 and 20 or 0)
+        end,
+        fmt = function(name, context)
+          return (require("moonshine.buffers").is_pinned(context.bufnr) and " " or "") .. name
+        end,
+        symbols = { modified = " ", alternate_file = "" },
+        section_separators = { left = "", right = "" },
+        component_separators = { left = "", right = "" },
+      },
+    },
+    lualine_z = {
+      {
+        "tabs",
+        tabs_color = { inactive = "MoonshineTabInactive" },
+        cond = function()
+          return vim.fn.tabpagenr "$" > 1
+        end,
+      },
+    },
+  },
   winbar = {},
   inactive_winbar = {},
   -- extensions = {
