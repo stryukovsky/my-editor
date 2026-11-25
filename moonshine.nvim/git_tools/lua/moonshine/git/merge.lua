@@ -11,6 +11,7 @@ local git_root ---@type string|nil
 local start_key ---@type string|nil
 local timer ---@type uv.uv_timer_t|nil
 local poll_gen = 0
+local last_poll ---@type number|nil
 
 local function file_exists(path)
   return vim.uv.fs_stat(path) ~= nil
@@ -27,14 +28,6 @@ local function read_line(path)
     return nil
   end
   return (line:gsub("^%s+", ""):gsub("%s+$", ""))
-end
-
-local function start_dir()
-  local name = vim.api.nvim_buf_get_name(0)
-  if name ~= "" and vim.fn.filereadable(name) == 1 then
-    return vim.fn.fnamemodify(name, ":p:h")
-  end
-  return vim.fn.getcwd()
 end
 
 local function rebase_label(dir)
@@ -96,6 +89,11 @@ local function set_status(text)
 end
 
 local function poll()
+  local now = vim.uv.hrtime()
+  if last_poll and now - last_poll < INTERVAL_MS * 1e6 then
+    return
+  end
+  last_poll = now
   local op = git_dir and operation_text(git_dir) or ""
   if not git_root then
     set_status(op)
@@ -131,10 +129,14 @@ local function poll()
 end
 
 local function resolve_git_dir()
-  local dir = start_dir()
+  local dir = vim.fn.getcwd()
   if start_key == dir then
+    poll()
     return
   end
+  -- Changing CWD invalidates both cached status and pending conflict results.
+  poll_gen = poll_gen + 1
+  last_poll = nil
   start_key = dir
   git_root = select(1, gitutils.root(dir))
   git_dir = nil

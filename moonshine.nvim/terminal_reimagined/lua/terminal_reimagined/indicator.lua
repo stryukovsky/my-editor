@@ -12,6 +12,8 @@ function M.mode_label()
 end
 
 function M.setup()
+  -- Temporarily disabled while investigating terminal buffer-switch latency.
+  --[[
   local terminal_winbar = "%!v:lua.require'terminal_reimagined'.mode_label()"
   vim.api.nvim_create_autocmd({
     "ModeChanged",
@@ -60,6 +62,7 @@ function M.setup()
       vim.cmd "redrawstatus"
     end,
   })
+  ]]
 
   -- Embedded terminals consume OSC requests instead of passing them to the host.
   -- Forward notification protocols so Kitty/Ghostty can show desktop alerts.

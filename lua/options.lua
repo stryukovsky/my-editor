@@ -68,6 +68,7 @@ o.signcolumn = "yes"
 o.splitbelow = true
 o.splitright = true
 o.timeoutlen = 400
+o.ttimeoutlen = 0
 o.undofile = true
 o.swapfile = false
 -- interval for writing swap file to disk, also used by CursorHold

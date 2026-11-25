@@ -164,6 +164,8 @@ end
 
 local gutter_group =
   vim.api.nvim_create_augroup("EditableBufferGutters", { clear = true })
+-- Temporarily disabled while investigating terminal buffer-switch latency.
+--[[
 vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter", "FileType" }, {
   group = gutter_group,
   callback = function()
@@ -177,10 +179,11 @@ vim.api.nvim_create_autocmd("OptionSet", {
     vim.schedule(update_gutters)
   end,
 })
+]]
 vim.api.nvim_create_autocmd("WinClosed", {
   group = gutter_group,
   callback = function(args)
     hidden_gutters[tonumber(args.match)] = nil
   end,
 })
-vim.schedule(update_gutters)
+-- vim.schedule(update_gutters)

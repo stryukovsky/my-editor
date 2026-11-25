@@ -84,11 +84,15 @@ function M.close_buffer(buf)
     return
   end
   local replacement
-  for _, candidate in ipairs(M.list()) do
-    if candidate ~= buf then
-      replacement = candidate
+  local buffers = M.list()
+  for i, candidate in ipairs(buffers) do
+    if candidate == buf then
+      replacement = buffers[i - 1] or buffers[i + 1]
       break
     end
+  end
+  if not replacement and buffers[1] ~= buf then
+    replacement = buffers[1]
   end
   for _, win in ipairs(vim.fn.win_findbuf(buf)) do
     replacement = replacement or vim.api.nvim_create_buf(true, false)
@@ -128,10 +132,25 @@ function M.component()
   function component:buffers()
     local buffers = {}
     base.bufpos2nr = M.list()
+    local current = vim.api.nvim_get_current_buf()
+    if vim.tbl_contains(base.bufpos2nr, current) then
+      self.last_buffer = current
+    end
+    -- Lualine otherwise appends the focused unlisted buffer to the tabline.
+    local anchor = vim.tbl_contains(base.bufpos2nr, self.last_buffer) and self.last_buffer or base.bufpos2nr[1]
     for i, buf in ipairs(base.bufpos2nr) do
       buffers[i] = self:new_buffer(buf, i)
+      buffers[i].is_current = function()
+        return buf == anchor
+      end
     end
     return buffers
+  end
+  function component:update_status()
+    if #M.list() == 0 then
+      return ""
+    end
+    return base.update_status(self)
   end
   return component
 end
