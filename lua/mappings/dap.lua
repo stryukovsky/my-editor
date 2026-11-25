@@ -157,6 +157,8 @@ map("n", "<leader>dl", function()
   debug_output.show_output()
 end, { desc = "debug show process log" })
 
+map("n", "<leader>dL", "<cmd>DapShowLog<CR>", { desc = "debug show DAP log" })
+
 map("n", "<leader>dt", function()
   ui_prevent_mess()
   widgets.centered_float(widgets.threads, { title = "  Threads " .. widgets_common_title_part })
