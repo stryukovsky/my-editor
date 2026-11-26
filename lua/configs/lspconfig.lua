@@ -114,8 +114,4 @@ vim.lsp.config("lua_ls", {
   capabilities = { workspace = { fileOperations = { didRename = true } } },
 })
 
-for _, lsp_name in ipairs(M.servers) do
-  vim.lsp.enable(lsp_name)
-end
-
 return M

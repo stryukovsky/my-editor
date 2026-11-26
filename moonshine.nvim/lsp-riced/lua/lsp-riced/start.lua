@@ -1,4 +1,7 @@
 local M = {}
+local special_lsps = {
+  rust = require "lsp-riced.special-lsps.rust",
+}
 
 -- Use :lsp completion when available; older Neovim versions expose configs on runtimepath.
 function M.names()
@@ -37,7 +40,22 @@ function M.actions(bufnr, empty)
   local items = {}
   if empty then
     local ft = vim.bo[bufnr].filetype
-    for _, name in ipairs(M.names()) do
+    local preferred = require("configs.lspconfig").servers
+    local names = M.names()
+    local priority = {}
+    for i, name in ipairs(preferred) do
+      priority[name] = i
+    end
+    table.sort(names, function(a, b)
+      if priority[a] and priority[b] then
+        return priority[a] < priority[b]
+      end
+      return priority[a] ~= nil or (priority[b] == nil and a < b)
+    end)
+    if special_lsps[ft] then
+      vim.list_extend(items, special_lsps[ft].actions(bufnr))
+    end
+    for _, name in ipairs(names) do
       local ok, config = pcall(function()
         return vim.lsp.config[name]
       end)

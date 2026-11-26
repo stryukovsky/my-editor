@@ -51,6 +51,7 @@ return {
         vim.tbl_deep_extend("force", vim.g.rustaceanvim or {}, {
           dap = { autoload_configurations = false },
           server = {
+            auto_attach = false,
             capabilities = {
               workspace = { fileOperations = { willRename = true } },
             },
