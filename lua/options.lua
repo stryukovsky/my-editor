@@ -104,66 +104,6 @@ vim.env.PATH = table.concat({ vim.fn.stdpath "data", "mason", "bin" }, sep) .. d
 o.cursorlineopt = "both" -- to enable cursorline!
 o.spelllang = "programming,en,ru"
 
-local ft_string_groups = {
-  json = { "jsonString" },
-  javascript = { "jsString", "jsTemplateLiteral" },
-  typescript = { "typescriptString", "typescriptTemplate" },
-  go = { "goString" },
-  rust = { "rustString" },
-  scala = { "scalaString", "scalaMultilineString" },
-  java = { "javaString" },
-  kotlin = { "kotlinString" },
-  sh = { "shString", "shDoubleQuote", "shSingleQuote" },
-  bash = { "shString", "shDoubleQuote", "shSingleQuote" },
-  python = { "pythonString", "pythonTripleQuotes" },
-}
-
-vim.api.nvim_create_autocmd("BufWinEnter", {
-  callback = function()
-    if vim.api.nvim_buf_line_count(0) > 10000 or vim.fn.getfsize(vim.api.nvim_buf_get_name(0)) > 10240 then
-      return
-    end
-    o.spell = true
-    vim.o.spelloptions = "camel,noplainbuffer"
-
-    local groups = ft_string_groups[vim.bo.filetype]
-    if not groups then
-      return
-    end
-
-    local containedin = table.concat(groups, ",")
-
-    vim.cmd(string.format(
-      [[
-      syntax match LuaHexPrefix /0x\x\+/ contains=@NoSpell containedin=%s extend
-      syntax match LuaHexNoPrefix /\v[0-9A-Fa-f]{10,}/ contains=@NoSpell containedin=%s extend
-      highlight default link LuaHexPrefix Number
-      highlight default link LuaHexNoPrefix Number
-    ]],
-      containedin,
-      containedin,
-      containedin
-    ))
-  end,
-})
-
-vim.api.nvim_create_autocmd({ "FileType" }, {
-  callback = function()
-    if vim.api.nvim_buf_line_count(0) > 10000 or vim.fn.getfsize(vim.api.nvim_buf_get_name(0)) > 10240 then
-      return
-    end
-    -- Wait until Neovim is idle and the Tree-sitter parser is actually ready
-    vim.schedule(function()
-      -- Ensure the buffer still exists before applying options
-      if vim.api.nvim_buf_is_valid(0) then
-        vim.opt_local.foldmethod = "expr"
-        vim.opt_local.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-      end
-    end)
-    vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-  end,
-})
-
 opt.number = true
 opt.relativenumber = true
 
