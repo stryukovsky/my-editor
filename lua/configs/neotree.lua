@@ -9,6 +9,8 @@ local fs = require "neo-tree.sources.filesystem"
 local notify = require "integrations.notify"
 local git_actions = require "moonshine.git.commands"
 local script = require "utils.script"
+local neotree_clipboard = require "neo-tree.sources.filesystem.lib.shared_clipboard"
+neotree_clipboard.setup { ttl = 30 } -- Seconds before an unpasted copy expires.
 
 -- Reuse terminal windows; the terminal stays available in the buffer bar.
 local open_files_do_not_replace_types = require "moonshine.utils.technical_ui_filetypes"
@@ -396,9 +398,9 @@ local config = {
   filesystem = {
     commands = {
       lsp_rename = require("integrations.neotree_lsp_rename").rename,
-      copy_to_clipboard = require("utils.neotree_clipboard").copy,
-      copy_to_clipboard_visual = require("utils.neotree_clipboard").copy_visual,
-      paste_from_clipboard = require("utils.neotree_clipboard").paste,
+      copy_to_clipboard = neotree_clipboard.copy,
+      copy_to_clipboard_visual = neotree_clipboard.copy_visual,
+      paste_from_clipboard = neotree_clipboard.paste,
     },
     hijack_netrw_behavior = "disabled",
     window = {

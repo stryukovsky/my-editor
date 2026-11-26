@@ -376,15 +376,17 @@ https://go.dev/ https://github.com/pyenv/pyenv
 
 ## Neo-tree shared file clipboard
 
-In the filesystem tree, `c` saves the current file or directory for copying;
-visual `c` saves the selected entries together. Each copy replaces the previous
-selection. `p` reads the latest saved paths, so you can paste in another Neovim
-process or paste into several directories without copying again.
+In the filesystem tree, `c` toggles the current file or directory in the copy
+selection; visual `c` toggles the selected entries together. `p` reads the latest
+saved paths, so you can paste in another Neovim process. Each copied file has its
+own timestamp; entries expire after 30 seconds by default (configured in
+`lua/configs/neotree.lua`). Older clipboard files without timestamps are treated
+as copied at Unix time zero and expire.
 
 Paths are stored in `stdpath("data")/neotree-clipboard.json` (this configuration
-uses `~/.config/nvim/data/neotree-clipboard.json`). Paste, Esc, local clipboard
-clearing, text-path yanks (`y`), and exiting Neovim preserve this file. Only a
-new file copy replaces it. Sources must still exist when pasting.
+uses `~/.config/nvim/data/neotree-clipboard.json`). Paste consumes the shared
+selection; Esc, local clipboard clearing, text-path yanks (`y`), and exiting
+Neovim preserve it. Sources must still exist when pasting.
 
 `x` remains a local cut: a pending cut takes priority over the saved copies and
 moves its entries on paste. After it is pasted or cleared, `p` uses the shared
