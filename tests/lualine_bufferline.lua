@@ -61,5 +61,30 @@ assert(
   vim.deep_equal(lualine.get_config().options.refresh, refresh_config),
   "Existing refresh timers must stay unchanged"
 )
+
+-- Lualine normally reduces terminals to their shell name. Show the actual
+-- buffer name, which the terminal monitor updates with the current process.
+local terminal = api.nvim_create_buf(true, false)
+vim.api.nvim_open_term(terminal, {})
+local terminal_name = "Run pytest  󰄛"
+api.nvim_buf_set_name(terminal, terminal_name)
+api.nvim_set_current_buf(terminal)
+assert_tabline_only()
+assert(
+  vim.o.tabline:find(terminal_name, 1, true),
+  "Terminal tab must show its buffer name"
+)
+assert(
+  not vim.o.tabline:find(vim.fn.getcwd() .. "/", 1, true),
+  "Terminal tab must not show the CWD prefix"
+)
+local updated_name = "Run cargo  󰄛"
+api.nvim_buf_set_name(terminal, updated_name)
+lualine.refresh { place = { "tabline" }, force = true }
+assert(
+  vim.o.tabline:find(updated_name, 1, true),
+  "Terminal tab must follow buffer renames"
+)
+
 opts.set = original_set
 print "Immediate bufferline refresh checks passed"

@@ -138,6 +138,15 @@ function M.component()
     options.component_name = "buffers"
     base.init(self, options)
   end
+  function component:new_buffer(bufnr, buf_index)
+    local buffer = base.new_buffer(self, bufnr, buf_index)
+    if buffer.buftype == "terminal" then
+      buffer.name = function(self)
+        return vim.fn.fnamemodify(self.file, ":t")
+      end
+    end
+    return buffer
+  end
   function component:buffers()
     local buffers = {}
     base.bufpos2nr = M.list()
