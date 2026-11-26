@@ -150,27 +150,6 @@ local function set_rainbow(buf, enabled)
 end
 
 ---@param buf integer
-local function apply_hex_syntax(buf)
-  local groups = ft_string_groups[vim.bo[buf].filetype]
-  if not groups then
-    return
-  end
-  local containedin = table.concat(groups, ",")
-  vim.api.nvim_buf_call(buf, function()
-    vim.cmd(string.format(
-      [[
-      syntax match LuaHexPrefix /0x\x\+/ contains=@NoSpell containedin=%s extend
-      syntax match LuaHexNoPrefix /\v[0-9A-Fa-f]{10,}/ contains=@NoSpell containedin=%s extend
-      highlight default link LuaHexPrefix Number
-      highlight default link LuaHexNoPrefix Number
-    ]],
-      containedin,
-      containedin
-    ))
-  end)
-end
-
----@param buf integer
 ---@param opts? { clear_filetype?: boolean, disable_swap_undo?: boolean }
 local function disable_heavy(buf, opts)
   opts = opts or {}
@@ -213,7 +192,6 @@ local function enable_heavy(buf)
   end)
 
   vim.bo[buf].indentexpr = "v:lua.require'configs.treesitter'.indentexpr()"
-  apply_hex_syntax(buf)
 
   vim.api.nvim_buf_call(buf, function()
     pcall(vim.cmd, "LspStart")
@@ -283,7 +261,6 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
       vim.opt_local.spell = true
       vim.opt_local.spelloptions = "camel,noplainbuffer"
     end)
-    apply_hex_syntax(args.buf)
   end,
 })
 
