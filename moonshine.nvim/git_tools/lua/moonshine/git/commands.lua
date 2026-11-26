@@ -304,6 +304,42 @@ function M.commit_and_push(state)
   M.commit(state, true)
 end
 
+function M.lazy_commit(state)
+  local cwd = root(state)
+  if not cwd then
+    return
+  end
+  scheduler.write("commit", cwd, function(lease)
+    local staged, err = git.run({ "diff", "--cached", "--name-only" }, cwd)
+    if not staged then
+      notify.send("Git", err, vim.log.levels.ERROR)
+      return
+    end
+    if staged == "" then
+      notify.send("Git", "Nothing staged to commit", vim.log.levels.WARN)
+      return
+    end
+    local message
+    message, err = git.run({ "log", "-1", "--format=%B" }, cwd)
+    if not message then
+      notify.send("Git", err, vim.log.levels.ERROR)
+      return
+    end
+    message = vim.trim(message)
+    return run(
+      cwd,
+      { { "commit", "-m", message } },
+      action(
+        "commit",
+        "Committing…",
+        "Committed: " .. vim.split(message, "\n")[1],
+        "Commit failed"
+      ),
+      lease
+    )
+  end)
+end
+
 function M.checkpoint(state)
   local cwd = root(state)
   if not cwd then

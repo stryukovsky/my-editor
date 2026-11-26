@@ -12,6 +12,7 @@ local bindings = {
   { "<leader>gbc", git.branch_create, "create and switch branch" },
   { "<leader>gbr", git.branch_rename, "rename current branch" },
   { "<leader>gc", git.commit, "commit staged changes" },
+  { "<leader>gl", git.lazy_commit, "lazy commit staged with previous message" },
   { "<leader>gC", git.checkpoint, "commit checkpoint" },
   {
     "<leader>gmr",
