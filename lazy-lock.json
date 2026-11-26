@@ -20,7 +20,7 @@
   "markdown-preview.nvim": { "branch": "master", "commit": "a923f5fc5ba36a3b17e289dc35dc17f66d0548ee" },
   "mason.nvim": { "branch": "main", "commit": "2a6940af80375532e5e9e7c1f2fc6319a1b7a69d" },
   "material.nvim": { "branch": "main", "commit": "92f7366a9315cd386bc4fa4d716fde375dda210f" },
-  "neo-tree.nvim": { "branch": "option-consider-untracked-as-git-change", "commit": "61e01fcf50e31f19a9bae106d72b3c443f445635" },
+  "neo-tree.nvim": { "branch": "option-consider-untracked-as-git-change", "commit": "5111be4eb11c9fd8ae5e5068f2589aa5d16264e4" },
   "neotest": { "branch": "master", "commit": "27bf921498043f7ecd821d6db68d05de244bbd02" },
   "neotest-golang": { "branch": "main", "commit": "05cd7bf89a146cf1fa2848a9fe277a1e68a3a51d" },
   "neotest-jest": { "branch": "main", "commit": "0e7979d51301dfae5ef839d771bd28cf593fde3f" },
