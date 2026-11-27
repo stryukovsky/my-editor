@@ -37,6 +37,11 @@ local function display_width(text)
   return vim.fn.strdisplaywidth(text)
 end
 
+local function one_line(lines)
+  local text = table.concat(lines, " "):gsub("\r\n", " ")
+  return (text:gsub("[\r\n\v\f]", " "))
+end
+
 -- `opts.virtual_text_mode`. Slash search is the only value for now.
 local VIRTUAL_TEXT_SLASH_SEARCH = "slash_search"
 local VIRT_NS = vim.api.nvim_create_namespace "input_float_virtual_text"
@@ -149,7 +154,7 @@ function M.setup()
     local prompt = opts.prompt or "Input"
     local default = opts.default == nil and "" or tostring(opts.default)
     local multiline = opts.multiline == true
-    local lines = multiline and vim.split(default, "\n", { plain = true }) or { default }
+    local lines = multiline and vim.split(default, "\n", { plain = true }) or { one_line { default } }
     local filetype = opts.filetype or ""
     vim.validate("filetype", filetype, "string")
     local completion = filetype ~= ""
@@ -311,11 +316,34 @@ function M.setup()
       callback = cancel,
     })
 
+    if not multiline then
+      vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "TextChangedP" }, {
+        buffer = buffer,
+        callback = function()
+          if completed then
+            return
+          end
+          local current = vim.api.nvim_buf_get_lines(buffer, 0, -1, false)
+          local value = one_line(current)
+          if #current == 1 and current[1] == value then
+            return
+          end
+          local cursor = vim.api.nvim_win_get_cursor(window)
+          local col = cursor[2]
+          for i = 1, cursor[1] - 1 do
+            col = col + #current[i] + 1
+          end
+          vim.api.nvim_buf_set_lines(buffer, 0, -1, false, { value })
+          vim.api.nvim_win_set_cursor(window, { 1, math.min(col, #value) })
+        end,
+      })
+    end
+
     local function input_value()
       if multiline then
         return table.concat(vim.api.nvim_buf_get_lines(buffer, 0, -1, false), "\n")
       end
-      return vim.api.nvim_get_current_line()
+      return one_line(vim.api.nvim_buf_get_lines(buffer, 0, -1, false))
     end
 
     M.bind_float_keys(buffer, {
@@ -340,7 +368,7 @@ function M.setup()
         end
         vim.schedule(function()
           if not completed and vim.api.nvim_win_is_valid(window) then
-            finish(vim.api.nvim_buf_get_lines(buffer, 0, 1, false)[1] or "")
+            finish(input_value())
           end
         end)
         return vim.fn.pumvisible() == 1 and "<C-e>" or ""
