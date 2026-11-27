@@ -42,7 +42,7 @@ M.servers = {
   "lua_ls",
   "sqls",
   "bashls",
-  "basedpyright",
+  "ty",
   "gopls",
   "clangd",
   "forge",
@@ -105,7 +105,7 @@ vim.lsp.config("jdtls", {
 -- gopls, clangd, sqls, texlab, and vscode-solidity-server (not enabled here).
 -- Neo-tree warns when a connected server cannot assist with file rename; do not fake support.
 -- rust-analyzer advertises willRename via rustaceanvim in plugins/mason.lua.
-for _, name in ipairs { "ts_ls", "basedpyright", "jdtls" } do
+for _, name in ipairs { "ts_ls", "jdtls" } do
   vim.lsp.config(name, {
     capabilities = { workspace = { fileOperations = { willRename = true } } },
   })
