@@ -6,6 +6,7 @@ local tracked = {} -- buffer -> mark name -> extmark id
 local line_index = {} -- buffer -> cached line -> letters
 local dirty = {}
 local anchor
+local ensure_scope
 
 local function warn(message)
   vim.notify(message, vim.log.levels.WARN, { title = "Jumper" })
@@ -130,6 +131,27 @@ local function hydrate(buf)
   invalidate(buf)
 end
 
+ensure_scope = function()
+  if not store then
+    return
+  end
+  local cwd = vim.fs.normalize(vim.fn.getcwd())
+  if store.cwd == cwd then
+    return
+  end
+  for _, buf in ipairs(vim.tbl_keys(tracked)) do
+    untrack(buf)
+    if vim.api.nvim_buf_is_valid(buf) then
+      vim.api.nvim_buf_clear_namespace(buf, namespace, 0, -1)
+    end
+  end
+  tracked, line_index, dirty, anchor = {}, {}, {}, nil
+  store:select(cwd)
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    hydrate(buf)
+  end
+end
+
 local function replace_extmarks(name, path, row, col)
   for buf, names in pairs(tracked) do
     if names[name] and vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_buf_is_loaded(buf) then
@@ -147,22 +169,35 @@ end
 
 function M.setup(opts)
   opts = opts or {}
-  store = store_module.new(opts.path)
+  for _, buf in ipairs(vim.tbl_keys(tracked)) do
+    untrack(buf)
+    if vim.api.nvim_buf_is_valid(buf) then
+      vim.api.nvim_buf_clear_namespace(buf, namespace, 0, -1)
+    end
+  end
+  store = store_module.new(opts.path, opts.legacy_path)
   tracked, line_index, dirty, anchor = {}, {}, {}, nil
   local ok, err = store:load()
   if not ok then
     warn(err)
   end
+  ensure_scope()
   local group = vim.api.nvim_create_augroup("MoonshineJumper", { clear = true })
   vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile", "BufEnter" }, {
     group = group,
     callback = function(args)
+      ensure_scope()
       hydrate(args.buf)
     end,
+  })
+  vim.api.nvim_create_autocmd("DirChanged", {
+    group = group,
+    callback = ensure_scope,
   })
   vim.api.nvim_create_autocmd("BufWritePost", {
     group = group,
     callback = function(args)
+      ensure_scope()
       reconcile(args.buf)
     end,
   })
@@ -175,20 +210,19 @@ function M.setup(opts)
   vim.api.nvim_create_autocmd("VimLeavePre", {
     group = group,
     callback = function()
+      ensure_scope()
       for buf in pairs(tracked) do
         reconcile(buf)
       end
     end,
   })
-  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    hydrate(buf)
-  end
 end
 
 function M.set(name)
   if not store then
     return false
   end
+  ensure_scope()
   local buf = vim.api.nvim_get_current_buf()
   local path = path_for(buf)
   if not path or not vim.bo[buf].modifiable then
@@ -211,10 +245,12 @@ function M.set(name)
 end
 
 function M.get(name)
+  ensure_scope()
   return store and position(name) or nil
 end
 
 function M.letters(buf, row)
+  ensure_scope()
   if not store or not vim.api.nvim_buf_is_valid(buf) or not vim.api.nvim_buf_is_loaded(buf) or not path_for(buf) then
     return ""
   end
@@ -238,6 +274,7 @@ function M.jump(name)
   if not store then
     return false
   end
+  ensure_scope()
   local dest = position(name)
   if not dest then
     warn("Mark " .. name .. " is not set")
@@ -267,6 +304,7 @@ function M.delete(name)
   if not store then
     return false
   end
+  ensure_scope()
   local ok, err = store:delete(name)
   if not ok then
     warn(err)
@@ -287,6 +325,7 @@ function M.delete(name)
 end
 
 function M.delete_line()
+  ensure_scope()
   local path = path_for(vim.api.nvim_get_current_buf())
   if not path then
     return
@@ -301,6 +340,7 @@ function M.delete_line()
 end
 
 function M.delete_file()
+  ensure_scope()
   local path = path_for(vim.api.nvim_get_current_buf())
   if not path then
     return
@@ -316,6 +356,7 @@ function M.add_next()
   if not store then
     return false
   end
+  ensure_scope()
   local highest = string.byte("a") - 1
   local occupied = 0
   for name in pairs(store.marks) do
@@ -340,6 +381,7 @@ function M.delete_all()
   if not store then
     return false
   end
+  ensure_scope()
   for name in pairs(store.marks) do
     if not M.delete(name) then
       return false
@@ -352,6 +394,7 @@ function M.navigate(direction, count)
   if not store then
     return false
   end
+  ensure_scope()
   local names = vim.tbl_keys(store.marks)
   table.sort(names)
   if #names == 0 then

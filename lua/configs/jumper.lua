@@ -15,5 +15,5 @@ end, {
     end
     return names
   end,
-  desc = "Delete a named global jumper mark",
+  desc = "Delete a named cwd jumper mark",
 })

@@ -1,9 +1,12 @@
 # jumper.nvim
 
-One persistent lowercase mark (`a`–`z`) per name across all files. Marks are
-stored in `stdpath("data")/jumper-marks.json` (this config redirects `stdpath`
-to `~/.config/nvim/data/`). Mark letters appear beside other status-column
-signs.
+One persistent lowercase mark (`a`–`z`) per name in each current working
+directory. Marks are stored by cwd in
+`stdpath("data")/jumper-marks-scoped.json` (this config redirects `stdpath` to
+`~/.config/nvim/data/`). Mark letters appear beside other status-column signs.
+The old `jumper-marks.json` is left untouched for rollback; its marks remain
+visible only when their file is under the active cwd. Setting or deleting a
+mark overrides that legacy mark in this cwd only.
 
 | Keys/command | Action |
 | --- | --- |
@@ -15,7 +18,7 @@ signs.
 | `dm` / `<leader>dm` | Delete marks on this line / in this file |
 | `:JumperDelete p` | Delete mark `p` |
 | `<leader>maa` | Add the next unused letter after the highest assigned mark (wraps after `z`) |
-| `<leader>mad` | Delete all global marks |
+| `<leader>mad` | Delete all marks in the current cwd |
 
 `<leader>ma` opens the Marks group in WhichKey. Auto-add starts with `a` when
 there are no marks; if all 26 letters are occupied, it leaves them unchanged.

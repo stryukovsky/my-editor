@@ -7,7 +7,8 @@ require("render-markdown").setup {
   enabled = false,
   -- Scrolling triggers both CursorMoved and WinScrolled; batch the viewport refreshes.
   debounce = 230,
-  completions = { lsp = { enabled = true } },
+  completions = { lsp = { enabled = false } },
+  lsp = { enabled = false },
   file_types = { "markdown", "todotxt-preview" },
   anti_conceal = { enabled = false },
   win_options = {

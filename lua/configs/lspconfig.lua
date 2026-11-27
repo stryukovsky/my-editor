@@ -1,5 +1,24 @@
 local M = {}
 
+-- Keep Neovim's Markdown conceal active even on the hover cursor line, so
+-- backticks never reappear while navigating the float.
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "markdown",
+  callback = function(event)
+    vim.schedule(function()
+      if not vim.api.nvim_buf_is_valid(event.buf) then
+        return
+      end
+      for _, win in ipairs(vim.fn.win_findbuf(event.buf)) do
+        if vim.w[win]["textDocument/hover"] then
+          vim.wo[win].conceallevel = 2
+          vim.wo[win].concealcursor = "nvic"
+        end
+      end
+    end)
+  end,
+})
+
 ---@param bufnr? integer
 ---@return boolean
 local function skip_buffer(bufnr)
