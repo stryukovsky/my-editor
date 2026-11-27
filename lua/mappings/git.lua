@@ -19,7 +19,7 @@ local bindings = {
     function(state)
       require("telescope_pretty_picker").show_remotes { state = state }
     end,
-    "manager remotes",
+    "manage remotes",
   },
 }
 for _, binding in ipairs(bindings) do

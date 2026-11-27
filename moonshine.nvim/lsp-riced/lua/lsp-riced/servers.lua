@@ -70,49 +70,6 @@ function M.actions(bufnr, clients)
           end)
         end
       end
-    elseif client.name == "pyright" or client.name == "basedpyright" then
-      add(
-        client.name,
-        "Organize imports",
-        "Organize Python imports in this file",
-        function()
-          command(
-            client,
-            client.name .. ".organizeimports",
-            { vim.uri_from_bufnr(bufnr) }
-          )
-        end
-      )
-      add(
-        client.name,
-        "Python interpreter",
-        "Set the interpreter for this LSP workspace (does not install packages)",
-        function()
-          vim.ui.input({
-            prompt = "Python executable: ",
-            completion = "file",
-            default = ((client.settings or {}).python or {}).pythonPath,
-          }, function(path)
-            if not path or vim.trim(path) == "" or client:is_stopped() then
-              return
-            end
-            path = vim.fn.expand(path)
-            if vim.fn.executable(path) ~= 1 then
-              vim.notify("Not executable: " .. path, vim.log.levels.WARN)
-              return
-            end
-            client.settings = vim.tbl_deep_extend(
-              "force",
-              client.settings or {},
-              { python = { pythonPath = path } }
-            )
-            client:notify(
-              "workspace/didChangeConfiguration",
-              { settings = client.settings }
-            )
-          end)
-        end
-      )
     elseif client.name == "gopls" then
       add(
         client.name,
@@ -141,41 +98,43 @@ function M.actions(bufnr, clients)
         function()
           local sorted = vim.deepcopy(commands)
           table.sort(sorted)
-          vim.ui.select(
-            sorted,
-            { prompt = client.name .. " commands" },
-            function(cmd)
-              if not cmd then
-                return
-              end
-              vim.ui.input(
-                { prompt = cmd .. " — JSON arguments: ", default = "[]" },
-                function(input)
-                  if not input then
-                    return
-                  end
-                  local ok, args = pcall(
-                    vim.json.decode,
-                    input,
-                    { luanil = { object = true, array = true } }
-                  )
-                  if
-                    not ok
-                    or not input:match "^%s*%["
-                    or type(args) ~= "table"
-                    or not vim.islist(args)
-                  then
-                    vim.notify(
-                      "Expected a JSON array of command arguments",
-                      vim.log.levels.WARN
-                    )
-                    return
-                  end
-                  command(client, cmd, args)
+          vim.schedule(function()
+            vim.ui.select(
+              sorted,
+              { prompt = client.name .. " commands" },
+              function(cmd)
+                if not cmd then
+                  return
                 end
-              )
-            end
-          )
+                vim.ui.input(
+                  { prompt = cmd .. " — JSON arguments: ", default = "[]" },
+                  function(input)
+                    if not input then
+                      return
+                    end
+                    local ok, args = pcall(
+                      vim.json.decode,
+                      input,
+                      { luanil = { object = true, array = true } }
+                    )
+                    if
+                      not ok
+                      or not input:match "^%s*%["
+                      or type(args) ~= "table"
+                      or not vim.islist(args)
+                    then
+                      vim.notify(
+                        "Expected a JSON array of command arguments",
+                        vim.log.levels.WARN
+                      )
+                      return
+                    end
+                    command(client, cmd, args)
+                  end
+                )
+              end
+            )
+          end)
         end
       )
     end

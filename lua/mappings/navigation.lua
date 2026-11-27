@@ -35,7 +35,7 @@ map("n", "<A-G>", function()
 end, { desc = "Toggle grammar-strict spell highlight" })
 
 local virtual_lines_diagnostic_counter = 4
-map("n", "<A-v>", function()
+map("n", "<leader>vd", function()
   virtual_lines_diagnostic_counter = virtual_lines_diagnostic_counter - 1
   if virtual_lines_diagnostic_counter == 0 then
     vim.g.enabled_virtual_lines = false
@@ -56,7 +56,7 @@ map("n", "<A-v>", function()
 
   local msg = "Virtual lines enabled: " .. vim.diagnostic.severity[virtual_lines_diagnostic_counter]
   notify.replace("navigation.virtual_lines", "Navigation", msg, vim.log.levels.INFO)
-end, { desc = "Navigation filter virtual diagnostics" })
+end, { desc = "Virtual lines diagnostics" })
 
 local function construct_handler(cmd)
   return function()

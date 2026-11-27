@@ -20,7 +20,7 @@ local SECTIONS = {
     title = "Modes",
     items = {
       { "<A-G>", "grammar-strict spell" },
-      { "<A-v>", "diagnostic virtual lines" },
+      { "<leader>vd", "diagnostic virtual lines" },
       { "<A-h>", "git hunk overlay" },
       { "<A-W>", "wrap (also <A-r>)" },
       { "<A-1>", "relative line numbers" },
@@ -32,6 +32,7 @@ local SECTIONS = {
     items = {
       { "<A-e>", "files tree" },
       { "<A-l>", "document symbols" },
+      { "<A-v>", "lualine buffers tree" },
       { "<A-o>", "oil file browser" },
       { "<leader><leader>", "find files" },
       { "<A-b>", "debug breakpoints" },

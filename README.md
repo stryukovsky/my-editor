@@ -31,7 +31,7 @@ Install basics with script on every platform
 **After installation of basics**, open neovim and run command
 
 ```
-MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server basedpyright goimports prettier clangd black gofumpt vscode-solidity-server texlab jdtls xmlformatter java-debug-adapter 
+MasonInstall codelldb css-lsp  delve gopls html-lsp js-debug-adapter lua-language-server rust-analyzer sqls stylua typescript-language-server bash-language-server ty goimports prettier clangd black gofumpt vscode-solidity-server texlab jdtls xmlformatter java-debug-adapter
 ```
 
 JDTLS NEEDS VPN!!!
@@ -47,9 +47,12 @@ selected servers still assist when you proceed.
 
 See the
 [file-rename server support inventory](openspec/changes/neotree-lsp-file-rename/server-support.md)
-for all language servers in the Mason command above. TypeScript, basedpyright,
-Rust, and Java support `workspace/willRenameFiles` (possible edits before
-rename); Lua supports `workspace/didRenameFiles` (notification after success).
+for the servers checked when that change was made. TypeScript, Rust, and
+Java support `workspace/willRenameFiles` (possible edits before rename);
+Lua supports `workspace/didRenameFiles` (notification after success).
+For ty, Neo-tree checks the attached server's advertised rename capabilities;
+ty versions without `workspace/willRenameFiles` require confirmation before
+renaming Python files without LSP assistance.
 Symbol rename support is separate. The installed `vscode-solidity-server`
 package is Juan Blanco's server, while the current Solidity configuration runs
 `forge`.

@@ -282,6 +282,7 @@ oil.setup {
     ["<A-p>"] = "actions.preview",
     ["<A-e>"] = function(_) end,
     ["<A-l>"] = function(_) end,
+    ["<A-v>"] = function(_) end,
     ["<A-k>"] = function(_) end,
     ["-"] = { "actions.parent", mode = "n" },
     ["<bs>"] = { "actions.parent", mode = "n" },

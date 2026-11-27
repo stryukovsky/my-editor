@@ -104,7 +104,7 @@ parens).
 ## LSP & DAP
 
 - LSP servers enabled in `lua/configs/lspconfig.lua`: html, cssls, ts_ls,
-  lua_ls, sqls, bashls, basedpyright, gopls, clangd, solidity_ls, texlab, jdtls,
+  lua_ls, sqls, bashls, ty, gopls, clangd, solidity_ls, texlab, jdtls,
   move_analyzer
 - DAP activation and presets live in `moonshine.nvim/dap_tools/lua/dap_tools/`.
   `<leader>da` opens the project-ranked language picker; adapters and predefined
@@ -142,16 +142,22 @@ parens).
 
 ## Neo-tree `<A-*>` Keymap Conflicts
 
-Neo-tree sources (`filesystem`, `buffers`, `document_symbols`) are toggled via
-`<A-e>`, `<A-b>`, `<A-l>`. These must be suppressed in other plugins to avoid
+Neo-tree sources (`filesystem`, `document_symbols`, `simply_buffers`) are toggled via
+`<A-e>`, `<A-l>`, `<A-v>`. These must be suppressed in other plugins to avoid
 conflicts:
 
 | Plugin         | File                                                 | Key                                | Neutralization                                                                          |
 | -------------- | ---------------------------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------- |
-| oil.nvim | `lua/configs/oil.lua:280-283` | `<A-e>`, `<A-l>`, `<A-b>`, `<A-k>` | No-op `function(_) end` in oil keymaps table (buffer-local to oil buffers only) |
+| oil.nvim | `lua/configs/oil.lua` | `<A-e>`, `<A-l>`, `<A-v>`, `<A-k>` | No-op `function(_) end` in oil keymaps table (buffer-local to oil buffers only) |
 
 No global conflicts exist currently — oil's neutralization is buffer-local.
 When adding a new neo-tree source mapping, check if
 any plugin binds the same `<A->` key and add a no-op where needed.
+
+Neo-tree `git_status` shortcuts are declared explicitly in
+`lua/configs/neotree.lua`: mirror applicable `<leader>g` actions from
+`lua/mappings/git.lua` without the prefix (for example, `c` for commit and
+`p` for pull). Keep panel-specific keys (`f` search, `l` navigation, `x`
+revert) and do not alias lazy commit (`<leader>gl`) in the panel.
 
 Pin updates via `lazy-lock.json`. Do not edit manually.

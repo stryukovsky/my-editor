@@ -3,6 +3,13 @@ local order = {}
 
 function M.refresh()
   require("lualine").refresh { place = { "tabline" } }
+  if package.loaded["neo-tree"] then
+    local manager = require "neo-tree.sources.manager"
+    local state = manager.get_state "simply_buffers"
+    if state and require("neo-tree.ui.renderer").window_exists(state) then
+      require("neo-tree.sources.simply_buffers").navigate(state, state.path)
+    end
+  end
 end
 
 function M.list()
